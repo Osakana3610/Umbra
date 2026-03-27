@@ -1,0 +1,65 @@
+[
+    {
+        "id": "debug_cavern",
+        "name": "デバッグの洞窟",
+        "enemyCountCap": 1,
+        "progressIntervalSeconds": 1,
+        "floors": [
+            {
+                "floorNumber": 1,
+                "battleCount": 10,
+                "encounters": [
+                    {
+                        "enemyKey": "debug_monster",
+                        "level": 1,
+                        "weight": 1
+                    }
+                ],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "debug_dragon",
+                        "level": 2
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "debug_ruins",
+        "name": "デバッグの遺跡",
+        "enemyCountCap": 2,
+        "progressIntervalSeconds": 1,
+        "floors": [
+            {
+                "floorNumber": 1,
+                "battleCount": 1,
+                "encounters": [
+                    {
+                        "enemyKey": "debug_undead",
+                        "level": 4,
+                        "weight": 1
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "debug_spire",
+        "name": "デバッグの塔",
+        "enemyCountCap": 4,
+        "progressIntervalSeconds": 1,
+        "floors": [
+            {
+                "floorNumber": 1,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "debug_dragon",
+                        "level": 8
+                    }
+                ]
+            }
+        ]
+    }
+]

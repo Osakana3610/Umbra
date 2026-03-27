@@ -1,0 +1,42 @@
+[
+    {
+        "id": "growth",
+        "name": "成長が早い",
+        "skills": []
+    },
+    {
+        "id": "might",
+        "name": "物理攻撃に強い",
+        "skills": []
+    },
+    {
+        "id": "arcane",
+        "name": "魔法攻撃に強い",
+        "skills": []
+    },
+    {
+        "id": "breath",
+        "name": "ブレスに強い",
+        "skills": []
+    },
+    {
+        "id": "healer",
+        "name": "回復が得意",
+        "skills": []
+    },
+    {
+        "id": "melee",
+        "name": "近接攻撃が得意",
+        "skills": []
+    },
+    {
+        "id": "ranged",
+        "name": "遠距離攻撃が得意",
+        "skills": []
+    },
+    {
+        "id": "fortune",
+        "name": "運が良い",
+        "skills": []
+    }
+]

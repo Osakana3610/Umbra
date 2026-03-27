@@ -1,0 +1,4456 @@
+[
+    {
+        "id": "sword_normal_01",
+        "name": "ショートソード",
+        "rarity": "normal",
+        "category": "sword",
+        "basePrice": 40000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 1
+        },
+        "skillIds": [
+            "physicalDamageMultiplier_plus_6pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "sword_normal_02",
+        "name": "ロングソード",
+        "rarity": "normal",
+        "category": "sword",
+        "basePrice": 80000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 2,
+            "accuracy": 1
+        },
+        "skillIds": [
+            "physicalDamageMultiplier_plus_7pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "sword_normal_03",
+        "name": "ブロードソード",
+        "rarity": "normal",
+        "category": "sword",
+        "basePrice": 160000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 3,
+            "accuracy": 1
+        },
+        "skillIds": [
+            "physicalDamageMultiplier_plus_8pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "sword_normal_04",
+        "name": "バスタードソード",
+        "rarity": "normal",
+        "category": "sword",
+        "basePrice": 320000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 4,
+            "accuracy": 1,
+            "criticalRate": 1
+        },
+        "skillIds": [
+            "physicalDamageMultiplier_plus_9pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "sword_normal_05",
+        "name": "ファルシオン",
+        "rarity": "normal",
+        "category": "sword",
+        "basePrice": 640000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 5,
+            "accuracy": 2,
+            "criticalRate": 1
+        },
+        "skillIds": [
+            "physicalDamageMultiplier_plus_10pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "sword_normal_06",
+        "name": "カッツバルゲル",
+        "rarity": "normal",
+        "category": "sword",
+        "basePrice": 1280000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 6,
+            "accuracy": 2,
+            "criticalRate": 1
+        },
+        "skillIds": [
+            "physicalDamageMultiplier_plus_11pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "sword_normal_07",
+        "name": "エストック",
+        "rarity": "normal",
+        "category": "sword",
+        "basePrice": 2560000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 7,
+            "accuracy": 2,
+            "criticalRate": 1
+        },
+        "skillIds": [
+            "physicalDamageMultiplier_plus_12pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "sword_normal_08",
+        "name": "クレイモア",
+        "rarity": "normal",
+        "category": "sword",
+        "basePrice": 5120000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 8,
+            "accuracy": 3,
+            "criticalRate": 2
+        },
+        "skillIds": [
+            "physicalDamageMultiplier_plus_13pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "sword_uncommon_01",
+        "name": "シルバーソード",
+        "rarity": "uncommon",
+        "category": "sword",
+        "basePrice": 80000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 9,
+            "accuracy": 3,
+            "criticalRate": 2
+        },
+        "skillIds": [
+            "physicalDamageMultiplier_plus_1pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "sword_uncommon_02",
+        "name": "ミスリルソード",
+        "rarity": "uncommon",
+        "category": "sword",
+        "basePrice": 160000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 10,
+            "accuracy": 3,
+            "criticalRate": 2
+        },
+        "skillIds": [
+            "physicalDamageMultiplier_plus_1pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "sword_uncommon_03",
+        "name": "フレイムソード",
+        "rarity": "uncommon",
+        "category": "sword",
+        "basePrice": 320000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 11,
+            "accuracy": 4,
+            "criticalRate": 2
+        },
+        "skillIds": [
+            "physicalDamageMultiplier_plus_3pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "sword_uncommon_04",
+        "name": "フロストソード",
+        "rarity": "uncommon",
+        "category": "sword",
+        "basePrice": 640000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 12,
+            "accuracy": 4,
+            "criticalRate": 3
+        },
+        "skillIds": [
+            "physicalDamageMultiplier_plus_3pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "sword_rare_01",
+        "name": "ルーンブレード",
+        "rarity": "rare",
+        "category": "sword",
+        "basePrice": 160000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 13,
+            "accuracy": 4,
+            "criticalRate": 3
+        },
+        "skillIds": [
+            "physicalDamageMultiplier_plus_2pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "sword_rare_02",
+        "name": "サンブレード",
+        "rarity": "rare",
+        "category": "sword",
+        "basePrice": 320000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 14,
+            "accuracy": 5,
+            "criticalRate": 3
+        },
+        "skillIds": [
+            "physicalDamageMultiplier_plus_2pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "sword_rare_03",
+        "name": "ムーンブレード",
+        "rarity": "rare",
+        "category": "sword",
+        "basePrice": 640000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 15,
+            "accuracy": 5,
+            "criticalRate": 3
+        },
+        "skillIds": [
+            "physicalDamageMultiplier_plus_4pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "sword_rare_04",
+        "name": "ナイトブレード",
+        "rarity": "rare",
+        "category": "sword",
+        "basePrice": 1280000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 16,
+            "accuracy": 5,
+            "criticalRate": 4
+        },
+        "skillIds": [
+            "physicalDamageMultiplier_plus_4pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "sword_mythic_01",
+        "name": "アークセイバー",
+        "rarity": "mythic",
+        "category": "sword",
+        "basePrice": 320000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 17,
+            "accuracy": 6,
+            "criticalRate": 4
+        },
+        "skillIds": [
+            "physicalDamageMultiplier_plus_5pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "sword_mythic_02",
+        "name": "ドラゴンスレイヤー",
+        "rarity": "mythic",
+        "category": "sword",
+        "basePrice": 640000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 18,
+            "accuracy": 6,
+            "criticalRate": 4
+        },
+        "skillIds": [
+            "physicalDamageMultiplier_plus_5pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "sword_mythic_03",
+        "name": "グラム",
+        "rarity": "mythic",
+        "category": "sword",
+        "basePrice": 1280000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 19,
+            "accuracy": 6,
+            "criticalRate": 4
+        },
+        "skillIds": [
+            "physicalDamageMultiplier_plus_5pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "sword_mythic_04",
+        "name": "ティルフィング",
+        "rarity": "mythic",
+        "category": "sword",
+        "basePrice": 2560000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 20,
+            "accuracy": 7,
+            "criticalRate": 5
+        },
+        "skillIds": [
+            "physicalDamageMultiplier_plus_5pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "sword_godfiend_01",
+        "name": "エクスカリバー",
+        "rarity": "godfiend",
+        "category": "sword",
+        "basePrice": 640000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 21,
+            "accuracy": 7,
+            "criticalRate": 5
+        },
+        "skillIds": [
+            "physicalDamageMultiplier_plus_13pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "sword_godfiend_02",
+        "name": "バルムンク",
+        "rarity": "godfiend",
+        "category": "sword",
+        "basePrice": 1280000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 22,
+            "accuracy": 7,
+            "criticalRate": 5
+        },
+        "skillIds": [
+            "physicalDamageMultiplier_plus_13pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "sword_godfiend_03",
+        "name": "デュランダル",
+        "rarity": "godfiend",
+        "category": "sword",
+        "basePrice": 2560000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 23,
+            "accuracy": 8,
+            "criticalRate": 5
+        },
+        "skillIds": [
+            "physicalDamageMultiplier_plus_13pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "sword_godfiend_04",
+        "name": "レーヴァテイン",
+        "rarity": "godfiend",
+        "category": "sword",
+        "basePrice": 5120000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 24,
+            "accuracy": 8,
+            "criticalRate": 6
+        },
+        "skillIds": [
+            "physicalDamageMultiplier_plus_13pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "katana_normal_01",
+        "name": "短刀",
+        "rarity": "normal",
+        "category": "katana",
+        "basePrice": 40000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 1
+        },
+        "skillIds": [
+            "meleeDamageMultiplier_plus_6pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 1
+    },
+    {
+        "id": "katana_normal_02",
+        "name": "脇差",
+        "rarity": "normal",
+        "category": "katana",
+        "basePrice": 80000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 1,
+            "criticalRate": 1
+        },
+        "skillIds": [
+            "meleeDamageMultiplier_plus_7pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 2
+    },
+    {
+        "id": "katana_normal_03",
+        "name": "打刀",
+        "rarity": "normal",
+        "category": "katana",
+        "basePrice": 160000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 2,
+            "criticalRate": 1
+        },
+        "skillIds": [
+            "meleeDamageMultiplier_plus_8pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 3
+    },
+    {
+        "id": "katana_normal_04",
+        "name": "太刀",
+        "rarity": "normal",
+        "category": "katana",
+        "basePrice": 320000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 3,
+            "accuracy": 1,
+            "criticalRate": 1
+        },
+        "skillIds": [
+            "meleeDamageMultiplier_plus_9pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 4
+    },
+    {
+        "id": "katana_normal_05",
+        "name": "野太刀",
+        "rarity": "normal",
+        "category": "katana",
+        "basePrice": 640000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 4,
+            "accuracy": 1,
+            "criticalRate": 2
+        },
+        "skillIds": [
+            "meleeDamageMultiplier_plus_10pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 5
+    },
+    {
+        "id": "katana_normal_06",
+        "name": "大太刀",
+        "rarity": "normal",
+        "category": "katana",
+        "basePrice": 1280000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 5,
+            "accuracy": 1,
+            "criticalRate": 2
+        },
+        "skillIds": [
+            "meleeDamageMultiplier_plus_11pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 6
+    },
+    {
+        "id": "katana_normal_07",
+        "name": "居合刀",
+        "rarity": "normal",
+        "category": "katana",
+        "basePrice": 2560000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 6,
+            "accuracy": 1,
+            "criticalRate": 2
+        },
+        "skillIds": [
+            "meleeDamageMultiplier_plus_12pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 7
+    },
+    {
+        "id": "katana_normal_08",
+        "name": "反り太刀",
+        "rarity": "normal",
+        "category": "katana",
+        "basePrice": 5120000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 7,
+            "accuracy": 2,
+            "criticalRate": 3
+        },
+        "skillIds": [
+            "meleeDamageMultiplier_plus_13pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 8
+    },
+    {
+        "id": "katana_uncommon_01",
+        "name": "備前長船",
+        "rarity": "uncommon",
+        "category": "katana",
+        "basePrice": 80000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 8,
+            "accuracy": 2,
+            "criticalRate": 3
+        },
+        "skillIds": [
+            "meleeDamageMultiplier_plus_1pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "katana_uncommon_02",
+        "name": "菊一文字",
+        "rarity": "uncommon",
+        "category": "katana",
+        "basePrice": 160000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 9,
+            "accuracy": 2,
+            "criticalRate": 3
+        },
+        "skillIds": [
+            "meleeDamageMultiplier_plus_1pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "katana_uncommon_03",
+        "name": "孫六兼元",
+        "rarity": "uncommon",
+        "category": "katana",
+        "basePrice": 320000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 10,
+            "accuracy": 2,
+            "criticalRate": 4
+        },
+        "skillIds": [
+            "meleeDamageMultiplier_plus_3pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "katana_uncommon_04",
+        "name": "長曾祢虎徹",
+        "rarity": "uncommon",
+        "category": "katana",
+        "basePrice": 640000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 11,
+            "accuracy": 3,
+            "criticalRate": 4
+        },
+        "skillIds": [
+            "meleeDamageMultiplier_plus_3pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "katana_rare_01",
+        "name": "村正",
+        "rarity": "rare",
+        "category": "katana",
+        "basePrice": 160000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 12,
+            "accuracy": 3,
+            "criticalRate": 4
+        },
+        "skillIds": [
+            "meleeDamageMultiplier_plus_2pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "katana_rare_02",
+        "name": "数珠丸恒次",
+        "rarity": "rare",
+        "category": "katana",
+        "basePrice": 320000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 13,
+            "accuracy": 3,
+            "criticalRate": 5
+        },
+        "skillIds": [
+            "meleeDamageMultiplier_plus_2pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "katana_rare_03",
+        "name": "鬼丸国綱",
+        "rarity": "rare",
+        "category": "katana",
+        "basePrice": 640000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 14,
+            "accuracy": 3,
+            "criticalRate": 5
+        },
+        "skillIds": [
+            "meleeDamageMultiplier_plus_4pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "katana_rare_04",
+        "name": "三日月宗近",
+        "rarity": "rare",
+        "category": "katana",
+        "basePrice": 1280000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 15,
+            "accuracy": 4,
+            "criticalRate": 5
+        },
+        "skillIds": [
+            "meleeDamageMultiplier_plus_4pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "katana_mythic_01",
+        "name": "童子切安綱",
+        "rarity": "mythic",
+        "category": "katana",
+        "basePrice": 320000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 16,
+            "accuracy": 4,
+            "criticalRate": 6
+        },
+        "skillIds": [
+            "meleeDamageMultiplier_plus_5pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "katana_mythic_02",
+        "name": "鬼切丸",
+        "rarity": "mythic",
+        "category": "katana",
+        "basePrice": 640000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 17,
+            "accuracy": 4,
+            "criticalRate": 6
+        },
+        "skillIds": [
+            "meleeDamageMultiplier_plus_5pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "katana_mythic_03",
+        "name": "七星剣",
+        "rarity": "mythic",
+        "category": "katana",
+        "basePrice": 1280000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 18,
+            "accuracy": 4,
+            "criticalRate": 6
+        },
+        "skillIds": [
+            "meleeDamageMultiplier_plus_5pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "katana_mythic_04",
+        "name": "天叢雲剣",
+        "rarity": "mythic",
+        "category": "katana",
+        "basePrice": 2560000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 19,
+            "accuracy": 5,
+            "criticalRate": 7
+        },
+        "skillIds": [
+            "meleeDamageMultiplier_plus_5pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "katana_godfiend_01",
+        "name": "布都御魂",
+        "rarity": "godfiend",
+        "category": "katana",
+        "basePrice": 640000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 20,
+            "accuracy": 5,
+            "criticalRate": 7
+        },
+        "skillIds": [
+            "meleeDamageMultiplier_plus_13pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "katana_godfiend_02",
+        "name": "草薙剣",
+        "rarity": "godfiend",
+        "category": "katana",
+        "basePrice": 1280000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 21,
+            "accuracy": 5,
+            "criticalRate": 7
+        },
+        "skillIds": [
+            "meleeDamageMultiplier_plus_13pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "katana_godfiend_03",
+        "name": "小狐丸",
+        "rarity": "godfiend",
+        "category": "katana",
+        "basePrice": 2560000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 22,
+            "accuracy": 5,
+            "criticalRate": 8
+        },
+        "skillIds": [
+            "meleeDamageMultiplier_plus_13pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "katana_godfiend_04",
+        "name": "雷切",
+        "rarity": "godfiend",
+        "category": "katana",
+        "basePrice": 5120000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 23,
+            "accuracy": 6,
+            "criticalRate": 8
+        },
+        "skillIds": [
+            "meleeDamageMultiplier_plus_13pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "bow_normal_01",
+        "name": "ショートボウ",
+        "rarity": "normal",
+        "category": "bow",
+        "basePrice": 40000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 1,
+            "accuracy": 1
+        },
+        "skillIds": [
+            "rangedDamageMultiplier_plus_6pct"
+        ],
+        "rangeClass": "ranged",
+        "normalDropTier": 1
+    },
+    {
+        "id": "bow_normal_02",
+        "name": "ロングボウ",
+        "rarity": "normal",
+        "category": "bow",
+        "basePrice": 80000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 1,
+            "accuracy": 1
+        },
+        "skillIds": [
+            "rangedDamageMultiplier_plus_7pct"
+        ],
+        "rangeClass": "ranged",
+        "normalDropTier": 2
+    },
+    {
+        "id": "bow_normal_03",
+        "name": "ハンティングボウ",
+        "rarity": "normal",
+        "category": "bow",
+        "basePrice": 160000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 2,
+            "accuracy": 2
+        },
+        "skillIds": [
+            "rangedDamageMultiplier_plus_8pct"
+        ],
+        "rangeClass": "ranged",
+        "normalDropTier": 3
+    },
+    {
+        "id": "bow_normal_04",
+        "name": "リカーブボウ",
+        "rarity": "normal",
+        "category": "bow",
+        "basePrice": 320000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 3,
+            "accuracy": 2
+        },
+        "skillIds": [
+            "rangedDamageMultiplier_plus_9pct"
+        ],
+        "rangeClass": "ranged",
+        "normalDropTier": 4
+    },
+    {
+        "id": "bow_normal_05",
+        "name": "コンポジットボウ",
+        "rarity": "normal",
+        "category": "bow",
+        "basePrice": 640000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 4,
+            "accuracy": 3,
+            "criticalRate": 1
+        },
+        "skillIds": [
+            "rangedDamageMultiplier_plus_10pct"
+        ],
+        "rangeClass": "ranged",
+        "normalDropTier": 5
+    },
+    {
+        "id": "bow_normal_06",
+        "name": "ホーンボウ",
+        "rarity": "normal",
+        "category": "bow",
+        "basePrice": 1280000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 5,
+            "accuracy": 3,
+            "criticalRate": 1
+        },
+        "skillIds": [
+            "rangedDamageMultiplier_plus_11pct"
+        ],
+        "rangeClass": "ranged",
+        "normalDropTier": 6
+    },
+    {
+        "id": "bow_normal_07",
+        "name": "ラミネートボウ",
+        "rarity": "normal",
+        "category": "bow",
+        "basePrice": 2560000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 6,
+            "accuracy": 4,
+            "criticalRate": 1
+        },
+        "skillIds": [
+            "rangedDamageMultiplier_plus_12pct"
+        ],
+        "rangeClass": "ranged",
+        "normalDropTier": 7
+    },
+    {
+        "id": "bow_normal_08",
+        "name": "ウォーボウ",
+        "rarity": "normal",
+        "category": "bow",
+        "basePrice": 5120000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 7,
+            "accuracy": 4,
+            "criticalRate": 1
+        },
+        "skillIds": [
+            "rangedDamageMultiplier_plus_13pct"
+        ],
+        "rangeClass": "ranged",
+        "normalDropTier": 8
+    },
+    {
+        "id": "bow_uncommon_01",
+        "name": "エルムボウ",
+        "rarity": "uncommon",
+        "category": "bow",
+        "basePrice": 80000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 8,
+            "accuracy": 5,
+            "criticalRate": 1
+        },
+        "skillIds": [
+            "rangedDamageMultiplier_plus_1pct"
+        ],
+        "rangeClass": "ranged",
+        "normalDropTier": 0
+    },
+    {
+        "id": "bow_uncommon_02",
+        "name": "ユーボウ",
+        "rarity": "uncommon",
+        "category": "bow",
+        "basePrice": 160000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 9,
+            "accuracy": 5,
+            "criticalRate": 2
+        },
+        "skillIds": [
+            "rangedDamageMultiplier_plus_1pct"
+        ],
+        "rangeClass": "ranged",
+        "normalDropTier": 0
+    },
+    {
+        "id": "bow_uncommon_03",
+        "name": "シルバーボウ",
+        "rarity": "uncommon",
+        "category": "bow",
+        "basePrice": 320000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 10,
+            "accuracy": 6,
+            "criticalRate": 2
+        },
+        "skillIds": [
+            "rangedDamageMultiplier_plus_3pct"
+        ],
+        "rangeClass": "ranged",
+        "normalDropTier": 0
+    },
+    {
+        "id": "bow_uncommon_04",
+        "name": "イーグルボウ",
+        "rarity": "uncommon",
+        "category": "bow",
+        "basePrice": 640000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 11,
+            "accuracy": 6,
+            "criticalRate": 2
+        },
+        "skillIds": [
+            "rangedDamageMultiplier_plus_3pct"
+        ],
+        "rangeClass": "ranged",
+        "normalDropTier": 0
+    },
+    {
+        "id": "bow_rare_01",
+        "name": "ムーンボウ",
+        "rarity": "rare",
+        "category": "bow",
+        "basePrice": 160000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 12,
+            "accuracy": 7,
+            "criticalRate": 2
+        },
+        "skillIds": [
+            "rangedDamageMultiplier_plus_2pct"
+        ],
+        "rangeClass": "ranged",
+        "normalDropTier": 0
+    },
+    {
+        "id": "bow_rare_02",
+        "name": "サンボウ",
+        "rarity": "rare",
+        "category": "bow",
+        "basePrice": 320000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 13,
+            "accuracy": 7,
+            "criticalRate": 2
+        },
+        "skillIds": [
+            "rangedDamageMultiplier_plus_2pct"
+        ],
+        "rangeClass": "ranged",
+        "normalDropTier": 0
+    },
+    {
+        "id": "bow_rare_03",
+        "name": "ウィンドボウ",
+        "rarity": "rare",
+        "category": "bow",
+        "basePrice": 640000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 14,
+            "accuracy": 8,
+            "criticalRate": 3
+        },
+        "skillIds": [
+            "rangedDamageMultiplier_plus_4pct"
+        ],
+        "rangeClass": "ranged",
+        "normalDropTier": 0
+    },
+    {
+        "id": "bow_rare_04",
+        "name": "ストームボウ",
+        "rarity": "rare",
+        "category": "bow",
+        "basePrice": 1280000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 15,
+            "accuracy": 8,
+            "criticalRate": 3
+        },
+        "skillIds": [
+            "rangedDamageMultiplier_plus_4pct"
+        ],
+        "rangeClass": "ranged",
+        "normalDropTier": 0
+    },
+    {
+        "id": "bow_mythic_01",
+        "name": "フェニックスボウ",
+        "rarity": "mythic",
+        "category": "bow",
+        "basePrice": 320000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 16,
+            "accuracy": 9,
+            "criticalRate": 3
+        },
+        "skillIds": [
+            "rangedDamageMultiplier_plus_5pct"
+        ],
+        "rangeClass": "ranged",
+        "normalDropTier": 0
+    },
+    {
+        "id": "bow_mythic_02",
+        "name": "ドラゴンボウ",
+        "rarity": "mythic",
+        "category": "bow",
+        "basePrice": 640000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 17,
+            "accuracy": 9,
+            "criticalRate": 3
+        },
+        "skillIds": [
+            "rangedDamageMultiplier_plus_5pct"
+        ],
+        "rangeClass": "ranged",
+        "normalDropTier": 0
+    },
+    {
+        "id": "bow_mythic_03",
+        "name": "セレスティアルボウ",
+        "rarity": "mythic",
+        "category": "bow",
+        "basePrice": 1280000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 18,
+            "accuracy": 10,
+            "criticalRate": 3
+        },
+        "skillIds": [
+            "rangedDamageMultiplier_plus_5pct"
+        ],
+        "rangeClass": "ranged",
+        "normalDropTier": 0
+    },
+    {
+        "id": "bow_mythic_04",
+        "name": "アルテミスボウ",
+        "rarity": "mythic",
+        "category": "bow",
+        "basePrice": 2560000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 19,
+            "accuracy": 10,
+            "criticalRate": 4
+        },
+        "skillIds": [
+            "rangedDamageMultiplier_plus_5pct"
+        ],
+        "rangeClass": "ranged",
+        "normalDropTier": 0
+    },
+    {
+        "id": "bow_godfiend_01",
+        "name": "ガーンディーヴァ",
+        "rarity": "godfiend",
+        "category": "bow",
+        "basePrice": 640000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 20,
+            "accuracy": 11,
+            "criticalRate": 4
+        },
+        "skillIds": [
+            "rangedDamageMultiplier_plus_13pct"
+        ],
+        "rangeClass": "ranged",
+        "normalDropTier": 0
+    },
+    {
+        "id": "bow_godfiend_02",
+        "name": "シャラング",
+        "rarity": "godfiend",
+        "category": "bow",
+        "basePrice": 1280000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 21,
+            "accuracy": 11,
+            "criticalRate": 4
+        },
+        "skillIds": [
+            "rangedDamageMultiplier_plus_13pct"
+        ],
+        "rangeClass": "ranged",
+        "normalDropTier": 0
+    },
+    {
+        "id": "bow_godfiend_03",
+        "name": "ホルンボーゲ",
+        "rarity": "godfiend",
+        "category": "bow",
+        "basePrice": 2560000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 22,
+            "accuracy": 12,
+            "criticalRate": 4
+        },
+        "skillIds": [
+            "rangedDamageMultiplier_plus_13pct"
+        ],
+        "rangeClass": "ranged",
+        "normalDropTier": 0
+    },
+    {
+        "id": "bow_godfiend_04",
+        "name": "アストラルボウ",
+        "rarity": "godfiend",
+        "category": "bow",
+        "basePrice": 5120000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "physicalAttack": 23,
+            "accuracy": 12,
+            "criticalRate": 4
+        },
+        "skillIds": [
+            "rangedDamageMultiplier_plus_13pct"
+        ],
+        "rangeClass": "ranged",
+        "normalDropTier": 0
+    },
+    {
+        "id": "wand_normal_01",
+        "name": "オークワンド",
+        "rarity": "normal",
+        "category": "wand",
+        "basePrice": 40000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 1
+        },
+        "skillIds": [
+            "magicDamageMultiplier_plus_6pct"
+        ],
+        "rangeClass": "ranged",
+        "normalDropTier": 1
+    },
+    {
+        "id": "wand_normal_02",
+        "name": "アッシュワンド",
+        "rarity": "normal",
+        "category": "wand",
+        "basePrice": 80000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 2,
+            "healing": 1
+        },
+        "skillIds": [
+            "magicDamageMultiplier_plus_7pct"
+        ],
+        "rangeClass": "ranged",
+        "normalDropTier": 2
+    },
+    {
+        "id": "wand_normal_03",
+        "name": "ボーンワンド",
+        "rarity": "normal",
+        "category": "wand",
+        "basePrice": 160000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 3,
+            "healing": 1
+        },
+        "skillIds": [
+            "magicDamageMultiplier_plus_8pct"
+        ],
+        "rangeClass": "ranged",
+        "normalDropTier": 3
+    },
+    {
+        "id": "wand_normal_04",
+        "name": "アイボリーワンド",
+        "rarity": "normal",
+        "category": "wand",
+        "basePrice": 320000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 4,
+            "healing": 1
+        },
+        "skillIds": [
+            "magicDamageMultiplier_plus_9pct"
+        ],
+        "rangeClass": "ranged",
+        "normalDropTier": 4
+    },
+    {
+        "id": "wand_normal_05",
+        "name": "ルーンワンド",
+        "rarity": "normal",
+        "category": "wand",
+        "basePrice": 640000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 5,
+            "healing": 2
+        },
+        "skillIds": [
+            "magicDamageMultiplier_plus_10pct"
+        ],
+        "rangeClass": "ranged",
+        "normalDropTier": 5
+    },
+    {
+        "id": "wand_normal_06",
+        "name": "セージワンド",
+        "rarity": "normal",
+        "category": "wand",
+        "basePrice": 1280000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 6,
+            "healing": 2
+        },
+        "skillIds": [
+            "magicDamageMultiplier_plus_11pct"
+        ],
+        "rangeClass": "ranged",
+        "normalDropTier": 6
+    },
+    {
+        "id": "wand_normal_07",
+        "name": "エルダーワンド",
+        "rarity": "normal",
+        "category": "wand",
+        "basePrice": 2560000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 7,
+            "healing": 2
+        },
+        "skillIds": [
+            "magicDamageMultiplier_plus_12pct"
+        ],
+        "rangeClass": "ranged",
+        "normalDropTier": 7
+    },
+    {
+        "id": "wand_normal_08",
+        "name": "クリスタルワンド",
+        "rarity": "normal",
+        "category": "wand",
+        "basePrice": 5120000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 8,
+            "healing": 3
+        },
+        "skillIds": [
+            "magicDamageMultiplier_plus_13pct"
+        ],
+        "rangeClass": "ranged",
+        "normalDropTier": 8
+    },
+    {
+        "id": "wand_uncommon_01",
+        "name": "シルバーワンド",
+        "rarity": "uncommon",
+        "category": "wand",
+        "basePrice": 80000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 9,
+            "healing": 3
+        },
+        "skillIds": [
+            "magicDamageMultiplier_plus_1pct"
+        ],
+        "rangeClass": "ranged",
+        "normalDropTier": 0
+    },
+    {
+        "id": "wand_uncommon_02",
+        "name": "ミスリルワンド",
+        "rarity": "uncommon",
+        "category": "wand",
+        "basePrice": 160000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 10,
+            "healing": 3
+        },
+        "skillIds": [
+            "magicDamageMultiplier_plus_1pct"
+        ],
+        "rangeClass": "ranged",
+        "normalDropTier": 0
+    },
+    {
+        "id": "wand_uncommon_03",
+        "name": "サファイアワンド",
+        "rarity": "uncommon",
+        "category": "wand",
+        "basePrice": 320000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 11,
+            "healing": 4
+        },
+        "skillIds": [
+            "magicDamageMultiplier_plus_3pct"
+        ],
+        "rangeClass": "ranged",
+        "normalDropTier": 0
+    },
+    {
+        "id": "wand_uncommon_04",
+        "name": "エメラルドワンド",
+        "rarity": "uncommon",
+        "category": "wand",
+        "basePrice": 640000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 12,
+            "healing": 4
+        },
+        "skillIds": [
+            "magicDamageMultiplier_plus_3pct"
+        ],
+        "rangeClass": "ranged",
+        "normalDropTier": 0
+    },
+    {
+        "id": "wand_rare_01",
+        "name": "スターワンド",
+        "rarity": "rare",
+        "category": "wand",
+        "basePrice": 160000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 13,
+            "healing": 4
+        },
+        "skillIds": [
+            "magicDamageMultiplier_plus_2pct"
+        ],
+        "rangeClass": "ranged",
+        "normalDropTier": 0
+    },
+    {
+        "id": "wand_rare_02",
+        "name": "ムーンワンド",
+        "rarity": "rare",
+        "category": "wand",
+        "basePrice": 320000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 14,
+            "healing": 5
+        },
+        "skillIds": [
+            "magicDamageMultiplier_plus_2pct"
+        ],
+        "rangeClass": "ranged",
+        "normalDropTier": 0
+    },
+    {
+        "id": "wand_rare_03",
+        "name": "サンワンド",
+        "rarity": "rare",
+        "category": "wand",
+        "basePrice": 640000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 15,
+            "healing": 5
+        },
+        "skillIds": [
+            "magicDamageMultiplier_plus_4pct"
+        ],
+        "rangeClass": "ranged",
+        "normalDropTier": 0
+    },
+    {
+        "id": "wand_rare_04",
+        "name": "ドリームワンド",
+        "rarity": "rare",
+        "category": "wand",
+        "basePrice": 1280000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 16,
+            "healing": 5
+        },
+        "skillIds": [
+            "magicDamageMultiplier_plus_4pct"
+        ],
+        "rangeClass": "ranged",
+        "normalDropTier": 0
+    },
+    {
+        "id": "wand_mythic_01",
+        "name": "フェアリーワンド",
+        "rarity": "mythic",
+        "category": "wand",
+        "basePrice": 320000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 17,
+            "healing": 6
+        },
+        "skillIds": [
+            "magicDamageMultiplier_plus_5pct"
+        ],
+        "rangeClass": "ranged",
+        "normalDropTier": 0
+    },
+    {
+        "id": "wand_mythic_02",
+        "name": "ドラゴンワンド",
+        "rarity": "mythic",
+        "category": "wand",
+        "basePrice": 640000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 18,
+            "healing": 6
+        },
+        "skillIds": [
+            "magicDamageMultiplier_plus_5pct"
+        ],
+        "rangeClass": "ranged",
+        "normalDropTier": 0
+    },
+    {
+        "id": "wand_mythic_03",
+        "name": "セラフィムワンド",
+        "rarity": "mythic",
+        "category": "wand",
+        "basePrice": 1280000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 19,
+            "healing": 6
+        },
+        "skillIds": [
+            "magicDamageMultiplier_plus_5pct"
+        ],
+        "rangeClass": "ranged",
+        "normalDropTier": 0
+    },
+    {
+        "id": "wand_mythic_04",
+        "name": "カオスワンド",
+        "rarity": "mythic",
+        "category": "wand",
+        "basePrice": 2560000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 20,
+            "healing": 7
+        },
+        "skillIds": [
+            "magicDamageMultiplier_plus_5pct"
+        ],
+        "rangeClass": "ranged",
+        "normalDropTier": 0
+    },
+    {
+        "id": "wand_godfiend_01",
+        "name": "ケリュケイオン",
+        "rarity": "godfiend",
+        "category": "wand",
+        "basePrice": 640000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 21,
+            "healing": 7
+        },
+        "skillIds": [
+            "magicDamageMultiplier_plus_13pct"
+        ],
+        "rangeClass": "ranged",
+        "normalDropTier": 0
+    },
+    {
+        "id": "wand_godfiend_02",
+        "name": "ソロモンワンド",
+        "rarity": "godfiend",
+        "category": "wand",
+        "basePrice": 1280000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 22,
+            "healing": 7
+        },
+        "skillIds": [
+            "magicDamageMultiplier_plus_13pct"
+        ],
+        "rangeClass": "ranged",
+        "normalDropTier": 0
+    },
+    {
+        "id": "wand_godfiend_03",
+        "name": "ヘカテーワンド",
+        "rarity": "godfiend",
+        "category": "wand",
+        "basePrice": 2560000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 23,
+            "healing": 8
+        },
+        "skillIds": [
+            "magicDamageMultiplier_plus_13pct"
+        ],
+        "rangeClass": "ranged",
+        "normalDropTier": 0
+    },
+    {
+        "id": "wand_godfiend_04",
+        "name": "ネクロワンド",
+        "rarity": "godfiend",
+        "category": "wand",
+        "basePrice": 5120000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 24,
+            "healing": 8
+        },
+        "skillIds": [
+            "magicDamageMultiplier_plus_13pct"
+        ],
+        "rangeClass": "ranged",
+        "normalDropTier": 0
+    },
+    {
+        "id": "rod_normal_01",
+        "name": "ウッドロッド",
+        "rarity": "normal",
+        "category": "rod",
+        "basePrice": 40000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 1,
+            "healing": 1
+        },
+        "skillIds": [
+            "magicDamageMultiplier_plus_6pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 1
+    },
+    {
+        "id": "rod_normal_02",
+        "name": "オークロッド",
+        "rarity": "normal",
+        "category": "rod",
+        "basePrice": 80000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 1,
+            "healing": 2
+        },
+        "skillIds": [
+            "magicDamageMultiplier_plus_7pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 2
+    },
+    {
+        "id": "rod_normal_03",
+        "name": "アイアンロッド",
+        "rarity": "normal",
+        "category": "rod",
+        "basePrice": 160000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 2,
+            "healing": 3
+        },
+        "skillIds": [
+            "magicDamageMultiplier_plus_8pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 3
+    },
+    {
+        "id": "rod_normal_04",
+        "name": "ブロンズロッド",
+        "rarity": "normal",
+        "category": "rod",
+        "basePrice": 320000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 2,
+            "healing": 4
+        },
+        "skillIds": [
+            "magicDamageMultiplier_plus_9pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 4
+    },
+    {
+        "id": "rod_normal_05",
+        "name": "スチールロッド",
+        "rarity": "normal",
+        "category": "rod",
+        "basePrice": 640000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 3,
+            "healing": 5
+        },
+        "skillIds": [
+            "magicDamageMultiplier_plus_10pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 5
+    },
+    {
+        "id": "rod_normal_06",
+        "name": "シルバーロッド",
+        "rarity": "normal",
+        "category": "rod",
+        "basePrice": 1280000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 3,
+            "healing": 6
+        },
+        "skillIds": [
+            "magicDamageMultiplier_plus_11pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 6
+    },
+    {
+        "id": "rod_normal_07",
+        "name": "ミスリルロッド",
+        "rarity": "normal",
+        "category": "rod",
+        "basePrice": 2560000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 4,
+            "healing": 7
+        },
+        "skillIds": [
+            "magicDamageMultiplier_plus_12pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 7
+    },
+    {
+        "id": "rod_normal_08",
+        "name": "クリスタルロッド",
+        "rarity": "normal",
+        "category": "rod",
+        "basePrice": 5120000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 4,
+            "healing": 8
+        },
+        "skillIds": [
+            "magicDamageMultiplier_plus_13pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 8
+    },
+    {
+        "id": "rod_uncommon_01",
+        "name": "ビショップロッド",
+        "rarity": "uncommon",
+        "category": "rod",
+        "basePrice": 80000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 5,
+            "healing": 9
+        },
+        "skillIds": [
+            "magicDamageMultiplier_plus_1pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "rod_uncommon_02",
+        "name": "オラクルロッド",
+        "rarity": "uncommon",
+        "category": "rod",
+        "basePrice": 160000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 5,
+            "healing": 10
+        },
+        "skillIds": [
+            "magicDamageMultiplier_plus_1pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "rod_uncommon_03",
+        "name": "テンプルロッド",
+        "rarity": "uncommon",
+        "category": "rod",
+        "basePrice": 320000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 6,
+            "healing": 11
+        },
+        "skillIds": [
+            "magicDamageMultiplier_plus_3pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "rod_uncommon_04",
+        "name": "リチュアルロッド",
+        "rarity": "uncommon",
+        "category": "rod",
+        "basePrice": 640000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 6,
+            "healing": 12
+        },
+        "skillIds": [
+            "magicDamageMultiplier_plus_3pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "rod_rare_01",
+        "name": "サンロッド",
+        "rarity": "rare",
+        "category": "rod",
+        "basePrice": 160000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 7,
+            "healing": 13
+        },
+        "skillIds": [
+            "magicDamageMultiplier_plus_2pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "rod_rare_02",
+        "name": "ムーンロッド",
+        "rarity": "rare",
+        "category": "rod",
+        "basePrice": 320000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 7,
+            "healing": 14
+        },
+        "skillIds": [
+            "magicDamageMultiplier_plus_2pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "rod_rare_03",
+        "name": "スターロッド",
+        "rarity": "rare",
+        "category": "rod",
+        "basePrice": 640000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 8,
+            "healing": 15
+        },
+        "skillIds": [
+            "magicDamageMultiplier_plus_4pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "rod_rare_04",
+        "name": "アークロッド",
+        "rarity": "rare",
+        "category": "rod",
+        "basePrice": 1280000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 8,
+            "healing": 16
+        },
+        "skillIds": [
+            "magicDamageMultiplier_plus_4pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "rod_mythic_01",
+        "name": "ドラゴンロッド",
+        "rarity": "mythic",
+        "category": "rod",
+        "basePrice": 320000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 9,
+            "healing": 17
+        },
+        "skillIds": [
+            "magicDamageMultiplier_plus_5pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "rod_mythic_02",
+        "name": "セラフィクロッド",
+        "rarity": "mythic",
+        "category": "rod",
+        "basePrice": 640000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 9,
+            "healing": 18
+        },
+        "skillIds": [
+            "magicDamageMultiplier_plus_5pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "rod_mythic_03",
+        "name": "インフェルノロッド",
+        "rarity": "mythic",
+        "category": "rod",
+        "basePrice": 1280000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 10,
+            "healing": 19
+        },
+        "skillIds": [
+            "magicDamageMultiplier_plus_5pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "rod_mythic_04",
+        "name": "ネビュラロッド",
+        "rarity": "mythic",
+        "category": "rod",
+        "basePrice": 2560000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 10,
+            "healing": 20
+        },
+        "skillIds": [
+            "magicDamageMultiplier_plus_5pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "rod_godfiend_01",
+        "name": "アスクレピオス",
+        "rarity": "godfiend",
+        "category": "rod",
+        "basePrice": 640000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 11,
+            "healing": 21
+        },
+        "skillIds": [
+            "magicDamageMultiplier_plus_13pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "rod_godfiend_02",
+        "name": "トリスメギストス",
+        "rarity": "godfiend",
+        "category": "rod",
+        "basePrice": 1280000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 11,
+            "healing": 22
+        },
+        "skillIds": [
+            "magicDamageMultiplier_plus_13pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "rod_godfiend_03",
+        "name": "セフィロトロッド",
+        "rarity": "godfiend",
+        "category": "rod",
+        "basePrice": 2560000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 12,
+            "healing": 23
+        },
+        "skillIds": [
+            "magicDamageMultiplier_plus_13pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "rod_godfiend_04",
+        "name": "パンデモロッド",
+        "rarity": "godfiend",
+        "category": "rod",
+        "basePrice": 5120000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 12,
+            "healing": 24
+        },
+        "skillIds": [
+            "magicDamageMultiplier_plus_13pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "armor_normal_01",
+        "name": "レザーアーマー",
+        "rarity": "normal",
+        "category": "armor",
+        "basePrice": 40000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "maxHP": 3,
+            "physicalDefense": 1
+        },
+        "skillIds": [
+            "physicalResistanceMultiplier_plus_6pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 1
+    },
+    {
+        "id": "armor_normal_02",
+        "name": "ハードレザー",
+        "rarity": "normal",
+        "category": "armor",
+        "basePrice": 80000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "maxHP": 6,
+            "physicalDefense": 1
+        },
+        "skillIds": [
+            "physicalResistanceMultiplier_plus_7pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 2
+    },
+    {
+        "id": "armor_normal_03",
+        "name": "スタデッドアーマー",
+        "rarity": "normal",
+        "category": "armor",
+        "basePrice": 160000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "maxHP": 9,
+            "physicalDefense": 2
+        },
+        "skillIds": [
+            "physicalResistanceMultiplier_plus_8pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 3
+    },
+    {
+        "id": "armor_normal_04",
+        "name": "チェインメイル",
+        "rarity": "normal",
+        "category": "armor",
+        "basePrice": 320000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "maxHP": 12,
+            "physicalDefense": 2
+        },
+        "skillIds": [
+            "physicalResistanceMultiplier_plus_9pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 4
+    },
+    {
+        "id": "armor_normal_05",
+        "name": "スケイルアーマー",
+        "rarity": "normal",
+        "category": "armor",
+        "basePrice": 640000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "maxHP": 15,
+            "physicalDefense": 3
+        },
+        "skillIds": [
+            "physicalResistanceMultiplier_plus_10pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 5
+    },
+    {
+        "id": "armor_normal_06",
+        "name": "ブリガンダイン",
+        "rarity": "normal",
+        "category": "armor",
+        "basePrice": 1280000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "maxHP": 18,
+            "physicalDefense": 3
+        },
+        "skillIds": [
+            "physicalResistanceMultiplier_plus_11pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 6
+    },
+    {
+        "id": "armor_normal_07",
+        "name": "ラメラーアーマー",
+        "rarity": "normal",
+        "category": "armor",
+        "basePrice": 2560000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "maxHP": 21,
+            "physicalDefense": 4
+        },
+        "skillIds": [
+            "physicalResistanceMultiplier_plus_12pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 7
+    },
+    {
+        "id": "armor_normal_08",
+        "name": "プレートアーマー",
+        "rarity": "normal",
+        "category": "armor",
+        "basePrice": 5120000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "maxHP": 24,
+            "physicalDefense": 4
+        },
+        "skillIds": [
+            "physicalResistanceMultiplier_plus_13pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 8
+    },
+    {
+        "id": "armor_uncommon_01",
+        "name": "シルバーアーマー",
+        "rarity": "uncommon",
+        "category": "armor",
+        "basePrice": 80000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "maxHP": 27,
+            "physicalDefense": 5
+        },
+        "skillIds": [
+            "physicalResistanceMultiplier_plus_1pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "armor_uncommon_02",
+        "name": "ミスリルアーマー",
+        "rarity": "uncommon",
+        "category": "armor",
+        "basePrice": 160000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "maxHP": 30,
+            "physicalDefense": 5
+        },
+        "skillIds": [
+            "physicalResistanceMultiplier_plus_1pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "armor_uncommon_03",
+        "name": "ドラゴンスケイル",
+        "rarity": "uncommon",
+        "category": "armor",
+        "basePrice": 320000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "maxHP": 33,
+            "physicalDefense": 6
+        },
+        "skillIds": [
+            "physicalResistanceMultiplier_plus_3pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "armor_uncommon_04",
+        "name": "ナイトアーマー",
+        "rarity": "uncommon",
+        "category": "armor",
+        "basePrice": 640000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "maxHP": 36,
+            "physicalDefense": 6
+        },
+        "skillIds": [
+            "physicalResistanceMultiplier_plus_3pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "armor_rare_01",
+        "name": "ルーンアーマー",
+        "rarity": "rare",
+        "category": "armor",
+        "basePrice": 160000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "maxHP": 39,
+            "physicalDefense": 7
+        },
+        "skillIds": [
+            "physicalResistanceMultiplier_plus_2pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "armor_rare_02",
+        "name": "サンアーマー",
+        "rarity": "rare",
+        "category": "armor",
+        "basePrice": 320000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "maxHP": 42,
+            "physicalDefense": 7
+        },
+        "skillIds": [
+            "physicalResistanceMultiplier_plus_2pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "armor_rare_03",
+        "name": "ムーンアーマー",
+        "rarity": "rare",
+        "category": "armor",
+        "basePrice": 640000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "maxHP": 45,
+            "physicalDefense": 8
+        },
+        "skillIds": [
+            "physicalResistanceMultiplier_plus_4pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "armor_rare_04",
+        "name": "ストームアーマー",
+        "rarity": "rare",
+        "category": "armor",
+        "basePrice": 1280000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "maxHP": 48,
+            "physicalDefense": 8
+        },
+        "skillIds": [
+            "physicalResistanceMultiplier_plus_4pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "armor_mythic_01",
+        "name": "セレスティアルアーマー",
+        "rarity": "mythic",
+        "category": "armor",
+        "basePrice": 320000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "maxHP": 51,
+            "physicalDefense": 9
+        },
+        "skillIds": [
+            "physicalResistanceMultiplier_plus_5pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "armor_mythic_02",
+        "name": "インフェルノアーマー",
+        "rarity": "mythic",
+        "category": "armor",
+        "basePrice": 640000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "maxHP": 54,
+            "physicalDefense": 9
+        },
+        "skillIds": [
+            "physicalResistanceMultiplier_plus_5pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "armor_mythic_03",
+        "name": "フェニックスアーマー",
+        "rarity": "mythic",
+        "category": "armor",
+        "basePrice": 1280000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "maxHP": 57,
+            "physicalDefense": 10
+        },
+        "skillIds": [
+            "physicalResistanceMultiplier_plus_5pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "armor_mythic_04",
+        "name": "アークアーマー",
+        "rarity": "mythic",
+        "category": "armor",
+        "basePrice": 2560000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "maxHP": 60,
+            "physicalDefense": 10
+        },
+        "skillIds": [
+            "physicalResistanceMultiplier_plus_5pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "armor_godfiend_01",
+        "name": "エターナルアーマー",
+        "rarity": "godfiend",
+        "category": "armor",
+        "basePrice": 640000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "maxHP": 63,
+            "physicalDefense": 11
+        },
+        "skillIds": [
+            "physicalResistanceMultiplier_plus_13pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "armor_godfiend_02",
+        "name": "パラディンメイル",
+        "rarity": "godfiend",
+        "category": "armor",
+        "basePrice": 1280000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "maxHP": 66,
+            "physicalDefense": 11
+        },
+        "skillIds": [
+            "physicalResistanceMultiplier_plus_13pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "armor_godfiend_03",
+        "name": "バハムートメイル",
+        "rarity": "godfiend",
+        "category": "armor",
+        "basePrice": 2560000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "maxHP": 69,
+            "physicalDefense": 12
+        },
+        "skillIds": [
+            "physicalResistanceMultiplier_plus_13pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "armor_godfiend_04",
+        "name": "アダマンタイトアーマー",
+        "rarity": "godfiend",
+        "category": "armor",
+        "basePrice": 5120000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "maxHP": 72,
+            "physicalDefense": 12
+        },
+        "skillIds": [
+            "physicalResistanceMultiplier_plus_13pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "shield_normal_01",
+        "name": "バックラー",
+        "rarity": "normal",
+        "category": "shield",
+        "basePrice": 40000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "maxHP": 4
+        },
+        "skillIds": [
+            "breathResistanceMultiplier_plus_6pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 1
+    },
+    {
+        "id": "shield_normal_02",
+        "name": "スモールシールド",
+        "rarity": "normal",
+        "category": "shield",
+        "basePrice": 80000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "maxHP": 8
+        },
+        "skillIds": [
+            "breathResistanceMultiplier_plus_7pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 2
+    },
+    {
+        "id": "shield_normal_03",
+        "name": "ラウンドシールド",
+        "rarity": "normal",
+        "category": "shield",
+        "basePrice": 160000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "maxHP": 12
+        },
+        "skillIds": [
+            "breathResistanceMultiplier_plus_8pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 3
+    },
+    {
+        "id": "shield_normal_04",
+        "name": "ヒーターシールド",
+        "rarity": "normal",
+        "category": "shield",
+        "basePrice": 320000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "maxHP": 16
+        },
+        "skillIds": [
+            "breathResistanceMultiplier_plus_9pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 4
+    },
+    {
+        "id": "shield_normal_05",
+        "name": "カイトシールド",
+        "rarity": "normal",
+        "category": "shield",
+        "basePrice": 640000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "maxHP": 20
+        },
+        "skillIds": [
+            "breathResistanceMultiplier_plus_10pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 5
+    },
+    {
+        "id": "shield_normal_06",
+        "name": "タージェ",
+        "rarity": "normal",
+        "category": "shield",
+        "basePrice": 1280000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "maxHP": 24
+        },
+        "skillIds": [
+            "breathResistanceMultiplier_plus_11pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 6
+    },
+    {
+        "id": "shield_normal_07",
+        "name": "ホプロン",
+        "rarity": "normal",
+        "category": "shield",
+        "basePrice": 2560000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "maxHP": 28
+        },
+        "skillIds": [
+            "breathResistanceMultiplier_plus_12pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 7
+    },
+    {
+        "id": "shield_normal_08",
+        "name": "タワーシールド",
+        "rarity": "normal",
+        "category": "shield",
+        "basePrice": 5120000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "maxHP": 32
+        },
+        "skillIds": [
+            "breathResistanceMultiplier_plus_13pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 8
+    },
+    {
+        "id": "shield_uncommon_01",
+        "name": "スパイクシールド",
+        "rarity": "uncommon",
+        "category": "shield",
+        "basePrice": 80000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "maxHP": 36
+        },
+        "skillIds": [
+            "breathResistanceMultiplier_plus_1pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "shield_uncommon_02",
+        "name": "ミラーシールド",
+        "rarity": "uncommon",
+        "category": "shield",
+        "basePrice": 160000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "maxHP": 40
+        },
+        "skillIds": [
+            "breathResistanceMultiplier_plus_1pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "shield_uncommon_03",
+        "name": "シルバーシールド",
+        "rarity": "uncommon",
+        "category": "shield",
+        "basePrice": 320000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "maxHP": 44
+        },
+        "skillIds": [
+            "breathResistanceMultiplier_plus_3pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "shield_uncommon_04",
+        "name": "ミスリルシールド",
+        "rarity": "uncommon",
+        "category": "shield",
+        "basePrice": 640000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "maxHP": 48
+        },
+        "skillIds": [
+            "breathResistanceMultiplier_plus_3pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "shield_rare_01",
+        "name": "ルーンシールド",
+        "rarity": "rare",
+        "category": "shield",
+        "basePrice": 160000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "maxHP": 52
+        },
+        "skillIds": [
+            "breathResistanceMultiplier_plus_2pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "shield_rare_02",
+        "name": "サンシールド",
+        "rarity": "rare",
+        "category": "shield",
+        "basePrice": 320000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "maxHP": 56
+        },
+        "skillIds": [
+            "breathResistanceMultiplier_plus_2pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "shield_rare_03",
+        "name": "ムーンシールド",
+        "rarity": "rare",
+        "category": "shield",
+        "basePrice": 640000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "maxHP": 60
+        },
+        "skillIds": [
+            "breathResistanceMultiplier_plus_4pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "shield_rare_04",
+        "name": "ストームシールド",
+        "rarity": "rare",
+        "category": "shield",
+        "basePrice": 1280000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "maxHP": 64
+        },
+        "skillIds": [
+            "breathResistanceMultiplier_plus_4pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "shield_mythic_01",
+        "name": "ドラゴンシールド",
+        "rarity": "mythic",
+        "category": "shield",
+        "basePrice": 320000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "maxHP": 68
+        },
+        "skillIds": [
+            "breathResistanceMultiplier_plus_5pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "shield_mythic_02",
+        "name": "アークシールド",
+        "rarity": "mythic",
+        "category": "shield",
+        "basePrice": 640000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "maxHP": 72
+        },
+        "skillIds": [
+            "breathResistanceMultiplier_plus_5pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "shield_mythic_03",
+        "name": "フェニックスシールド",
+        "rarity": "mythic",
+        "category": "shield",
+        "basePrice": 1280000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "maxHP": 76
+        },
+        "skillIds": [
+            "breathResistanceMultiplier_plus_5pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "shield_mythic_04",
+        "name": "セレスティアルシールド",
+        "rarity": "mythic",
+        "category": "shield",
+        "basePrice": 2560000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "maxHP": 80
+        },
+        "skillIds": [
+            "breathResistanceMultiplier_plus_5pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "shield_godfiend_01",
+        "name": "アイギス",
+        "rarity": "godfiend",
+        "category": "shield",
+        "basePrice": 640000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "maxHP": 84
+        },
+        "skillIds": [
+            "breathResistanceMultiplier_plus_13pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "shield_godfiend_02",
+        "name": "スヴァリン",
+        "rarity": "godfiend",
+        "category": "shield",
+        "basePrice": 1280000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "maxHP": 88
+        },
+        "skillIds": [
+            "breathResistanceMultiplier_plus_13pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "shield_godfiend_03",
+        "name": "プリトウェン",
+        "rarity": "godfiend",
+        "category": "shield",
+        "basePrice": 2560000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "maxHP": 92
+        },
+        "skillIds": [
+            "breathResistanceMultiplier_plus_13pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "shield_godfiend_04",
+        "name": "アダマスシールド",
+        "rarity": "godfiend",
+        "category": "shield",
+        "basePrice": 5120000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "maxHP": 96
+        },
+        "skillIds": [
+            "breathResistanceMultiplier_plus_13pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "robe_normal_01",
+        "name": "クロスローブ",
+        "rarity": "normal",
+        "category": "robe",
+        "basePrice": 40000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magicDefense": 1
+        },
+        "skillIds": [
+            "magicResistanceMultiplier_plus_6pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 1
+    },
+    {
+        "id": "robe_normal_02",
+        "name": "リネンローブ",
+        "rarity": "normal",
+        "category": "robe",
+        "basePrice": 80000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 1,
+            "magicDefense": 2,
+            "healing": 1
+        },
+        "skillIds": [
+            "magicResistanceMultiplier_plus_7pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 2
+    },
+    {
+        "id": "robe_normal_03",
+        "name": "シルクローブ",
+        "rarity": "normal",
+        "category": "robe",
+        "basePrice": 160000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 1,
+            "magicDefense": 3,
+            "healing": 1
+        },
+        "skillIds": [
+            "magicResistanceMultiplier_plus_8pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 3
+    },
+    {
+        "id": "robe_normal_04",
+        "name": "ウールローブ",
+        "rarity": "normal",
+        "category": "robe",
+        "basePrice": 320000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 1,
+            "magicDefense": 4,
+            "healing": 1
+        },
+        "skillIds": [
+            "magicResistanceMultiplier_plus_9pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 4
+    },
+    {
+        "id": "robe_normal_05",
+        "name": "ベルベットローブ",
+        "rarity": "normal",
+        "category": "robe",
+        "basePrice": 640000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 2,
+            "magicDefense": 5,
+            "healing": 1
+        },
+        "skillIds": [
+            "magicResistanceMultiplier_plus_10pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 5
+    },
+    {
+        "id": "robe_normal_06",
+        "name": "フードローブ",
+        "rarity": "normal",
+        "category": "robe",
+        "basePrice": 1280000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 2,
+            "magicDefense": 6,
+            "healing": 2
+        },
+        "skillIds": [
+            "magicResistanceMultiplier_plus_11pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 6
+    },
+    {
+        "id": "robe_normal_07",
+        "name": "セージローブ",
+        "rarity": "normal",
+        "category": "robe",
+        "basePrice": 2560000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 2,
+            "magicDefense": 7,
+            "healing": 2
+        },
+        "skillIds": [
+            "magicResistanceMultiplier_plus_12pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 7
+    },
+    {
+        "id": "robe_normal_08",
+        "name": "オラクルローブ",
+        "rarity": "normal",
+        "category": "robe",
+        "basePrice": 5120000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 3,
+            "magicDefense": 8,
+            "healing": 2
+        },
+        "skillIds": [
+            "magicResistanceMultiplier_plus_13pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 8
+    },
+    {
+        "id": "robe_uncommon_01",
+        "name": "シルバーローブ",
+        "rarity": "uncommon",
+        "category": "robe",
+        "basePrice": 80000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 3,
+            "magicDefense": 9,
+            "healing": 2
+        },
+        "skillIds": [
+            "magicResistanceMultiplier_plus_1pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "robe_uncommon_02",
+        "name": "ミスリルローブ",
+        "rarity": "uncommon",
+        "category": "robe",
+        "basePrice": 160000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 3,
+            "magicDefense": 10,
+            "healing": 3
+        },
+        "skillIds": [
+            "magicResistanceMultiplier_plus_1pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "robe_uncommon_03",
+        "name": "エルダーローブ",
+        "rarity": "uncommon",
+        "category": "robe",
+        "basePrice": 320000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 4,
+            "magicDefense": 11,
+            "healing": 3
+        },
+        "skillIds": [
+            "magicResistanceMultiplier_plus_3pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "robe_uncommon_04",
+        "name": "ルーンローブ",
+        "rarity": "uncommon",
+        "category": "robe",
+        "basePrice": 640000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 4,
+            "magicDefense": 12,
+            "healing": 3
+        },
+        "skillIds": [
+            "magicResistanceMultiplier_plus_3pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "robe_rare_01",
+        "name": "サンローブ",
+        "rarity": "rare",
+        "category": "robe",
+        "basePrice": 160000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 4,
+            "magicDefense": 13,
+            "healing": 3
+        },
+        "skillIds": [
+            "magicResistanceMultiplier_plus_2pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "robe_rare_02",
+        "name": "ムーンローブ",
+        "rarity": "rare",
+        "category": "robe",
+        "basePrice": 320000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 5,
+            "magicDefense": 14,
+            "healing": 4
+        },
+        "skillIds": [
+            "magicResistanceMultiplier_plus_2pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "robe_rare_03",
+        "name": "スターローブ",
+        "rarity": "rare",
+        "category": "robe",
+        "basePrice": 640000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 5,
+            "magicDefense": 15,
+            "healing": 4
+        },
+        "skillIds": [
+            "magicResistanceMultiplier_plus_4pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "robe_rare_04",
+        "name": "ドリームローブ",
+        "rarity": "rare",
+        "category": "robe",
+        "basePrice": 1280000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 5,
+            "magicDefense": 16,
+            "healing": 4
+        },
+        "skillIds": [
+            "magicResistanceMultiplier_plus_4pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "robe_mythic_01",
+        "name": "セレスティアルローブ",
+        "rarity": "mythic",
+        "category": "robe",
+        "basePrice": 320000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 6,
+            "magicDefense": 17,
+            "healing": 4
+        },
+        "skillIds": [
+            "magicResistanceMultiplier_plus_5pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "robe_mythic_02",
+        "name": "フェアリーローブ",
+        "rarity": "mythic",
+        "category": "robe",
+        "basePrice": 640000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 6,
+            "magicDefense": 18,
+            "healing": 5
+        },
+        "skillIds": [
+            "magicResistanceMultiplier_plus_5pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "robe_mythic_03",
+        "name": "フェニックスローブ",
+        "rarity": "mythic",
+        "category": "robe",
+        "basePrice": 1280000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 6,
+            "magicDefense": 19,
+            "healing": 5
+        },
+        "skillIds": [
+            "magicResistanceMultiplier_plus_5pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "robe_mythic_04",
+        "name": "アークローブ",
+        "rarity": "mythic",
+        "category": "robe",
+        "basePrice": 2560000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 7,
+            "magicDefense": 20,
+            "healing": 5
+        },
+        "skillIds": [
+            "magicResistanceMultiplier_plus_5pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "robe_godfiend_01",
+        "name": "ソロモンローブ",
+        "rarity": "godfiend",
+        "category": "robe",
+        "basePrice": 640000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 7,
+            "magicDefense": 21,
+            "healing": 5
+        },
+        "skillIds": [
+            "magicResistanceMultiplier_plus_13pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "robe_godfiend_02",
+        "name": "セフィロトローブ",
+        "rarity": "godfiend",
+        "category": "robe",
+        "basePrice": 1280000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 7,
+            "magicDefense": 22,
+            "healing": 6
+        },
+        "skillIds": [
+            "magicResistanceMultiplier_plus_13pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "robe_godfiend_03",
+        "name": "ネビュラローブ",
+        "rarity": "godfiend",
+        "category": "robe",
+        "basePrice": 2560000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 8,
+            "magicDefense": 23,
+            "healing": 6
+        },
+        "skillIds": [
+            "magicResistanceMultiplier_plus_13pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "robe_godfiend_04",
+        "name": "アカシックローブ",
+        "rarity": "godfiend",
+        "category": "robe",
+        "basePrice": 5120000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "magic": 8,
+            "magicDefense": 24,
+            "healing": 6
+        },
+        "skillIds": [
+            "magicResistanceMultiplier_plus_13pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "gauntlet_normal_01",
+        "name": "レザーグローブ",
+        "rarity": "normal",
+        "category": "gauntlet",
+        "basePrice": 40000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {},
+        "skillIds": [
+            "attackCount_plus_6pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 1
+    },
+    {
+        "id": "gauntlet_normal_02",
+        "name": "ハードグローブ",
+        "rarity": "normal",
+        "category": "gauntlet",
+        "basePrice": 80000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "accuracy": 1,
+            "criticalRate": 1
+        },
+        "skillIds": [
+            "attackCount_plus_7pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 2
+    },
+    {
+        "id": "gauntlet_normal_03",
+        "name": "ブロンズガントレット",
+        "rarity": "normal",
+        "category": "gauntlet",
+        "basePrice": 160000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "accuracy": 1,
+            "criticalRate": 1
+        },
+        "skillIds": [
+            "attackCount_plus_8pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 3
+    },
+    {
+        "id": "gauntlet_normal_04",
+        "name": "アイアンガントレット",
+        "rarity": "normal",
+        "category": "gauntlet",
+        "basePrice": 320000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "accuracy": 1,
+            "criticalRate": 1
+        },
+        "skillIds": [
+            "attackCount_plus_9pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 4
+    },
+    {
+        "id": "gauntlet_normal_05",
+        "name": "スチールガントレット",
+        "rarity": "normal",
+        "category": "gauntlet",
+        "basePrice": 640000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "accuracy": 2,
+            "criticalRate": 2
+        },
+        "skillIds": [
+            "attackCount_plus_10pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 5
+    },
+    {
+        "id": "gauntlet_normal_06",
+        "name": "ミスリルガントレット",
+        "rarity": "normal",
+        "category": "gauntlet",
+        "basePrice": 1280000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "accuracy": 2,
+            "criticalRate": 2
+        },
+        "skillIds": [
+            "attackCount_plus_11pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 6
+    },
+    {
+        "id": "gauntlet_normal_07",
+        "name": "クローガントレット",
+        "rarity": "normal",
+        "category": "gauntlet",
+        "basePrice": 2560000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "accuracy": 2,
+            "criticalRate": 2
+        },
+        "skillIds": [
+            "attackCount_plus_12pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 7
+    },
+    {
+        "id": "gauntlet_normal_08",
+        "name": "バトルグローブ",
+        "rarity": "normal",
+        "category": "gauntlet",
+        "basePrice": 5120000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "accuracy": 3,
+            "criticalRate": 3
+        },
+        "skillIds": [
+            "attackCount_plus_13pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 8
+    },
+    {
+        "id": "gauntlet_uncommon_01",
+        "name": "スパイクガントレット",
+        "rarity": "uncommon",
+        "category": "gauntlet",
+        "basePrice": 80000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "accuracy": 3,
+            "criticalRate": 3
+        },
+        "skillIds": [
+            "attackCount_plus_1pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "gauntlet_uncommon_02",
+        "name": "シルバーガントレット",
+        "rarity": "uncommon",
+        "category": "gauntlet",
+        "basePrice": 160000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "accuracy": 3,
+            "criticalRate": 3
+        },
+        "skillIds": [
+            "attackCount_plus_1pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "gauntlet_uncommon_03",
+        "name": "ナイトガントレット",
+        "rarity": "uncommon",
+        "category": "gauntlet",
+        "basePrice": 320000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "accuracy": 4,
+            "criticalRate": 4
+        },
+        "skillIds": [
+            "attackCount_plus_3pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "gauntlet_uncommon_04",
+        "name": "ストライクグローブ",
+        "rarity": "uncommon",
+        "category": "gauntlet",
+        "basePrice": 640000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "accuracy": 4,
+            "criticalRate": 4
+        },
+        "skillIds": [
+            "attackCount_plus_3pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "gauntlet_rare_01",
+        "name": "ルーングローブ",
+        "rarity": "rare",
+        "category": "gauntlet",
+        "basePrice": 160000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "accuracy": 4,
+            "criticalRate": 4
+        },
+        "skillIds": [
+            "attackCount_plus_2pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "gauntlet_rare_02",
+        "name": "サングローブ",
+        "rarity": "rare",
+        "category": "gauntlet",
+        "basePrice": 320000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "accuracy": 5,
+            "criticalRate": 5
+        },
+        "skillIds": [
+            "attackCount_plus_2pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "gauntlet_rare_03",
+        "name": "ムーングローブ",
+        "rarity": "rare",
+        "category": "gauntlet",
+        "basePrice": 640000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "accuracy": 5,
+            "criticalRate": 5
+        },
+        "skillIds": [
+            "attackCount_plus_4pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "gauntlet_rare_04",
+        "name": "ストームグローブ",
+        "rarity": "rare",
+        "category": "gauntlet",
+        "basePrice": 1280000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "accuracy": 5,
+            "criticalRate": 5
+        },
+        "skillIds": [
+            "attackCount_plus_4pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "gauntlet_mythic_01",
+        "name": "ドラゴンクロー",
+        "rarity": "mythic",
+        "category": "gauntlet",
+        "basePrice": 320000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "accuracy": 6,
+            "attackCount": 1,
+            "criticalRate": 6
+        },
+        "skillIds": [
+            "attackCount_plus_5pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "gauntlet_mythic_02",
+        "name": "フェニックスグローブ",
+        "rarity": "mythic",
+        "category": "gauntlet",
+        "basePrice": 640000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "accuracy": 6,
+            "attackCount": 1,
+            "criticalRate": 6
+        },
+        "skillIds": [
+            "attackCount_plus_5pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "gauntlet_mythic_03",
+        "name": "アークガントレット",
+        "rarity": "mythic",
+        "category": "gauntlet",
+        "basePrice": 1280000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "accuracy": 6,
+            "attackCount": 1,
+            "criticalRate": 6
+        },
+        "skillIds": [
+            "attackCount_plus_5pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "gauntlet_mythic_04",
+        "name": "セレスティアルグローブ",
+        "rarity": "mythic",
+        "category": "gauntlet",
+        "basePrice": 2560000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "accuracy": 7,
+            "attackCount": 1,
+            "criticalRate": 7
+        },
+        "skillIds": [
+            "attackCount_plus_5pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "gauntlet_godfiend_01",
+        "name": "ティターングローブ",
+        "rarity": "godfiend",
+        "category": "gauntlet",
+        "basePrice": 640000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "accuracy": 7,
+            "attackCount": 1,
+            "criticalRate": 7
+        },
+        "skillIds": [
+            "attackCount_plus_13pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "gauntlet_godfiend_02",
+        "name": "ベヒモスクロー",
+        "rarity": "godfiend",
+        "category": "gauntlet",
+        "basePrice": 1280000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "accuracy": 7,
+            "attackCount": 1,
+            "criticalRate": 7
+        },
+        "skillIds": [
+            "attackCount_plus_13pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "gauntlet_godfiend_03",
+        "name": "オメガガントレット",
+        "rarity": "godfiend",
+        "category": "gauntlet",
+        "basePrice": 2560000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "accuracy": 8,
+            "attackCount": 1,
+            "criticalRate": 8
+        },
+        "skillIds": [
+            "attackCount_plus_13pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "gauntlet_godfiend_04",
+        "name": "ケルベロスクロー",
+        "rarity": "godfiend",
+        "category": "gauntlet",
+        "basePrice": 5120000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "accuracy": 8,
+            "attackCount": 1,
+            "criticalRate": 8
+        },
+        "skillIds": [
+            "attackCount_plus_13pct"
+        ],
+        "rangeClass": "melee",
+        "normalDropTier": 0
+    },
+    {
+        "id": "jewel_normal_01",
+        "name": "アゲート",
+        "rarity": "normal",
+        "category": "jewel",
+        "basePrice": 160000,
+        "nativeBaseStats": {
+            "vitality": 1
+        },
+        "nativeBattleStats": {},
+        "skillIds": [],
+        "rangeClass": "none",
+        "normalDropTier": 1
+    },
+    {
+        "id": "jewel_normal_02",
+        "name": "オニキス",
+        "rarity": "normal",
+        "category": "jewel",
+        "basePrice": 320000,
+        "nativeBaseStats": {
+            "strength": 1
+        },
+        "nativeBattleStats": {},
+        "skillIds": [],
+        "rangeClass": "none",
+        "normalDropTier": 2
+    },
+    {
+        "id": "jewel_normal_03",
+        "name": "ガーネット",
+        "rarity": "normal",
+        "category": "jewel",
+        "basePrice": 640000,
+        "nativeBaseStats": {
+            "mind": 1
+        },
+        "nativeBattleStats": {},
+        "skillIds": [],
+        "rangeClass": "none",
+        "normalDropTier": 3
+    },
+    {
+        "id": "jewel_normal_04",
+        "name": "アメジスト",
+        "rarity": "normal",
+        "category": "jewel",
+        "basePrice": 1280000,
+        "nativeBaseStats": {
+            "intelligence": 1
+        },
+        "nativeBattleStats": {},
+        "skillIds": [],
+        "rangeClass": "none",
+        "normalDropTier": 4
+    },
+    {
+        "id": "jewel_normal_05",
+        "name": "クォーツ",
+        "rarity": "normal",
+        "category": "jewel",
+        "basePrice": 2560000,
+        "nativeBaseStats": {
+            "agility": 2
+        },
+        "nativeBattleStats": {},
+        "skillIds": [],
+        "rangeClass": "none",
+        "normalDropTier": 5
+    },
+    {
+        "id": "jewel_normal_06",
+        "name": "ペリドット",
+        "rarity": "normal",
+        "category": "jewel",
+        "basePrice": 5120000,
+        "nativeBaseStats": {
+            "luck": 2
+        },
+        "nativeBattleStats": {},
+        "skillIds": [],
+        "rangeClass": "none",
+        "normalDropTier": 6
+    },
+    {
+        "id": "jewel_normal_07",
+        "name": "ジェイド",
+        "rarity": "normal",
+        "category": "jewel",
+        "basePrice": 10240000,
+        "nativeBaseStats": {
+            "vitality": 2
+        },
+        "nativeBattleStats": {},
+        "skillIds": [],
+        "rangeClass": "none",
+        "normalDropTier": 7
+    },
+    {
+        "id": "jewel_normal_08",
+        "name": "トパーズ",
+        "rarity": "normal",
+        "category": "jewel",
+        "basePrice": 20480000,
+        "nativeBaseStats": {
+            "strength": 2
+        },
+        "nativeBattleStats": {},
+        "skillIds": [],
+        "rangeClass": "none",
+        "normalDropTier": 8
+    },
+    {
+        "id": "jewel_uncommon_01",
+        "name": "アクアマリン",
+        "rarity": "uncommon",
+        "category": "jewel",
+        "basePrice": 320000,
+        "nativeBaseStats": {
+            "mind": 3
+        },
+        "nativeBattleStats": {},
+        "skillIds": [],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "jewel_uncommon_02",
+        "name": "トルマリン",
+        "rarity": "uncommon",
+        "category": "jewel",
+        "basePrice": 640000,
+        "nativeBaseStats": {
+            "intelligence": 3
+        },
+        "nativeBattleStats": {},
+        "skillIds": [],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "jewel_uncommon_03",
+        "name": "サードニクス",
+        "rarity": "uncommon",
+        "category": "jewel",
+        "basePrice": 1280000,
+        "nativeBaseStats": {
+            "agility": 3
+        },
+        "nativeBattleStats": {},
+        "skillIds": [],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "jewel_uncommon_04",
+        "name": "ムーンストーン",
+        "rarity": "uncommon",
+        "category": "jewel",
+        "basePrice": 2560000,
+        "nativeBaseStats": {
+            "luck": 3
+        },
+        "nativeBattleStats": {},
+        "skillIds": [],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "jewel_rare_01",
+        "name": "パール",
+        "rarity": "rare",
+        "category": "jewel",
+        "basePrice": 640000,
+        "nativeBaseStats": {
+            "vitality": 4
+        },
+        "nativeBattleStats": {},
+        "skillIds": [],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "jewel_rare_02",
+        "name": "オパール",
+        "rarity": "rare",
+        "category": "jewel",
+        "basePrice": 1280000,
+        "nativeBaseStats": {
+            "strength": 4
+        },
+        "nativeBattleStats": {},
+        "skillIds": [],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "jewel_rare_03",
+        "name": "ラピスラズリ",
+        "rarity": "rare",
+        "category": "jewel",
+        "basePrice": 2560000,
+        "nativeBaseStats": {
+            "mind": 4
+        },
+        "nativeBattleStats": {},
+        "skillIds": [],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "jewel_rare_04",
+        "name": "ブラッドストーン",
+        "rarity": "rare",
+        "category": "jewel",
+        "basePrice": 5120000,
+        "nativeBaseStats": {
+            "intelligence": 4
+        },
+        "nativeBattleStats": {},
+        "skillIds": [],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "jewel_mythic_01",
+        "name": "ブラックオパール",
+        "rarity": "mythic",
+        "category": "jewel",
+        "basePrice": 1280000,
+        "nativeBaseStats": {
+            "agility": 5
+        },
+        "nativeBattleStats": {},
+        "skillIds": [],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "jewel_mythic_02",
+        "name": "アレキサンドライト",
+        "rarity": "mythic",
+        "category": "jewel",
+        "basePrice": 2560000,
+        "nativeBaseStats": {
+            "luck": 5
+        },
+        "nativeBattleStats": {},
+        "skillIds": [],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "jewel_mythic_03",
+        "name": "キャッツアイ",
+        "rarity": "mythic",
+        "category": "jewel",
+        "basePrice": 5120000,
+        "nativeBaseStats": {
+            "vitality": 5
+        },
+        "nativeBattleStats": {},
+        "skillIds": [],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "jewel_mythic_04",
+        "name": "スターサファイア",
+        "rarity": "mythic",
+        "category": "jewel",
+        "basePrice": 10240000,
+        "nativeBaseStats": {
+            "strength": 5
+        },
+        "nativeBattleStats": {},
+        "skillIds": [],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "jewel_godfiend_01",
+        "name": "ダイヤモンド",
+        "rarity": "godfiend",
+        "category": "jewel",
+        "basePrice": 2560000,
+        "nativeBaseStats": {
+            "mind": 6
+        },
+        "nativeBattleStats": {},
+        "skillIds": [],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "jewel_godfiend_02",
+        "name": "ルビー",
+        "rarity": "godfiend",
+        "category": "jewel",
+        "basePrice": 5120000,
+        "nativeBaseStats": {
+            "intelligence": 6
+        },
+        "nativeBattleStats": {},
+        "skillIds": [],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "jewel_godfiend_03",
+        "name": "エメラルド",
+        "rarity": "godfiend",
+        "category": "jewel",
+        "basePrice": 10240000,
+        "nativeBaseStats": {
+            "agility": 6
+        },
+        "nativeBattleStats": {},
+        "skillIds": [],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "jewel_godfiend_04",
+        "name": "サファイア",
+        "rarity": "godfiend",
+        "category": "jewel",
+        "basePrice": 20480000,
+        "nativeBaseStats": {
+            "luck": 6
+        },
+        "nativeBattleStats": {},
+        "skillIds": [],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "misc_normal_01",
+        "name": "護符",
+        "rarity": "normal",
+        "category": "misc",
+        "basePrice": 40000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "maxHP": 2
+        },
+        "skillIds": [
+            "actionSpeedMultiplier_plus_6pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 1
+    },
+    {
+        "id": "misc_normal_02",
+        "name": "腕輪",
+        "rarity": "normal",
+        "category": "misc",
+        "basePrice": 80000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "accuracy": 1
+        },
+        "skillIds": [
+            "actionSpeedMultiplier_plus_7pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 2
+    },
+    {
+        "id": "misc_normal_03",
+        "name": "首飾り",
+        "rarity": "normal",
+        "category": "misc",
+        "basePrice": 160000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "evasion": 1
+        },
+        "skillIds": [
+            "actionSpeedMultiplier_plus_8pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 3
+    },
+    {
+        "id": "misc_normal_04",
+        "name": "指輪",
+        "rarity": "normal",
+        "category": "misc",
+        "basePrice": 320000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "maxHP": 8
+        },
+        "skillIds": [
+            "actionSpeedMultiplier_plus_9pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 4
+    },
+    {
+        "id": "misc_normal_05",
+        "name": "羽飾り",
+        "rarity": "normal",
+        "category": "misc",
+        "basePrice": 640000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "accuracy": 2
+        },
+        "skillIds": [
+            "actionSpeedMultiplier_plus_10pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 5
+    },
+    {
+        "id": "misc_normal_06",
+        "name": "香袋",
+        "rarity": "normal",
+        "category": "misc",
+        "basePrice": 1280000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "evasion": 2
+        },
+        "skillIds": [
+            "actionSpeedMultiplier_plus_11pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 6
+    },
+    {
+        "id": "misc_normal_07",
+        "name": "煙玉",
+        "rarity": "normal",
+        "category": "misc",
+        "basePrice": 2560000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "maxHP": 14
+        },
+        "skillIds": [
+            "actionSpeedMultiplier_plus_12pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 7
+    },
+    {
+        "id": "misc_normal_08",
+        "name": "鈴",
+        "rarity": "normal",
+        "category": "misc",
+        "basePrice": 5120000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "accuracy": 3
+        },
+        "skillIds": [
+            "actionSpeedMultiplier_plus_13pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 8
+    },
+    {
+        "id": "misc_uncommon_01",
+        "name": "魔除け",
+        "rarity": "uncommon",
+        "category": "misc",
+        "basePrice": 80000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "evasion": 3
+        },
+        "skillIds": [
+            "actionSpeedMultiplier_plus_1pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "misc_uncommon_02",
+        "name": "銀時計",
+        "rarity": "uncommon",
+        "category": "misc",
+        "basePrice": 160000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "maxHP": 20
+        },
+        "skillIds": [
+            "actionSpeedMultiplier_plus_1pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "misc_uncommon_03",
+        "name": "風切羽",
+        "rarity": "uncommon",
+        "category": "misc",
+        "basePrice": 320000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "accuracy": 4
+        },
+        "skillIds": [
+            "actionSpeedMultiplier_plus_3pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "misc_uncommon_04",
+        "name": "旅人の地図",
+        "rarity": "uncommon",
+        "category": "misc",
+        "basePrice": 640000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "evasion": 4
+        },
+        "skillIds": [
+            "actionSpeedMultiplier_plus_3pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "misc_rare_01",
+        "name": "星見盤",
+        "rarity": "rare",
+        "category": "misc",
+        "basePrice": 160000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "maxHP": 26
+        },
+        "skillIds": [
+            "actionSpeedMultiplier_plus_2pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "misc_rare_02",
+        "name": "月影札",
+        "rarity": "rare",
+        "category": "misc",
+        "basePrice": 320000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "accuracy": 5
+        },
+        "skillIds": [
+            "actionSpeedMultiplier_plus_2pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "misc_rare_03",
+        "name": "陽刻印",
+        "rarity": "rare",
+        "category": "misc",
+        "basePrice": 640000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "evasion": 5
+        },
+        "skillIds": [
+            "actionSpeedMultiplier_plus_4pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "misc_rare_04",
+        "name": "夢見石",
+        "rarity": "rare",
+        "category": "misc",
+        "basePrice": 1280000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "maxHP": 32
+        },
+        "skillIds": [
+            "actionSpeedMultiplier_plus_4pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "misc_mythic_01",
+        "name": "賢者の石板",
+        "rarity": "mythic",
+        "category": "misc",
+        "basePrice": 320000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "accuracy": 6
+        },
+        "skillIds": [
+            "actionSpeedMultiplier_plus_5pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "misc_mythic_02",
+        "name": "竜鱗の護符",
+        "rarity": "mythic",
+        "category": "misc",
+        "basePrice": 640000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "evasion": 6
+        },
+        "skillIds": [
+            "actionSpeedMultiplier_plus_5pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "misc_mythic_03",
+        "name": "不死鳥の羽根",
+        "rarity": "mythic",
+        "category": "misc",
+        "basePrice": 1280000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "maxHP": 38
+        },
+        "skillIds": [
+            "actionSpeedMultiplier_plus_5pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "misc_mythic_04",
+        "name": "天空の羅針盤",
+        "rarity": "mythic",
+        "category": "misc",
+        "basePrice": 2560000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "accuracy": 7
+        },
+        "skillIds": [
+            "actionSpeedMultiplier_plus_5pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "misc_godfiend_01",
+        "name": "世界樹の葉",
+        "rarity": "godfiend",
+        "category": "misc",
+        "basePrice": 640000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "evasion": 7
+        },
+        "skillIds": [
+            "actionSpeedMultiplier_plus_13pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "misc_godfiend_02",
+        "name": "冥府の鍵",
+        "rarity": "godfiend",
+        "category": "misc",
+        "basePrice": 1280000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "maxHP": 44
+        },
+        "skillIds": [
+            "actionSpeedMultiplier_plus_13pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "misc_godfiend_03",
+        "name": "神託の鏡",
+        "rarity": "godfiend",
+        "category": "misc",
+        "basePrice": 2560000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "accuracy": 8
+        },
+        "skillIds": [
+            "actionSpeedMultiplier_plus_13pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    },
+    {
+        "id": "misc_godfiend_04",
+        "name": "終焉の灯",
+        "rarity": "godfiend",
+        "category": "misc",
+        "basePrice": 5120000,
+        "nativeBaseStats": {},
+        "nativeBattleStats": {
+            "evasion": 8
+        },
+        "skillIds": [
+            "actionSpeedMultiplier_plus_13pct"
+        ],
+        "rangeClass": "none",
+        "normalDropTier": 0
+    }
+]

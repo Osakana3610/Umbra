@@ -1,0 +1,147 @@
+[
+    {
+        "id": "human",
+        "name": "人間",
+        "levelCap": 150,
+        "baseHirePrice": 1,
+        "baseStats": {
+            "vitality": 7,
+            "strength": 7,
+            "mind": 7,
+            "intelligence": 7,
+            "agility": 7,
+            "luck": 7
+        },
+        "skillIds": [
+            "accuracy_plus_10pct",
+            "evasion_plus_10pct"
+        ]
+    },
+    {
+        "id": "vampire",
+        "name": "吸血鬼",
+        "levelCap": 140,
+        "baseHirePrice": 1,
+        "baseStats": {
+            "vitality": 5,
+            "strength": 10,
+            "mind": 8,
+            "intelligence": 5,
+            "agility": 10,
+            "luck": 4
+        },
+        "skillIds": [
+            "physicalDamageMultiplier_plus_10pct",
+            "pursuit"
+        ]
+    },
+    {
+        "id": "dwarf",
+        "name": "ドワーフ",
+        "levelCap": 130,
+        "baseHirePrice": 1,
+        "baseStats": {
+            "vitality": 12,
+            "strength": 8,
+            "mind": 7,
+            "intelligence": 4,
+            "agility": 4,
+            "luck": 7
+        },
+        "skillIds": [
+            "maxHP_plus_10pct",
+            "physical_resistance_4_5"
+        ]
+    },
+    {
+        "id": "elf",
+        "name": "エルフ",
+        "levelCap": 200,
+        "baseHirePrice": 1,
+        "baseStats": {
+            "vitality": 5,
+            "strength": 4,
+            "mind": 12,
+            "intelligence": 8,
+            "agility": 8,
+            "luck": 5
+        },
+        "skillIds": [
+            "magicDamageMultiplier_plus_10pct",
+            "evasion_plus_10pct"
+        ]
+    },
+    {
+        "id": "psychic",
+        "name": "サイキック",
+        "levelCap": 120,
+        "baseHirePrice": 1,
+        "baseStats": {
+            "vitality": 4,
+            "strength": 3,
+            "mind": 8,
+            "intelligence": 15,
+            "agility": 6,
+            "luck": 6
+        },
+        "skillIds": [
+            "magic_plus_10pct",
+            "nuclear_access"
+        ]
+    },
+    {
+        "id": "dragonewt",
+        "name": "ドラゴニュート",
+        "levelCap": 160,
+        "baseHirePrice": 1,
+        "baseStats": {
+            "vitality": 10,
+            "strength": 9,
+            "mind": 8,
+            "intelligence": 4,
+            "agility": 5,
+            "luck": 6
+        },
+        "skillIds": [
+            "breath_access",
+            "breathPower_plus_10pct",
+            "breath_resistance_4_5"
+        ]
+    },
+    {
+        "id": "amazoness",
+        "name": "アマゾネス",
+        "levelCap": 130,
+        "baseHirePrice": 1,
+        "baseStats": {
+            "vitality": 7,
+            "strength": 9,
+            "mind": 6,
+            "intelligence": 5,
+            "agility": 10,
+            "luck": 5
+        },
+        "skillIds": [
+            "accuracy_plus_10pct",
+            "criticalRate_plus_10pct"
+        ]
+    },
+    {
+        "id": "oni",
+        "name": "鬼",
+        "levelCap": 180,
+        "baseHirePrice": 1,
+        "baseStats": {
+            "vitality": 9,
+            "strength": 15,
+            "mind": 4,
+            "intelligence": 3,
+            "agility": 6,
+            "luck": 5
+        },
+        "skillIds": [
+            "physicalAttack_plus_10pct",
+            "meleeDamageMultiplier_plus_10pct"
+        ]
+    }
+]

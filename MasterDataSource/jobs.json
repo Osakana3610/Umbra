@@ -1,0 +1,140 @@
+[
+    {
+        "id": "knight",
+        "name": "騎士",
+        "hirePriceMultiplier": 1.0,
+        "coefficients": {
+            "maxHP": 1.0,
+            "physicalAttack": 1.0,
+            "physicalDefense": 1.0,
+            "magic": 1.0,
+            "magicDefense": 1.0,
+            "healing": 1.0,
+            "accuracy": 1.0,
+            "evasion": 1.0,
+            "attackCount": 1.0,
+            "criticalRate": 1.0,
+            "breathPower": 1.0
+        },
+        "skillIds": [
+            "maxHP_plus_10pct",
+            "physicalDefense_plus_10pct",
+            "counter"
+        ]
+    },
+    {
+        "id": "swordsman",
+        "name": "剣士",
+        "hirePriceMultiplier": 1.0,
+        "coefficients": {
+            "maxHP": 1.0,
+            "physicalAttack": 1.0,
+            "physicalDefense": 1.0,
+            "magic": 1.0,
+            "magicDefense": 1.0,
+            "healing": 1.0,
+            "accuracy": 1.0,
+            "evasion": 1.0,
+            "attackCount": 1.0,
+            "criticalRate": 1.0,
+            "breathPower": 1.0
+        },
+        "skillIds": [
+            "physicalAttack_plus_10pct",
+            "criticalDamageMultiplier_plus_10pct",
+            "extra_attack"
+        ]
+    },
+    {
+        "id": "magician",
+        "name": "魔導士",
+        "hirePriceMultiplier": 1.0,
+        "coefficients": {
+            "maxHP": 1.0,
+            "physicalAttack": 1.0,
+            "physicalDefense": 1.0,
+            "magic": 1.0,
+            "magicDefense": 1.0,
+            "healing": 1.0,
+            "accuracy": 1.0,
+            "evasion": 1.0,
+            "attackCount": 1.0,
+            "criticalRate": 1.0,
+            "breathPower": 1.0
+        },
+        "skillIds": [
+            "attack_magic_access",
+            "support_magic_access",
+            "magic_plus_10pct"
+        ]
+    },
+    {
+        "id": "priest",
+        "name": "僧侶",
+        "hirePriceMultiplier": 1.0,
+        "coefficients": {
+            "maxHP": 1.0,
+            "physicalAttack": 1.0,
+            "physicalDefense": 1.0,
+            "magic": 1.0,
+            "magicDefense": 1.0,
+            "healing": 1.0,
+            "accuracy": 1.0,
+            "evasion": 1.0,
+            "attackCount": 1.0,
+            "criticalRate": 1.0,
+            "breathPower": 1.0
+        },
+        "skillIds": [
+            "recovery_magic_access",
+            "healing_plus_10pct",
+            "rescue"
+        ]
+    },
+    {
+        "id": "spellguard",
+        "name": "結界師",
+        "hirePriceMultiplier": 1.0,
+        "coefficients": {
+            "maxHP": 1.0,
+            "physicalAttack": 1.0,
+            "physicalDefense": 1.0,
+            "magic": 1.0,
+            "magicDefense": 1.0,
+            "healing": 1.0,
+            "accuracy": 1.0,
+            "evasion": 1.0,
+            "attackCount": 1.0,
+            "criticalRate": 1.0,
+            "breathPower": 1.0
+        },
+        "skillIds": [
+            "barrier_magic_access",
+            "magicDefense_plus_10pct",
+            "magic_resistance_4_5"
+        ]
+    },
+    {
+        "id": "hunter",
+        "name": "狩人",
+        "hirePriceMultiplier": 1.0,
+        "coefficients": {
+            "maxHP": 1.0,
+            "physicalAttack": 1.0,
+            "physicalDefense": 1.0,
+            "magic": 1.0,
+            "magicDefense": 1.0,
+            "healing": 1.0,
+            "accuracy": 1.0,
+            "evasion": 1.0,
+            "attackCount": 1.0,
+            "criticalRate": 1.0,
+            "breathPower": 1.0
+        },
+        "skillIds": [
+            "rangedDamageMultiplier_plus_10pct",
+            "actionSpeedMultiplier_plus_10pct",
+            "pursuit"
+        ]
+    }
+]

@@ -1,0 +1,65 @@
+[
+    {
+        "id": "rough",
+        "name": "粗末な",
+        "positiveMultiplier": 0.5,
+        "negativeMultiplier": 2.0,
+        "dropWeight": 1024
+    },
+    {
+        "id": "aged",
+        "name": "古びた",
+        "positiveMultiplier": 0.7937,
+        "negativeMultiplier": 1.2599,
+        "dropWeight": 2048
+    },
+    {
+        "id": "untitled",
+        "name": "",
+        "positiveMultiplier": 1.0,
+        "negativeMultiplier": 1.0,
+        "dropWeight": 4096
+    },
+    {
+        "id": "seasoned",
+        "name": "熟練の",
+        "positiveMultiplier": 1.2599,
+        "negativeMultiplier": 0.7937,
+        "dropWeight": 1024
+    },
+    {
+        "id": "eerie",
+        "name": "妖しい",
+        "positiveMultiplier": 1.5874,
+        "negativeMultiplier": 0.63,
+        "dropWeight": 256
+    },
+    {
+        "id": "dwelling",
+        "name": "宿った",
+        "positiveMultiplier": 2.0,
+        "negativeMultiplier": 0.5,
+        "dropWeight": 64
+    },
+    {
+        "id": "primordial",
+        "name": "原初の",
+        "positiveMultiplier": 2.5198,
+        "negativeMultiplier": 0.3969,
+        "dropWeight": 16
+    },
+    {
+        "id": "abhorrent",
+        "name": "悍ましい",
+        "positiveMultiplier": 3.1748,
+        "negativeMultiplier": 0.315,
+        "dropWeight": 4
+    },
+    {
+        "id": "broken",
+        "name": "壊れた",
+        "positiveMultiplier": 4.0,
+        "negativeMultiplier": 0.25,
+        "dropWeight": 1
+    }
+]
