@@ -60,8 +60,55 @@ else
     echo "[master-generator] bundled master data is up to date"
 fi
 
+if [ ! -f "$OUTPUT_FILE" ]; then
+    echo "[master-generator] missing generated file: $OUTPUT_FILE" >&2
+    exit 1
+fi
+
+python3 - "$OUTPUT_FILE" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+output_path = Path(sys.argv[1])
+payload = json.loads(output_path.read_text(encoding="utf-8"))
+
+required_top_level_keys = (
+    "metadata",
+    "races",
+    "jobs",
+    "aptitudes",
+    "items",
+    "titles",
+    "superRares",
+    "skills",
+    "spells",
+    "recruitNames",
+    "enemies",
+    "labyrinths",
+)
+
+missing = [key for key in required_top_level_keys if key not in payload]
+if missing:
+    raise SystemExit(f"[master-generator] invalid generated master data: missing {', '.join(missing)}")
+
+recruit_names = payload["recruitNames"]
+for key in ("male", "female", "unisex"):
+    names = recruit_names.get(key)
+    if not isinstance(names, list) or not names:
+        raise SystemExit(f"[master-generator] invalid recruitNames.{key}")
+PY
+
 if [ -n "$BUNDLE_DIR" ]; then
     mkdir -p "$BUNDLE_DIR"
     cp "$OUTPUT_FILE" "$BUNDLE_DIR/masterdata.json"
+    python3 - "$BUNDLE_DIR/masterdata.json" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+bundle_file = Path(sys.argv[1])
+json.loads(bundle_file.read_text(encoding="utf-8"))
+PY
     echo "[master-generator] copied masterdata.json into app bundle"
 fi

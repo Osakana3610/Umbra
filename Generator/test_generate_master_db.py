@@ -4,7 +4,14 @@ import json
 import unittest
 from pathlib import Path
 
-from Generator.generate_master_db import build_enemies, build_items, build_skills, build_super_rares, build_titles
+from Generator.generate_master_db import (
+    build_enemies,
+    build_items,
+    build_recruit_names,
+    build_skills,
+    build_super_rares,
+    build_titles,
+)
 
 
 class BuildSkillsValidationTests(unittest.TestCase):
@@ -128,6 +135,26 @@ class BuildTitlesTests(unittest.TestCase):
                     "dropWeight": 4096,
                 },
             ],
+        )
+
+
+class BuildRecruitNamesTests(unittest.TestCase):
+    def test_builds_recruit_names_by_gender_key(self):
+        built = build_recruit_names(
+            {
+                "male": ["アルド"],
+                "female": ["リアナ"],
+                "unisex": ["ノア"],
+            }
+        )
+
+        self.assertEqual(
+            built,
+            {
+                "male": ["アルド"],
+                "female": ["リアナ"],
+                "unisex": ["ノア"],
+            },
         )
 
 

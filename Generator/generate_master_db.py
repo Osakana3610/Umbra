@@ -647,8 +647,8 @@ def build_skills(records: list[dict], spell_indices: dict[str, int]) -> list[dic
     return skills
 
 
-def build_name_pools(record: dict) -> list[list[str]]:
-    name_pools: list[list[str]] = []
+def build_recruit_names(record: dict) -> dict[str, list[str]]:
+    recruit_names: dict[str, list[str]] = {}
     for pool_key in ("male", "female", "unisex"):
         if pool_key not in record:
             raise ValueError(f"Missing required field '{pool_key}' in names.json")
@@ -658,8 +658,8 @@ def build_name_pools(record: dict) -> list[list[str]]:
         for entry in pool_names:
             if not isinstance(entry, str):
                 raise ValueError(f"Expected all names.{pool_key} values to be strings")
-        name_pools.append(pool_names)
-    return name_pools
+        recruit_names[pool_key] = pool_names
+    return recruit_names
 
 
 def build_enemies(
@@ -929,7 +929,7 @@ def build_runtime_master_data(source_dir: Path) -> dict:
         "superRares": build_super_rares(super_rares, keyed_indices(skills)),
         "skills": build_skills(skills, keyed_indices(spells)),
         "spells": build_spells(spells),
-        "namePools": build_name_pools(names),
+        "recruitNames": build_recruit_names(names),
         "enemies": build_enemies(enemies, keyed_indices(jobs), keyed_indices(skills), keyed_indices(items)),
         "labyrinths": build_labyrinths(labyrinths, keyed_indices(enemies)),
     }

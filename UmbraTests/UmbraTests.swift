@@ -1,5 +1,6 @@
-// Verifies that generated runtime master data decodes and exposes stable lookups.
+// Verifies runtime master data and guild hiring logic.
 
+import CoreData
 import Foundation
 import Testing
 @testable import Umbra
@@ -19,13 +20,63 @@ struct UmbraTests {
     }
 
     @Test
-    func namePoolsDecodeInSourceOrder() throws {
+    func recruitNamesDecodeByGender() throws {
         let masterData = try MasterDataLoader.load(fileURL: generatedMasterDataURL())
 
-        #expect(masterData.namePools.count == 3)
-        #expect(!masterData.namePools[0].isEmpty)
-        #expect(!masterData.namePools[1].isEmpty)
-        #expect(masterData.namePools.reduce(0) { $0 + $1.count } > 0)
+        #expect(!masterData.recruitNames.male.isEmpty)
+        #expect(!masterData.recruitNames.female.isEmpty)
+        #expect(!masterData.recruitNames.unisex.isEmpty)
+    }
+
+    @Test
+    func guildRepositoryCreatesInitialPlayerState() async throws {
+        let repository = GuildRepository(container: PersistenceController(inMemory: true).container)
+
+        let playerState = try repository.loadPlayerState()
+        let characters = try repository.loadCharacters()
+
+        #expect(playerState == .initial)
+        #expect(characters.isEmpty)
+    }
+
+    @Test
+    func hireCharacterPersistsPlayerAndCharacterState() async throws {
+        let repository = GuildRepository(container: PersistenceController(inMemory: true).container)
+        let masterData = try MasterDataLoader.load(fileURL: generatedMasterDataURL())
+
+        let result = try repository.hireCharacter(
+            raceId: try #require(masterData.races.first?.id),
+            jobId: try #require(masterData.jobs.first?.id),
+            aptitudeId: try #require(masterData.aptitudes.first?.id),
+            masterData: masterData
+        )
+
+        #expect(result.hireCost == 1)
+        #expect(result.playerState.gold == 999)
+        #expect(result.playerState.nextCharacterId == 2)
+        #expect(result.character.characterId == 1)
+        #expect(!result.character.name.isEmpty)
+        #expect(matchesRecruitNamePool(character: result.character, masterData: masterData))
+        #expect(result.character.level == 1)
+        #expect(result.character.currentHP > 0)
+        #expect(result.character.autoBattleSettings == .default)
+
+        let reloadedPlayerState = try repository.loadPlayerState()
+        let reloadedCharacters = try repository.loadCharacters()
+        #expect(reloadedPlayerState == result.playerState)
+        #expect(reloadedCharacters == [result.character])
+    }
+}
+
+@MainActor
+private func matchesRecruitNamePool(character: CharacterRecord, masterData: MasterData) -> Bool {
+    switch character.portraitGender {
+    case .male:
+        masterData.recruitNames.male.contains(character.name)
+    case .female:
+        masterData.recruitNames.female.contains(character.name)
+    case .unisex:
+        masterData.recruitNames.unisex.contains(character.name)
     }
 }
 

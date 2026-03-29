@@ -12,7 +12,7 @@ nonisolated struct MasterData: Decodable, Sendable {
     let superRares: [SuperRare]
     let skills: [Skill]
     let spells: [Spell]
-    let namePools: [[String]]
+    let recruitNames: RecruitNames
     let enemies: [Enemy]
     let labyrinths: [Labyrinth]
 }
@@ -135,6 +135,12 @@ extension MasterData {
         let targetCount: Int
         let multiplier: Double?
         let effectTarget: String?
+    }
+
+    struct RecruitNames: Decodable, Sendable {
+        let male: [String]
+        let female: [String]
+        let unisex: [String]
     }
 
     struct Enemy: Identifiable, Decodable, Sendable {
