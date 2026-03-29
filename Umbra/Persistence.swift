@@ -1,6 +1,7 @@
 // Configures the Core Data stack used by the app's persistent repositories.
 
 import CoreData
+import Foundation
 
 struct PersistenceController {
     static let shared = makeSharedController()
@@ -14,9 +15,13 @@ struct PersistenceController {
 
     init(inMemory: Bool = false) {
         container = NSPersistentContainer(name: "Umbra")
-        if inMemory,
-           let firstDescription = container.persistentStoreDescriptions.first {
-            firstDescription.url = URL(fileURLWithPath: "/dev/null")
+        if let firstDescription = container.persistentStoreDescriptions.first {
+            firstDescription.shouldMigrateStoreAutomatically = true
+            firstDescription.shouldInferMappingModelAutomatically = true
+
+            if inMemory {
+                firstDescription.url = URL(fileURLWithPath: "/dev/null")
+            }
         }
 
         container.loadPersistentStores { _, error in
@@ -31,6 +36,10 @@ struct PersistenceController {
 
     private static func makeSharedController() -> PersistenceController {
         let arguments = ProcessInfo.processInfo.arguments
-        return PersistenceController(inMemory: arguments.contains("UITestInMemoryStore"))
+        let environment = ProcessInfo.processInfo.environment
+        let isRunningTests = environment["XCTestConfigurationFilePath"] != nil
+        return PersistenceController(
+            inMemory: arguments.contains("UITestInMemoryStore") || isRunningTests
+        )
     }
 }

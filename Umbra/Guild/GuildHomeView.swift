@@ -8,7 +8,7 @@ struct GuildHomeView: View {
 
     var body: some View {
         List {
-            if let playerState = guildStore.playerState {
+            if guildStore.playerState != nil {
                 Section {
                     NavigationLink {
                         HireView(masterData: masterData, guildStore: guildStore)
@@ -28,11 +28,6 @@ struct GuildHomeView: View {
                         .padding(.vertical, 4)
                     }
                     .accessibilityIdentifier("hire-entry-link")
-                }
-
-                Section("ギルド情報") {
-                    LabeledContent("所持金", value: "\(playerState.gold)")
-                    LabeledContent("雇用数", value: "\(guildStore.characters.count)")
                 }
 
                 Section("雇用中のキャラクター") {

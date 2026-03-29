@@ -28,12 +28,7 @@ struct RootTabView: View {
             }
 
             NavigationStack {
-                PlaceholderRootView(
-                    title: "冒険",
-                    systemImage: "figure.walk",
-                    description: "冒険はこれから実装します。"
-                )
-                .navigationTitle("冒険")
+                AdventureHomeView(masterData: masterData, guildStore: guildStore)
             }
             .tabItem {
                 Label("冒険", systemImage: "figure.walk")

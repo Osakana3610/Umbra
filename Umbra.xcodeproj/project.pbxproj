@@ -101,6 +101,7 @@
 			buildConfigurationList = B0E4430F2F76885F000D1989 /* Build configuration list for PBXNativeTarget "UmbraTests" */;
 			buildPhases = (
 				B0E442F42F76885F000D1989 /* Sources */,
+				B0E443142F768860000D1989 /* Generate Master Data */,
 				B0E442F52F76885F000D1989 /* Frameworks */,
 				B0E442F62F76885F000D1989 /* Resources */,
 			);
@@ -177,6 +178,25 @@
 
 /* Begin PBXShellScriptBuildPhase section */
 		B0E443132F768860000D1989 /* Generate Master Data */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Generate Master Data";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/masterdata.json",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "/bin/sh \"$SRCROOT/Generator/run_master_generation.sh\" \"$SRCROOT\" \"$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH\"";
+		};
+		B0E443142F768860000D1989 /* Generate Master Data */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -421,8 +441,9 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 77XDTPVZ5W;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.1;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = app.osakana.UmbraTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -443,8 +464,9 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 77XDTPVZ5W;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.1;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = app.osakana.UmbraTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
