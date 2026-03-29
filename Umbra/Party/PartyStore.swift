@@ -6,7 +6,8 @@ import Observation
 @MainActor
 @Observable
 final class PartyStore {
-    private let repository: PartyRepository
+    private let coreDataStore: GuildCoreDataStore
+    private let service: GuildService
 
     private(set) var phase: StoreLoadPhase
     private(set) var parties: [PartyRecord]
@@ -14,15 +15,13 @@ final class PartyStore {
     private(set) var isMutating = false
     private(set) var lastOperationError: String?
 
-    init(repository: PartyRepository) {
-        self.repository = repository
-        phase = .idle
-        parties = []
-        partiesById = [:]
-    }
-
-    init(phase: StoreLoadPhase, repository: PartyRepository) {
-        self.repository = repository
+    init(
+        coreDataStore: GuildCoreDataStore,
+        service: GuildService,
+        phase: StoreLoadPhase = .idle
+    ) {
+        self.coreDataStore = coreDataStore
+        self.service = service
         self.phase = phase
         parties = []
         partiesById = [:]
@@ -48,7 +47,7 @@ final class PartyStore {
         lastOperationError = nil
 
         do {
-            applyParties(try repository.loadParties())
+            applyParties(try coreDataStore.loadParties())
             phase = .loaded
         } catch {
             phase = .failed(Self.errorMessage(for: error))
@@ -65,8 +64,7 @@ final class PartyStore {
         defer { isMutating = false }
 
         do {
-            try repository.unlockParty()
-            applyParties(try repository.loadParties())
+            applyParties(try service.unlockParty())
         } catch {
             lastOperationError = Self.errorMessage(for: error)
         }
@@ -82,8 +80,7 @@ final class PartyStore {
         defer { isMutating = false }
 
         do {
-            try repository.renameParty(partyId: partyId, name: name)
-            applyParties(try repository.loadParties())
+            applyParties(try service.renameParty(partyId: partyId, name: name))
         } catch {
             lastOperationError = Self.errorMessage(for: error)
         }
@@ -101,8 +98,12 @@ final class PartyStore {
             defer { isMutating = false }
 
             do {
-                try await repository.addCharacter(characterId: characterId, toParty: partyId)
-                applyParties(try repository.loadParties())
+                applyParties(
+                    try await service.addCharacter(
+                        characterId: characterId,
+                        toParty: partyId
+                    )
+                )
             } catch {
                 lastOperationError = Self.errorMessage(for: error)
             }
@@ -121,11 +122,12 @@ final class PartyStore {
             defer { isMutating = false }
 
             do {
-                try await repository.setSelectedLabyrinth(
-                    partyId: partyId,
-                    selectedLabyrinthId: selectedLabyrinthId
+                applyParties(
+                    try await service.setSelectedLabyrinth(
+                        partyId: partyId,
+                        selectedLabyrinthId: selectedLabyrinthId
+                    )
                 )
-                applyParties(try repository.loadParties())
             } catch {
                 lastOperationError = Self.errorMessage(for: error)
             }
@@ -133,20 +135,32 @@ final class PartyStore {
     }
 
     func removeCharacter(characterId: Int, fromParty partyId: Int) {
-        guard !isMutating, phase == .loaded else {
+        guard !isMutating,
+              phase == .loaded,
+              let partyIndex = parties.firstIndex(where: { $0.partyId == partyId }) else {
             return
         }
 
+        let previousParties = parties
+        var updatedParties = parties
+        updatedParties[partyIndex].memberCharacterIds.removeAll { $0 == characterId }
+
         isMutating = true
         lastOperationError = nil
+        applyParties(updatedParties)
 
         Task {
             defer { isMutating = false }
 
             do {
-                try await repository.removeCharacter(characterId: characterId, fromParty: partyId)
-                applyParties(try repository.loadParties())
+                applyParties(
+                    try await service.removeCharacter(
+                        characterId: characterId,
+                        fromParty: partyId
+                    )
+                )
             } catch {
+                applyParties(previousParties)
                 lastOperationError = Self.errorMessage(for: error)
             }
         }
@@ -172,11 +186,12 @@ final class PartyStore {
             defer { isMutating = false }
 
             do {
-                try await repository.replacePartyMembers(
-                    partyId: partyId,
-                    memberCharacterIds: reorderedMembers
+                applyParties(
+                    try await service.replacePartyMembers(
+                        partyId: partyId,
+                        memberCharacterIds: reorderedMembers
+                    )
                 )
-                applyParties(try repository.loadParties())
             } catch {
                 lastOperationError = Self.errorMessage(for: error)
             }

@@ -4,7 +4,7 @@ import SwiftUI
 
 struct DebugMenuView: View {
     let masterData: MasterData
-    let equipmentRepository: EquipmentRepository
+    let guildService: GuildService
     let equipmentStore: EquipmentInventoryStore
 
     @State private var combinationCountPreset: DebugCombinationCountPreset = .tenThousand
@@ -120,7 +120,7 @@ struct DebugMenuView: View {
                 return
             }
 
-            try equipmentRepository.addInventoryStacks(batch.inventoryStacks, masterData: masterData)
+            try guildService.addInventoryStacks(batch.inventoryStacks, masterData: masterData)
             if equipmentStore.isLoaded {
                 try equipmentStore.reload(masterData: masterData)
             }

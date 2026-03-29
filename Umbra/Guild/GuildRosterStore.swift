@@ -6,7 +6,8 @@ import Observation
 @MainActor
 @Observable
 final class GuildRosterStore {
-    private let repository: GuildRosterRepository
+    private let coreDataStore: GuildCoreDataStore
+    private let service: GuildService
 
     private(set) var phase: StoreLoadPhase
     private(set) var playerState: PlayerState?
@@ -16,16 +17,13 @@ final class GuildRosterStore {
     private(set) var lastOperationError: String?
     private(set) var lastHireMessage: String?
 
-    init(repository: GuildRosterRepository) {
-        self.repository = repository
-        phase = .idle
-        playerState = nil
-        characters = []
-        charactersById = [:]
-    }
-
-    init(phase: StoreLoadPhase, repository: GuildRosterRepository) {
-        self.repository = repository
+    init(
+        coreDataStore: GuildCoreDataStore,
+        service: GuildService,
+        phase: StoreLoadPhase = .idle
+    ) {
+        self.coreDataStore = coreDataStore
+        self.service = service
         self.phase = phase
         playerState = nil
         characters = []
@@ -54,7 +52,7 @@ final class GuildRosterStore {
         lastHireMessage = nil
 
         do {
-            let snapshot = try repository.loadSnapshot()
+            let snapshot = try coreDataStore.loadRosterSnapshot()
             playerState = snapshot.playerState
             applyCharacters(snapshot.characters)
             phase = .loaded
@@ -79,7 +77,7 @@ final class GuildRosterStore {
         defer { isMutating = false }
 
         do {
-            let result = try repository.hireCharacter(
+            let result = try service.hireCharacter(
                 raceId: raceId,
                 jobId: jobId,
                 aptitudeId: aptitudeId,
@@ -106,12 +104,12 @@ final class GuildRosterStore {
         defer { isMutating = false }
 
         do {
-            applySnapshot(
-                try repository.reviveCharacter(
-                    characterId: characterId,
-                    masterData: masterData
-                )
+            let snapshot = try service.reviveCharacter(
+                characterId: characterId,
+                masterData: masterData
             )
+            playerState = snapshot.playerState
+            applyCharacters(snapshot.characters)
         } catch {
             lastOperationError = Self.errorMessage(for: error)
         }
@@ -127,7 +125,9 @@ final class GuildRosterStore {
         defer { isMutating = false }
 
         do {
-            applySnapshot(try repository.reviveAllDefeated(masterData: masterData))
+            let snapshot = try service.reviveAllDefeated(masterData: masterData)
+            playerState = snapshot.playerState
+            applyCharacters(snapshot.characters)
         } catch {
             lastOperationError = Self.errorMessage(for: error)
         }
@@ -145,9 +145,9 @@ final class GuildRosterStore {
         defer { isMutating = false }
 
         do {
-            applySnapshot(
-                try repository.setAutoReviveDefeatedCharactersEnabled(isEnabled)
-            )
+            let snapshot = try service.setAutoReviveDefeatedCharactersEnabled(isEnabled)
+            playerState = snapshot.playerState
+            applyCharacters(snapshot.characters)
         } catch {
             lastOperationError = Self.errorMessage(for: error)
         }
@@ -168,11 +168,6 @@ final class GuildRosterStore {
     private func applyCharacters(_ characters: [CharacterRecord]) {
         self.characters = characters
         charactersById = Dictionary(uniqueKeysWithValues: characters.map { ($0.characterId, $0) })
-    }
-
-    private func applySnapshot(_ snapshot: GuildRosterSnapshot) {
-        playerState = snapshot.playerState
-        applyCharacters(snapshot.characters)
     }
 
     private static func errorMessage(for error: Error) -> String {

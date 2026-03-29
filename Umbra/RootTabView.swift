@@ -8,7 +8,7 @@ struct RootTabView: View {
     let partyStore: PartyStore
     let equipmentStore: EquipmentInventoryStore
     let explorationStore: ExplorationStore
-    let equipmentRepository: EquipmentRepository
+    let guildService: GuildService
 
     var body: some View {
         TabView {
@@ -59,7 +59,7 @@ struct RootTabView: View {
             NavigationStack {
                 DebugMenuView(
                     masterData: masterData,
-                    equipmentRepository: equipmentRepository,
+                    guildService: guildService,
                     equipmentStore: equipmentStore
                 )
                 .navigationTitle("その他")

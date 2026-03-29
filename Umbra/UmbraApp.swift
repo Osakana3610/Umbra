@@ -5,7 +5,7 @@ import SwiftUI
 @main
 struct UmbraApp: App {
     let persistenceController: PersistenceController
-    let equipmentRepository: EquipmentRepository
+    let guildService: GuildService
     @State private var masterDataStore: MasterDataStore
     @State private var rosterStore: GuildRosterStore
     @State private var partyStore: PartyStore
@@ -14,28 +14,36 @@ struct UmbraApp: App {
 
     init() {
         let persistenceController = PersistenceController.shared
-        let equipmentRepository = EquipmentRepository(container: persistenceController.container)
+        let guildCoreDataStore = GuildCoreDataStore(container: persistenceController.container)
+        let explorationCoreDataStore = ExplorationCoreDataStore(container: persistenceController.container)
+        let guildService = GuildService(
+            coreDataStore: guildCoreDataStore,
+            explorationCoreDataStore: explorationCoreDataStore
+        )
         self.persistenceController = persistenceController
-        self.equipmentRepository = equipmentRepository
+        self.guildService = guildService
         _masterDataStore = State(initialValue: MasterDataStore())
         _rosterStore = State(
             initialValue: GuildRosterStore(
-                repository: GuildRosterRepository(container: persistenceController.container)
+                coreDataStore: guildCoreDataStore,
+                service: guildService
             )
         )
         _partyStore = State(
             initialValue: PartyStore(
-                repository: PartyRepository(container: persistenceController.container)
+                coreDataStore: guildCoreDataStore,
+                service: guildService
             )
         )
         _equipmentStore = State(
             initialValue: EquipmentInventoryStore(
-                repository: equipmentRepository
+                coreDataStore: guildCoreDataStore,
+                service: guildService
             )
         )
         _explorationStore = State(
             initialValue: ExplorationStore(
-                coreDataStore: ExplorationCoreDataStore(container: persistenceController.container)
+                coreDataStore: explorationCoreDataStore
             )
         )
     }
@@ -48,7 +56,7 @@ struct UmbraApp: App {
                 partyStore: partyStore,
                 equipmentStore: equipmentStore,
                 explorationStore: explorationStore,
-                equipmentRepository: equipmentRepository
+                guildService: guildService
             )
         }
     }

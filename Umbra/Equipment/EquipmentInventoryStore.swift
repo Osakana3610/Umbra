@@ -6,7 +6,8 @@ import Observation
 @MainActor
 @Observable
 final class EquipmentInventoryStore {
-    private let repository: EquipmentRepository
+    private let coreDataStore: GuildCoreDataStore
+    private let service: GuildService
 
     private var itemsByID: [Int: MasterData.Item] = [:]
     private var nameResolver: EquipmentDisplayNameResolver?
@@ -20,8 +21,12 @@ final class EquipmentInventoryStore {
     private(set) var inventoryItemsBySection: [EquipmentSectionKey: [EquipmentCachedItem]] = [:]
     private(set) var orderedSectionKeys: [EquipmentSectionKey] = []
 
-    init(repository: EquipmentRepository) {
-        self.repository = repository
+    init(
+        coreDataStore: GuildCoreDataStore,
+        service: GuildService
+    ) {
+        self.coreDataStore = coreDataStore
+        self.service = service
     }
 
     func loadIfNeeded(masterData: MasterData) throws {
@@ -35,7 +40,7 @@ final class EquipmentInventoryStore {
     func reload(masterData: MasterData) throws {
         configure(masterData: masterData)
 
-        let inventoryStacks = try repository.loadInventoryStacks()
+        let inventoryStacks = try coreDataStore.loadInventoryStacks()
         var groupedInventory: [EquipmentSectionKey: [EquipmentCachedItem]] = [:]
         var newSectionKeyByItemID: [CompositeItemID: EquipmentSectionKey] = [:]
 
@@ -137,7 +142,7 @@ final class EquipmentInventoryStore {
 
             do {
                 try loadIfNeeded(masterData: masterData)
-                let updatedCharacter = try await repository.equip(
+                let updatedCharacter = try await service.equip(
                     itemID: itemID,
                     toCharacter: character.characterId,
                     masterData: masterData
@@ -172,7 +177,7 @@ final class EquipmentInventoryStore {
 
             do {
                 try loadIfNeeded(masterData: masterData)
-                let updatedCharacter = try await repository.unequip(
+                let updatedCharacter = try await service.unequip(
                     itemID: itemID,
                     fromCharacter: character.characterId,
                     masterData: masterData

@@ -8,7 +8,7 @@ struct ContentView: View {
     let partyStore: PartyStore
     let equipmentStore: EquipmentInventoryStore
     let explorationStore: ExplorationStore
-    let equipmentRepository: EquipmentRepository
+    let guildService: GuildService
 
     var body: some View {
         Group {
@@ -40,7 +40,7 @@ struct ContentView: View {
                     partyStore: partyStore,
                     equipmentStore: equipmentStore,
                     explorationStore: explorationStore,
-                    equipmentRepository: equipmentRepository
+                    guildService: guildService
                 )
             }
         }
@@ -55,17 +55,19 @@ struct ContentView: View {
 
 #Preview {
     let persistenceController = PersistenceController.preview
-    let rosterRepository = GuildRosterRepository(container: persistenceController.container)
-    let partyRepository = PartyRepository(container: persistenceController.container)
-    let equipmentRepository = EquipmentRepository(container: persistenceController.container)
+    let guildCoreDataStore = GuildCoreDataStore(container: persistenceController.container)
+    let guildService = GuildService(
+        coreDataStore: guildCoreDataStore,
+        explorationCoreDataStore: ExplorationCoreDataStore(container: persistenceController.container)
+    )
     return ContentView(
         masterDataStore: MasterDataStore(phase: .loading),
-        rosterStore: GuildRosterStore(phase: .loading, repository: rosterRepository),
-        partyStore: PartyStore(phase: .loading, repository: partyRepository),
-        equipmentStore: EquipmentInventoryStore(repository: equipmentRepository),
+        rosterStore: GuildRosterStore(coreDataStore: guildCoreDataStore, service: guildService, phase: .loading),
+        partyStore: PartyStore(coreDataStore: guildCoreDataStore, service: guildService, phase: .loading),
+        equipmentStore: EquipmentInventoryStore(coreDataStore: guildCoreDataStore, service: guildService),
         explorationStore: ExplorationStore(
             coreDataStore: ExplorationCoreDataStore(container: persistenceController.container)
         ),
-        equipmentRepository: equipmentRepository
+        guildService: guildService
     )
 }

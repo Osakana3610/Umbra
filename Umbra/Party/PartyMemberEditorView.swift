@@ -28,10 +28,7 @@ struct PartyMemberEditorView: View {
                                 )
                                 .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                                     Button("外す", role: .destructive) {
-                                        partyStore.removeCharacter(
-                                            characterId: character.characterId,
-                                            fromParty: party.partyId
-                                        )
+                                        removeMember(character, from: party.partyId)
                                     }
                                     .disabled(!canEditMembers)
                                 }
@@ -216,6 +213,15 @@ struct PartyMemberEditorView: View {
                 }
             }
         )
+    }
+
+    private func removeMember(_ character: CharacterRecord, from partyId: Int) {
+        withAnimation {
+            partyStore.removeCharacter(
+                characterId: character.characterId,
+                fromParty: partyId
+            )
+        }
     }
 
     @ViewBuilder

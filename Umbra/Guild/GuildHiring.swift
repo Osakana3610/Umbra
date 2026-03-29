@@ -22,7 +22,7 @@ enum GuildHiring {
         guard masterData.races.contains(where: { $0.id == raceId }),
               masterData.jobs.contains(where: { $0.id == jobId }),
               masterData.aptitudes.contains(where: { $0.id == aptitudeId }) else {
-            throw GuildRepositoryError.invalidHireSelection
+            throw GuildServiceError.invalidHireSelection
         }
 
         let portraitGender = PortraitGender.allCases.randomElement() ?? .unisex
