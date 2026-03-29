@@ -84,6 +84,24 @@ struct PartyDetailView: View {
                         }
                     }
 
+                    Section("単体戦闘") {
+                        if party.memberCharacterIds.isEmpty {
+                            Text("単体戦闘を始めるにはメンバーを編成してください。")
+                                .foregroundStyle(.secondary)
+                        } else if !canStartSingleBattle(for: party) {
+                            Text("HPが0のメンバーを含むパーティでは単体戦闘を開始できません。")
+                                .foregroundStyle(.secondary)
+                        } else {
+                            NavigationLink("戦闘を選ぶ") {
+                                SingleBattleSelectionView(
+                                    party: party,
+                                    masterData: masterData,
+                                    guildStore: guildStore
+                                )
+                            }
+                        }
+                    }
+
                     Section("加入候補") {
                         if guildStore.characters.isEmpty {
                             Text("先にギルドでキャラクターを雇用してください。")
@@ -215,6 +233,10 @@ struct PartyDetailView: View {
 
     private func availableCharacters(for party: PartyRecord) -> [CharacterRecord] {
         guildStore.characters.filter { !party.memberCharacterIds.contains($0.characterId) }
+    }
+
+    private func canStartSingleBattle(for party: PartyRecord) -> Bool {
+        memberCharacters(for: party).allSatisfy { $0.currentHP > 0 }
     }
 
     private func addCharacter(_ character: CharacterRecord, to party: PartyRecord) {

@@ -234,6 +234,7 @@ struct UmbraTests {
         let renamedParty = try #require(repository.loadParties().first)
         #expect(renamedParty.name == String("これはとても長いパーティ名ですこれはとても長いパーティ名ですこれはとても長いパーティ名です".prefix(PartyRecord.maxNameLength)))
     }
+
 }
 
 @MainActor

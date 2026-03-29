@@ -56,12 +56,37 @@ enum CharacterDerivedStatsCalculator {
             agility: race.baseStats.agility,
             luck: race.baseStats.luck
         )
-
         let activeSkillIds = activeSkillIds(
             raceSkillIds: race.skillIds,
             previousJobSkillIds: previousJob?.skillIds ?? [],
             currentJobSkillIds: currentJob.skillIds
         )
+
+        return status(
+            baseStats: effectiveBaseStats,
+            jobId: currentJobId,
+            level: level,
+            skillIds: activeSkillIds,
+            masterData: masterData,
+            isUnarmed: isUnarmed,
+            weaponRangeClass: weaponRangeClass
+        )
+    }
+
+    static func status(
+        baseStats: CharacterBaseStats,
+        jobId: Int,
+        level: Int,
+        skillIds: [Int],
+        masterData: MasterData,
+        isUnarmed: Bool = isUnarmed,
+        weaponRangeClass: ItemRangeClass = weaponRangeClass
+    ) -> CharacterStatus? {
+        guard let currentJob = masterData.jobs.first(where: { $0.id == jobId }) else {
+            return nil
+        }
+
+        let activeSkillIds = deduplicatedSkillIds(skillIds)
         let skillLookup = Dictionary(uniqueKeysWithValues: masterData.skills.map { ($0.id, $0) })
         let skillAdjustments = skillAdjustments(
             activeSkillIds: activeSkillIds,
@@ -72,7 +97,7 @@ enum CharacterDerivedStatsCalculator {
         let battleStats = CharacterBattleStats(
             maxHP: battleStatValue(
                 target: "maxHP",
-                baseInput: Double(effectiveBaseStats.vitality),
+                baseInput: Double(baseStats.vitality),
                 level: level,
                 jobCoefficient: currentJob.coefficients.maxHP,
                 statScale: 3.0,
@@ -80,7 +105,7 @@ enum CharacterDerivedStatsCalculator {
             ),
             physicalAttack: battleStatValue(
                 target: "physicalAttack",
-                baseInput: Double(effectiveBaseStats.strength),
+                baseInput: Double(baseStats.strength),
                 level: level,
                 jobCoefficient: currentJob.coefficients.physicalAttack,
                 statScale: 0.6,
@@ -88,7 +113,7 @@ enum CharacterDerivedStatsCalculator {
             ),
             physicalDefense: battleStatValue(
                 target: "physicalDefense",
-                baseInput: average(effectiveBaseStats.vitality, effectiveBaseStats.strength),
+                baseInput: average(baseStats.vitality, baseStats.strength),
                 level: level,
                 jobCoefficient: currentJob.coefficients.physicalDefense,
                 statScale: 0.3,
@@ -96,7 +121,7 @@ enum CharacterDerivedStatsCalculator {
             ),
             magic: battleStatValue(
                 target: "magic",
-                baseInput: Double(effectiveBaseStats.intelligence),
+                baseInput: Double(baseStats.intelligence),
                 level: level,
                 jobCoefficient: currentJob.coefficients.magic,
                 statScale: 0.6,
@@ -104,7 +129,7 @@ enum CharacterDerivedStatsCalculator {
             ),
             magicDefense: battleStatValue(
                 target: "magicDefense",
-                baseInput: average(effectiveBaseStats.intelligence, effectiveBaseStats.mind),
+                baseInput: average(baseStats.intelligence, baseStats.mind),
                 level: level,
                 jobCoefficient: currentJob.coefficients.magicDefense,
                 statScale: 0.3,
@@ -112,7 +137,7 @@ enum CharacterDerivedStatsCalculator {
             ),
             healing: battleStatValue(
                 target: "healing",
-                baseInput: Double(effectiveBaseStats.mind),
+                baseInput: Double(baseStats.mind),
                 level: level,
                 jobCoefficient: currentJob.coefficients.healing,
                 statScale: 0.45,
@@ -120,7 +145,7 @@ enum CharacterDerivedStatsCalculator {
             ),
             accuracy: battleStatValue(
                 target: "accuracy",
-                baseInput: Double(effectiveBaseStats.agility),
+                baseInput: Double(baseStats.agility),
                 level: level,
                 jobCoefficient: currentJob.coefficients.accuracy,
                 statScale: 0.10,
@@ -128,7 +153,7 @@ enum CharacterDerivedStatsCalculator {
             ),
             evasion: battleStatValue(
                 target: "evasion",
-                baseInput: Double(effectiveBaseStats.agility),
+                baseInput: Double(baseStats.agility),
                 level: level,
                 jobCoefficient: currentJob.coefficients.evasion,
                 statScale: 0.09,
@@ -136,7 +161,7 @@ enum CharacterDerivedStatsCalculator {
             ),
             attackCount: battleStatValue(
                 target: "attackCount",
-                baseInput: Double(effectiveBaseStats.agility),
+                baseInput: Double(baseStats.agility),
                 level: level,
                 jobCoefficient: currentJob.coefficients.attackCount,
                 statScale: 0.003,
@@ -144,7 +169,7 @@ enum CharacterDerivedStatsCalculator {
             ),
             criticalRate: battleStatValue(
                 target: "criticalRate",
-                baseInput: Double(effectiveBaseStats.agility),
+                baseInput: Double(baseStats.agility),
                 level: level,
                 jobCoefficient: currentJob.coefficients.criticalRate,
                 statScale: 0.010,
@@ -152,7 +177,7 @@ enum CharacterDerivedStatsCalculator {
             ),
             breathPower: battleStatValue(
                 target: "breathPower",
-                baseInput: average(effectiveBaseStats.vitality, effectiveBaseStats.mind),
+                baseInput: average(baseStats.vitality, baseStats.mind),
                 level: level,
                 jobCoefficient: currentJob.coefficients.breathPower,
                 statScale: 0.6,
@@ -204,7 +229,7 @@ enum CharacterDerivedStatsCalculator {
         )
 
         return CharacterStatus(
-            baseStats: effectiveBaseStats,
+            baseStats: baseStats,
             battleStats: battleStats,
             battleDerivedStats: battleDerivedStats,
             skillIds: activeSkillIds,
@@ -222,10 +247,14 @@ enum CharacterDerivedStatsCalculator {
         previousJobSkillIds: [Int],
         currentJobSkillIds: [Int]
     ) -> [Int] {
+        deduplicatedSkillIds(raceSkillIds + previousJobSkillIds + currentJobSkillIds)
+    }
+
+    private static func deduplicatedSkillIds(_ skillIds: [Int]) -> [Int] {
         var seenSkillIds = Set<Int>()
         var deduplicatedSkillIds: [Int] = []
 
-        for skillId in raceSkillIds + previousJobSkillIds + currentJobSkillIds {
+        for skillId in skillIds {
             guard seenSkillIds.insert(skillId).inserted else {
                 continue
             }
