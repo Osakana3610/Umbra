@@ -17,26 +17,26 @@ struct CharacterStatus: Equatable, Sendable {
 }
 
 struct CharacterBaseStats: Equatable, Sendable {
-    let vitality: Int
-    let strength: Int
-    let mind: Int
-    let intelligence: Int
-    let agility: Int
-    let luck: Int
+    var vitality: Int
+    var strength: Int
+    var mind: Int
+    var intelligence: Int
+    var agility: Int
+    var luck: Int
 }
 
 struct CharacterBattleStats: Equatable, Sendable {
-    let maxHP: Int
-    let physicalAttack: Int
-    let physicalDefense: Int
-    let magic: Int
-    let magicDefense: Int
-    let healing: Int
-    let accuracy: Int
-    let evasion: Int
-    let attackCount: Int
-    let criticalRate: Int
-    let breathPower: Int
+    var maxHP: Int
+    var physicalAttack: Int
+    var physicalDefense: Int
+    var magic: Int
+    var magicDefense: Int
+    var healing: Int
+    var accuracy: Int
+    var evasion: Int
+    var attackCount: Int
+    var criticalRate: Int
+    var breathPower: Int
 }
 
 struct CharacterBattleDerivedStats: Equatable, Sendable {

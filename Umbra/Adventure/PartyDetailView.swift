@@ -5,7 +5,9 @@ import SwiftUI
 struct PartyDetailView: View {
     let partyId: Int
     let masterData: MasterData
-    let guildStore: GuildStore
+    let rosterStore: GuildRosterStore
+    let partyStore: PartyStore
+    let equipmentStore: EquipmentInventoryStore
 
     @State private var draftPartyName = ""
     @State private var pendingTransferCharacter: CharacterRecord?
@@ -20,12 +22,7 @@ struct PartyDetailView: View {
                             .autocorrectionDisabled()
 
                         Button("パーティ名を保存") {
-                            Task {
-                                await guildStore.renameParty(
-                                    partyId: party.partyId,
-                                    name: draftPartyName
-                                )
-                            }
+                            partyStore.renameParty(partyId: party.partyId, name: draftPartyName)
                         }
                         .disabled(!canSaveName(for: party))
                     }
@@ -33,7 +30,7 @@ struct PartyDetailView: View {
                     Section("編成") {
                         PartyFormationStrip(
                             memberCharacterIds: party.memberCharacterIds,
-                            charactersById: guildStore.charactersById
+                            charactersById: rosterStore.charactersById
                         )
 
                         if party.memberCharacterIds.isEmpty {
@@ -62,25 +59,32 @@ struct PartyDetailView: View {
                                     Spacer()
 
                                     Button("外す", role: .destructive) {
-                                        Task {
-                                            await guildStore.removeCharacter(
-                                                characterId: character.characterId,
-                                                fromParty: party.partyId
-                                            )
-                                        }
+                                        partyStore.removeCharacter(
+                                            characterId: character.characterId,
+                                            fromParty: party.partyId
+                                        )
                                     }
                                 }
                                 .padding(.vertical, 4)
                             }
                             .onMove { offsets, destination in
-                                Task {
-                                    await guildStore.movePartyMembers(
-                                        partyId: party.partyId,
-                                        fromOffsets: offsets,
-                                        toOffset: destination
-                                    )
-                                }
+                                partyStore.movePartyMembers(
+                                    partyId: party.partyId,
+                                    fromOffsets: offsets,
+                                    toOffset: destination
+                                )
                             }
+                        }
+                    }
+
+                    Section("装備") {
+                        NavigationLink("装備を変更する") {
+                            PartyEquipmentMenuView(
+                                party: party,
+                                masterData: masterData,
+                                rosterStore: rosterStore,
+                                equipmentStore: equipmentStore
+                            )
                         }
                     }
 
@@ -96,14 +100,14 @@ struct PartyDetailView: View {
                                 SingleBattleSelectionView(
                                     party: party,
                                     masterData: masterData,
-                                    guildStore: guildStore
+                                    rosterStore: rosterStore
                                 )
                             }
                         }
                     }
 
                     Section("加入候補") {
-                        if guildStore.characters.isEmpty {
+                        if rosterStore.characters.isEmpty {
                             Text("先にギルドでキャラクターを雇用してください。")
                                 .foregroundStyle(.secondary)
                         } else if party.isFull {
@@ -132,7 +136,7 @@ struct PartyDetailView: View {
                                                 .font(.subheadline)
                                                 .foregroundStyle(.secondary)
 
-                                            if let assignedParty = guildStore.partyContainingCharacter(
+                                            if let assignedParty = partyStore.partyContainingCharacter(
                                                 characterId: character.characterId
                                             ) {
                                                 Text("現在所属: \(assignedParty.name)")
@@ -150,7 +154,7 @@ struct PartyDetailView: View {
                         }
                     }
 
-                    if let error = guildStore.lastOperationError {
+                    if let error = partyStore.lastOperationError {
                         Section {
                             Text(error)
                                 .foregroundStyle(.red)
@@ -176,16 +180,11 @@ struct PartyDetailView: View {
                     presenting: pendingTransferCharacter
                 ) { character in
                     Button("移動する") {
-                        Task {
-                            await guildStore.addCharacter(
-                                characterId: character.characterId,
-                                toParty: party.partyId
-                            )
-                        }
+                        partyStore.addCharacter(characterId: character.characterId, toParty: party.partyId)
                     }
                     Button("キャンセル", role: .cancel) {}
                 } message: { character in
-                    let sourcePartyName = guildStore.partyContainingCharacter(
+                    let sourcePartyName = partyStore.partyContainingCharacter(
                         characterId: character.characterId
                     )?.name ?? ""
                     Text("\(character.name)を\(sourcePartyName)から外して追加します。")
@@ -200,7 +199,7 @@ struct PartyDetailView: View {
     }
 
     private var party: PartyRecord? {
-        guildStore.partiesById[partyId]
+        partyStore.partiesById[partyId]
     }
 
     private var pendingTransferAlertBinding: Binding<Bool> {
@@ -222,17 +221,17 @@ struct PartyDetailView: View {
 
     private func canSaveName(for party: PartyRecord) -> Bool {
         let normalizedName = PartyRecord.normalizedName(draftPartyName)
-        return !guildStore.isMutating &&
+        return !partyStore.isMutating &&
             !normalizedName.isEmpty &&
             normalizedName != party.name
     }
 
     private func memberCharacters(for party: PartyRecord) -> [CharacterRecord] {
-        party.memberCharacterIds.compactMap { guildStore.charactersById[$0] }
+        party.memberCharacterIds.compactMap { rosterStore.charactersById[$0] }
     }
 
     private func availableCharacters(for party: PartyRecord) -> [CharacterRecord] {
-        guildStore.characters.filter { !party.memberCharacterIds.contains($0.characterId) }
+        rosterStore.characters.filter { !party.memberCharacterIds.contains($0.characterId) }
     }
 
     private func canStartSingleBattle(for party: PartyRecord) -> Bool {
@@ -240,11 +239,9 @@ struct PartyDetailView: View {
     }
 
     private func addCharacter(_ character: CharacterRecord, to party: PartyRecord) {
-        guard let sourceParty = guildStore.partyContainingCharacter(characterId: character.characterId),
+        guard let sourceParty = partyStore.partyContainingCharacter(characterId: character.characterId),
               sourceParty.partyId != party.partyId else {
-            Task {
-                await guildStore.addCharacter(characterId: character.characterId, toParty: party.partyId)
-            }
+            partyStore.addCharacter(characterId: character.characterId, toParty: party.partyId)
             return
         }
 
@@ -252,9 +249,7 @@ struct PartyDetailView: View {
     }
 
     private func characterSummary(for character: CharacterRecord) -> String {
-        let raceName = masterData.races.first(where: { $0.id == character.raceId })?.name ?? "不明"
-        let jobName = masterData.jobs.first(where: { $0.id == character.currentJobId })?.name ?? "不明"
-        return "\(raceName) / \(jobName) / Lv.\(character.level) / HP \(character.currentHP)"
+        "\(masterData.raceName(for: character.raceId)) / \(masterData.jobName(for: character.currentJobId)) / Lv.\(character.level) / HP \(character.currentHP)"
     }
 
     private func positionText(for character: CharacterRecord, in party: PartyRecord) -> String {

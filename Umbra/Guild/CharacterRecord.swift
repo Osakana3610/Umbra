@@ -13,6 +13,7 @@ struct CharacterRecord: Identifiable, Equatable, Sendable {
     var experience: Int
     var level: Int
     var currentHP: Int
+    var equippedItemStacks: [CompositeItemStack] = []
     var autoBattleSettings: CharacterAutoBattleSettings
 
     var id: Int { characterId }

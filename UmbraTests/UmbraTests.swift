@@ -30,11 +30,13 @@ struct UmbraTests {
 
     @Test
     func guildRepositoryCreatesInitialPlayerState() async throws {
-        let repository = GuildRepository(container: PersistenceController(inMemory: true).container)
+        let container = PersistenceController(inMemory: true).container
+        let rosterRepository = GuildRosterRepository(container: container)
+        let partyRepository = PartyRepository(container: container)
 
-        let playerState = try repository.loadPlayerState()
-        let characters = try repository.loadCharacters()
-        let parties = try repository.loadParties()
+        let playerState = try rosterRepository.loadPlayerState()
+        let characters = try rosterRepository.loadCharacters()
+        let parties = try partyRepository.loadParties()
 
         #expect(playerState == .initial)
         #expect(characters.isEmpty)
@@ -43,7 +45,7 @@ struct UmbraTests {
 
     @Test
     func hireCharacterPersistsPlayerAndCharacterState() async throws {
-        let repository = GuildRepository(container: PersistenceController(inMemory: true).container)
+        let repository = GuildRosterRepository(container: PersistenceController(inMemory: true).container)
         let masterData = try loadGeneratedMasterData()
 
         let result = try repository.hireCharacter(
@@ -179,13 +181,14 @@ struct UmbraTests {
 
     @Test
     func unlockPartyConsumesGoldAndCreatesSequentialParty() async throws {
-        let repository = GuildRepository(container: PersistenceController(inMemory: true).container)
+        let container = PersistenceController(inMemory: true).container
+        let rosterRepository = GuildRosterRepository(container: container)
+        let partyRepository = PartyRepository(container: container)
 
-        try repository.unlockParty()
+        try partyRepository.unlockParty()
 
-        let snapshot = try repository.loadSnapshot()
-        #expect(snapshot.playerState.gold == PlayerState.initial.gold - PartyRecord.unlockCost)
-        #expect(snapshot.parties == [
+        #expect(try rosterRepository.loadPlayerState().gold == PlayerState.initial.gold - PartyRecord.unlockCost)
+        #expect(try partyRepository.loadParties() == [
             PartyRecord(partyId: 1, name: "パーティ1", memberCharacterIds: []),
             PartyRecord(partyId: 2, name: "パーティ2", memberCharacterIds: [])
         ])
@@ -193,30 +196,31 @@ struct UmbraTests {
 
     @Test
     func movingCharacterBetweenPartiesUpdatesMembership() async throws {
-        let repository = GuildRepository(container: PersistenceController(inMemory: true).container)
+        let container = PersistenceController(inMemory: true).container
+        let rosterRepository = GuildRosterRepository(container: container)
+        let partyRepository = PartyRepository(container: container)
         let masterData = try loadGeneratedMasterData()
 
-        let firstCharacter = try repository.hireCharacter(
+        let firstCharacter = try rosterRepository.hireCharacter(
             raceId: try #require(masterData.races.first?.id),
             jobId: try #require(masterData.jobs.first?.id),
             aptitudeId: try #require(masterData.aptitudes.first?.id),
             masterData: masterData
         ).character
 
-        let secondCharacter = try repository.hireCharacter(
+        let secondCharacter = try rosterRepository.hireCharacter(
             raceId: try #require(masterData.races.dropFirst().first?.id ?? masterData.races.first?.id),
             jobId: try #require(masterData.jobs.dropFirst().first?.id ?? masterData.jobs.first?.id),
             aptitudeId: try #require(masterData.aptitudes.dropFirst().first?.id ?? masterData.aptitudes.first?.id),
             masterData: masterData
         ).character
 
-        try repository.unlockParty()
-        try repository.addCharacter(characterId: firstCharacter.characterId, toParty: 1)
-        try repository.addCharacter(characterId: secondCharacter.characterId, toParty: 1)
-        try repository.addCharacter(characterId: firstCharacter.characterId, toParty: 2)
+        try partyRepository.unlockParty()
+        try partyRepository.addCharacter(characterId: firstCharacter.characterId, toParty: 1)
+        try partyRepository.addCharacter(characterId: secondCharacter.characterId, toParty: 1)
+        try partyRepository.addCharacter(characterId: firstCharacter.characterId, toParty: 2)
 
-        let snapshot = try repository.loadSnapshot()
-        #expect(snapshot.parties == [
+        #expect(try partyRepository.loadParties() == [
             PartyRecord(partyId: 1, name: "パーティ1", memberCharacterIds: [secondCharacter.characterId]),
             PartyRecord(partyId: 2, name: "パーティ2", memberCharacterIds: [firstCharacter.characterId])
         ])
@@ -224,7 +228,7 @@ struct UmbraTests {
 
     @Test
     func renamingPartyTrimsWhitespaceAndLength() async throws {
-        let repository = GuildRepository(container: PersistenceController(inMemory: true).container)
+        let repository = PartyRepository(container: PersistenceController(inMemory: true).container)
 
         try repository.renameParty(
             partyId: 1,
@@ -233,6 +237,43 @@ struct UmbraTests {
 
         let renamedParty = try #require(repository.loadParties().first)
         #expect(renamedParty.name == String("これはとても長いパーティ名ですこれはとても長いパーティ名ですこれはとても長いパーティ名です".prefix(PartyRecord.maxNameLength)))
+    }
+
+    @Test
+    func equippingAndUnequippingUpdatesInventoryAndCharacterStacks() throws {
+        let container = PersistenceController(inMemory: true).container
+        let rosterRepository = GuildRosterRepository(container: container)
+        let equipmentRepository = EquipmentRepository(container: container)
+        let masterData = try loadGeneratedMasterData()
+
+        let character = try rosterRepository.hireCharacter(
+            raceId: try #require(masterData.races.first?.id),
+            jobId: try #require(masterData.jobs.first?.id),
+            aptitudeId: try #require(masterData.aptitudes.first?.id),
+            masterData: masterData
+        ).character
+        let itemID = CompositeItemID.baseItem(itemId: try #require(masterData.items.first?.id))
+
+        try equipmentRepository.addInventoryStacks(
+            [CompositeItemStack(itemID: itemID, count: 2)],
+            masterData: masterData
+        )
+
+        let equippedCharacter = try equipmentRepository.equip(
+            itemID: itemID,
+            toCharacter: character.characterId,
+            masterData: masterData
+        )
+        #expect(equippedCharacter.equippedItemStacks == [CompositeItemStack(itemID: itemID, count: 1)])
+        #expect(try equipmentRepository.loadInventoryStacks() == [CompositeItemStack(itemID: itemID, count: 1)])
+
+        let unequippedCharacter = try equipmentRepository.unequip(
+            itemID: itemID,
+            fromCharacter: character.characterId,
+            masterData: masterData
+        )
+        #expect(unequippedCharacter.equippedItemStacks.isEmpty)
+        #expect(try equipmentRepository.loadInventoryStacks() == [CompositeItemStack(itemID: itemID, count: 2)])
     }
 
 }

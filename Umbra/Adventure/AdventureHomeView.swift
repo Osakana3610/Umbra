@@ -4,29 +4,33 @@ import SwiftUI
 
 struct AdventureHomeView: View {
     let masterData: MasterData
-    let guildStore: GuildStore
+    let rosterStore: GuildRosterStore
+    let partyStore: PartyStore
+    let equipmentStore: EquipmentInventoryStore
 
     var body: some View {
         List {
-            if guildStore.playerState != nil {
+            if rosterStore.playerState != nil {
                 Section("パーティ") {
-                    ForEach(guildStore.parties) { party in
+                    ForEach(partyStore.parties) { party in
                         NavigationLink {
                             PartyDetailView(
                                 partyId: party.partyId,
                                 masterData: masterData,
-                                guildStore: guildStore
+                                rosterStore: rosterStore,
+                                partyStore: partyStore,
+                                equipmentStore: equipmentStore
                             )
                         } label: {
                             PartySummaryRow(
                                 party: party,
-                                charactersById: guildStore.charactersById
+                                charactersById: rosterStore.charactersById
                             )
                         }
                     }
                 }
 
-                if let error = guildStore.lastOperationError {
+                if let error = partyStore.lastOperationError {
                     Section {
                         Text(error)
                             .foregroundStyle(.red)

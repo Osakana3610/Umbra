@@ -4,7 +4,9 @@ import SwiftUI
 
 struct RootTabView: View {
     let masterData: MasterData
-    let guildStore: GuildStore
+    let rosterStore: GuildRosterStore
+    let partyStore: PartyStore
+    let equipmentStore: EquipmentInventoryStore
 
     var body: some View {
         TabView {
@@ -21,14 +23,19 @@ struct RootTabView: View {
             }
 
             NavigationStack {
-                GuildHomeView(masterData: masterData, guildStore: guildStore)
+                GuildHomeView(masterData: masterData, rosterStore: rosterStore)
             }
             .tabItem {
                 Label("ギルド", systemImage: "person.3")
             }
 
             NavigationStack {
-                AdventureHomeView(masterData: masterData, guildStore: guildStore)
+                AdventureHomeView(
+                    masterData: masterData,
+                    rosterStore: rosterStore,
+                    partyStore: partyStore,
+                    equipmentStore: equipmentStore
+                )
             }
             .tabItem {
                 Label("冒険", systemImage: "figure.walk")

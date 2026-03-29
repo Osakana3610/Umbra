@@ -4,15 +4,15 @@ import SwiftUI
 
 struct HireView: View {
     let masterData: MasterData
-    let guildStore: GuildStore
+    let rosterStore: GuildRosterStore
 
     @State private var selectedRaceId: Int
     @State private var selectedJobId: Int
     @State private var selectedAptitudeId: Int
 
-    init(masterData: MasterData, guildStore: GuildStore) {
+    init(masterData: MasterData, rosterStore: GuildRosterStore) {
         self.masterData = masterData
-        self.guildStore = guildStore
+        self.rosterStore = rosterStore
         _selectedRaceId = State(initialValue: masterData.races.first?.id ?? 0)
         _selectedJobId = State(initialValue: masterData.jobs.first?.id ?? 0)
         _selectedAptitudeId = State(initialValue: masterData.aptitudes.first?.id ?? 0)
@@ -43,21 +43,19 @@ struct HireView: View {
             Section("確認") {
                 LabeledContent("雇用価格", value: hirePriceText)
 
-                Button(guildStore.isMutating ? "雇用中..." : "求人") {
-                    Task {
-                        await guildStore.hireCharacter(
-                            raceId: selectedRaceId,
-                            jobId: selectedJobId,
-                            aptitudeId: selectedAptitudeId,
-                            masterData: masterData
-                        )
-                    }
+                Button(rosterStore.isMutating ? "雇用中..." : "求人") {
+                    rosterStore.hireCharacter(
+                        raceId: selectedRaceId,
+                        jobId: selectedJobId,
+                        aptitudeId: selectedAptitudeId,
+                        masterData: masterData
+                    )
                 }
                 .disabled(!canHire)
                 .accessibilityIdentifier("hire-button")
             }
 
-            if let message = guildStore.lastHireMessage {
+            if let message = rosterStore.lastHireMessage {
                 Section {
                     Text(message)
                         .foregroundStyle(.green)
@@ -65,7 +63,7 @@ struct HireView: View {
                 }
             }
 
-            if let error = guildStore.lastOperationError {
+            if let error = rosterStore.lastOperationError {
                 Section {
                     Text(error)
                         .foregroundStyle(.red)
@@ -76,7 +74,7 @@ struct HireView: View {
     }
 
     private var canHire: Bool {
-        guard let playerState = guildStore.playerState,
+        guard let playerState = rosterStore.playerState,
               let hirePrice,
               selectedRaceId != 0,
               selectedJobId != 0,
@@ -84,15 +82,11 @@ struct HireView: View {
             return false
         }
 
-        return !guildStore.isMutating && playerState.gold >= hirePrice
+        return !rosterStore.isMutating && playerState.gold >= hirePrice
     }
 
     private var hirePrice: Int? {
-        guildStore.hirePrice(
-            raceId: selectedRaceId,
-            jobId: selectedJobId,
-            masterData: masterData
-        )
+        GuildHiring.price(raceId: selectedRaceId, jobId: selectedJobId, masterData: masterData)
     }
 
     private var hirePriceText: String {

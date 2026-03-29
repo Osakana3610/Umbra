@@ -5,7 +5,7 @@ import SwiftUI
 struct SingleBattleSelectionView: View {
     let party: PartyRecord
     let masterData: MasterData
-    let guildStore: GuildStore
+    let rosterStore: GuildRosterStore
 
     var body: some View {
         List {
@@ -21,7 +21,7 @@ struct SingleBattleSelectionView: View {
                             party: party,
                             scenario: scenario,
                             masterData: masterData,
-                            guildStore: guildStore
+                            rosterStore: rosterStore
                         )
                     } label: {
                         VStack(alignment: .leading, spacing: 6) {
@@ -58,7 +58,7 @@ private struct SingleBattleLogView: View {
     let party: PartyRecord
     let scenario: SingleBattleScenario
     let masterData: MasterData
-    let guildStore: GuildStore
+    let rosterStore: GuildRosterStore
 
     @State private var result: SingleBattleResult?
     @State private var errorMessage: String?
@@ -129,7 +129,7 @@ private struct SingleBattleLogView: View {
                     floorNumber: scenario.floorNumber,
                     battleNumber: scenario.battleNumber
                 ),
-                partyMembers: party.memberCharacterIds.compactMap { guildStore.charactersById[$0] },
+                partyMembers: party.memberCharacterIds.compactMap { rosterStore.charactersById[$0] },
                 enemies: scenario.enemies,
                 masterData: masterData
             )

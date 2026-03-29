@@ -4,8 +4,32 @@ import Foundation
 
 enum CharacterDerivedStatsCalculator {
     private static let levelExponent = 1.0
-    private static let isUnarmed = true
-    private static let weaponRangeClass: ItemRangeClass = .none
+    private static let defaultEquipmentAggregation = EquipmentAggregation(
+        baseStats: CharacterBaseStats(
+            vitality: 0,
+            strength: 0,
+            mind: 0,
+            intelligence: 0,
+            agility: 0,
+            luck: 0
+        ),
+        battleStats: CharacterBattleStats(
+            maxHP: 0,
+            physicalAttack: 0,
+            physicalDefense: 0,
+            magic: 0,
+            magicDefense: 0,
+            healing: 0,
+            accuracy: 0,
+            evasion: 0,
+            attackCount: 0,
+            criticalRate: 0,
+            breathPower: 0
+        ),
+        itemSkillIDs: [],
+        isUnarmed: true,
+        weaponRangeClass: .none
+    )
 
     static func maxHP(
         raceId: Int,
@@ -23,12 +47,17 @@ enum CharacterDerivedStatsCalculator {
     }
 
     static func status(for character: CharacterRecord, masterData: MasterData) -> CharacterStatus? {
-        status(
+        let equipmentAggregation = (try? EquipmentAggregator(masterData: masterData).aggregate(
+            equippedItemStacks: character.equippedItemStacks
+        )) ?? defaultEquipmentAggregation
+
+        return status(
             raceId: character.raceId,
             previousJobId: character.previousJobId,
             currentJobId: character.currentJobId,
             level: character.level,
-            masterData: masterData
+            masterData: masterData,
+            equipmentAggregation: equipmentAggregation
         )
     }
 
@@ -37,7 +66,8 @@ enum CharacterDerivedStatsCalculator {
         previousJobId: Int,
         currentJobId: Int,
         level: Int,
-        masterData: MasterData
+        masterData: MasterData,
+        equipmentAggregation: EquipmentAggregation = defaultEquipmentAggregation
     ) -> CharacterStatus? {
         guard let race = masterData.races.first(where: { $0.id == raceId }),
               let currentJob = masterData.jobs.first(where: { $0.id == currentJobId }) else {
@@ -49,17 +79,17 @@ enum CharacterDerivedStatsCalculator {
             : masterData.jobs.first(where: { $0.id == previousJobId })
 
         let effectiveBaseStats = CharacterBaseStats(
-            vitality: race.baseStats.vitality,
-            strength: race.baseStats.strength,
-            mind: race.baseStats.mind,
-            intelligence: race.baseStats.intelligence,
-            agility: race.baseStats.agility,
-            luck: race.baseStats.luck
+            vitality: race.baseStats.vitality + equipmentAggregation.baseStats.vitality,
+            strength: race.baseStats.strength + equipmentAggregation.baseStats.strength,
+            mind: race.baseStats.mind + equipmentAggregation.baseStats.mind,
+            intelligence: race.baseStats.intelligence + equipmentAggregation.baseStats.intelligence,
+            agility: race.baseStats.agility + equipmentAggregation.baseStats.agility,
+            luck: race.baseStats.luck + equipmentAggregation.baseStats.luck
         )
         let activeSkillIds = activeSkillIds(
             raceSkillIds: race.skillIds,
             previousJobSkillIds: previousJob?.skillIds ?? [],
-            currentJobSkillIds: currentJob.skillIds
+            currentJobSkillIds: currentJob.skillIds + equipmentAggregation.itemSkillIDs
         )
 
         return status(
@@ -68,8 +98,9 @@ enum CharacterDerivedStatsCalculator {
             level: level,
             skillIds: activeSkillIds,
             masterData: masterData,
-            isUnarmed: isUnarmed,
-            weaponRangeClass: weaponRangeClass
+            equipmentBattleStats: equipmentAggregation.battleStats,
+            isUnarmed: equipmentAggregation.isUnarmed,
+            weaponRangeClass: equipmentAggregation.weaponRangeClass
         )
     }
 
@@ -79,8 +110,9 @@ enum CharacterDerivedStatsCalculator {
         level: Int,
         skillIds: [Int],
         masterData: MasterData,
-        isUnarmed: Bool = isUnarmed,
-        weaponRangeClass: ItemRangeClass = weaponRangeClass
+        equipmentBattleStats: CharacterBattleStats = defaultEquipmentAggregation.battleStats,
+        isUnarmed: Bool = defaultEquipmentAggregation.isUnarmed,
+        weaponRangeClass: ItemRangeClass = defaultEquipmentAggregation.weaponRangeClass
     ) -> CharacterStatus? {
         guard let currentJob = masterData.jobs.first(where: { $0.id == jobId }) else {
             return nil
@@ -101,6 +133,7 @@ enum CharacterDerivedStatsCalculator {
                 level: level,
                 jobCoefficient: currentJob.coefficients.maxHP,
                 statScale: 3.0,
+                equipmentFlatBonus: equipmentBattleStats.maxHP,
                 skillAdjustments: skillAdjustments
             ),
             physicalAttack: battleStatValue(
@@ -109,6 +142,7 @@ enum CharacterDerivedStatsCalculator {
                 level: level,
                 jobCoefficient: currentJob.coefficients.physicalAttack,
                 statScale: 0.6,
+                equipmentFlatBonus: equipmentBattleStats.physicalAttack,
                 skillAdjustments: skillAdjustments
             ),
             physicalDefense: battleStatValue(
@@ -117,6 +151,7 @@ enum CharacterDerivedStatsCalculator {
                 level: level,
                 jobCoefficient: currentJob.coefficients.physicalDefense,
                 statScale: 0.3,
+                equipmentFlatBonus: equipmentBattleStats.physicalDefense,
                 skillAdjustments: skillAdjustments
             ),
             magic: battleStatValue(
@@ -125,6 +160,7 @@ enum CharacterDerivedStatsCalculator {
                 level: level,
                 jobCoefficient: currentJob.coefficients.magic,
                 statScale: 0.6,
+                equipmentFlatBonus: equipmentBattleStats.magic,
                 skillAdjustments: skillAdjustments
             ),
             magicDefense: battleStatValue(
@@ -133,6 +169,7 @@ enum CharacterDerivedStatsCalculator {
                 level: level,
                 jobCoefficient: currentJob.coefficients.magicDefense,
                 statScale: 0.3,
+                equipmentFlatBonus: equipmentBattleStats.magicDefense,
                 skillAdjustments: skillAdjustments
             ),
             healing: battleStatValue(
@@ -141,6 +178,7 @@ enum CharacterDerivedStatsCalculator {
                 level: level,
                 jobCoefficient: currentJob.coefficients.healing,
                 statScale: 0.45,
+                equipmentFlatBonus: equipmentBattleStats.healing,
                 skillAdjustments: skillAdjustments
             ),
             accuracy: battleStatValue(
@@ -149,6 +187,7 @@ enum CharacterDerivedStatsCalculator {
                 level: level,
                 jobCoefficient: currentJob.coefficients.accuracy,
                 statScale: 0.10,
+                equipmentFlatBonus: equipmentBattleStats.accuracy,
                 skillAdjustments: skillAdjustments
             ),
             evasion: battleStatValue(
@@ -157,6 +196,7 @@ enum CharacterDerivedStatsCalculator {
                 level: level,
                 jobCoefficient: currentJob.coefficients.evasion,
                 statScale: 0.09,
+                equipmentFlatBonus: equipmentBattleStats.evasion,
                 skillAdjustments: skillAdjustments
             ),
             attackCount: battleStatValue(
@@ -165,6 +205,7 @@ enum CharacterDerivedStatsCalculator {
                 level: level,
                 jobCoefficient: currentJob.coefficients.attackCount,
                 statScale: 0.003,
+                equipmentFlatBonus: equipmentBattleStats.attackCount,
                 skillAdjustments: skillAdjustments
             ),
             criticalRate: battleStatValue(
@@ -173,6 +214,7 @@ enum CharacterDerivedStatsCalculator {
                 level: level,
                 jobCoefficient: currentJob.coefficients.criticalRate,
                 statScale: 0.010,
+                equipmentFlatBonus: equipmentBattleStats.criticalRate,
                 skillAdjustments: skillAdjustments
             ),
             breathPower: battleStatValue(
@@ -181,6 +223,7 @@ enum CharacterDerivedStatsCalculator {
                 level: level,
                 jobCoefficient: currentJob.coefficients.breathPower,
                 statScale: 0.6,
+                equipmentFlatBonus: equipmentBattleStats.breathPower,
                 skillAdjustments: skillAdjustments
             )
         )
@@ -303,6 +346,7 @@ enum CharacterDerivedStatsCalculator {
         level: Int,
         jobCoefficient: Double,
         statScale: Double,
+        equipmentFlatBonus: Int,
         skillAdjustments: SkillAdjustments
     ) -> Int {
         let baseValue = Int(
@@ -314,7 +358,7 @@ enum CharacterDerivedStatsCalculator {
             )
             .rounded()
         )
-        let equipmentAdjusted = Double(baseValue)
+        let equipmentAdjusted = Double(baseValue + equipmentFlatBonus)
         let flatAdjusted = equipmentAdjusted + skillAdjustments.battleStatFlatAdds[target, default: 0.0]
         let percentAdjusted = flatAdjusted * (1.0 + skillAdjustments.battleStatPctAdds[target, default: 0.0])
         let finalValue = Int((percentAdjusted * skillAdjustments.allBattleStatMultiplier).rounded())

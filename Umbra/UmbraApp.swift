@@ -6,22 +6,39 @@ import SwiftUI
 struct UmbraApp: App {
     let persistenceController: PersistenceController
     @State private var masterDataStore: MasterDataStore
-    @State private var guildStore: GuildStore
+    @State private var rosterStore: GuildRosterStore
+    @State private var partyStore: PartyStore
+    @State private var equipmentStore: EquipmentInventoryStore
 
     init() {
         let persistenceController = PersistenceController.shared
         self.persistenceController = persistenceController
         _masterDataStore = State(initialValue: MasterDataStore())
-        _guildStore = State(
-            initialValue: GuildStore(
-                repository: GuildRepository(container: persistenceController.container)
+        _rosterStore = State(
+            initialValue: GuildRosterStore(
+                repository: GuildRosterRepository(container: persistenceController.container)
+            )
+        )
+        _partyStore = State(
+            initialValue: PartyStore(
+                repository: PartyRepository(container: persistenceController.container)
+            )
+        )
+        _equipmentStore = State(
+            initialValue: EquipmentInventoryStore(
+                repository: EquipmentRepository(container: persistenceController.container)
             )
         )
     }
 
     var body: some Scene {
         WindowGroup {
-            ContentView(masterDataStore: masterDataStore, guildStore: guildStore)
+            ContentView(
+                masterDataStore: masterDataStore,
+                rosterStore: rosterStore,
+                partyStore: partyStore,
+                equipmentStore: equipmentStore
+            )
         }
     }
 }

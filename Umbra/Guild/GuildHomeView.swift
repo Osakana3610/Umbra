@@ -4,14 +4,14 @@ import SwiftUI
 
 struct GuildHomeView: View {
     let masterData: MasterData
-    let guildStore: GuildStore
+    let rosterStore: GuildRosterStore
 
     var body: some View {
         List {
-            if guildStore.playerState != nil {
+            if rosterStore.playerState != nil {
                 Section {
                     NavigationLink {
-                        HireView(masterData: masterData, guildStore: guildStore)
+                        HireView(masterData: masterData, rosterStore: rosterStore)
                     } label: {
                         HStack(spacing: 12) {
                             Image(systemName: "person.badge.plus")
@@ -31,11 +31,11 @@ struct GuildHomeView: View {
                 }
 
                 Section("雇用中のキャラクター") {
-                    if guildStore.characters.isEmpty {
+                    if rosterStore.characters.isEmpty {
                         Text("まだ雇用していません。")
                             .foregroundStyle(.secondary)
                     } else {
-                        ForEach(guildStore.characters) { character in
+                        ForEach(rosterStore.characters) { character in
                             HStack(spacing: 12) {
                                 Image(character.portraitAssetName)
                                     .resizable()
@@ -61,9 +61,6 @@ struct GuildHomeView: View {
     }
 
     private func summaryText(for character: CharacterRecord) -> String {
-        let raceName = masterData.races.first(where: { $0.id == character.raceId })?.name ?? "不明"
-        let jobName = masterData.jobs.first(where: { $0.id == character.currentJobId })?.name ?? "不明"
-        let aptitudeName = masterData.aptitudes.first(where: { $0.id == character.aptitudeId })?.name ?? "不明"
-        return "\(raceName) / \(jobName) / \(aptitudeName) / Lv.\(character.level) / HP \(character.currentHP)"
+        "\(masterData.characterSummaryText(for: character)) / HP \(character.currentHP)"
     }
 }

@@ -4,14 +4,16 @@ import SwiftUI
 
 struct ContentView: View {
     let masterDataStore: MasterDataStore
-    let guildStore: GuildStore
+    let rosterStore: GuildRosterStore
+    let partyStore: PartyStore
+    let equipmentStore: EquipmentInventoryStore
 
     var body: some View {
         Group {
-            switch (masterDataStore.phase, guildStore.phase) {
-            case (.idle, _), (.loading, _), (_, .idle), (_, .loading):
+            switch (masterDataStore.phase, rosterStore.phase, partyStore.phase) {
+            case (.idle, _, _), (.loading, _, _), (_, .idle, _), (_, .loading, _), (_, _, .idle), (_, _, .loading):
                 ProgressView("マスターデータを読み込み中")
-            case let (.failed(message), _), let (_, .failed(message)):
+            case let (.failed(message), _, _), let (_, .failed(message), _), let (_, _, .failed(message)):
                 VStack(spacing: 16) {
                     ContentUnavailableView(
                         "読み込みに失敗しました",
@@ -22,29 +24,40 @@ struct ContentView: View {
                     Button("再読み込み") {
                         Task {
                             async let masterDataReload = masterDataStore.reload()
-                            async let guildReload = guildStore.reload()
-                            _ = await (masterDataReload, guildReload)
+                            rosterStore.reload()
+                            partyStore.reload()
+                            _ = await masterDataReload
                         }
                     }
                 }
                 .padding()
-            case let (.loaded(masterData), .loaded):
-                RootTabView(masterData: masterData, guildStore: guildStore)
+            case let (.loaded(masterData), .loaded, .loaded):
+                RootTabView(
+                    masterData: masterData,
+                    rosterStore: rosterStore,
+                    partyStore: partyStore,
+                    equipmentStore: equipmentStore
+                )
             }
         }
         .task {
             async let masterDataLoad = masterDataStore.loadIfNeeded()
-            async let guildLoad = guildStore.loadIfNeeded()
-            _ = await (masterDataLoad, guildLoad)
+            rosterStore.loadIfNeeded()
+            partyStore.loadIfNeeded()
+            _ = await masterDataLoad
         }
     }
 }
 
 #Preview {
     let persistenceController = PersistenceController.preview
-    let guildRepository = GuildRepository(container: persistenceController.container)
+    let rosterRepository = GuildRosterRepository(container: persistenceController.container)
+    let partyRepository = PartyRepository(container: persistenceController.container)
+    let equipmentRepository = EquipmentRepository(container: persistenceController.container)
     return ContentView(
         masterDataStore: MasterDataStore(phase: .loading),
-        guildStore: GuildStore(phase: .loading, repository: guildRepository)
+        rosterStore: GuildRosterStore(phase: .loading, repository: rosterRepository),
+        partyStore: PartyStore(phase: .loading, repository: partyRepository),
+        equipmentStore: EquipmentInventoryStore(repository: equipmentRepository)
     )
 }
