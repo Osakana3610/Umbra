@@ -70,6 +70,114 @@ struct UmbraTests {
     }
 
     @Test
+    func completeStatusCalculationBuildsBattleStatsAndCapabilities() throws {
+        let masterData = try loadGeneratedMasterData()
+        let character = CharacterRecord(
+            characterId: 1,
+            name: "テスト騎士",
+            raceId: try raceId(named: "人間", in: masterData),
+            previousJobId: 0,
+            currentJobId: try jobId(named: "騎士", in: masterData),
+            aptitudeId: try #require(masterData.aptitudes.first?.id),
+            portraitGender: .male,
+            experience: 0,
+            level: 10,
+            currentHP: 1,
+            autoBattleSettings: .default
+        )
+
+        let status = try #require(CharacterDerivedStatsCalculator.status(for: character, masterData: masterData))
+
+        #expect(status.baseStats == CharacterBaseStats(
+            vitality: 7,
+            strength: 7,
+            mind: 7,
+            intelligence: 7,
+            agility: 7,
+            luck: 7
+        ))
+        #expect(status.battleStats == CharacterBattleStats(
+            maxHP: 231,
+            physicalAttack: 42,
+            physicalDefense: 23,
+            magic: 42,
+            magicDefense: 21,
+            healing: 32,
+            accuracy: 8,
+            evasion: 7,
+            attackCount: 1,
+            criticalRate: 1,
+            breathPower: 42
+        ))
+        #expect(status.battleDerivedStats == .baseline)
+        #expect(status.canUseBreath == false)
+        #expect(status.spellIds.isEmpty)
+        #expect(status.interruptKinds == [.counter])
+        #expect(status.skillIds.count == Set(status.skillIds).count)
+    }
+
+    @Test
+    func completeStatusCalculationCollectsDerivedEffectsAndSpells() throws {
+        let masterData = try loadGeneratedMasterData()
+        let spellcastingCharacter = CharacterRecord(
+            characterId: 1,
+            name: "テスト魔導士",
+            raceId: try raceId(named: "サイキック", in: masterData),
+            previousJobId: 0,
+            currentJobId: try jobId(named: "魔導士", in: masterData),
+            aptitudeId: try #require(masterData.aptitudes.first?.id),
+            portraitGender: .male,
+            experience: 0,
+            level: 10,
+            currentHP: 1,
+            autoBattleSettings: .default
+        )
+        let breathCharacter = CharacterRecord(
+            characterId: 2,
+            name: "テスト狩人",
+            raceId: try raceId(named: "ドラゴニュート", in: masterData),
+            previousJobId: 0,
+            currentJobId: try jobId(named: "狩人", in: masterData),
+            aptitudeId: try #require(masterData.aptitudes.first?.id),
+            portraitGender: .female,
+            experience: 0,
+            level: 10,
+            currentHP: 1,
+            autoBattleSettings: .default
+        )
+
+        let spellcastingStatus = try #require(
+            CharacterDerivedStatsCalculator.status(for: spellcastingCharacter, masterData: masterData)
+        )
+        let breathStatus = try #require(
+            CharacterDerivedStatsCalculator.status(for: breathCharacter, masterData: masterData)
+        )
+
+        #expect(Set(spellcastingStatus.spellIds) == Set(try spellIds(
+            named: ["炎", "氷", "攻撃バフ", "電撃", "魔法バフ", "核攻撃"],
+            in: masterData
+        )))
+        #expect(spellcastingStatus.battleStats.magic == 99)
+        #expect(spellcastingStatus.skillIds.count == Set(spellcastingStatus.skillIds).count)
+
+        #expect(breathStatus.canUseBreath)
+        #expect(breathStatus.interruptKinds == [.pursuit])
+        #expect(breathStatus.battleStats.breathPower == 59)
+        #expect(breathStatus.battleDerivedStats == CharacterBattleDerivedStats(
+            physicalDamageMultiplier: 1.0,
+            magicDamageMultiplier: 1.0,
+            spellDamageMultiplier: 1.0,
+            criticalDamageMultiplier: 1.0,
+            meleeDamageMultiplier: 1.0,
+            rangedDamageMultiplier: 1.1,
+            actionSpeedMultiplier: 1.1,
+            physicalResistanceMultiplier: 1.0,
+            magicResistanceMultiplier: 1.0,
+            breathResistanceMultiplier: 0.8
+        ))
+    }
+
+    @Test
     func unlockPartyConsumesGoldAndCreatesSequentialParty() async throws {
         let repository = GuildRepository(container: PersistenceController(inMemory: true).container)
 
@@ -163,4 +271,21 @@ private func generatedMasterDataURL() -> URL {
     let testsDirectory = URL(fileURLWithPath: #filePath).deletingLastPathComponent()
     let repositoryRoot = testsDirectory.deletingLastPathComponent()
     return repositoryRoot.appending(path: "Generator/Output/masterdata.json")
+}
+
+@MainActor
+private func raceId(named name: String, in masterData: MasterData) throws -> Int {
+    try #require(masterData.races.first(where: { $0.name == name })?.id)
+}
+
+@MainActor
+private func jobId(named name: String, in masterData: MasterData) throws -> Int {
+    try #require(masterData.jobs.first(where: { $0.name == name })?.id)
+}
+
+@MainActor
+private func spellIds(named names: [String], in masterData: MasterData) throws -> [Int] {
+    try names.map { name in
+        try #require(masterData.spells.first(where: { $0.name == name })?.id)
+    }
 }
