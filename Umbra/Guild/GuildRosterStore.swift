@@ -93,6 +93,66 @@ final class GuildRosterStore {
         }
     }
 
+    func reviveCharacter(
+        characterId: Int,
+        masterData: MasterData
+    ) {
+        guard !isMutating, phase == .loaded else {
+            return
+        }
+
+        isMutating = true
+        lastOperationError = nil
+        defer { isMutating = false }
+
+        do {
+            applySnapshot(
+                try repository.reviveCharacter(
+                    characterId: characterId,
+                    masterData: masterData
+                )
+            )
+        } catch {
+            lastOperationError = Self.errorMessage(for: error)
+        }
+    }
+
+    func reviveAllDefeated(masterData: MasterData) {
+        guard !isMutating, phase == .loaded else {
+            return
+        }
+
+        isMutating = true
+        lastOperationError = nil
+        defer { isMutating = false }
+
+        do {
+            applySnapshot(try repository.reviveAllDefeated(masterData: masterData))
+        } catch {
+            lastOperationError = Self.errorMessage(for: error)
+        }
+    }
+
+    func setAutoReviveDefeatedCharactersEnabled(
+        _ isEnabled: Bool
+    ) {
+        guard !isMutating, phase == .loaded else {
+            return
+        }
+
+        isMutating = true
+        lastOperationError = nil
+        defer { isMutating = false }
+
+        do {
+            applySnapshot(
+                try repository.setAutoReviveDefeatedCharactersEnabled(isEnabled)
+            )
+        } catch {
+            lastOperationError = Self.errorMessage(for: error)
+        }
+    }
+
     func replaceCharacter(_ character: CharacterRecord) {
         charactersById[character.characterId] = character
 
@@ -108,6 +168,11 @@ final class GuildRosterStore {
     private func applyCharacters(_ characters: [CharacterRecord]) {
         self.characters = characters
         charactersById = Dictionary(uniqueKeysWithValues: characters.map { ($0.characterId, $0) })
+    }
+
+    private func applySnapshot(_ snapshot: GuildRosterSnapshot) {
+        playerState = snapshot.playerState
+        applyCharacters(snapshot.characters)
     }
 
     private static func errorMessage(for error: Error) -> String {

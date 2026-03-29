@@ -8,6 +8,7 @@ struct PartyDetailView: View {
     let rosterStore: GuildRosterStore
     let partyStore: PartyStore
     let equipmentStore: EquipmentInventoryStore
+    let explorationStore: ExplorationStore
 
     @State private var draftPartyName = ""
     @State private var pendingTransferCharacter: CharacterRecord?
@@ -33,7 +34,10 @@ struct PartyDetailView: View {
                             charactersById: rosterStore.charactersById
                         )
 
-                        if party.memberCharacterIds.isEmpty {
+                        if isExploring {
+                            Text("探索中は編成変更できません。")
+                                .foregroundStyle(.secondary)
+                        } else if party.memberCharacterIds.isEmpty {
                             Text("まだメンバーがいません。")
                                 .foregroundStyle(.secondary)
                         } else {
@@ -64,6 +68,7 @@ struct PartyDetailView: View {
                                             fromParty: party.partyId
                                         )
                                     }
+                                    .disabled(isExploring)
                                 }
                                 .padding(.vertical, 4)
                             }
@@ -77,14 +82,66 @@ struct PartyDetailView: View {
                         }
                     }
 
+                    Section("探索") {
+                        if let activeRun {
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text("探索中")
+                                    .font(.headline)
+                                Text(activeRunSummary(activeRun))
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                            }
+
+                            NavigationLink("探索記録を開く") {
+                                RunSessionDetailView(
+                                    partyId: activeRun.partyId,
+                                    partyRunId: activeRun.partyRunId,
+                                    masterData: masterData,
+                                    rosterStore: rosterStore,
+                                    partyStore: partyStore,
+                                    equipmentStore: equipmentStore,
+                                    explorationStore: explorationStore
+                                )
+                            }
+                        } else if let latestCompletedRun {
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text("前回の探索")
+                                    .font(.headline)
+                                Text(completedRunSummary(latestCompletedRun))
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                            }
+
+                            NavigationLink("探索記録を開く") {
+                                RunSessionDetailView(
+                                    partyId: latestCompletedRun.partyId,
+                                    partyRunId: latestCompletedRun.partyRunId,
+                                    masterData: masterData,
+                                    rosterStore: rosterStore,
+                                    partyStore: partyStore,
+                                    equipmentStore: equipmentStore,
+                                    explorationStore: explorationStore
+                                )
+                            }
+                        } else {
+                            Text("まだ探索していません。")
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+
                     Section("装備") {
-                        NavigationLink("装備を変更する") {
-                            PartyEquipmentMenuView(
-                                party: party,
-                                masterData: masterData,
-                                rosterStore: rosterStore,
-                                equipmentStore: equipmentStore
-                            )
+                        if isExploring {
+                            Text("探索中は装備変更できません。")
+                                .foregroundStyle(.secondary)
+                        } else {
+                            NavigationLink("装備を変更する") {
+                                PartyEquipmentMenuView(
+                                    party: party,
+                                    masterData: masterData,
+                                    rosterStore: rosterStore,
+                                    equipmentStore: equipmentStore
+                                )
+                            }
                         }
                     }
 
@@ -107,7 +164,10 @@ struct PartyDetailView: View {
                     }
 
                     Section("加入候補") {
-                        if rosterStore.characters.isEmpty {
+                        if isExploring {
+                            Text("探索中は加入・離脱できません。")
+                                .foregroundStyle(.secondary)
+                        } else if rosterStore.characters.isEmpty {
                             Text("先にギルドでキャラクターを雇用してください。")
                                 .foregroundStyle(.secondary)
                         } else if party.isFull {
@@ -165,11 +225,12 @@ struct PartyDetailView: View {
                 .toolbar {
                     ToolbarItem(placement: .topBarTrailing) {
                         EditButton()
-                            .disabled(party.memberCharacterIds.count < 2)
+                            .disabled(party.memberCharacterIds.count < 2 || isExploring)
                     }
                 }
                 .onAppear {
                     syncDraftName(with: party)
+                    explorationStore.loadIfNeeded()
                 }
                 .onChange(of: party.name) { _, newValue in
                     draftPartyName = newValue
@@ -211,6 +272,18 @@ struct PartyDetailView: View {
                 }
             }
         )
+    }
+
+    private var activeRun: RunSessionRecord? {
+        explorationStore.status(for: partyId).activeRun
+    }
+
+    private var latestCompletedRun: RunSessionRecord? {
+        explorationStore.status(for: partyId).latestCompletedRun
+    }
+
+    private var isExploring: Bool {
+        activeRun != nil
     }
 
     private func syncDraftName(with party: PartyRecord) {
@@ -265,6 +338,28 @@ struct PartyDetailView: View {
         default:
             "\(index + 1)番目"
         }
+    }
+
+    private func activeRunSummary(_ run: RunSessionRecord) -> String {
+        let labyrinthName = masterData.labyrinths.first(where: { $0.id == run.labyrinthId })?.name ?? "不明な迷宮"
+        return "\(labyrinthName) / \(run.completedBattleCount)戦完了"
+    }
+
+    private func completedRunSummary(_ run: RunSessionRecord) -> String {
+        guard let completion = run.completion else {
+            return ""
+        }
+
+        let resultText: String
+        switch completion.reason {
+        case .cleared:
+            resultText = "踏破"
+        case .defeated:
+            resultText = "全滅"
+        case .draw:
+            resultText = "引き分け"
+        }
+        return "\(resultText) / \(completion.gold) G / アイテム \(completion.dropRewards.count) 件"
     }
 }
 

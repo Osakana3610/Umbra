@@ -1,0 +1,826 @@
+// Resolves deterministic exploration progress, rewards, and completion from a stored run session.
+
+import Foundation
+
+enum ExplorationResolver {
+    static func resolve(
+        session: RunSessionRecord,
+        upTo currentDate: Date,
+        partyMembers: [CharacterRecord],
+        masterData: MasterData
+    ) throws -> RunSessionRecord {
+        guard session.completion == nil else {
+            return session
+        }
+
+        guard let labyrinth = masterData.labyrinths.first(where: { $0.id == session.labyrinthId }) else {
+            throw ExplorationRepositoryError.invalidLabyrinth(labyrinthId: session.labyrinthId)
+        }
+
+        let interval = max(labyrinth.progressIntervalSeconds, 1)
+        let elapsedBattleCount = max(
+            Int(currentDate.timeIntervalSince(session.startedAt)) / interval,
+            0
+        )
+        let battlePlans = buildBattlePlans(for: session, labyrinth: labyrinth)
+        let resolvableBattleCount = min(elapsedBattleCount, battlePlans.count)
+
+        guard resolvableBattleCount > session.completedBattleCount else {
+            return session
+        }
+
+        var currentPartyMembers = try preparedPartyMembers(
+            from: partyMembers,
+            memberCharacterIds: session.memberCharacterIds,
+            currentPartyHPs: session.currentPartyHPs
+        )
+        var completedBattleCount = session.completedBattleCount
+        var currentPartyHPs = session.currentPartyHPs
+        var battleLogs = session.battleLogs
+        var goldBuffer = session.goldBuffer
+        var experienceRewards = session.experienceRewards
+        var dropRewards = session.dropRewards
+        let rewardContext = makeRewardContext(from: currentPartyMembers, masterData: masterData)
+        var completion: RunCompletionRecord?
+
+        while completedBattleCount < resolvableBattleCount, completion == nil {
+            let battlePlan = battlePlans[completedBattleCount]
+            let battleContext = BattleContext(
+                runId: session.id,
+                rootSeed: session.rootSeed,
+                floorNumber: battlePlan.floorNumber,
+                battleNumber: battlePlan.battleNumber
+            )
+            let result = try SingleBattleResolver.resolve(
+                context: battleContext,
+                partyMembers: currentPartyMembers,
+                enemies: battlePlan.enemies,
+                masterData: masterData
+            )
+            completedBattleCount += 1
+            currentPartyHPs = result.partyRemainingHPs
+            currentPartyMembers = updatedPartyMembers(
+                from: currentPartyMembers,
+                currentPartyHPs: currentPartyHPs
+            )
+            battleLogs.append(
+                ExplorationBattleLog(
+                    battleRecord: result.battleRecord,
+                    combatants: result.combatants
+                )
+            )
+
+            switch result.result {
+            case .victory:
+                let rewards = resolveRewards(
+                    rewardContext: rewardContext,
+                    enemySeeds: battlePlan.enemies,
+                    result: result,
+                    floorNumber: battlePlan.floorNumber,
+                    battleNumber: battlePlan.battleNumber,
+                    rootSeed: session.rootSeed,
+                    masterData: masterData
+                )
+                goldBuffer += rewards.gold
+                experienceRewards = merged(
+                    existing: experienceRewards,
+                    additions: rewards.experienceRewards
+                )
+                dropRewards.append(contentsOf: rewards.dropRewards)
+
+                if completedBattleCount == battlePlans.count {
+                    completion = RunCompletionRecord(
+                        completedAt: completionDate(
+                            startedAt: session.startedAt,
+                            interval: interval,
+                            completedBattleCount: completedBattleCount
+                        ),
+                        reason: .cleared,
+                        completedLoopCount: session.maximumLoopCount,
+                        gold: goldBuffer,
+                        experienceRewards: experienceRewards,
+                        dropRewards: dropRewards
+                    )
+                }
+            case .defeat:
+                completion = RunCompletionRecord(
+                    completedAt: completionDate(
+                        startedAt: session.startedAt,
+                        interval: interval,
+                        completedBattleCount: completedBattleCount
+                    ),
+                    reason: .defeated,
+                    completedLoopCount: completedLoopCount(
+                        completedBattleCount: completedBattleCount,
+                        battlesPerLoop: max(battlePlans.count / max(session.maximumLoopCount, 1), 1),
+                        clearedAllBattles: false
+                    ),
+                    gold: goldBuffer,
+                    experienceRewards: experienceRewards,
+                    dropRewards: dropRewards
+                )
+            case .draw:
+                completion = RunCompletionRecord(
+                    completedAt: completionDate(
+                        startedAt: session.startedAt,
+                        interval: interval,
+                        completedBattleCount: completedBattleCount
+                    ),
+                    reason: .draw,
+                    completedLoopCount: completedLoopCount(
+                        completedBattleCount: completedBattleCount,
+                        battlesPerLoop: max(battlePlans.count / max(session.maximumLoopCount, 1), 1),
+                        clearedAllBattles: false
+                    ),
+                    gold: goldBuffer,
+                    experienceRewards: experienceRewards,
+                    dropRewards: dropRewards
+                )
+            }
+        }
+
+        return RunSessionRecord(
+            partyRunId: session.partyRunId,
+            partyId: session.partyId,
+            labyrinthId: session.labyrinthId,
+            targetFloorNumber: session.targetFloorNumber,
+            startedAt: session.startedAt,
+            rootSeed: session.rootSeed,
+            maximumLoopCount: session.maximumLoopCount,
+            memberCharacterIds: session.memberCharacterIds,
+            completedBattleCount: completedBattleCount,
+            currentPartyHPs: currentPartyHPs,
+            battleLogs: battleLogs,
+            goldBuffer: goldBuffer,
+            experienceRewards: experienceRewards,
+            dropRewards: dropRewards,
+            completion: completion
+        )
+    }
+}
+
+private extension ExplorationResolver {
+    struct PlannedBattle {
+        let floorNumber: Int
+        let battleNumber: Int
+        let enemies: [BattleEnemySeed]
+    }
+
+    struct RewardContext {
+        let memberCharacterIds: [Int]
+        let statusesByCharacterId: [Int: CharacterStatus]
+        let goldMultiplier: Double
+        let rareDropMultiplier: Double
+        let titleDropMultiplier: Double
+        let partyAverageLuck: Double
+        let defaultTitle: MasterData.Title
+    }
+
+    struct BattleRewards {
+        let gold: Int
+        let experienceRewards: [ExplorationExperienceReward]
+        let dropRewards: [ExplorationDropReward]
+    }
+
+    static func preparedPartyMembers(
+        from partyMembers: [CharacterRecord],
+        memberCharacterIds: [Int],
+        currentPartyHPs: [Int]
+    ) throws -> [CharacterRecord] {
+        guard memberCharacterIds.count == currentPartyHPs.count else {
+            throw ExplorationRepositoryError.invalidParty(partyId: 0)
+        }
+
+        let charactersById = Dictionary(uniqueKeysWithValues: partyMembers.map { ($0.characterId, $0) })
+        return try memberCharacterIds.enumerated().map { index, characterId in
+            guard var character = charactersById[characterId] else {
+                throw ExplorationRepositoryError.invalidRunMember(characterId: characterId)
+            }
+            character.currentHP = currentPartyHPs[index]
+            return character
+        }
+    }
+
+    static func updatedPartyMembers(
+        from partyMembers: [CharacterRecord],
+        currentPartyHPs: [Int]
+    ) -> [CharacterRecord] {
+        partyMembers.enumerated().map { index, member in
+            var updatedMember = member
+            updatedMember.currentHP = currentPartyHPs[index]
+            return updatedMember
+        }
+    }
+
+    static func buildBattlePlans(
+        for session: RunSessionRecord,
+        labyrinth: MasterData.Labyrinth
+    ) -> [PlannedBattle] {
+        var battlePlans: [PlannedBattle] = []
+        battlePlans.reserveCapacity(
+            labyrinth.floors.reduce(0) { partial, floor in
+                partial + floor.battleCount
+            } * session.maximumLoopCount
+        )
+
+        var globalBattleNumber = 1
+        for loopIndex in 1...session.maximumLoopCount {
+            for floor in labyrinth.floors {
+                let fixedBattle = floor.fixedBattle ?? []
+                let normalBattleCount = max(floor.battleCount - (fixedBattle.isEmpty ? 0 : 1), 0)
+
+                if normalBattleCount > 0 {
+                    for normalBattleIndex in 1...normalBattleCount {
+                        battlePlans.append(
+                            PlannedBattle(
+                                floorNumber: floor.floorNumber,
+                                battleNumber: globalBattleNumber,
+                                enemies: resolveEncounterEnemies(
+                                    for: floor,
+                                    enemyCountCap: labyrinth.enemyCountCap,
+                                    loopIndex: loopIndex,
+                                    battleNumber: globalBattleNumber,
+                                    normalBattleIndex: normalBattleIndex,
+                                    rootSeed: session.rootSeed
+                                )
+                            )
+                        )
+                        globalBattleNumber += 1
+                    }
+                }
+
+                if !fixedBattle.isEmpty {
+                    battlePlans.append(
+                        PlannedBattle(
+                            floorNumber: floor.floorNumber,
+                            battleNumber: globalBattleNumber,
+                            enemies: fixedBattle.map { enemy in
+                                BattleEnemySeed(enemyId: enemy.enemyId, level: enemy.level)
+                            }
+                        )
+                    )
+                    globalBattleNumber += 1
+                }
+            }
+        }
+
+        return battlePlans
+    }
+
+    static func resolveEncounterEnemies(
+        for floor: MasterData.Floor,
+        enemyCountCap: Int,
+        loopIndex: Int,
+        battleNumber: Int,
+        normalBattleIndex: Int,
+        rootSeed: UInt64
+    ) -> [BattleEnemySeed] {
+        guard !floor.encounters.isEmpty, enemyCountCap > 0 else {
+            return []
+        }
+
+        let totalWeight = floor.encounters.reduce(0) { $0 + $1.weight }
+        guard totalWeight > 0 else {
+            return []
+        }
+
+        return (1...enemyCountCap).compactMap { enemySlot in
+            let purpose = "loop:\(loopIndex):battle:\(battleNumber):normal:\(normalBattleIndex):slot:\(enemySlot):encounter"
+            let roll = ExplorationDeterministicRandom.integer(
+                upperBound: totalWeight,
+                rootSeed: rootSeed,
+                purpose: purpose
+            )
+            var cumulativeWeight = 0
+            for encounter in floor.encounters {
+                cumulativeWeight += encounter.weight
+                if roll < cumulativeWeight {
+                    return BattleEnemySeed(enemyId: encounter.enemyId, level: encounter.level)
+                }
+            }
+            return floor.encounters.last.map { encounter in
+                BattleEnemySeed(enemyId: encounter.enemyId, level: encounter.level)
+            }
+        }
+    }
+
+    static func makeRewardContext(
+        from partyMembers: [CharacterRecord],
+        masterData: MasterData
+    ) -> RewardContext {
+        let statusesByCharacterId = Dictionary(uniqueKeysWithValues: partyMembers.compactMap { member in
+            CharacterDerivedStatsCalculator.status(for: member, masterData: masterData).map {
+                (member.characterId, $0)
+            }
+        })
+        let skillTable = Dictionary(uniqueKeysWithValues: masterData.skills.map { ($0.id, $0) })
+        let partyStatuses = Array(statusesByCharacterId.values)
+        let defaultTitle = masterData.titles.first(where: { $0.key == "untitled" }) ?? masterData.titles[0]
+
+        return RewardContext(
+            memberCharacterIds: partyMembers.map(\.characterId),
+            statusesByCharacterId: statusesByCharacterId,
+            goldMultiplier: partyWideRewardMultiplier(
+                target: "goldGainMultiplier",
+                statuses: partyStatuses,
+                skillTable: skillTable
+            ),
+            rareDropMultiplier: partyWideRewardMultiplier(
+                target: "rareDropMultiplier",
+                statuses: partyStatuses,
+                skillTable: skillTable
+            ),
+            titleDropMultiplier: partyWideRewardMultiplier(
+                target: "titleDropMultiplier",
+                statuses: partyStatuses,
+                skillTable: skillTable
+            ),
+            partyAverageLuck: partyStatuses.isEmpty
+                ? 0
+                : Double(partyStatuses.reduce(0) { $0 + $1.baseStats.luck }) / Double(partyStatuses.count),
+            defaultTitle: defaultTitle
+        )
+    }
+
+    static func resolveRewards(
+        rewardContext: RewardContext,
+        enemySeeds: [BattleEnemySeed],
+        result: SingleBattleResult,
+        floorNumber: Int,
+        battleNumber: Int,
+        rootSeed: UInt64,
+        masterData: MasterData
+    ) -> BattleRewards {
+        let enemyTable = Dictionary(uniqueKeysWithValues: masterData.enemies.map { ($0.id, $0) })
+        let itemTable = Dictionary(uniqueKeysWithValues: masterData.items.map { ($0.id, $0) })
+        let skillTable = Dictionary(uniqueKeysWithValues: masterData.skills.map { ($0.id, $0) })
+        let titlesByAscendingQuality = masterData.titles.sorted {
+            $0.positiveMultiplier < $1.positiveMultiplier
+        }
+        let livingCharacterIds = Set(
+            result.combatants
+                .filter { $0.side == .ally && $0.remainingHP > 0 }
+                .sorted { $0.formationIndex < $1.formationIndex }
+                .enumerated()
+                .compactMap { index, _ in
+                    rewardContext.memberCharacterIds.indices.contains(index)
+                        ? rewardContext.memberCharacterIds[index]
+                        : nil
+                }
+        )
+
+        let totalBaseGold = enemySeeds.reduce(into: 0) { partial, enemySeed in
+            guard let enemy = enemyTable[enemySeed.enemyId] else {
+                return
+            }
+            partial += enemy.goldBaseValue * enemySeed.level
+        }
+        let totalBaseExperience = enemySeeds.reduce(into: 0) { partial, enemySeed in
+            guard let enemy = enemyTable[enemySeed.enemyId] else {
+                return
+            }
+            partial += enemy.experienceBaseValue * enemySeed.level
+        }
+
+        let gold = Int((Double(totalBaseGold) * rewardContext.goldMultiplier).rounded())
+        let sharedExperience = rewardContext.memberCharacterIds.isEmpty
+            ? 0.0
+            : Double(totalBaseExperience) / Double(rewardContext.memberCharacterIds.count)
+        let experienceRewards: [ExplorationExperienceReward] = rewardContext.memberCharacterIds.compactMap { characterId in
+            guard livingCharacterIds.contains(characterId) else {
+                return nil
+            }
+            let experienceMultiplier = characterRewardMultiplier(
+                target: "experienceGainMultiplier",
+                status: rewardContext.statusesByCharacterId[characterId],
+                skillTable: skillTable
+            )
+            let experience = Int((sharedExperience * experienceMultiplier).rounded())
+            guard experience > 0 else {
+                return nil
+            }
+            return ExplorationExperienceReward(characterId: characterId, experience: experience)
+        }
+
+        var dropRewards: [ExplorationDropReward] = []
+        for (enemyIndex, enemySeed) in enemySeeds.enumerated() {
+            guard let enemy = enemyTable[enemySeed.enemyId] else {
+                continue
+            }
+
+            if let normalDrop = resolveNormalDrop(
+                enemyLevel: enemySeed.level,
+                floorNumber: floorNumber,
+                battleNumber: battleNumber,
+                enemyIndex: enemyIndex,
+                rootSeed: rootSeed,
+                titles: titlesByAscendingQuality,
+                rewardContext: rewardContext,
+                itemTable: itemTable,
+                masterData: masterData
+            ) {
+                dropRewards.append(normalDrop)
+            }
+
+            let rareDropRate = 0.001
+                * rewardContext.rareDropMultiplier
+                * (1 + 0.1 * (cbrt(Double(enemySeed.level)) - 1))
+            for rareDropOffset in enemy.rareDropItemIds.indices {
+                let purpose = "drop:rare:\(floorNumber):\(battleNumber):enemy:\(enemyIndex):candidate:\(rareDropOffset)"
+                let roll = ExplorationDeterministicRandom.uniform(
+                    rootSeed: rootSeed,
+                    purpose: purpose
+                )
+                guard roll < rareDropRate else {
+                    continue
+                }
+
+                let itemId = enemy.rareDropItemIds[rareDropOffset]
+                guard itemTable[itemId] != nil else {
+                    continue
+                }
+
+                let title = resolveTitle(
+                    enemyLevel: enemySeed.level,
+                    floorNumber: floorNumber,
+                    battleNumber: battleNumber,
+                    enemyIndex: enemyIndex,
+                    dropIndex: rareDropOffset,
+                    rewardContext: rewardContext,
+                    titles: titlesByAscendingQuality,
+                    rootSeed: rootSeed
+                )
+                let superRareId = resolveSuperRareId(
+                    title: title,
+                    floorNumber: floorNumber,
+                    battleNumber: battleNumber,
+                    enemyIndex: enemyIndex,
+                    dropIndex: rareDropOffset,
+                    rootSeed: rootSeed,
+                    masterData: masterData
+                )
+                dropRewards.append(
+                    ExplorationDropReward(
+                        itemID: .baseItem(
+                            itemId: itemId,
+                            titleId: title.id,
+                            superRareId: superRareId
+                        ),
+                        sourceFloorNumber: floorNumber,
+                        sourceBattleNumber: battleNumber
+                    )
+                )
+            }
+        }
+
+        return BattleRewards(
+            gold: gold,
+            experienceRewards: experienceRewards,
+            dropRewards: dropRewards
+        )
+    }
+
+    static func resolveNormalDrop(
+        enemyLevel: Int,
+        floorNumber: Int,
+        battleNumber: Int,
+        enemyIndex: Int,
+        rootSeed: UInt64,
+        titles: [MasterData.Title],
+        rewardContext: RewardContext,
+        itemTable: [Int: MasterData.Item],
+        masterData: MasterData
+    ) -> ExplorationDropReward? {
+        guard let tier = resolveNormalDropTier(
+            enemyLevel: enemyLevel,
+            floorNumber: floorNumber,
+            battleNumber: battleNumber,
+            enemyIndex: enemyIndex,
+            rootSeed: rootSeed
+        ) else {
+            return nil
+        }
+
+        let candidates = itemTable.values
+            .filter { $0.normalDropTier == tier }
+            .sorted { $0.id < $1.id }
+        guard !candidates.isEmpty else {
+            return nil
+        }
+
+        let itemRoll = ExplorationDeterministicRandom.integer(
+            upperBound: candidates.count,
+            rootSeed: rootSeed,
+            purpose: "drop:normal:item:\(floorNumber):\(battleNumber):enemy:\(enemyIndex):tier:\(tier)"
+        )
+        let item = candidates[itemRoll]
+        let title = resolveTitle(
+            enemyLevel: enemyLevel,
+            floorNumber: floorNumber,
+            battleNumber: battleNumber,
+            enemyIndex: enemyIndex,
+            dropIndex: tier,
+            rewardContext: rewardContext,
+            titles: titles,
+            rootSeed: rootSeed
+        )
+        let superRareId = resolveSuperRareId(
+            title: title,
+            floorNumber: floorNumber,
+            battleNumber: battleNumber,
+            enemyIndex: enemyIndex,
+            dropIndex: tier,
+            rootSeed: rootSeed,
+            masterData: masterData
+        )
+
+        return ExplorationDropReward(
+            itemID: .baseItem(
+                itemId: item.id,
+                titleId: title.id,
+                superRareId: superRareId
+            ),
+            sourceFloorNumber: floorNumber,
+            sourceBattleNumber: battleNumber
+        )
+    }
+
+    static func resolveNormalDropTier(
+        enemyLevel: Int,
+        floorNumber: Int,
+        battleNumber: Int,
+        enemyIndex: Int,
+        rootSeed: UInt64
+    ) -> Int? {
+        let cbrtLevel = cbrt(Double(enemyLevel))
+        let tierProbabilities: [(tier: Int, probability: Double)] = [
+            (8, clamp(0.005 + 0.015 * (cbrtLevel - 1), min: 0.005, max: 0.10)),
+            (7, clamp(0.020 + 0.020 * (cbrtLevel - 1), min: 0.020, max: 0.20)),
+            (6, clamp(0.040 + 0.030 * (cbrtLevel - 1), min: 0.040, max: 0.30)),
+            (5, clamp(0.080 + 0.040 * (cbrtLevel - 1), min: 0.080, max: 0.40)),
+            (4, clamp(0.160 + 0.050 * (cbrtLevel - 1), min: 0.160, max: 0.50)),
+            (3, clamp(0.320 + 0.060 * (cbrtLevel - 1), min: 0.320, max: 0.60)),
+            (2, clamp(0.640 + 0.070 * (cbrtLevel - 1), min: 0.640, max: 0.70)),
+            (1, 1.0)
+        ]
+
+        for tierProbability in tierProbabilities {
+            let purpose = "drop:normal:tier:\(floorNumber):\(battleNumber):enemy:\(enemyIndex):tier:\(tierProbability.tier)"
+            let roll = ExplorationDeterministicRandom.uniform(
+                rootSeed: rootSeed,
+                purpose: purpose
+            )
+            if roll < tierProbability.probability {
+                return tierProbability.tier
+            }
+        }
+
+        return nil
+    }
+
+    static func resolveTitle(
+        enemyLevel: Int,
+        floorNumber: Int,
+        battleNumber: Int,
+        enemyIndex: Int,
+        dropIndex: Int,
+        rewardContext: RewardContext,
+        titles: [MasterData.Title],
+        rootSeed: UInt64
+    ) -> MasterData.Title {
+        let rollCount = max(Int(rewardContext.defaultTitle.positiveMultiplier.rounded()), 1)
+        var bestTitle = rewardContext.defaultTitle
+        for rollIndex in 0..<rollCount {
+            let qualityBias = max(
+                1.0,
+                (1 + rewardContext.partyAverageLuck / 100.0
+                    + 0.15 * (cbrt(Double(enemyLevel)) - 1))
+                    * rewardContext.titleDropMultiplier
+                    * rewardContext.defaultTitle.positiveMultiplier
+            )
+            let weightedTitles = titles.enumerated().map { index, title in
+                (
+                    title,
+                    Double(title.dropWeight) * pow(qualityBias, Double(index))
+                )
+            }
+            let title = weightedRandomChoice(
+                from: weightedTitles,
+                rootSeed: rootSeed,
+                purpose: "drop:title:\(floorNumber):\(battleNumber):enemy:\(enemyIndex):drop:\(dropIndex):roll:\(rollIndex)"
+            ) ?? rewardContext.defaultTitle
+            if title.positiveMultiplier > bestTitle.positiveMultiplier {
+                bestTitle = title
+            }
+        }
+        return bestTitle
+    }
+
+    static func resolveSuperRareId(
+        title: MasterData.Title,
+        floorNumber: Int,
+        battleNumber: Int,
+        enemyIndex: Int,
+        dropIndex: Int,
+        rootSeed: UInt64,
+        masterData: MasterData
+    ) -> Int {
+        guard !masterData.superRares.isEmpty else {
+            return 0
+        }
+
+        let rollCount = max(Int(title.positiveMultiplier.rounded()), 1)
+        for rollIndex in 0..<rollCount {
+            let roll = ExplorationDeterministicRandom.uniform(
+                rootSeed: rootSeed,
+                purpose: "drop:superrare:\(floorNumber):\(battleNumber):enemy:\(enemyIndex):drop:\(dropIndex):roll:\(rollIndex)"
+            )
+            if roll < 0.000_001 {
+                let superRareIndex = ExplorationDeterministicRandom.integer(
+                    upperBound: masterData.superRares.count,
+                    rootSeed: rootSeed,
+                    purpose: "drop:superrare:pick:\(floorNumber):\(battleNumber):enemy:\(enemyIndex):drop:\(dropIndex)"
+                )
+                return masterData.superRares[superRareIndex].id
+            }
+        }
+
+        return 0
+    }
+
+    static func merged(
+        existing: [ExplorationExperienceReward],
+        additions: [ExplorationExperienceReward]
+    ) -> [ExplorationExperienceReward] {
+        let mergedExperience = (existing + additions).reduce(into: [Int: Int]()) { partial, reward in
+            partial[reward.characterId, default: 0] += reward.experience
+        }
+
+        return mergedExperience.keys.sorted().compactMap { characterId in
+            guard let experience = mergedExperience[characterId] else {
+                return nil
+            }
+            return ExplorationExperienceReward(characterId: characterId, experience: experience)
+        }
+    }
+
+    static func partyWideRewardMultiplier(
+        target: String,
+        statuses: [CharacterStatus],
+        skillTable: [Int: MasterData.Skill]
+    ) -> Double {
+        let skillIds = Array(Set(statuses.flatMap(\.skillIds))).sorted()
+        return rewardMultiplier(
+            target: target,
+            skillIds: skillIds,
+            skillTable: skillTable
+        )
+    }
+
+    static func characterRewardMultiplier(
+        target: String,
+        status: CharacterStatus?,
+        skillTable: [Int: MasterData.Skill]
+    ) -> Double {
+        guard let status else {
+            return 1.0
+        }
+
+        return rewardMultiplier(
+            target: target,
+            skillIds: Array(Set(status.skillIds)).sorted(),
+            skillTable: skillTable
+        )
+    }
+
+    static func rewardMultiplier(
+        target: String,
+        skillIds: [Int],
+        skillTable: [Int: MasterData.Skill]
+    ) -> Double {
+        var multiplier = 1.0
+        for skillId in skillIds {
+            guard let skill = skillTable[skillId] else {
+                continue
+            }
+
+            for effect in skill.effects where effect.kind == .rewardMultiplier && effect.target == target {
+                guard let value = effect.value else {
+                    continue
+                }
+
+                switch effect.operation {
+                case "pctAdd":
+                    multiplier *= 1.0 + value
+                case nil, "mul":
+                    multiplier *= value
+                default:
+                    continue
+                }
+            }
+        }
+        return multiplier
+    }
+
+    static func weightedRandomChoice<T>(
+        from values: [(value: T, weight: Double)],
+        rootSeed: UInt64,
+        purpose: String
+    ) -> T? {
+        let totalWeight = values.reduce(0.0) { $0 + max($1.weight, 0) }
+        guard totalWeight > 0 else {
+            return nil
+        }
+
+        let roll = ExplorationDeterministicRandom.uniform(
+            rootSeed: rootSeed,
+            purpose: purpose
+        ) * totalWeight
+        var cumulativeWeight = 0.0
+        for value in values {
+            cumulativeWeight += max(value.weight, 0)
+            if roll < cumulativeWeight {
+                return value.value
+            }
+        }
+
+        return values.last?.value
+    }
+
+    static func completionDate(
+        startedAt: Date,
+        interval: Int,
+        completedBattleCount: Int
+    ) -> Date {
+        startedAt.addingTimeInterval(Double(interval * completedBattleCount))
+    }
+
+    static func completedLoopCount(
+        completedBattleCount: Int,
+        battlesPerLoop: Int,
+        clearedAllBattles: Bool
+    ) -> Int {
+        if clearedAllBattles {
+            return max(completedBattleCount / max(battlesPerLoop, 1), 0)
+        }
+
+        return max((completedBattleCount - 1) / max(battlesPerLoop, 1), 0)
+    }
+
+    static func clamp(
+        _ value: Double,
+        min minimum: Double,
+        max maximum: Double
+    ) -> Double {
+        Swift.max(minimum, Swift.min(value, maximum))
+    }
+}
+
+private enum ExplorationDeterministicRandom {
+    static func uniform(
+        rootSeed: UInt64,
+        purpose: String
+    ) -> Double {
+        Double(state(rootSeed: rootSeed, purpose: purpose) >> 11) / Double(1 << 53)
+    }
+
+    static func integer(
+        upperBound: Int,
+        rootSeed: UInt64,
+        purpose: String
+    ) -> Int {
+        guard upperBound > 0 else {
+            return 0
+        }
+
+        return Int(
+            floor(
+                uniform(rootSeed: rootSeed, purpose: purpose)
+                    * Double(upperBound)
+            )
+        )
+    }
+
+    private static func state(
+        rootSeed: UInt64,
+        purpose: String
+    ) -> UInt64 {
+        splitMix64(rootSeed ^ hash(purpose))
+    }
+
+    private static func hash(_ string: String) -> UInt64 {
+        var hash: UInt64 = 0xcbf29ce484222325
+        for byte in string.utf8 {
+            hash ^= UInt64(byte)
+            hash &*= 0x100000001b3
+        }
+        return hash
+    }
+
+    private static func splitMix64(_ value: UInt64) -> UInt64 {
+        var state = value &+ 0x9e3779b97f4a7c15
+        state = (state ^ (state >> 30)) &* 0xbf58476d1ce4e5b9
+        state = (state ^ (state >> 27)) &* 0x94d049bb133111eb
+        return state ^ (state >> 31)
+    }
+}

@@ -23,6 +23,7 @@
         <attribute name="stackKeyRawValue" optional="NO" attributeType="String" defaultValueString="0:0:0:0:0:0"/>
     </entity>
     <entity name="PlayerStateEntity" representedClassName="PlayerStateEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="autoReviveDefeatedCharacters" optional="NO" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="gold" optional="NO" attributeType="Integer 64" defaultValueString="1000" usesScalarValueType="YES"/>
         <attribute name="nextCharacterId" optional="NO" attributeType="Integer 64" defaultValueString="1" usesScalarValueType="YES"/>
     </entity>
@@ -31,10 +32,31 @@
         <attribute name="name" optional="NO" attributeType="String" defaultValueString="パーティ1"/>
         <attribute name="partyId" optional="NO" attributeType="Integer 64" usesScalarValueType="YES"/>
     </entity>
+    <entity name="RunSessionEntity" representedClassName="RunSessionEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="battleLogsRawValue" optional="NO" attributeType="String" defaultValueString="[]"/>
+        <attribute name="completedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="completedBattleCount" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="completedLoopCount" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="completionReasonRawValue" optional="YES" attributeType="String"/>
+        <attribute name="currentPartyHPsRawValue" optional="NO" attributeType="String" defaultValueString="[]"/>
+        <attribute name="dropRewardsRawValue" optional="NO" attributeType="String" defaultValueString="[]"/>
+        <attribute name="experienceRewardsRawValue" optional="NO" attributeType="String" defaultValueString="[]"/>
+        <attribute name="goldBuffer" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="labyrinthId" optional="NO" attributeType="Integer 64" usesScalarValueType="YES"/>
+        <attribute name="maximumLoopCount" optional="NO" attributeType="Integer 64" defaultValueString="1" usesScalarValueType="YES"/>
+        <attribute name="memberCharacterIdsRawValue" optional="NO" attributeType="String" defaultValueString="[]"/>
+        <attribute name="partyId" optional="NO" attributeType="Integer 64" usesScalarValueType="YES"/>
+        <attribute name="partyRunId" optional="NO" attributeType="Integer 64" usesScalarValueType="YES"/>
+        <attribute name="rewardsApplied" optional="NO" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="rootSeedSigned" optional="NO" attributeType="Integer 64" usesScalarValueType="YES"/>
+        <attribute name="startedAt" optional="NO" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="targetFloorNumber" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+    </entity>
     <elements>
         <element name="PlayerStateEntity" positionX="-63" positionY="-18" width="128" height="59"/>
         <element name="CharacterEntity" positionX="178" positionY="-18" width="128" height="254"/>
         <element name="PartyEntity" positionX="-63" positionY="101" width="128" height="74"/>
         <element name="InventoryItemEntity" positionX="-63" positionY="197" width="128" height="74"/>
+        <element name="RunSessionEntity" positionX="178" positionY="281" width="128" height="299"/>
     </elements>
 </model>

@@ -240,6 +240,45 @@ struct UmbraTests {
     }
 
     @Test
+    func reviveOperationsRestoreDefeatedCharactersAndPersistAutoReviveSetting() throws {
+        let container = PersistenceController(inMemory: true).container
+        let rosterRepository = GuildRosterRepository(container: container)
+        let masterData = try loadGeneratedMasterData()
+
+        let firstCharacter = try rosterRepository.hireCharacter(
+            raceId: try #require(masterData.races.first?.id),
+            jobId: try #require(masterData.jobs.first?.id),
+            aptitudeId: try #require(masterData.aptitudes.first?.id),
+            masterData: masterData
+        ).character
+        let secondCharacter = try rosterRepository.hireCharacter(
+            raceId: try #require(masterData.races.dropFirst().first?.id ?? masterData.races.first?.id),
+            jobId: try #require(masterData.jobs.dropFirst().first?.id ?? masterData.jobs.first?.id),
+            aptitudeId: try #require(masterData.aptitudes.dropFirst().first?.id ?? masterData.aptitudes.first?.id),
+            masterData: masterData
+        ).character
+
+        try setCurrentHP(characterId: firstCharacter.characterId, to: 0, in: container)
+        try setCurrentHP(characterId: secondCharacter.characterId, to: 0, in: container)
+
+        _ = try rosterRepository.reviveCharacter(
+            characterId: firstCharacter.characterId,
+            masterData: masterData
+        )
+        let afterSingleRevive = try rosterRepository.loadCharacters()
+        #expect(afterSingleRevive.first(where: { $0.characterId == firstCharacter.characterId })?.currentHP ?? 0 > 0)
+        #expect(afterSingleRevive.first(where: { $0.characterId == secondCharacter.characterId })?.currentHP == 0)
+
+        _ = try rosterRepository.reviveAllDefeated(masterData: masterData)
+        let afterBulkRevive = try rosterRepository.loadCharacters()
+        #expect(afterBulkRevive.allSatisfy { $0.currentHP > 0 })
+
+        let updatedSnapshot = try rosterRepository.setAutoReviveDefeatedCharactersEnabled(true)
+        #expect(updatedSnapshot.playerState.autoReviveDefeatedCharacters)
+        #expect(try rosterRepository.loadPlayerState().autoReviveDefeatedCharacters)
+    }
+
+    @Test
     func equippingAndUnequippingUpdatesInventoryAndCharacterStacks() throws {
         let container = PersistenceController(inMemory: true).container
         let rosterRepository = GuildRosterRepository(container: container)
@@ -312,6 +351,187 @@ struct UmbraTests {
         #expect(batch.inventoryStacks.last?.itemID.jewelTitleId == 1)
     }
 
+    @Test
+    func startingBulkRunsKeepsStartedAtAlignedAcrossParties() throws {
+        let container = PersistenceController(inMemory: true).container
+        let rosterRepository = GuildRosterRepository(container: container)
+        let partyRepository = PartyRepository(container: container)
+        let explorationStore = ExplorationStore(repository: ExplorationRepository(container: container))
+        let masterData = try loadGeneratedMasterData()
+
+        let firstCharacter = try rosterRepository.hireCharacter(
+            raceId: try #require(masterData.races.first?.id),
+            jobId: try #require(masterData.jobs.first?.id),
+            aptitudeId: try #require(masterData.aptitudes.first?.id),
+            masterData: masterData
+        ).character
+        let secondCharacter = try rosterRepository.hireCharacter(
+            raceId: try #require(masterData.races.dropFirst().first?.id ?? masterData.races.first?.id),
+            jobId: try #require(masterData.jobs.dropFirst().first?.id ?? masterData.jobs.first?.id),
+            aptitudeId: try #require(masterData.aptitudes.dropFirst().first?.id ?? masterData.aptitudes.first?.id),
+            masterData: masterData
+        ).character
+
+        try partyRepository.unlockParty()
+        try partyRepository.addCharacter(characterId: firstCharacter.characterId, toParty: 1)
+        try partyRepository.addCharacter(characterId: secondCharacter.characterId, toParty: 2)
+
+        let startedAt = Date(timeIntervalSinceReferenceDate: 123_456)
+        explorationStore.startRuns(
+            partyIds: [1, 2],
+            labyrinthId: try #require(masterData.labyrinths.first?.id),
+            startedAt: startedAt,
+            masterData: masterData
+        )
+
+        let runs = explorationStore.runs.sorted { $0.partyId < $1.partyId }
+        #expect(runs.count == 2)
+        #expect(runs.allSatisfy { $0.startedAt == startedAt })
+    }
+
+    @Test
+    func activeRunBlocksPartyAndEquipmentMutations() throws {
+        let container = PersistenceController(inMemory: true).container
+        let rosterRepository = GuildRosterRepository(container: container)
+        let partyRepository = PartyRepository(container: container)
+        let equipmentRepository = EquipmentRepository(container: container)
+        let explorationRepository = ExplorationRepository(container: container)
+        let masterData = try loadGeneratedMasterData()
+
+        let character = try rosterRepository.hireCharacter(
+            raceId: try #require(masterData.races.first?.id),
+            jobId: try #require(masterData.jobs.first?.id),
+            aptitudeId: try #require(masterData.aptitudes.first?.id),
+            masterData: masterData
+        ).character
+        let itemID = CompositeItemID.baseItem(itemId: try #require(masterData.items.first?.id))
+
+        try partyRepository.addCharacter(characterId: character.characterId, toParty: 1)
+        try equipmentRepository.addInventoryStacks(
+            [CompositeItemStack(itemID: itemID, count: 1)],
+            masterData: masterData
+        )
+        _ = try explorationRepository.startRun(
+            partyId: 1,
+            labyrinthId: try #require(masterData.labyrinths.first?.id),
+            startedAt: Date(timeIntervalSinceReferenceDate: 200_000),
+            maximumLoopCount: 1,
+            masterData: masterData
+        )
+
+        do {
+            try partyRepository.removeCharacter(characterId: character.characterId, fromParty: 1)
+            Issue.record("探索中パーティからメンバーを外せてはいけません。")
+        } catch {
+            let localizedError = error as? LocalizedError
+            #expect(localizedError?.errorDescription?.contains("出撃中") == true)
+        }
+
+        do {
+            _ = try equipmentRepository.equip(
+                itemID: itemID,
+                toCharacter: character.characterId,
+                masterData: masterData
+            )
+            Issue.record("探索中キャラクターの装備変更は失敗する必要があります。")
+        } catch {
+            let localizedError = error as? LocalizedError
+            #expect(localizedError?.errorDescription?.contains("出撃中") == true)
+        }
+    }
+
+    @Test
+    func refreshingCompletedRunAppliesRewardsToPlayerAndCharacterState() throws {
+        let container = PersistenceController(inMemory: true).container
+        let rosterRepository = GuildRosterRepository(container: container)
+        let partyRepository = PartyRepository(container: container)
+        let explorationRepository = ExplorationRepository(container: container)
+        let masterData = try loadGeneratedMasterData()
+
+        let character = try rosterRepository.hireCharacter(
+            raceId: try #require(masterData.races.first?.id),
+            jobId: try #require(masterData.jobs.first?.id),
+            aptitudeId: try #require(masterData.aptitudes.first?.id),
+            masterData: masterData
+        ).character
+        try partyRepository.addCharacter(characterId: character.characterId, toParty: 1)
+        try promoteCharacter(
+            characterId: character.characterId,
+            level: 40,
+            in: container
+        )
+
+        let startedAt = Date(timeIntervalSinceReferenceDate: 300_000)
+        _ = try explorationRepository.startRun(
+            partyId: 1,
+            labyrinthId: try #require(masterData.labyrinths.first(where: { $0.name == "デバッグの遺跡" })?.id),
+            startedAt: startedAt,
+            maximumLoopCount: 1,
+            masterData: masterData
+        )
+
+        let snapshot = try explorationRepository.refreshRuns(
+            at: startedAt.addingTimeInterval(10),
+            masterData: masterData
+        )
+        let completedRun = try #require(snapshot.runs.first)
+        let completion = try #require(completedRun.completion)
+
+        #expect(snapshot.didApplyRewards)
+        #expect(completion.reason == .cleared)
+        #expect(completion.gold == 40)
+        #expect(completion.experienceRewards == [
+            ExplorationExperienceReward(characterId: character.characterId, experience: 40)
+        ])
+
+        let playerState = try rosterRepository.loadPlayerState()
+        let updatedCharacter = try #require(
+            rosterRepository.loadCharacters().first(where: { $0.characterId == character.characterId })
+        )
+        #expect(playerState.gold == PlayerState.initial.gold - 1 + completion.gold)
+        #expect(updatedCharacter.experience == 40)
+        #expect(updatedCharacter.currentHP == completedRun.currentPartyHPs.first)
+    }
+
+    @Test
+    func autoReviveRestoresDefeatedPartyMembersWhenRunReturns() throws {
+        let container = PersistenceController(inMemory: true).container
+        let rosterRepository = GuildRosterRepository(container: container)
+        let partyRepository = PartyRepository(container: container)
+        let explorationRepository = ExplorationRepository(container: container)
+        let masterData = try loadGeneratedMasterData()
+
+        let character = try rosterRepository.hireCharacter(
+            raceId: try #require(masterData.races.first?.id),
+            jobId: try #require(masterData.jobs.first?.id),
+            aptitudeId: try #require(masterData.aptitudes.first?.id),
+            masterData: masterData
+        ).character
+        try partyRepository.addCharacter(characterId: character.characterId, toParty: 1)
+        _ = try rosterRepository.setAutoReviveDefeatedCharactersEnabled(true)
+
+        let startedAt = Date(timeIntervalSinceReferenceDate: 500_000)
+        _ = try explorationRepository.startRun(
+            partyId: 1,
+            labyrinthId: try #require(masterData.labyrinths.first(where: { $0.name == "デバッグの塔" })?.id),
+            startedAt: startedAt,
+            maximumLoopCount: 1,
+            masterData: masterData
+        )
+
+        let snapshot = try explorationRepository.refreshRuns(
+            at: startedAt.addingTimeInterval(10),
+            masterData: masterData
+        )
+        let completedRun = try #require(snapshot.runs.first)
+        #expect(completedRun.completion?.reason == .defeated)
+
+        let updatedCharacter = try #require(
+            rosterRepository.loadCharacters().first(where: { $0.characterId == character.characterId })
+        )
+        #expect(updatedCharacter.currentHP > 0)
+    }
+
 }
 
 @MainActor
@@ -349,6 +569,37 @@ private func generatedMasterDataURL() -> URL {
     let testsDirectory = URL(fileURLWithPath: #filePath).deletingLastPathComponent()
     let repositoryRoot = testsDirectory.deletingLastPathComponent()
     return repositoryRoot.appending(path: "Generator/Output/masterdata.json")
+}
+
+@MainActor
+private func promoteCharacter(
+    characterId: Int,
+    level: Int,
+    in container: NSPersistentContainer
+) throws {
+    let context = container.viewContext
+    let request = NSFetchRequest<CharacterEntity>(entityName: "CharacterEntity")
+    request.fetchLimit = 1
+    request.predicate = NSPredicate(format: "characterId == %d", characterId)
+    let character = try #require(context.fetch(request).first)
+    character.level = Int64(level)
+    character.currentHP = 1
+    try context.save()
+}
+
+@MainActor
+private func setCurrentHP(
+    characterId: Int,
+    to currentHP: Int,
+    in container: NSPersistentContainer
+) throws {
+    let context = container.viewContext
+    let request = NSFetchRequest<CharacterEntity>(entityName: "CharacterEntity")
+    request.fetchLimit = 1
+    request.predicate = NSPredicate(format: "characterId == %d", characterId)
+    let character = try #require(context.fetch(request).first)
+    character.currentHP = Int64(currentHP)
+    try context.save()
 }
 
 @MainActor

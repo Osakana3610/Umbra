@@ -2,18 +2,18 @@
 
 import Foundation
 
-enum BattleOutcome: String, Equatable, Sendable {
+enum BattleOutcome: String, Codable, Equatable, Sendable {
     case victory
     case draw
     case defeat
 }
 
-enum BattleSide: String, Equatable, Sendable {
+enum BattleSide: String, Codable, Equatable, Sendable {
     case ally
     case enemy
 }
 
-enum BattleLogActionKind: String, Equatable, Sendable {
+enum BattleLogActionKind: String, Codable, Equatable, Sendable {
     case breath
     case attack
     case recoverySpell
@@ -25,11 +25,11 @@ enum BattleLogActionKind: String, Equatable, Sendable {
     case pursuit
 }
 
-enum BattleActionFlag: String, Equatable, Sendable {
+enum BattleActionFlag: String, Codable, Equatable, Sendable {
     case critical
 }
 
-enum BattleTargetResultKind: String, Equatable, Sendable {
+enum BattleTargetResultKind: String, Codable, Equatable, Sendable {
     case damage
     case heal
     case miss
@@ -37,29 +37,29 @@ enum BattleTargetResultKind: String, Equatable, Sendable {
     case ailmentRemoved
 }
 
-enum BattleTargetResultFlag: String, Equatable, Sendable {
+enum BattleTargetResultFlag: String, Codable, Equatable, Sendable {
     case defeated
     case revived
     case guarded
 }
 
-enum BattleAilment: Int, Equatable, Sendable {
+enum BattleAilment: Int, Codable, Equatable, Sendable {
     case sleep = 1
 }
 
-struct BattleContext: Equatable, Sendable {
+struct BattleContext: Codable, Equatable, Sendable {
     let runId: String
     let rootSeed: UInt64
     let floorNumber: Int
     let battleNumber: Int
 }
 
-struct BattleEnemySeed: Equatable, Sendable {
+struct BattleEnemySeed: Codable, Equatable, Sendable {
     let enemyId: Int
     let level: Int
 }
 
-struct BattleCombatantID: RawRepresentable, Hashable, Equatable, Sendable {
+struct BattleCombatantID: RawRepresentable, Codable, Hashable, Equatable, Sendable {
     let rawValue: String
 
     init(rawValue: String) {
@@ -67,7 +67,7 @@ struct BattleCombatantID: RawRepresentable, Hashable, Equatable, Sendable {
     }
 }
 
-struct BattleTargetResult: Equatable, Sendable {
+struct BattleTargetResult: Codable, Equatable, Sendable {
     let targetId: BattleCombatantID
     let resultKind: BattleTargetResultKind
     let value: Int?
@@ -75,7 +75,7 @@ struct BattleTargetResult: Equatable, Sendable {
     let flags: [BattleTargetResultFlag]
 }
 
-struct BattleActionRecord: Equatable, Sendable {
+struct BattleActionRecord: Codable, Equatable, Sendable {
     let actorId: BattleCombatantID
     let actionKind: BattleLogActionKind
     let actionRef: Int?
@@ -84,12 +84,12 @@ struct BattleActionRecord: Equatable, Sendable {
     let results: [BattleTargetResult]
 }
 
-struct BattleTurnRecord: Equatable, Sendable {
+struct BattleTurnRecord: Codable, Equatable, Sendable {
     let turnNumber: Int
     let actions: [BattleActionRecord]
 }
 
-struct BattleRecord: Equatable, Sendable {
+struct BattleRecord: Codable, Equatable, Sendable {
     let runId: String
     let floorNumber: Int
     let battleNumber: Int
@@ -97,7 +97,7 @@ struct BattleRecord: Equatable, Sendable {
     let turns: [BattleTurnRecord]
 }
 
-struct BattleCombatantSnapshot: Equatable, Sendable, Identifiable {
+struct BattleCombatantSnapshot: Codable, Equatable, Sendable, Identifiable {
     let id: BattleCombatantID
     let name: String
     let side: BattleSide

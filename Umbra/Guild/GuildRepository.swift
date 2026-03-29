@@ -28,6 +28,7 @@ enum GuildRepositoryError: LocalizedError {
     case inventoryItemUnavailable
     case equipLimitReached(maximumCount: Int)
     case equippedItemNotFound
+    case characterNotDefeated(characterId: Int)
 
     var errorDescription: String? {
         switch self {
@@ -57,6 +58,8 @@ enum GuildRepositoryError: LocalizedError {
             "これ以上装備できません。装備上限は\(maximumCount)件です。"
         case .equippedItemNotFound:
             "装備中のアイテムが見つかりません。"
+        case .characterNotDefeated(let characterId):
+            "キャラクターは戦闘不能ではありません。 characterId=\(characterId)"
         }
     }
 }
@@ -80,7 +83,8 @@ final class GuildRosterRepository {
         return GuildRosterSnapshot(
             playerState: PlayerState(
                 gold: Int(playerStateEntity.gold),
-                nextCharacterId: Int(playerStateEntity.nextCharacterId)
+                nextCharacterId: Int(playerStateEntity.nextCharacterId),
+                autoReviveDefeatedCharacters: playerStateEntity.autoReviveDefeatedCharacters
             ),
             characters: try GuildPersistenceBridge.fetchCharacters(in: context)
                 .map(GuildPersistenceBridge.makeCharacterRecord)
@@ -142,20 +146,63 @@ final class GuildRosterRepository {
         return HireCharacterResult(
             playerState: PlayerState(
                 gold: Int(playerStateEntity.gold),
-                nextCharacterId: Int(playerStateEntity.nextCharacterId)
+                nextCharacterId: Int(playerStateEntity.nextCharacterId),
+                autoReviveDefeatedCharacters: playerStateEntity.autoReviveDefeatedCharacters
             ),
             character: character,
             hireCost: hireCost
         )
+    }
+
+    func reviveCharacter(
+        characterId: Int,
+        masterData: MasterData
+    ) throws -> GuildRosterSnapshot {
+        let context = container.viewContext
+        let character = try GuildPersistenceBridge.fetchCharacterEntity(
+            characterId: characterId,
+            in: context
+        )
+        guard character.currentHP == 0 else {
+            throw GuildRepositoryError.characterNotDefeated(characterId: characterId)
+        }
+
+        try GuildPersistenceBridge.restoreCurrentHPToMax(of: character, masterData: masterData)
+        try context.save()
+        return try loadSnapshot()
+    }
+
+    func reviveAllDefeated(masterData: MasterData) throws -> GuildRosterSnapshot {
+        let context = container.viewContext
+        let characters = try GuildPersistenceBridge.fetchCharacters(in: context)
+
+        for character in characters where character.currentHP == 0 {
+            try GuildPersistenceBridge.restoreCurrentHPToMax(of: character, masterData: masterData)
+        }
+
+        if context.hasChanges {
+            try context.save()
+        }
+        return try loadSnapshot()
+    }
+
+    func setAutoReviveDefeatedCharactersEnabled(_ isEnabled: Bool) throws -> GuildRosterSnapshot {
+        let context = container.viewContext
+        let playerState = try GuildPersistenceBridge.fetchOrCreatePlayerState(in: context)
+        playerState.autoReviveDefeatedCharacters = isEnabled
+        try context.save()
+        return try loadSnapshot()
     }
 }
 
 @MainActor
 final class PartyRepository {
     private let container: NSPersistentContainer
+    private let explorationRepository: ExplorationRepository
 
     init(container: NSPersistentContainer) {
         self.container = container
+        explorationRepository = ExplorationRepository(container: container)
     }
 
     func loadParties() throws -> [PartyRecord] {
@@ -212,6 +259,8 @@ final class PartyRepository {
 
     func addCharacter(characterId: Int, toParty partyId: Int) throws {
         let context = container.viewContext
+        try explorationRepository.validateCharacterMutationIsAllowed(characterId: characterId)
+        try explorationRepository.validatePartyMutationIsAllowed(partyId: partyId)
         let parties = try GuildPersistenceBridge.fetchOrCreateInitialParties(in: context)
         guard try GuildPersistenceBridge.characterExists(characterId: characterId, in: context) else {
             throw GuildRepositoryError.characterNotFound(characterId: characterId)
@@ -246,6 +295,7 @@ final class PartyRepository {
 
     func removeCharacter(characterId: Int, fromParty partyId: Int) throws {
         let context = container.viewContext
+        try explorationRepository.validatePartyMutationIsAllowed(partyId: partyId)
         let party = try GuildPersistenceBridge.fetchPartyEntity(partyId: partyId, in: context)
         var members = GuildPersistenceBridge.memberCharacterIds(from: party)
         members.removeAll { $0 == characterId }
@@ -255,6 +305,7 @@ final class PartyRepository {
 
     func replacePartyMembers(partyId: Int, memberCharacterIds: [Int]) throws {
         let context = container.viewContext
+        try explorationRepository.validatePartyMutationIsAllowed(partyId: partyId)
         let party = try GuildPersistenceBridge.fetchPartyEntity(partyId: partyId, in: context)
         let existingMembers = GuildPersistenceBridge.memberCharacterIds(from: party)
 
@@ -272,9 +323,11 @@ final class PartyRepository {
 @MainActor
 final class EquipmentRepository {
     private let container: NSPersistentContainer
+    private let explorationRepository: ExplorationRepository
 
     init(container: NSPersistentContainer) {
         self.container = container
+        explorationRepository = ExplorationRepository(container: container)
     }
 
     func loadInventoryStacks() throws -> [CompositeItemStack] {
@@ -334,6 +387,7 @@ final class EquipmentRepository {
         toCharacter characterId: Int,
         masterData: MasterData
     ) throws -> CharacterRecord {
+        try explorationRepository.validateCharacterMutationIsAllowed(characterId: characterId)
         guard itemID.isValid(in: masterData) else {
             throw GuildRepositoryError.invalidItemStack
         }
@@ -378,6 +432,7 @@ final class EquipmentRepository {
         fromCharacter characterId: Int,
         masterData: MasterData
     ) throws -> CharacterRecord {
+        try explorationRepository.validateCharacterMutationIsAllowed(characterId: characterId)
         guard itemID.isValid(in: masterData) else {
             throw GuildRepositoryError.invalidItemStack
         }
@@ -444,6 +499,7 @@ private enum GuildPersistenceBridge {
         }
         playerState.gold = Int64(PlayerState.initial.gold)
         playerState.nextCharacterId = Int64(PlayerState.initial.nextCharacterId)
+        playerState.autoReviveDefeatedCharacters = PlayerState.initial.autoReviveDefeatedCharacters
         return playerState
     }
 
@@ -680,6 +736,18 @@ private enum GuildPersistenceBridge {
         }
 
         entity.currentHP = Int64(min(max(Int(entity.currentHP), 0), status.maxHP))
+    }
+
+    static func restoreCurrentHPToMax(
+        of entity: CharacterEntity,
+        masterData: MasterData
+    ) throws {
+        let character = makeCharacterRecord(from: entity)
+        guard let status = CharacterDerivedStatsCalculator.status(for: character, masterData: masterData) else {
+            throw ExplorationRepositoryError.invalidRunMember(characterId: Int(entity.characterId))
+        }
+
+        entity.currentHP = Int64(status.maxHP)
     }
 
     static func aggregatedInventoryCounts(

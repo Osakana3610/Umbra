@@ -28,6 +28,24 @@ struct GuildHomeView: View {
                         .padding(.vertical, 4)
                     }
                     .accessibilityIdentifier("hire-entry-link")
+
+                    NavigationLink {
+                        ReviveMenuView(masterData: masterData, rosterStore: rosterStore)
+                    } label: {
+                        HStack(spacing: 12) {
+                            Image(systemName: "cross.case")
+                                .font(.title2)
+                                .foregroundStyle(.tint)
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("蘇生メニュー")
+                                    .font(.headline)
+                                Text("戦闘不能のキャラクターを蘇生します。")
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                        .padding(.vertical, 4)
+                    }
                 }
 
                 Section("雇用中のキャラクター") {
@@ -58,6 +76,18 @@ struct GuildHomeView: View {
             }
         }
         .navigationTitle("ギルド")
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button("一括蘇生") {
+                    rosterStore.reviveAllDefeated(masterData: masterData)
+                }
+                .disabled(defeatedCharacters.isEmpty || rosterStore.isMutating)
+            }
+        }
+    }
+
+    private var defeatedCharacters: [CharacterRecord] {
+        rosterStore.characters.filter { $0.currentHP == 0 }
     }
 
     private func summaryText(for character: CharacterRecord) -> String {

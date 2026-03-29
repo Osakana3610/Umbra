@@ -10,6 +10,7 @@ struct UmbraApp: App {
     @State private var rosterStore: GuildRosterStore
     @State private var partyStore: PartyStore
     @State private var equipmentStore: EquipmentInventoryStore
+    @State private var explorationStore: ExplorationStore
 
     init() {
         let persistenceController = PersistenceController.shared
@@ -32,6 +33,11 @@ struct UmbraApp: App {
                 repository: equipmentRepository
             )
         )
+        _explorationStore = State(
+            initialValue: ExplorationStore(
+                repository: ExplorationRepository(container: persistenceController.container)
+            )
+        )
     }
 
     var body: some Scene {
@@ -41,6 +47,7 @@ struct UmbraApp: App {
                 rosterStore: rosterStore,
                 partyStore: partyStore,
                 equipmentStore: equipmentStore,
+                explorationStore: explorationStore,
                 equipmentRepository: equipmentRepository
             )
         }

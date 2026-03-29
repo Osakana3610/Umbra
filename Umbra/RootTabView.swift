@@ -7,6 +7,7 @@ struct RootTabView: View {
     let rosterStore: GuildRosterStore
     let partyStore: PartyStore
     let equipmentStore: EquipmentInventoryStore
+    let explorationStore: ExplorationStore
     let equipmentRepository: EquipmentRepository
 
     var body: some View {
@@ -35,7 +36,8 @@ struct RootTabView: View {
                     masterData: masterData,
                     rosterStore: rosterStore,
                     partyStore: partyStore,
-                    equipmentStore: equipmentStore
+                    equipmentStore: equipmentStore,
+                    explorationStore: explorationStore
                 )
             }
             .tabItem {
