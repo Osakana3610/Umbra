@@ -5,6 +5,7 @@ import SwiftUI
 @main
 struct UmbraApp: App {
     let persistenceController: PersistenceController
+    let equipmentRepository: EquipmentRepository
     @State private var masterDataStore: MasterDataStore
     @State private var rosterStore: GuildRosterStore
     @State private var partyStore: PartyStore
@@ -12,7 +13,9 @@ struct UmbraApp: App {
 
     init() {
         let persistenceController = PersistenceController.shared
+        let equipmentRepository = EquipmentRepository(container: persistenceController.container)
         self.persistenceController = persistenceController
+        self.equipmentRepository = equipmentRepository
         _masterDataStore = State(initialValue: MasterDataStore())
         _rosterStore = State(
             initialValue: GuildRosterStore(
@@ -26,7 +29,7 @@ struct UmbraApp: App {
         )
         _equipmentStore = State(
             initialValue: EquipmentInventoryStore(
-                repository: EquipmentRepository(container: persistenceController.container)
+                repository: equipmentRepository
             )
         )
     }
@@ -37,7 +40,8 @@ struct UmbraApp: App {
                 masterDataStore: masterDataStore,
                 rosterStore: rosterStore,
                 partyStore: partyStore,
-                equipmentStore: equipmentStore
+                equipmentStore: equipmentStore,
+                equipmentRepository: equipmentRepository
             )
         }
     }

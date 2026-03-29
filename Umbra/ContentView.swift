@@ -7,6 +7,7 @@ struct ContentView: View {
     let rosterStore: GuildRosterStore
     let partyStore: PartyStore
     let equipmentStore: EquipmentInventoryStore
+    let equipmentRepository: EquipmentRepository
 
     var body: some View {
         Group {
@@ -36,7 +37,8 @@ struct ContentView: View {
                     masterData: masterData,
                     rosterStore: rosterStore,
                     partyStore: partyStore,
-                    equipmentStore: equipmentStore
+                    equipmentStore: equipmentStore,
+                    equipmentRepository: equipmentRepository
                 )
             }
         }
@@ -58,6 +60,7 @@ struct ContentView: View {
         masterDataStore: MasterDataStore(phase: .loading),
         rosterStore: GuildRosterStore(phase: .loading, repository: rosterRepository),
         partyStore: PartyStore(phase: .loading, repository: partyRepository),
-        equipmentStore: EquipmentInventoryStore(repository: equipmentRepository)
+        equipmentStore: EquipmentInventoryStore(repository: equipmentRepository),
+        equipmentRepository: equipmentRepository
     )
 }

@@ -7,6 +7,7 @@ struct RootTabView: View {
     let rosterStore: GuildRosterStore
     let partyStore: PartyStore
     let equipmentStore: EquipmentInventoryStore
+    let equipmentRepository: EquipmentRepository
 
     var body: some View {
         TabView {
@@ -54,10 +55,10 @@ struct RootTabView: View {
             }
 
             NavigationStack {
-                PlaceholderRootView(
-                    title: "その他",
-                    systemImage: "ellipsis.circle",
-                    description: "追加メニューはこれから実装します。"
+                DebugMenuView(
+                    masterData: masterData,
+                    equipmentRepository: equipmentRepository,
+                    equipmentStore: equipmentStore
                 )
                 .navigationTitle("その他")
             }

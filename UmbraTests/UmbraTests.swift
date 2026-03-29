@@ -276,6 +276,42 @@ struct UmbraTests {
         #expect(try equipmentRepository.loadInventoryStacks() == [CompositeItemStack(itemID: itemID, count: 2)])
     }
 
+    @Test
+    func debugItemBatchGeneratorMovesIntoNextGroupWhenTitleOnlyIsExhausted() {
+        let masterData = debugItemGenerationMasterData()
+        let generator = DebugItemBatchGenerator(masterData: masterData)
+
+        let batch = generator.generate(requestedCombinationCount: 2, stackCount: 50)
+
+        #expect(batch.generatedCombinationCount == 2)
+        #expect(batch.inventoryStacks.count == 2)
+        #expect(batch.inventoryStacks[0].count == 50)
+        #expect(batch.inventoryStacks[0].itemID.baseTitleId == 1)
+        #expect(batch.inventoryStacks[0].itemID.baseSuperRareId == 0)
+        #expect(batch.inventoryStacks[0].itemID.jewelItemId == 0)
+        #expect(batch.inventoryStacks[1].itemID.baseTitleId == 1)
+        #expect(batch.inventoryStacks[1].itemID.baseSuperRareId == 1)
+        #expect(batch.inventoryStacks[1].itemID.jewelItemId == 0)
+    }
+
+    @Test
+    func debugItemBatchGeneratorStopsAfterAllAvailableCombinations() {
+        let masterData = debugItemGenerationMasterData()
+        let generator = DebugItemBatchGenerator(masterData: masterData)
+
+        let batch = generator.generate(requestedCombinationCount: 10, stackCount: 99)
+
+        #expect(generator.totalCombinationCount == 3)
+        #expect(batch.generatedCombinationCount == 3)
+        #expect(batch.inventoryStacks.count == 3)
+        #expect(batch.inventoryStacks.last?.count == 99)
+        #expect(batch.inventoryStacks.last?.itemID.baseSuperRareId == 1)
+        #expect(batch.inventoryStacks.last?.itemID.baseTitleId == 1)
+        #expect(batch.inventoryStacks.last?.itemID.jewelItemId == 2)
+        #expect(batch.inventoryStacks.last?.itemID.jewelSuperRareId == 1)
+        #expect(batch.inventoryStacks.last?.itemID.jewelTitleId == 1)
+    }
+
 }
 
 @MainActor
@@ -330,4 +366,87 @@ private func spellIds(named names: [String], in masterData: MasterData) throws -
     try names.map { name in
         try #require(masterData.spells.first(where: { $0.name == name })?.id)
     }
+}
+
+private func debugItemGenerationMasterData() -> MasterData {
+    let baseStats = MasterData.BaseStats(
+        vitality: 0,
+        strength: 0,
+        mind: 0,
+        intelligence: 0,
+        agility: 0,
+        luck: 0
+    )
+    let battleStats = MasterData.BattleStats(
+        maxHP: 0,
+        physicalAttack: 0,
+        physicalDefense: 0,
+        magic: 0,
+        magicDefense: 0,
+        healing: 0,
+        accuracy: 0,
+        evasion: 0,
+        attackCount: 0,
+        criticalRate: 0,
+        breathPower: 0
+    )
+
+    return MasterData(
+        metadata: MasterData.Metadata(generator: "test"),
+        races: [],
+        jobs: [],
+        aptitudes: [],
+        items: [
+            MasterData.Item(
+                id: 1,
+                name: "テスト剣",
+                category: .sword,
+                rarity: .normal,
+                basePrice: 1,
+                nativeBaseStats: baseStats,
+                nativeBattleStats: battleStats,
+                skillIds: [],
+                rangeClass: .melee,
+                normalDropTier: 1
+            ),
+            MasterData.Item(
+                id: 2,
+                name: "テスト宝石",
+                category: .jewel,
+                rarity: .normal,
+                basePrice: 1,
+                nativeBaseStats: baseStats,
+                nativeBattleStats: battleStats,
+                skillIds: [],
+                rangeClass: .none,
+                normalDropTier: 1
+            )
+        ],
+        titles: [
+            MasterData.Title(
+                id: 1,
+                key: "test",
+                name: "テスト",
+                positiveMultiplier: 1.0,
+                negativeMultiplier: 1.0,
+                dropWeight: 1
+            )
+        ],
+        superRares: [
+            MasterData.SuperRare(
+                id: 1,
+                name: "極",
+                skillIds: []
+            )
+        ],
+        skills: [],
+        spells: [],
+        recruitNames: MasterData.RecruitNames(
+            male: [],
+            female: [],
+            unisex: []
+        ),
+        enemies: [],
+        labyrinths: []
+    )
 }
