@@ -2,7 +2,7 @@
 
 import Foundation
 
-enum ExplorationResolver {
+nonisolated enum ExplorationResolver {
     static func resolve(
         session: RunSessionRecord,
         upTo currentDate: Date,
@@ -14,7 +14,7 @@ enum ExplorationResolver {
         }
 
         guard let labyrinth = masterData.labyrinths.first(where: { $0.id == session.labyrinthId }) else {
-            throw ExplorationRepositoryError.invalidLabyrinth(labyrinthId: session.labyrinthId)
+            throw ExplorationError.invalidLabyrinth(labyrinthId: session.labyrinthId)
         }
 
         let interval = max(labyrinth.progressIntervalSeconds, 1)
@@ -40,7 +40,7 @@ enum ExplorationResolver {
         var goldBuffer = session.goldBuffer
         var experienceRewards = session.experienceRewards
         var dropRewards = session.dropRewards
-        let rewardContext = makeRewardContext(from: currentPartyMembers, masterData: masterData)
+        let rewardContext = makeRewardContext(from: session, masterData: masterData)
         var completion: RunCompletionRecord?
 
         while completedBattleCount < resolvableBattleCount, completion == nil {
@@ -150,6 +150,14 @@ enum ExplorationResolver {
             memberCharacterIds: session.memberCharacterIds,
             completedBattleCount: completedBattleCount,
             currentPartyHPs: currentPartyHPs,
+            memberExperienceMultipliers: session.memberExperienceMultipliers,
+            goldMultiplier: session.goldMultiplier,
+            rareDropMultiplier: session.rareDropMultiplier,
+            titleDropMultiplier: session.titleDropMultiplier,
+            partyAverageLuck: session.partyAverageLuck,
+            latestBattleFloorNumber: battleLogs.last?.battleRecord.floorNumber ?? session.latestBattleFloorNumber,
+            latestBattleNumber: battleLogs.last?.battleRecord.battleNumber ?? session.latestBattleNumber,
+            latestBattleOutcome: battleLogs.last?.battleRecord.result ?? session.latestBattleOutcome,
             battleLogs: battleLogs,
             goldBuffer: goldBuffer,
             experienceRewards: experienceRewards,
@@ -159,7 +167,7 @@ enum ExplorationResolver {
     }
 }
 
-private extension ExplorationResolver {
+nonisolated private extension ExplorationResolver {
     struct PlannedBattle {
         let floorNumber: Int
         let battleNumber: Int
@@ -168,7 +176,7 @@ private extension ExplorationResolver {
 
     struct RewardContext {
         let memberCharacterIds: [Int]
-        let statusesByCharacterId: [Int: CharacterStatus]
+        let memberExperienceMultipliers: [Double]
         let goldMultiplier: Double
         let rareDropMultiplier: Double
         let titleDropMultiplier: Double
@@ -188,13 +196,13 @@ private extension ExplorationResolver {
         currentPartyHPs: [Int]
     ) throws -> [CharacterRecord] {
         guard memberCharacterIds.count == currentPartyHPs.count else {
-            throw ExplorationRepositoryError.invalidParty(partyId: 0)
+            throw ExplorationError.invalidParty(partyId: 0)
         }
 
         let charactersById = Dictionary(uniqueKeysWithValues: partyMembers.map { ($0.characterId, $0) })
         return try memberCharacterIds.enumerated().map { index, characterId in
             guard var character = charactersById[characterId] else {
-                throw ExplorationRepositoryError.invalidRunMember(characterId: characterId)
+                throw ExplorationError.invalidRunMember(characterId: characterId)
             }
             character.currentHP = currentPartyHPs[index]
             return character
@@ -305,39 +313,18 @@ private extension ExplorationResolver {
     }
 
     static func makeRewardContext(
-        from partyMembers: [CharacterRecord],
+        from session: RunSessionRecord,
         masterData: MasterData
     ) -> RewardContext {
-        let statusesByCharacterId = Dictionary(uniqueKeysWithValues: partyMembers.compactMap { member in
-            CharacterDerivedStatsCalculator.status(for: member, masterData: masterData).map {
-                (member.characterId, $0)
-            }
-        })
-        let skillTable = Dictionary(uniqueKeysWithValues: masterData.skills.map { ($0.id, $0) })
-        let partyStatuses = Array(statusesByCharacterId.values)
         let defaultTitle = masterData.titles.first(where: { $0.key == "untitled" }) ?? masterData.titles[0]
 
         return RewardContext(
-            memberCharacterIds: partyMembers.map(\.characterId),
-            statusesByCharacterId: statusesByCharacterId,
-            goldMultiplier: partyWideRewardMultiplier(
-                target: "goldGainMultiplier",
-                statuses: partyStatuses,
-                skillTable: skillTable
-            ),
-            rareDropMultiplier: partyWideRewardMultiplier(
-                target: "rareDropMultiplier",
-                statuses: partyStatuses,
-                skillTable: skillTable
-            ),
-            titleDropMultiplier: partyWideRewardMultiplier(
-                target: "titleDropMultiplier",
-                statuses: partyStatuses,
-                skillTable: skillTable
-            ),
-            partyAverageLuck: partyStatuses.isEmpty
-                ? 0
-                : Double(partyStatuses.reduce(0) { $0 + $1.baseStats.luck }) / Double(partyStatuses.count),
+            memberCharacterIds: session.memberCharacterIds,
+            memberExperienceMultipliers: session.memberExperienceMultipliers,
+            goldMultiplier: session.goldMultiplier,
+            rareDropMultiplier: session.rareDropMultiplier,
+            titleDropMultiplier: session.titleDropMultiplier,
+            partyAverageLuck: session.partyAverageLuck,
             defaultTitle: defaultTitle
         )
     }
@@ -353,7 +340,6 @@ private extension ExplorationResolver {
     ) -> BattleRewards {
         let enemyTable = Dictionary(uniqueKeysWithValues: masterData.enemies.map { ($0.id, $0) })
         let itemTable = Dictionary(uniqueKeysWithValues: masterData.items.map { ($0.id, $0) })
-        let skillTable = Dictionary(uniqueKeysWithValues: masterData.skills.map { ($0.id, $0) })
         let titlesByAscendingQuality = masterData.titles.sorted {
             $0.positiveMultiplier < $1.positiveMultiplier
         }
@@ -386,15 +372,13 @@ private extension ExplorationResolver {
         let sharedExperience = rewardContext.memberCharacterIds.isEmpty
             ? 0.0
             : Double(totalBaseExperience) / Double(rewardContext.memberCharacterIds.count)
-        let experienceRewards: [ExplorationExperienceReward] = rewardContext.memberCharacterIds.compactMap { characterId in
+        let experienceRewards: [ExplorationExperienceReward] = rewardContext.memberCharacterIds.enumerated().compactMap { index, characterId in
             guard livingCharacterIds.contains(characterId) else {
                 return nil
             }
-            let experienceMultiplier = characterRewardMultiplier(
-                target: "experienceGainMultiplier",
-                status: rewardContext.statusesByCharacterId[characterId],
-                skillTable: skillTable
-            )
+            let experienceMultiplier = rewardContext.memberExperienceMultipliers.indices.contains(index)
+                ? rewardContext.memberExperienceMultipliers[index]
+                : 1.0
             let experience = Int((sharedExperience * experienceMultiplier).rounded())
             guard experience > 0 else {
                 return nil
@@ -664,35 +648,6 @@ private extension ExplorationResolver {
         }
     }
 
-    static func partyWideRewardMultiplier(
-        target: String,
-        statuses: [CharacterStatus],
-        skillTable: [Int: MasterData.Skill]
-    ) -> Double {
-        let skillIds = Array(Set(statuses.flatMap(\.skillIds))).sorted()
-        return rewardMultiplier(
-            target: target,
-            skillIds: skillIds,
-            skillTable: skillTable
-        )
-    }
-
-    static func characterRewardMultiplier(
-        target: String,
-        status: CharacterStatus?,
-        skillTable: [Int: MasterData.Skill]
-    ) -> Double {
-        guard let status else {
-            return 1.0
-        }
-
-        return rewardMultiplier(
-            target: target,
-            skillIds: Array(Set(status.skillIds)).sorted(),
-            skillTable: skillTable
-        )
-    }
-
     static func rewardMultiplier(
         target: String,
         skillIds: [Int],
@@ -776,7 +731,7 @@ private extension ExplorationResolver {
     }
 }
 
-private enum ExplorationDeterministicRandom {
+nonisolated private enum ExplorationDeterministicRandom {
     static func uniform(
         rootSeed: UInt64,
         purpose: String

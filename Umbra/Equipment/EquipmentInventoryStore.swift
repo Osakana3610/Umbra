@@ -60,6 +60,28 @@ final class EquipmentInventoryStore {
         isLoaded = true
     }
 
+    func applyInventoryGains(
+        _ itemCounts: [CompositeItemID: Int],
+        masterData: MasterData
+    ) {
+        guard isLoaded, !itemCounts.isEmpty else {
+            return
+        }
+
+        configure(masterData: masterData)
+
+        var affectedSectionKeys: Set<EquipmentSectionKey> = []
+        for (itemID, count) in itemCounts where count > 0 {
+            if let sectionKey = incrementInventory(itemID: itemID, by: count) {
+                affectedSectionKeys.insert(sectionKey)
+            }
+        }
+
+        for sectionKey in affectedSectionKeys {
+            refreshMergedSections(affectedSectionKey: sectionKey)
+        }
+    }
+
     func equippedItems(
         for character: CharacterRecord,
         masterData: MasterData
@@ -109,23 +131,26 @@ final class EquipmentInventoryStore {
 
         isMutating = true
         lastOperationError = nil
-        defer { isMutating = false }
 
-        do {
-            try loadIfNeeded(masterData: masterData)
-            let updatedCharacter = try repository.equip(
-                itemID: itemID,
-                toCharacter: character.characterId,
-                masterData: masterData
-            )
-            rosterStore.replaceCharacter(updatedCharacter)
-            applyEquipmentChange(
-                itemID: itemID,
-                inventoryQuantityDelta: -1,
-                updatedCharacter: updatedCharacter
-            )
-        } catch {
-            lastOperationError = Self.errorMessage(for: error)
+        Task {
+            defer { isMutating = false }
+
+            do {
+                try loadIfNeeded(masterData: masterData)
+                let updatedCharacter = try await repository.equip(
+                    itemID: itemID,
+                    toCharacter: character.characterId,
+                    masterData: masterData
+                )
+                rosterStore.replaceCharacter(updatedCharacter)
+                applyEquipmentChange(
+                    itemID: itemID,
+                    inventoryQuantityDelta: -1,
+                    updatedCharacter: updatedCharacter
+                )
+            } catch {
+                lastOperationError = Self.errorMessage(for: error)
+            }
         }
     }
 
@@ -141,23 +166,26 @@ final class EquipmentInventoryStore {
 
         isMutating = true
         lastOperationError = nil
-        defer { isMutating = false }
 
-        do {
-            try loadIfNeeded(masterData: masterData)
-            let updatedCharacter = try repository.unequip(
-                itemID: itemID,
-                fromCharacter: character.characterId,
-                masterData: masterData
-            )
-            rosterStore.replaceCharacter(updatedCharacter)
-            applyEquipmentChange(
-                itemID: itemID,
-                inventoryQuantityDelta: 1,
-                updatedCharacter: updatedCharacter
-            )
-        } catch {
-            lastOperationError = Self.errorMessage(for: error)
+        Task {
+            defer { isMutating = false }
+
+            do {
+                try loadIfNeeded(masterData: masterData)
+                let updatedCharacter = try await repository.unequip(
+                    itemID: itemID,
+                    fromCharacter: character.characterId,
+                    masterData: masterData
+                )
+                rosterStore.replaceCharacter(updatedCharacter)
+                applyEquipmentChange(
+                    itemID: itemID,
+                    inventoryQuantityDelta: 1,
+                    updatedCharacter: updatedCharacter
+                )
+            } catch {
+                lastOperationError = Self.errorMessage(for: error)
+            }
         }
     }
 

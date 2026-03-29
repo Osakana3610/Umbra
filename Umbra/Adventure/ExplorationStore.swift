@@ -3,33 +3,40 @@
 import Foundation
 import Observation
 
+struct ConfiguredRunStart: Sendable {
+    let partyId: Int
+    let labyrinthId: Int
+}
+
 @MainActor
 @Observable
 final class ExplorationStore {
-    private let repository: ExplorationRepository
+    private let coreDataStore: ExplorationCoreDataStore
+    private let service: ExplorationSessionService
 
     private(set) var isLoaded = false
     private(set) var isMutating = false
     private(set) var lastOperationError: String?
     private(set) var runs: [RunSessionRecord] = []
 
-    init(repository: ExplorationRepository) {
-        self.repository = repository
+    init(coreDataStore: ExplorationCoreDataStore) {
+        self.coreDataStore = coreDataStore
+        service = ExplorationSessionService(coreDataStore: coreDataStore)
     }
 
-    func loadIfNeeded() {
+    func loadIfNeeded() async {
         guard !isLoaded else {
             return
         }
 
-        reload()
+        await reload()
     }
 
-    func reload() {
+    func reload() async {
         lastOperationError = nil
 
         do {
-            applySnapshot(try repository.loadSnapshot())
+            applySnapshot(try await coreDataStore.loadSnapshot())
         } catch {
             lastOperationError = Self.errorMessage(for: error)
         }
@@ -39,20 +46,21 @@ final class ExplorationStore {
     func refreshProgress(
         at currentDate: Date,
         masterData: MasterData
-    ) -> Bool {
-        guard !isMutating else {
-            return false
+    ) async -> (didApplyRewards: Bool, appliedInventoryCounts: [CompositeItemID: Int]) {
+        guard !isMutating,
+              runs.contains(where: { !$0.isCompleted }) else {
+            return (false, [:])
         }
 
         lastOperationError = nil
 
         do {
-            let snapshot = try repository.refreshRuns(at: currentDate, masterData: masterData)
+            let snapshot = try await service.refreshRuns(at: currentDate, masterData: masterData)
             applySnapshot(snapshot)
-            return snapshot.didApplyRewards
+            return (snapshot.didApplyRewards, snapshot.appliedInventoryCounts)
         } catch {
             lastOperationError = Self.errorMessage(for: error)
-            return false
+            return (false, [:])
         }
     }
 
@@ -61,9 +69,9 @@ final class ExplorationStore {
         labyrinthId: Int,
         startedAt: Date,
         masterData: MasterData
-    ) {
-        mutate {
-            try repository.startRun(
+    ) async {
+        await mutate {
+            try await service.startRun(
                 partyId: partyId,
                 labyrinthId: labyrinthId,
                 startedAt: startedAt,
@@ -73,27 +81,22 @@ final class ExplorationStore {
         }
     }
 
-    func startRuns(
-        partyIds: [Int],
-        labyrinthId: Int,
+    func startConfiguredRuns(
+        _ runsToStart: [ConfiguredRunStart],
         startedAt: Date,
         masterData: MasterData
-    ) {
-        guard !partyIds.isEmpty else {
+    ) async {
+        guard !runsToStart.isEmpty else {
             return
         }
 
-        mutate {
-            for partyId in partyIds {
-                _ = try repository.startRun(
-                    partyId: partyId,
-                    labyrinthId: labyrinthId,
-                    startedAt: startedAt,
-                    maximumLoopCount: 1,
-                    masterData: masterData
-                )
-            }
-            return try repository.loadSnapshot()
+        await mutate {
+            try await service.startConfiguredRuns(
+                runsToStart,
+                startedAt: startedAt,
+                maximumLoopCount: 1,
+                masterData: masterData
+            )
         }
     }
 
@@ -105,13 +108,28 @@ final class ExplorationStore {
         )
     }
 
+    func loadRunDetail(
+        partyId: Int,
+        partyRunId: Int
+    ) async -> RunSessionRecord? {
+        do {
+            return try await coreDataStore.loadRunDetail(
+                partyId: partyId,
+                partyRunId: partyRunId
+            )
+        } catch {
+            lastOperationError = Self.errorMessage(for: error)
+            return nil
+        }
+    }
+
     func hasActiveRun(for partyId: Int) -> Bool {
         status(for: partyId).activeRun != nil
     }
 
     private func mutate(
-        _ operation: () throws -> ExplorationRunSnapshot
-    ) {
+        _ operation: () async throws -> ExplorationRunSnapshot
+    ) async {
         guard !isMutating else {
             return
         }
@@ -121,7 +139,7 @@ final class ExplorationStore {
         defer { isMutating = false }
 
         do {
-            applySnapshot(try operation())
+            applySnapshot(try await operation())
         } catch {
             lastOperationError = Self.errorMessage(for: error)
         }

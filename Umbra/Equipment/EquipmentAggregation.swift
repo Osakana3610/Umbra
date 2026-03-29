@@ -2,7 +2,7 @@
 
 import Foundation
 
-enum EquipmentAggregationError: LocalizedError, Equatable {
+nonisolated enum EquipmentAggregationError: LocalizedError, Equatable {
     case invalidJewelItem(Int)
 
     var errorDescription: String? {
@@ -13,7 +13,7 @@ enum EquipmentAggregationError: LocalizedError, Equatable {
     }
 }
 
-struct EquipmentAggregation: Equatable, Sendable {
+nonisolated struct EquipmentAggregation: Equatable, Sendable {
     let baseStats: CharacterBaseStats
     let battleStats: CharacterBattleStats
     let itemSkillIDs: [Int]
@@ -21,7 +21,7 @@ struct EquipmentAggregation: Equatable, Sendable {
     let weaponRangeClass: ItemRangeClass
 }
 
-struct EquipmentAggregator {
+nonisolated struct EquipmentAggregator {
     private let itemsByID: [Int: MasterData.Item]
     private let titlesByID: [Int: MasterData.Title]
     private let superRaresByID: [Int: MasterData.SuperRare]
@@ -246,7 +246,7 @@ struct EquipmentAggregator {
     }
 }
 
-private struct ResolvedItemContribution {
+nonisolated private struct ResolvedItemContribution {
     let baseStats: CharacterBaseStats
     let battleStats: CharacterBattleStats
     let skillIDs: [Int]

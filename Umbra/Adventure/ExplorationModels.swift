@@ -2,13 +2,13 @@
 
 import Foundation
 
-enum RunCompletionReason: String, Codable, Equatable, Sendable {
+nonisolated enum RunCompletionReason: String, Codable, Equatable, Sendable {
     case cleared
     case defeated
     case draw
 }
 
-struct ExplorationBattleLog: Codable, Equatable, Sendable, Identifiable {
+nonisolated struct ExplorationBattleLog: Codable, Equatable, Sendable, Identifiable {
     let battleRecord: BattleRecord
     let combatants: [BattleCombatantSnapshot]
 
@@ -17,14 +17,14 @@ struct ExplorationBattleLog: Codable, Equatable, Sendable, Identifiable {
     }
 }
 
-struct ExplorationExperienceReward: Codable, Equatable, Sendable, Identifiable {
+nonisolated struct ExplorationExperienceReward: Codable, Equatable, Sendable, Identifiable {
     let characterId: Int
     let experience: Int
 
     var id: Int { characterId }
 }
 
-struct ExplorationDropReward: Codable, Equatable, Sendable, Identifiable {
+nonisolated struct ExplorationDropReward: Codable, Equatable, Sendable, Identifiable {
     let itemID: CompositeItemID
     let sourceFloorNumber: Int
     let sourceBattleNumber: Int
@@ -34,7 +34,7 @@ struct ExplorationDropReward: Codable, Equatable, Sendable, Identifiable {
     }
 }
 
-struct RunCompletionRecord: Codable, Equatable, Sendable {
+nonisolated struct RunCompletionRecord: Codable, Equatable, Sendable {
     let completedAt: Date
     let reason: RunCompletionReason
     let completedLoopCount: Int
@@ -43,7 +43,7 @@ struct RunCompletionRecord: Codable, Equatable, Sendable {
     let dropRewards: [ExplorationDropReward]
 }
 
-struct RunSessionRecord: Equatable, Sendable, Identifiable {
+nonisolated struct RunSessionRecord: Equatable, Sendable, Identifiable {
     let partyRunId: Int
     let partyId: Int
     let labyrinthId: Int
@@ -54,6 +54,14 @@ struct RunSessionRecord: Equatable, Sendable, Identifiable {
     let memberCharacterIds: [Int]
     let completedBattleCount: Int
     let currentPartyHPs: [Int]
+    let memberExperienceMultipliers: [Double]
+    let goldMultiplier: Double
+    let rareDropMultiplier: Double
+    let titleDropMultiplier: Double
+    let partyAverageLuck: Double
+    let latestBattleFloorNumber: Int?
+    let latestBattleNumber: Int?
+    let latestBattleOutcome: BattleOutcome?
     let battleLogs: [ExplorationBattleLog]
     let goldBuffer: Int
     let experienceRewards: [ExplorationExperienceReward]
@@ -69,19 +77,21 @@ struct RunSessionRecord: Equatable, Sendable, Identifiable {
     }
 }
 
-struct ExplorationRunSnapshot: Equatable, Sendable {
+nonisolated struct ExplorationRunSnapshot: Equatable, Sendable {
     let runs: [RunSessionRecord]
     let didApplyRewards: Bool
+    let appliedInventoryCounts: [CompositeItemID: Int]
 }
 
-struct ExplorationPartyStatus: Equatable, Sendable {
+nonisolated struct ExplorationPartyStatus: Equatable, Sendable {
     let activeRun: RunSessionRecord?
     let latestCompletedRun: RunSessionRecord?
 }
 
-enum ExplorationRepositoryError: LocalizedError {
+nonisolated enum ExplorationError: LocalizedError {
     case invalidLabyrinth(labyrinthId: Int)
     case invalidParty(partyId: Int)
+    case runNotFound(partyId: Int, partyRunId: Int)
     case partyHasNoMembers(partyId: Int)
     case partyHasDefeatedMember(partyId: Int)
     case activeRunAlreadyExists(partyId: Int)
@@ -95,6 +105,8 @@ enum ExplorationRepositoryError: LocalizedError {
             "迷宮が見つかりません。 labyrinthId=\(labyrinthId)"
         case let .invalidParty(partyId):
             "パーティが見つかりません。 partyId=\(partyId)"
+        case let .runNotFound(partyId, partyRunId):
+            "探索記録が見つかりません。 partyId=\(partyId) partyRunId=\(partyRunId)"
         case let .partyHasNoMembers(partyId):
             "パーティ\(partyId)には出撃メンバーがいません。"
         case let .partyHasDefeatedMember(partyId):

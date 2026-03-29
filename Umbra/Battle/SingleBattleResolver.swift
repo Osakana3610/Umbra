@@ -2,7 +2,7 @@
 
 import Foundation
 
-enum SingleBattleResolver {
+nonisolated enum SingleBattleResolver {
     static func resolve(
         context: BattleContext,
         partyMembers: [CharacterRecord],
@@ -19,7 +19,7 @@ enum SingleBattleResolver {
     }
 }
 
-private struct BattleResolutionEngine {
+nonisolated private struct BattleResolutionEngine {
     private let context: BattleContext
     private let masterData: MasterData
     private let spellLookup: [Int: MasterData.Spell]
@@ -1480,7 +1480,7 @@ private struct BattleResolutionEngine {
     }
 }
 
-private struct RuntimeCombatant {
+nonisolated private struct RuntimeCombatant {
     let id: BattleCombatantID
     let name: String
     let side: BattleSide
@@ -1530,7 +1530,7 @@ private struct RuntimeCombatant {
     }
 }
 
-private struct QueuedAction {
+nonisolated private struct QueuedAction {
     let actorIndex: Int
     let recordKind: BattleLogActionKind
     var spellId: Int? = nil
@@ -1556,18 +1556,18 @@ private struct QueuedAction {
     }
 }
 
-private struct ResolvedAction {
+nonisolated private struct ResolvedAction {
     let record: BattleActionRecord
     let generatedInterrupts: [QueuedAction]
 }
 
-private enum FormationRank {
+nonisolated private enum FormationRank {
     case front
     case middle
     case back
 }
 
-private enum BattleDeterministicRandom {
+nonisolated private enum BattleDeterministicRandom {
     static func uniform(
         rootSeed: UInt64,
         floorNumber: Int,
@@ -1606,7 +1606,7 @@ private enum BattleDeterministicRandom {
     }
 }
 
-private extension Int {
+nonisolated private extension Int {
     func isOutOfBounds<T>(in array: [T]) -> Bool {
         self < 0 || self >= array.count
     }

@@ -12,6 +12,7 @@ struct RunSessionDetailView: View {
     let explorationStore: ExplorationStore
 
     private let nameResolver: EquipmentDisplayNameResolver
+    @State private var runDetail: RunSessionRecord?
 
     init(
         partyId: Int,
@@ -129,11 +130,14 @@ struct RunSessionDetailView: View {
                 .navigationTitle("探索記録")
                 .navigationBarTitleDisplayMode(.inline)
                 .task {
-                    explorationStore.loadIfNeeded()
-                    await keepProgressFresh()
+                    await explorationStore.loadIfNeeded()
+                    await loadRunDetail()
+                }
+                .task(id: progressRefreshKey) {
+                    await waitUntilNextProgress()
                 }
                 .refreshable {
-                    refreshProgress()
+                    await refreshProgress()
                 }
             } else {
                 ContentUnavailableView(
@@ -145,36 +149,65 @@ struct RunSessionDetailView: View {
     }
 
     private var run: RunSessionRecord? {
-        explorationStore.runs.first {
+        runDetail ?? explorationStore.runs.first {
             $0.partyId == partyId && $0.partyRunId == partyRunId
         }
     }
 
-    private func keepProgressFresh() async {
-        refreshProgress()
-
-        while !Task.isCancelled {
-            guard run?.completion == nil else {
-                return
-            }
-
-            try? await Task.sleep(for: .seconds(1))
-            if Task.isCancelled {
-                return
-            }
-            refreshProgress()
+    private var progressRefreshKey: String {
+        guard let run else {
+            return "missing"
         }
+
+        let completionKey = run.completion?.completedAt.timeIntervalSinceReferenceDate ?? -1
+        return "\(run.completedBattleCount)-\(completionKey)"
     }
 
-    private func refreshProgress() {
-        let didApplyRewards = explorationStore.refreshProgress(at: Date(), masterData: masterData)
-        guard didApplyRewards else {
+    private var nextScheduledProgressDate: Date? {
+        guard let run else {
+            return nil
+        }
+
+        return nextProgressDate(for: run)
+    }
+
+    private func waitUntilNextProgress() async {
+        guard let nextScheduledProgressDate else {
             return
         }
 
-        rosterStore.reload()
-        partyStore.reload()
-        try? equipmentStore.reload(masterData: masterData)
+        let delay = max(nextScheduledProgressDate.timeIntervalSinceNow, 0)
+        if delay > 0 {
+            let nanoseconds = UInt64(delay * 1_000_000_000)
+            try? await Task.sleep(nanoseconds: nanoseconds)
+        }
+
+        guard Task.isCancelled == false else {
+            return
+        }
+
+        await refreshProgress()
+    }
+
+    private func refreshProgress() async {
+        let refreshResult = await explorationStore.refreshProgress(at: Date(), masterData: masterData)
+        await loadRunDetail()
+
+        if explorationStore.lastOperationError == nil {
+            equipmentStore.applyInventoryGains(
+                refreshResult.appliedInventoryCounts,
+                masterData: masterData
+            )
+            rosterStore.reload()
+            partyStore.reload()
+        }
+    }
+
+    private func loadRunDetail() async {
+        runDetail = await explorationStore.loadRunDetail(
+            partyId: partyId,
+            partyRunId: partyRunId
+        )
     }
 
     private func labyrinthName(for run: RunSessionRecord) -> String {

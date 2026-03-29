@@ -2,7 +2,7 @@
 
 import Foundation
 
-struct CharacterRecord: Identifiable, Equatable, Sendable {
+nonisolated struct CharacterRecord: Identifiable, Equatable, Sendable {
     let characterId: Int
     var name: String
     let raceId: Int
@@ -23,13 +23,13 @@ struct CharacterRecord: Identifiable, Equatable, Sendable {
     }
 }
 
-enum PortraitGender: Int, CaseIterable, Sendable {
+nonisolated enum PortraitGender: Int, CaseIterable, Sendable {
     case male = 1
     case female = 2
     case unisex = 3
 }
 
-struct CharacterAutoBattleSettings: Equatable, Sendable {
+nonisolated struct CharacterAutoBattleSettings: Equatable, Sendable {
     var rates: CharacterActionRates
     var priority: [BattleActionKind]
 
@@ -39,7 +39,7 @@ struct CharacterAutoBattleSettings: Equatable, Sendable {
     )
 }
 
-struct CharacterActionRates: Equatable, Sendable {
+nonisolated struct CharacterActionRates: Equatable, Sendable {
     var breath: Int
     var attack: Int
     var recoverySpell: Int

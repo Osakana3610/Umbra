@@ -216,9 +216,9 @@ struct UmbraTests {
         ).character
 
         try partyRepository.unlockParty()
-        try partyRepository.addCharacter(characterId: firstCharacter.characterId, toParty: 1)
-        try partyRepository.addCharacter(characterId: secondCharacter.characterId, toParty: 1)
-        try partyRepository.addCharacter(characterId: firstCharacter.characterId, toParty: 2)
+        try await partyRepository.addCharacter(characterId: firstCharacter.characterId, toParty: 1)
+        try await partyRepository.addCharacter(characterId: secondCharacter.characterId, toParty: 1)
+        try await partyRepository.addCharacter(characterId: firstCharacter.characterId, toParty: 2)
 
         #expect(try partyRepository.loadParties() == [
             PartyRecord(partyId: 1, name: "パーティ1", memberCharacterIds: [secondCharacter.characterId]),
@@ -279,7 +279,7 @@ struct UmbraTests {
     }
 
     @Test
-    func equippingAndUnequippingUpdatesInventoryAndCharacterStacks() throws {
+    func equippingAndUnequippingUpdatesInventoryAndCharacterStacks() async throws {
         let container = PersistenceController(inMemory: true).container
         let rosterRepository = GuildRosterRepository(container: container)
         let equipmentRepository = EquipmentRepository(container: container)
@@ -298,7 +298,7 @@ struct UmbraTests {
             masterData: masterData
         )
 
-        let equippedCharacter = try equipmentRepository.equip(
+        let equippedCharacter = try await equipmentRepository.equip(
             itemID: itemID,
             toCharacter: character.characterId,
             masterData: masterData
@@ -306,7 +306,7 @@ struct UmbraTests {
         #expect(equippedCharacter.equippedItemStacks == [CompositeItemStack(itemID: itemID, count: 1)])
         #expect(try equipmentRepository.loadInventoryStacks() == [CompositeItemStack(itemID: itemID, count: 1)])
 
-        let unequippedCharacter = try equipmentRepository.unequip(
+        let unequippedCharacter = try await equipmentRepository.unequip(
             itemID: itemID,
             fromCharacter: character.characterId,
             masterData: masterData
@@ -352,11 +352,13 @@ struct UmbraTests {
     }
 
     @Test
-    func startingBulkRunsKeepsStartedAtAlignedAcrossParties() throws {
+    func startingBulkRunsKeepsStartedAtAlignedAcrossParties() async throws {
         let container = PersistenceController(inMemory: true).container
         let rosterRepository = GuildRosterRepository(container: container)
         let partyRepository = PartyRepository(container: container)
-        let explorationStore = ExplorationStore(repository: ExplorationRepository(container: container))
+        let explorationStore = ExplorationStore(
+            coreDataStore: ExplorationCoreDataStore(container: container)
+        )
         let masterData = try loadGeneratedMasterData()
 
         let firstCharacter = try rosterRepository.hireCharacter(
@@ -373,13 +375,21 @@ struct UmbraTests {
         ).character
 
         try partyRepository.unlockParty()
-        try partyRepository.addCharacter(characterId: firstCharacter.characterId, toParty: 1)
-        try partyRepository.addCharacter(characterId: secondCharacter.characterId, toParty: 2)
+        try await partyRepository.addCharacter(characterId: firstCharacter.characterId, toParty: 1)
+        try await partyRepository.addCharacter(characterId: secondCharacter.characterId, toParty: 2)
 
         let startedAt = Date(timeIntervalSinceReferenceDate: 123_456)
-        explorationStore.startRuns(
-            partyIds: [1, 2],
-            labyrinthId: try #require(masterData.labyrinths.first?.id),
+        await explorationStore.startConfiguredRuns(
+            [
+                ConfiguredRunStart(
+                    partyId: 1,
+                    labyrinthId: try #require(masterData.labyrinths.first?.id)
+                ),
+                ConfiguredRunStart(
+                    partyId: 2,
+                    labyrinthId: try #require(masterData.labyrinths.first?.id)
+                ),
+            ],
             startedAt: startedAt,
             masterData: masterData
         )
@@ -390,12 +400,13 @@ struct UmbraTests {
     }
 
     @Test
-    func activeRunBlocksPartyAndEquipmentMutations() throws {
+    func activeRunBlocksPartyAndEquipmentMutations() async throws {
         let container = PersistenceController(inMemory: true).container
         let rosterRepository = GuildRosterRepository(container: container)
         let partyRepository = PartyRepository(container: container)
         let equipmentRepository = EquipmentRepository(container: container)
-        let explorationRepository = ExplorationRepository(container: container)
+        let explorationCoreDataStore = ExplorationCoreDataStore(container: container)
+        let explorationService = ExplorationSessionService(coreDataStore: explorationCoreDataStore)
         let masterData = try loadGeneratedMasterData()
 
         let character = try rosterRepository.hireCharacter(
@@ -406,12 +417,12 @@ struct UmbraTests {
         ).character
         let itemID = CompositeItemID.baseItem(itemId: try #require(masterData.items.first?.id))
 
-        try partyRepository.addCharacter(characterId: character.characterId, toParty: 1)
+        try await partyRepository.addCharacter(characterId: character.characterId, toParty: 1)
         try equipmentRepository.addInventoryStacks(
             [CompositeItemStack(itemID: itemID, count: 1)],
             masterData: masterData
         )
-        _ = try explorationRepository.startRun(
+        _ = try await explorationService.startRun(
             partyId: 1,
             labyrinthId: try #require(masterData.labyrinths.first?.id),
             startedAt: Date(timeIntervalSinceReferenceDate: 200_000),
@@ -420,7 +431,7 @@ struct UmbraTests {
         )
 
         do {
-            try partyRepository.removeCharacter(characterId: character.characterId, fromParty: 1)
+            try await partyRepository.removeCharacter(characterId: character.characterId, fromParty: 1)
             Issue.record("探索中パーティからメンバーを外せてはいけません。")
         } catch {
             let localizedError = error as? LocalizedError
@@ -428,7 +439,7 @@ struct UmbraTests {
         }
 
         do {
-            _ = try equipmentRepository.equip(
+            _ = try await equipmentRepository.equip(
                 itemID: itemID,
                 toCharacter: character.characterId,
                 masterData: masterData
@@ -441,11 +452,12 @@ struct UmbraTests {
     }
 
     @Test
-    func refreshingCompletedRunAppliesRewardsToPlayerAndCharacterState() throws {
+    func refreshingCompletedRunAppliesRewardsToPlayerAndCharacterState() async throws {
         let container = PersistenceController(inMemory: true).container
         let rosterRepository = GuildRosterRepository(container: container)
         let partyRepository = PartyRepository(container: container)
-        let explorationRepository = ExplorationRepository(container: container)
+        let explorationCoreDataStore = ExplorationCoreDataStore(container: container)
+        let explorationService = ExplorationSessionService(coreDataStore: explorationCoreDataStore)
         let masterData = try loadGeneratedMasterData()
 
         let character = try rosterRepository.hireCharacter(
@@ -454,7 +466,7 @@ struct UmbraTests {
             aptitudeId: try #require(masterData.aptitudes.first?.id),
             masterData: masterData
         ).character
-        try partyRepository.addCharacter(characterId: character.characterId, toParty: 1)
+        try await partyRepository.addCharacter(characterId: character.characterId, toParty: 1)
         try promoteCharacter(
             characterId: character.characterId,
             level: 40,
@@ -462,7 +474,7 @@ struct UmbraTests {
         )
 
         let startedAt = Date(timeIntervalSinceReferenceDate: 300_000)
-        _ = try explorationRepository.startRun(
+        _ = try await explorationService.startRun(
             partyId: 1,
             labyrinthId: try #require(masterData.labyrinths.first(where: { $0.name == "デバッグの遺跡" })?.id),
             startedAt: startedAt,
@@ -470,7 +482,7 @@ struct UmbraTests {
             masterData: masterData
         )
 
-        let snapshot = try explorationRepository.refreshRuns(
+        let snapshot = try await explorationService.refreshRuns(
             at: startedAt.addingTimeInterval(10),
             masterData: masterData
         )
@@ -494,11 +506,12 @@ struct UmbraTests {
     }
 
     @Test
-    func autoReviveRestoresDefeatedPartyMembersWhenRunReturns() throws {
+    func autoReviveRestoresDefeatedPartyMembersWhenRunReturns() async throws {
         let container = PersistenceController(inMemory: true).container
         let rosterRepository = GuildRosterRepository(container: container)
         let partyRepository = PartyRepository(container: container)
-        let explorationRepository = ExplorationRepository(container: container)
+        let explorationCoreDataStore = ExplorationCoreDataStore(container: container)
+        let explorationService = ExplorationSessionService(coreDataStore: explorationCoreDataStore)
         let masterData = try loadGeneratedMasterData()
 
         let character = try rosterRepository.hireCharacter(
@@ -507,11 +520,11 @@ struct UmbraTests {
             aptitudeId: try #require(masterData.aptitudes.first?.id),
             masterData: masterData
         ).character
-        try partyRepository.addCharacter(characterId: character.characterId, toParty: 1)
+        try await partyRepository.addCharacter(characterId: character.characterId, toParty: 1)
         _ = try rosterRepository.setAutoReviveDefeatedCharactersEnabled(true)
 
         let startedAt = Date(timeIntervalSinceReferenceDate: 500_000)
-        _ = try explorationRepository.startRun(
+        _ = try await explorationService.startRun(
             partyId: 1,
             labyrinthId: try #require(masterData.labyrinths.first(where: { $0.name == "デバッグの塔" })?.id),
             startedAt: startedAt,
@@ -519,7 +532,7 @@ struct UmbraTests {
             masterData: masterData
         )
 
-        let snapshot = try explorationRepository.refreshRuns(
+        let snapshot = try await explorationService.refreshRuns(
             at: startedAt.addingTimeInterval(10),
             masterData: masterData
         )

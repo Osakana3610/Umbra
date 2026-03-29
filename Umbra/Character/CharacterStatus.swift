@@ -1,6 +1,6 @@
 // Represents a character's fully derived runtime status and combat capabilities.
 
-struct CharacterStatus: Equatable, Sendable {
+nonisolated struct CharacterStatus: Equatable, Sendable {
     let baseStats: CharacterBaseStats
     let battleStats: CharacterBattleStats
     let battleDerivedStats: CharacterBattleDerivedStats
@@ -16,7 +16,7 @@ struct CharacterStatus: Equatable, Sendable {
     }
 }
 
-struct CharacterBaseStats: Equatable, Sendable {
+nonisolated struct CharacterBaseStats: Equatable, Sendable {
     var vitality: Int
     var strength: Int
     var mind: Int
@@ -25,7 +25,7 @@ struct CharacterBaseStats: Equatable, Sendable {
     var luck: Int
 }
 
-struct CharacterBattleStats: Equatable, Sendable {
+nonisolated struct CharacterBattleStats: Equatable, Sendable {
     var maxHP: Int
     var physicalAttack: Int
     var physicalDefense: Int
@@ -39,7 +39,7 @@ struct CharacterBattleStats: Equatable, Sendable {
     var breathPower: Int
 }
 
-struct CharacterBattleDerivedStats: Equatable, Sendable {
+nonisolated struct CharacterBattleDerivedStats: Equatable, Sendable {
     let physicalDamageMultiplier: Double
     let magicDamageMultiplier: Double
     let spellDamageMultiplier: Double

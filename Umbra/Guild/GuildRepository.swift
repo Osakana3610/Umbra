@@ -198,11 +198,11 @@ final class GuildRosterRepository {
 @MainActor
 final class PartyRepository {
     private let container: NSPersistentContainer
-    private let explorationRepository: ExplorationRepository
+    private let explorationCoreDataStore: ExplorationCoreDataStore
 
     init(container: NSPersistentContainer) {
         self.container = container
-        explorationRepository = ExplorationRepository(container: container)
+        explorationCoreDataStore = ExplorationCoreDataStore(container: container)
     }
 
     func loadParties() throws -> [PartyRecord] {
@@ -238,6 +238,7 @@ final class PartyRepository {
             partyId: nextPartyId,
             name: PartyRecord.defaultName(for: nextPartyId),
             memberCharacterIds: [],
+            selectedLabyrinthId: nil,
             in: context
         )
 
@@ -257,10 +258,18 @@ final class PartyRepository {
         try context.save()
     }
 
-    func addCharacter(characterId: Int, toParty partyId: Int) throws {
+    func setSelectedLabyrinth(partyId: Int, selectedLabyrinthId: Int?) async throws {
         let context = container.viewContext
-        try explorationRepository.validateCharacterMutationIsAllowed(characterId: characterId)
-        try explorationRepository.validatePartyMutationIsAllowed(partyId: partyId)
+        try await explorationCoreDataStore.validatePartyMutationIsAllowed(partyId: partyId)
+        let party = try GuildPersistenceBridge.fetchPartyEntity(partyId: partyId, in: context)
+        party.selectedLabyrinthId = selectedLabyrinthId.map(Int64.init) ?? 0
+        try context.save()
+    }
+
+    func addCharacter(characterId: Int, toParty partyId: Int) async throws {
+        let context = container.viewContext
+        try await explorationCoreDataStore.validateCharacterMutationIsAllowed(characterId: characterId)
+        try await explorationCoreDataStore.validatePartyMutationIsAllowed(partyId: partyId)
         let parties = try GuildPersistenceBridge.fetchOrCreateInitialParties(in: context)
         guard try GuildPersistenceBridge.characterExists(characterId: characterId, in: context) else {
             throw GuildRepositoryError.characterNotFound(characterId: characterId)
@@ -293,9 +302,9 @@ final class PartyRepository {
         try context.save()
     }
 
-    func removeCharacter(characterId: Int, fromParty partyId: Int) throws {
+    func removeCharacter(characterId: Int, fromParty partyId: Int) async throws {
         let context = container.viewContext
-        try explorationRepository.validatePartyMutationIsAllowed(partyId: partyId)
+        try await explorationCoreDataStore.validatePartyMutationIsAllowed(partyId: partyId)
         let party = try GuildPersistenceBridge.fetchPartyEntity(partyId: partyId, in: context)
         var members = GuildPersistenceBridge.memberCharacterIds(from: party)
         members.removeAll { $0 == characterId }
@@ -303,9 +312,9 @@ final class PartyRepository {
         try context.save()
     }
 
-    func replacePartyMembers(partyId: Int, memberCharacterIds: [Int]) throws {
+    func replacePartyMembers(partyId: Int, memberCharacterIds: [Int]) async throws {
         let context = container.viewContext
-        try explorationRepository.validatePartyMutationIsAllowed(partyId: partyId)
+        try await explorationCoreDataStore.validatePartyMutationIsAllowed(partyId: partyId)
         let party = try GuildPersistenceBridge.fetchPartyEntity(partyId: partyId, in: context)
         let existingMembers = GuildPersistenceBridge.memberCharacterIds(from: party)
 
@@ -323,11 +332,11 @@ final class PartyRepository {
 @MainActor
 final class EquipmentRepository {
     private let container: NSPersistentContainer
-    private let explorationRepository: ExplorationRepository
+    private let explorationCoreDataStore: ExplorationCoreDataStore
 
     init(container: NSPersistentContainer) {
         self.container = container
-        explorationRepository = ExplorationRepository(container: container)
+        explorationCoreDataStore = ExplorationCoreDataStore(container: container)
     }
 
     func loadInventoryStacks() throws -> [CompositeItemStack] {
@@ -386,8 +395,8 @@ final class EquipmentRepository {
         itemID: CompositeItemID,
         toCharacter characterId: Int,
         masterData: MasterData
-    ) throws -> CharacterRecord {
-        try explorationRepository.validateCharacterMutationIsAllowed(characterId: characterId)
+    ) async throws -> CharacterRecord {
+        try await explorationCoreDataStore.validateCharacterMutationIsAllowed(characterId: characterId)
         guard itemID.isValid(in: masterData) else {
             throw GuildRepositoryError.invalidItemStack
         }
@@ -431,8 +440,8 @@ final class EquipmentRepository {
         itemID: CompositeItemID,
         fromCharacter characterId: Int,
         masterData: MasterData
-    ) throws -> CharacterRecord {
-        try explorationRepository.validateCharacterMutationIsAllowed(characterId: characterId)
+    ) async throws -> CharacterRecord {
+        try await explorationCoreDataStore.validateCharacterMutationIsAllowed(characterId: characterId)
         guard itemID.isValid(in: masterData) else {
             throw GuildRepositoryError.invalidItemStack
         }
@@ -515,6 +524,7 @@ private enum GuildPersistenceBridge {
             partyId: 1,
             name: PartyRecord.defaultName(for: 1),
             memberCharacterIds: [],
+            selectedLabyrinthId: nil,
             in: context
         )
         return try fetchPartyEntities(in: context)
@@ -600,6 +610,7 @@ private enum GuildPersistenceBridge {
         partyId: Int,
         name: String,
         memberCharacterIds: [Int],
+        selectedLabyrinthId: Int?,
         in context: NSManagedObjectContext
     ) throws -> PartyEntity {
         guard let party = NSEntityDescription.insertNewObject(
@@ -611,6 +622,7 @@ private enum GuildPersistenceBridge {
 
         party.partyId = Int64(partyId)
         party.name = name
+        party.selectedLabyrinthId = selectedLabyrinthId.map(Int64.init) ?? 0
         setMemberCharacterIds(memberCharacterIds, on: party)
         return party
     }
@@ -672,7 +684,8 @@ private enum GuildPersistenceBridge {
         PartyRecord(
             partyId: Int(entity.partyId),
             name: entity.name ?? PartyRecord.defaultName(for: Int(entity.partyId)),
-            memberCharacterIds: memberCharacterIds(from: entity)
+            memberCharacterIds: memberCharacterIds(from: entity),
+            selectedLabyrinthId: entity.selectedLabyrinthId == 0 ? nil : Int(entity.selectedLabyrinthId)
         )
     }
 
@@ -744,7 +757,7 @@ private enum GuildPersistenceBridge {
     ) throws {
         let character = makeCharacterRecord(from: entity)
         guard let status = CharacterDerivedStatsCalculator.status(for: character, masterData: masterData) else {
-            throw ExplorationRepositoryError.invalidRunMember(characterId: Int(entity.characterId))
+            throw ExplorationError.invalidRunMember(characterId: Int(entity.characterId))
         }
 
         entity.currentHP = Int64(status.maxHP)

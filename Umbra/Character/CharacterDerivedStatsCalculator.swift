@@ -2,7 +2,7 @@
 
 import Foundation
 
-enum CharacterDerivedStatsCalculator {
+nonisolated enum CharacterDerivedStatsCalculator {
     private static let levelExponent = 1.0
     private static let defaultEquipmentAggregation = EquipmentAggregation(
         baseStats: CharacterBaseStats(
@@ -390,7 +390,7 @@ enum CharacterDerivedStatsCalculator {
     }
 }
 
-private struct SkillAdjustments {
+nonisolated private struct SkillAdjustments {
     var battleStatFlatAdds: [String: Double] = [:]
     var battleStatPctAdds: [String: Double] = [:]
     var battleDerivedPctAdds: [String: Double] = [:]

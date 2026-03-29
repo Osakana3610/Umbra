@@ -64,7 +64,7 @@ struct ContentView: View {
         partyStore: PartyStore(phase: .loading, repository: partyRepository),
         equipmentStore: EquipmentInventoryStore(repository: equipmentRepository),
         explorationStore: ExplorationStore(
-            repository: ExplorationRepository(container: persistenceController.container)
+            coreDataStore: ExplorationCoreDataStore(container: persistenceController.container)
         ),
         equipmentRepository: equipmentRepository
     )

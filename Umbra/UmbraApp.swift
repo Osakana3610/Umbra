@@ -35,7 +35,7 @@ struct UmbraApp: App {
         )
         _explorationStore = State(
             initialValue: ExplorationStore(
-                repository: ExplorationRepository(container: persistenceController.container)
+                coreDataStore: ExplorationCoreDataStore(container: persistenceController.container)
             )
         )
     }

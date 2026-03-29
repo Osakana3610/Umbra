@@ -18,11 +18,11 @@ nonisolated struct MasterData: Decodable, Sendable {
 }
 
 extension MasterData {
-    struct Metadata: Decodable, Sendable {
+    nonisolated struct Metadata: Decodable, Sendable {
         let generator: String
     }
 
-    struct BaseStats: Decodable, Sendable {
+    nonisolated struct BaseStats: Decodable, Sendable {
         let vitality: Int
         let strength: Int
         let mind: Int
@@ -31,7 +31,7 @@ extension MasterData {
         let luck: Int
     }
 
-    struct BattleStats: Decodable, Sendable {
+    nonisolated struct BattleStats: Decodable, Sendable {
         let maxHP: Int
         let physicalAttack: Int
         let physicalDefense: Int
@@ -45,7 +45,7 @@ extension MasterData {
         let breathPower: Int
     }
 
-    struct BattleStatCoefficients: Decodable, Sendable {
+    nonisolated struct BattleStatCoefficients: Decodable, Sendable {
         let maxHP: Double
         let physicalAttack: Double
         let physicalDefense: Double
@@ -59,7 +59,7 @@ extension MasterData {
         let breathPower: Double
     }
 
-    struct Race: Identifiable, Decodable, Sendable {
+    nonisolated struct Race: Identifiable, Decodable, Sendable {
         let id: Int
         let name: String
         let levelCap: Int
@@ -68,7 +68,7 @@ extension MasterData {
         let skillIds: [Int]
     }
 
-    struct Job: Identifiable, Decodable, Sendable {
+    nonisolated struct Job: Identifiable, Decodable, Sendable {
         let id: Int
         let name: String
         let hirePriceMultiplier: Double
@@ -76,12 +76,12 @@ extension MasterData {
         let skillIds: [Int]
     }
 
-    struct Aptitude: Identifiable, Decodable, Sendable {
+    nonisolated struct Aptitude: Identifiable, Decodable, Sendable {
         let id: Int
         let name: String
     }
 
-    struct Item: Identifiable, Decodable, Sendable {
+    nonisolated struct Item: Identifiable, Decodable, Sendable {
         let id: Int
         let name: String
         let category: ItemCategory
@@ -94,7 +94,7 @@ extension MasterData {
         let normalDropTier: Int
     }
 
-    struct Title: Identifiable, Decodable, Sendable {
+    nonisolated struct Title: Identifiable, Decodable, Sendable {
         let id: Int
         let key: String
         let name: String
@@ -103,20 +103,20 @@ extension MasterData {
         let dropWeight: Int
     }
 
-    struct SuperRare: Identifiable, Decodable, Sendable {
+    nonisolated struct SuperRare: Identifiable, Decodable, Sendable {
         let id: Int
         let name: String
         let skillIds: [Int]
     }
 
-    struct Skill: Identifiable, Decodable, Sendable {
+    nonisolated struct Skill: Identifiable, Decodable, Sendable {
         let id: Int
         let name: String
         let description: String
         let effects: [SkillEffect]
     }
 
-    struct SkillEffect: Decodable, Sendable {
+    nonisolated struct SkillEffect: Decodable, Sendable {
         let kind: SkillEffectKind
         let target: String?
         let operation: String?
@@ -126,7 +126,7 @@ extension MasterData {
         let interruptKind: InterruptKind?
     }
 
-    struct Spell: Identifiable, Decodable, Sendable {
+    nonisolated struct Spell: Identifiable, Decodable, Sendable {
         let id: Int
         let name: String
         let category: SpellCategory
@@ -137,13 +137,13 @@ extension MasterData {
         let effectTarget: String?
     }
 
-    struct RecruitNames: Decodable, Sendable {
+    nonisolated struct RecruitNames: Decodable, Sendable {
         let male: [String]
         let female: [String]
         let unisex: [String]
     }
 
-    struct Enemy: Identifiable, Decodable, Sendable {
+    nonisolated struct Enemy: Identifiable, Decodable, Sendable {
         let id: Int
         let name: String
         let enemyRace: EnemyRace
@@ -157,14 +157,14 @@ extension MasterData {
         let actionPriority: [BattleActionKind]
     }
 
-    struct ActionRates: Decodable, Sendable {
+    nonisolated struct ActionRates: Decodable, Sendable {
         let breath: Int
         let attack: Int
         let recoverySpell: Int
         let attackSpell: Int
     }
 
-    struct Labyrinth: Identifiable, Decodable, Sendable {
+    nonisolated struct Labyrinth: Identifiable, Decodable, Sendable {
         let id: Int
         let name: String
         let enemyCountCap: Int
@@ -172,7 +172,7 @@ extension MasterData {
         let floors: [Floor]
     }
 
-    struct Floor: Identifiable, Decodable, Sendable {
+    nonisolated struct Floor: Identifiable, Decodable, Sendable {
         let id: Int
         let floorNumber: Int
         let battleCount: Int
@@ -180,13 +180,13 @@ extension MasterData {
         let fixedBattle: [FixedBattle]?
     }
 
-    struct Encounter: Decodable, Sendable {
+    nonisolated struct Encounter: Decodable, Sendable {
         let enemyId: Int
         let level: Int
         let weight: Int
     }
 
-    struct FixedBattle: Decodable, Sendable {
+    nonisolated struct FixedBattle: Decodable, Sendable {
         let enemyId: Int
         let level: Int
     }

@@ -2,7 +2,7 @@
 
 import Foundation
 
-struct PlayerState: Equatable, Sendable {
+nonisolated struct PlayerState: Equatable, Sendable {
     var gold: Int
     var nextCharacterId: Int
     var autoReviveDefeatedCharacters: Bool

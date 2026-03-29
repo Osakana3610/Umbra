@@ -2,18 +2,18 @@
 
 import Foundation
 
-enum BattleOutcome: String, Codable, Equatable, Sendable {
+nonisolated enum BattleOutcome: String, Codable, Equatable, Sendable {
     case victory
     case draw
     case defeat
 }
 
-enum BattleSide: String, Codable, Equatable, Sendable {
+nonisolated enum BattleSide: String, Codable, Equatable, Sendable {
     case ally
     case enemy
 }
 
-enum BattleLogActionKind: String, Codable, Equatable, Sendable {
+nonisolated enum BattleLogActionKind: String, Codable, Equatable, Sendable {
     case breath
     case attack
     case recoverySpell
@@ -25,11 +25,11 @@ enum BattleLogActionKind: String, Codable, Equatable, Sendable {
     case pursuit
 }
 
-enum BattleActionFlag: String, Codable, Equatable, Sendable {
+nonisolated enum BattleActionFlag: String, Codable, Equatable, Sendable {
     case critical
 }
 
-enum BattleTargetResultKind: String, Codable, Equatable, Sendable {
+nonisolated enum BattleTargetResultKind: String, Codable, Equatable, Sendable {
     case damage
     case heal
     case miss
@@ -37,29 +37,29 @@ enum BattleTargetResultKind: String, Codable, Equatable, Sendable {
     case ailmentRemoved
 }
 
-enum BattleTargetResultFlag: String, Codable, Equatable, Sendable {
+nonisolated enum BattleTargetResultFlag: String, Codable, Equatable, Sendable {
     case defeated
     case revived
     case guarded
 }
 
-enum BattleAilment: Int, Codable, Equatable, Sendable {
+nonisolated enum BattleAilment: Int, Codable, Equatable, Sendable {
     case sleep = 1
 }
 
-struct BattleContext: Codable, Equatable, Sendable {
+nonisolated struct BattleContext: Codable, Equatable, Sendable {
     let runId: String
     let rootSeed: UInt64
     let floorNumber: Int
     let battleNumber: Int
 }
 
-struct BattleEnemySeed: Codable, Equatable, Sendable {
+nonisolated struct BattleEnemySeed: Codable, Equatable, Sendable {
     let enemyId: Int
     let level: Int
 }
 
-struct BattleCombatantID: RawRepresentable, Codable, Hashable, Equatable, Sendable {
+nonisolated struct BattleCombatantID: RawRepresentable, Codable, Hashable, Equatable, Sendable {
     let rawValue: String
 
     init(rawValue: String) {
@@ -67,7 +67,7 @@ struct BattleCombatantID: RawRepresentable, Codable, Hashable, Equatable, Sendab
     }
 }
 
-struct BattleTargetResult: Codable, Equatable, Sendable {
+nonisolated struct BattleTargetResult: Codable, Equatable, Sendable {
     let targetId: BattleCombatantID
     let resultKind: BattleTargetResultKind
     let value: Int?
@@ -75,7 +75,7 @@ struct BattleTargetResult: Codable, Equatable, Sendable {
     let flags: [BattleTargetResultFlag]
 }
 
-struct BattleActionRecord: Codable, Equatable, Sendable {
+nonisolated struct BattleActionRecord: Codable, Equatable, Sendable {
     let actorId: BattleCombatantID
     let actionKind: BattleLogActionKind
     let actionRef: Int?
@@ -84,12 +84,12 @@ struct BattleActionRecord: Codable, Equatable, Sendable {
     let results: [BattleTargetResult]
 }
 
-struct BattleTurnRecord: Codable, Equatable, Sendable {
+nonisolated struct BattleTurnRecord: Codable, Equatable, Sendable {
     let turnNumber: Int
     let actions: [BattleActionRecord]
 }
 
-struct BattleRecord: Codable, Equatable, Sendable {
+nonisolated struct BattleRecord: Codable, Equatable, Sendable {
     let runId: String
     let floorNumber: Int
     let battleNumber: Int
@@ -97,7 +97,7 @@ struct BattleRecord: Codable, Equatable, Sendable {
     let turns: [BattleTurnRecord]
 }
 
-struct BattleCombatantSnapshot: Codable, Equatable, Sendable, Identifiable {
+nonisolated struct BattleCombatantSnapshot: Codable, Equatable, Sendable, Identifiable {
     let id: BattleCombatantID
     let name: String
     let side: BattleSide
@@ -107,7 +107,7 @@ struct BattleCombatantSnapshot: Codable, Equatable, Sendable, Identifiable {
     let formationIndex: Int
 }
 
-struct SingleBattleResult: Equatable, Sendable {
+nonisolated struct SingleBattleResult: Equatable, Sendable {
     let context: BattleContext
     let battleRecord: BattleRecord
     let combatants: [BattleCombatantSnapshot]
@@ -124,7 +124,7 @@ struct SingleBattleResult: Equatable, Sendable {
     }
 }
 
-enum SingleBattleError: LocalizedError {
+nonisolated enum SingleBattleError: LocalizedError {
     case emptyParty
     case invalidPartyMember(Int)
     case invalidEnemy(Int)

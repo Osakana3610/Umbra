@@ -2,7 +2,7 @@
 
 import Foundation
 
-struct CompositeItemID: Codable, Equatable, Hashable, Sendable {
+nonisolated struct CompositeItemID: Codable, Equatable, Hashable, Sendable {
     let baseSuperRareId: Int
     let baseTitleId: Int
     let baseItemId: Int
@@ -119,7 +119,7 @@ struct CompositeItemID: Codable, Equatable, Hashable, Sendable {
     }
 }
 
-struct CompositeItemStack: Codable, Equatable, Sendable, Identifiable {
+nonisolated struct CompositeItemStack: Codable, Equatable, Sendable, Identifiable {
     let itemID: CompositeItemID
     let count: Int
 
@@ -129,7 +129,7 @@ struct CompositeItemStack: Codable, Equatable, Sendable, Identifiable {
 }
 
 extension Array where Element == CompositeItemStack {
-    func normalizedCompositeItemStacks() -> [CompositeItemStack] {
+    nonisolated func normalizedCompositeItemStacks() -> [CompositeItemStack] {
         var countsByID: [CompositeItemID: Int] = [:]
         var orderedIDs: [CompositeItemID] = []
 

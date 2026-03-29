@@ -2,7 +2,7 @@
 
 import Foundation
 
-enum CharacterLevelProgression {
+nonisolated enum CharacterLevelProgression {
     static func nextLevelExperience(for level: Int) -> Int {
         10 * level * level * level
     }
@@ -28,4 +28,3 @@ enum CharacterLevelProgression {
         return resolvedLevel
     }
 }
-

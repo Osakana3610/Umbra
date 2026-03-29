@@ -96,13 +96,39 @@ final class PartyStore {
 
         isMutating = true
         lastOperationError = nil
-        defer { isMutating = false }
 
-        do {
-            try repository.addCharacter(characterId: characterId, toParty: partyId)
-            applyParties(try repository.loadParties())
-        } catch {
-            lastOperationError = Self.errorMessage(for: error)
+        Task {
+            defer { isMutating = false }
+
+            do {
+                try await repository.addCharacter(characterId: characterId, toParty: partyId)
+                applyParties(try repository.loadParties())
+            } catch {
+                lastOperationError = Self.errorMessage(for: error)
+            }
+        }
+    }
+
+    func setSelectedLabyrinth(partyId: Int, selectedLabyrinthId: Int?) {
+        guard !isMutating, phase == .loaded else {
+            return
+        }
+
+        isMutating = true
+        lastOperationError = nil
+
+        Task {
+            defer { isMutating = false }
+
+            do {
+                try await repository.setSelectedLabyrinth(
+                    partyId: partyId,
+                    selectedLabyrinthId: selectedLabyrinthId
+                )
+                applyParties(try repository.loadParties())
+            } catch {
+                lastOperationError = Self.errorMessage(for: error)
+            }
         }
     }
 
@@ -113,13 +139,16 @@ final class PartyStore {
 
         isMutating = true
         lastOperationError = nil
-        defer { isMutating = false }
 
-        do {
-            try repository.removeCharacter(characterId: characterId, fromParty: partyId)
-            applyParties(try repository.loadParties())
-        } catch {
-            lastOperationError = Self.errorMessage(for: error)
+        Task {
+            defer { isMutating = false }
+
+            do {
+                try await repository.removeCharacter(characterId: characterId, fromParty: partyId)
+                applyParties(try repository.loadParties())
+            } catch {
+                lastOperationError = Self.errorMessage(for: error)
+            }
         }
     }
 
@@ -138,16 +167,19 @@ final class PartyStore {
 
         isMutating = true
         lastOperationError = nil
-        defer { isMutating = false }
 
-        do {
-            try repository.replacePartyMembers(
-                partyId: partyId,
-                memberCharacterIds: reorderedMembers
-            )
-            applyParties(try repository.loadParties())
-        } catch {
-            lastOperationError = Self.errorMessage(for: error)
+        Task {
+            defer { isMutating = false }
+
+            do {
+                try await repository.replacePartyMembers(
+                    partyId: partyId,
+                    memberCharacterIds: reorderedMembers
+                )
+                applyParties(try repository.loadParties())
+            } catch {
+                lastOperationError = Self.errorMessage(for: error)
+            }
         }
     }
 

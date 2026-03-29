@@ -1,4 +1,4 @@
-// Defines a party's persisted identity, display name, and ordered member list.
+// Defines a party's persisted identity, display name, member order, and sortie destination.
 
 import Foundation
 
@@ -12,6 +12,7 @@ struct PartyRecord: Identifiable, Equatable, Sendable {
     let partyId: Int
     var name: String
     var memberCharacterIds: [Int]
+    var selectedLabyrinthId: Int?
 
     var id: Int { partyId }
 
