@@ -4,6 +4,7 @@ import Foundation
 
 final class ExplorationSessionService {
     private let coreDataStore: ExplorationCoreDataStore
+    private var cachedStatusesByRunIdentifier: [String: [Int: ExplorationMemberStatusCacheEntry]] = [:]
 
     init(coreDataStore: ExplorationCoreDataStore) {
         self.coreDataStore = coreDataStore
@@ -127,38 +128,64 @@ final class ExplorationSessionService {
         masterData: MasterData
     ) async throws -> ExplorationRunSnapshot {
         let progressContexts = try await coreDataStore.loadProgressContexts()
+        var runs: [RunSessionRecord] = []
+        runs.reserveCapacity(progressContexts.count)
+        var resolvedUpdates: [(currentSession: RunSessionRecord, resolvedSession: RunSessionRecord)] = []
+        resolvedUpdates.reserveCapacity(progressContexts.count)
         var didApplyRewards = false
         var appliedInventoryCounts: [CompositeItemID: Int] = [:]
+        var activeRunIdentifiers: Set<String> = []
 
         for progressContext in progressContexts {
             let currentSession = progressContext.session
+            let runIdentifier = Self.runIdentifier(for: currentSession)
+            var cachedStatuses = cachedStatusesByRunIdentifier[runIdentifier] ?? [:]
             let session: RunSessionRecord
             if currentSession.completion == nil {
                 session = try ExplorationResolver.resolve(
                     session: currentSession,
                     upTo: currentDate,
                     partyMembers: progressContext.livePartyMembers,
-                    masterData: masterData
+                    masterData: masterData,
+                    cachedStatuses: &cachedStatuses
                 )
+                if session.completion == nil {
+                    cachedStatusesByRunIdentifier[runIdentifier] = cachedStatuses
+                    activeRunIdentifiers.insert(runIdentifier)
+                } else {
+                    cachedStatusesByRunIdentifier.removeValue(forKey: runIdentifier)
+                }
             } else {
                 session = currentSession
+                cachedStatusesByRunIdentifier.removeValue(forKey: runIdentifier)
             }
-            let rewardApplication = try await coreDataStore.commitProgressUpdate(
-                currentSession: currentSession,
-                resolvedSession: session,
-                masterData: masterData
+            resolvedUpdates.append(
+                (currentSession: currentSession, resolvedSession: session)
             )
-            didApplyRewards = didApplyRewards || rewardApplication.didApplyRewards
-            for (itemID, count) in rewardApplication.appliedInventoryCounts {
-                appliedInventoryCounts[itemID, default: 0] += count
-            }
+            runs.append(session.summaryRecord)
         }
 
-        let snapshot = try await coreDataStore.loadSnapshot()
+        cachedStatusesByRunIdentifier = cachedStatusesByRunIdentifier.filter {
+            activeRunIdentifiers.contains($0.key)
+        }
+
+        let rewardApplication = try await coreDataStore.commitProgressUpdates(
+            resolvedUpdates,
+            masterData: masterData
+        )
+        didApplyRewards = rewardApplication.didApplyRewards
+        for (itemID, count) in rewardApplication.appliedInventoryCounts {
+            appliedInventoryCounts[itemID, default: 0] += count
+        }
+
         return ExplorationRunSnapshot(
-            runs: snapshot.runs,
+            runs: runs,
             didApplyRewards: didApplyRewards,
             appliedInventoryCounts: appliedInventoryCounts
         )
+    }
+
+    private static func runIdentifier(for session: RunSessionRecord) -> String {
+        "\(session.partyId):\(session.partyRunId)"
     }
 }

@@ -57,7 +57,7 @@ struct RunSessionDetailView: View {
                         }
                     }
 
-                    if let completion = run.completion {
+                    if let completion = detailedRun?.completion {
                         Section("報酬") {
                             LabeledContent("ゴールド", value: "\(completion.gold) G")
 
@@ -88,53 +88,57 @@ struct RunSessionDetailView: View {
                         }
                     }
 
-                    if run.battleLogs.isEmpty {
-                        Section("戦闘ログ") {
-                            Text("まだ解決済みの戦闘はありません。")
-                                .foregroundStyle(.secondary)
-                        }
-                    } else {
-                        ForEach(run.battleLogs) { log in
-                            Section("\(log.battleRecord.floorNumber)F / 戦闘 \(log.battleRecord.battleNumber)") {
-                                Text(completionText(for: log.battleRecord.result))
-                                    .font(.headline)
+                    if let detailedRun {
+                        if detailedRun.battleLogs.isEmpty {
+                            Section("戦闘ログ") {
+                                Text("まだ解決済みの戦闘はありません。")
+                                    .foregroundStyle(.secondary)
+                            }
+                        } else {
+                            ForEach(detailedRun.battleLogs) { log in
+                                Section("\(log.battleRecord.floorNumber)F / 戦闘 \(log.battleRecord.battleNumber)") {
+                                    Text(completionText(for: log.battleRecord.result))
+                                        .font(.headline)
 
-                                ForEach(log.battleRecord.turns, id: \.turnNumber) { turn in
-                                    VStack(alignment: .leading, spacing: 8) {
-                                        Text("ターン \(turn.turnNumber)")
-                                            .font(.subheadline.weight(.semibold))
+                                    ForEach(log.battleRecord.turns, id: \.turnNumber) { turn in
+                                        VStack(alignment: .leading, spacing: 8) {
+                                            Text("ターン \(turn.turnNumber)")
+                                                .font(.subheadline.weight(.semibold))
 
-                                        if turn.actions.isEmpty {
-                                            Text("行動なし")
-                                                .foregroundStyle(.secondary)
-                                        } else {
-                                            ForEach(Array(turn.actions.enumerated()), id: \.offset) { _, action in
-                                                VStack(alignment: .leading, spacing: 4) {
-                                                    Text(actionTitle(action, log: log))
-                                                        .font(.subheadline.weight(.medium))
-                                                    if !action.results.isEmpty {
-                                                        Text(actionResultText(action, log: log))
-                                                            .font(.caption)
-                                                            .foregroundStyle(.secondary)
+                                            if turn.actions.isEmpty {
+                                                Text("行動なし")
+                                                    .foregroundStyle(.secondary)
+                                            } else {
+                                                ForEach(Array(turn.actions.enumerated()), id: \.offset) { _, action in
+                                                    VStack(alignment: .leading, spacing: 4) {
+                                                        Text(actionTitle(action, log: log))
+                                                            .font(.subheadline.weight(.medium))
+                                                        if !action.results.isEmpty {
+                                                            Text(actionResultText(action, log: log))
+                                                                .font(.caption)
+                                                                .foregroundStyle(.secondary)
+                                                        }
                                                     }
                                                 }
                                             }
                                         }
+                                        .padding(.vertical, 4)
                                     }
-                                    .padding(.vertical, 4)
                                 }
                             }
+                        }
+                    } else {
+                        Section {
+                            ProgressView()
+                                .frame(maxWidth: .infinity, alignment: .center)
                         }
                     }
                 }
                 .navigationTitle("探索記録")
                 .navigationBarTitleDisplayMode(.inline)
                 .task {
-                    await explorationStore.loadIfNeeded()
+                    await explorationStore.loadIfNeeded(masterData: masterData)
                     await loadRunDetail()
-                }
-                .task(id: progressRefreshKey) {
-                    await waitUntilNextProgress()
                 }
                 .refreshable {
                     await refreshProgress()
@@ -154,46 +158,27 @@ struct RunSessionDetailView: View {
         }
     }
 
-    private var progressRefreshKey: String {
-        guard let run else {
-            return "missing"
+    private var runSummary: RunSessionRecord? {
+        explorationStore.runs.first {
+            $0.partyId == partyId && $0.partyRunId == partyRunId
         }
-
-        let completionKey = run.completion?.completedAt.timeIntervalSinceReferenceDate ?? -1
-        return "\(run.completedBattleCount)-\(completionKey)"
     }
 
-    private var nextScheduledProgressDate: Date? {
-        guard let run else {
-            return nil
-        }
-
-        return nextProgressDate(for: run)
-    }
-
-    private func waitUntilNextProgress() async {
-        guard let nextScheduledProgressDate else {
-            return
-        }
-
-        let delay = max(nextScheduledProgressDate.timeIntervalSinceNow, 0)
-        if delay > 0 {
-            let nanoseconds = UInt64(delay * 1_000_000_000)
-            try? await Task.sleep(nanoseconds: nanoseconds)
-        }
-
-        guard Task.isCancelled == false else {
-            return
-        }
-
-        await refreshProgress()
+    private var detailedRun: RunSessionRecord? {
+        runDetail
     }
 
     private func refreshProgress() async {
+        let previousProgressKey = progressKey(for: runDetail)
         let refreshResult = await explorationStore.refreshProgress(at: Date(), masterData: masterData)
-        await loadRunDetail()
+        let refreshedProgressKey = progressKey(for: runSummary)
 
-        if explorationStore.lastOperationError == nil {
+        if runDetail == nil || previousProgressKey != refreshedProgressKey {
+            await loadRunDetail()
+        }
+
+        if explorationStore.lastOperationError == nil,
+           refreshResult.didApplyRewards {
             equipmentStore.applyInventoryGains(
                 refreshResult.appliedInventoryCounts,
                 masterData: masterData
@@ -208,6 +193,15 @@ struct RunSessionDetailView: View {
             partyId: partyId,
             partyRunId: partyRunId
         )
+    }
+
+    private func progressKey(for run: RunSessionRecord?) -> String {
+        guard let run else {
+            return "missing"
+        }
+
+        let completionKey = run.completion?.completedAt.timeIntervalSinceReferenceDate ?? -1
+        return "\(run.completedBattleCount)-\(completionKey)"
     }
 
     private func labyrinthName(for run: RunSessionRecord) -> String {

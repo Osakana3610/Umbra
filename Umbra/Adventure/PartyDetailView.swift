@@ -122,7 +122,7 @@ struct PartyDetailView: View {
                     if partyNameDraft.isEmpty {
                         partyNameDraft = party.name
                     }
-                    await explorationStore.loadIfNeeded()
+                    await explorationStore.loadIfNeeded(masterData: masterData)
                 }
                 .onDisappear {
                     commitPartyName(for: party)

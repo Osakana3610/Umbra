@@ -75,6 +75,43 @@ nonisolated struct RunSessionRecord: Equatable, Sendable, Identifiable {
     var isCompleted: Bool {
         completion != nil
     }
+
+    var summaryRecord: RunSessionRecord {
+        RunSessionRecord(
+            partyRunId: partyRunId,
+            partyId: partyId,
+            labyrinthId: labyrinthId,
+            targetFloorNumber: targetFloorNumber,
+            startedAt: startedAt,
+            rootSeed: rootSeed,
+            maximumLoopCount: maximumLoopCount,
+            memberCharacterIds: memberCharacterIds,
+            completedBattleCount: completedBattleCount,
+            currentPartyHPs: currentPartyHPs,
+            memberExperienceMultipliers: memberExperienceMultipliers,
+            goldMultiplier: goldMultiplier,
+            rareDropMultiplier: rareDropMultiplier,
+            titleDropMultiplier: titleDropMultiplier,
+            partyAverageLuck: partyAverageLuck,
+            latestBattleFloorNumber: latestBattleFloorNumber,
+            latestBattleNumber: latestBattleNumber,
+            latestBattleOutcome: latestBattleOutcome,
+            battleLogs: [],
+            goldBuffer: goldBuffer,
+            experienceRewards: [],
+            dropRewards: [],
+            completion: completion.map { completion in
+                RunCompletionRecord(
+                    completedAt: completion.completedAt,
+                    reason: completion.reason,
+                    completedLoopCount: completion.completedLoopCount,
+                    gold: completion.gold,
+                    experienceRewards: [],
+                    dropRewards: []
+                )
+            }
+        )
+    }
 }
 
 nonisolated struct ExplorationRunSnapshot: Equatable, Sendable {

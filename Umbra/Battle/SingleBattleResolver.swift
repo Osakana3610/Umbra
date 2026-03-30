@@ -2,10 +2,15 @@
 
 import Foundation
 
+nonisolated struct PartyBattleMember: Sendable {
+    let character: CharacterRecord
+    let status: CharacterStatus
+}
+
 nonisolated enum SingleBattleResolver {
     static func resolve(
         context: BattleContext,
-        partyMembers: [CharacterRecord],
+        partyMembers: [PartyBattleMember],
         enemies: [BattleEnemySeed],
         masterData: MasterData
     ) throws -> SingleBattleResult {
@@ -31,7 +36,7 @@ nonisolated private struct BattleResolutionEngine {
 
     init(
         context: BattleContext,
-        partyMembers: [CharacterRecord],
+        partyMembers: [PartyBattleMember],
         enemies: [BattleEnemySeed],
         masterData: MasterData
     ) throws {
@@ -46,21 +51,17 @@ nonisolated private struct BattleResolutionEngine {
         self.initiativeScores = []
 
         for (formationIndex, character) in partyMembers.enumerated() {
-            guard let status = CharacterDerivedStatsCalculator.status(for: character, masterData: masterData) else {
-                throw SingleBattleError.invalidPartyMember(character.characterId)
-            }
-
             combatants.append(
                 RuntimeCombatant(
-                    id: BattleCombatantID(rawValue: "character:\(character.characterId)"),
-                    name: character.name,
+                    id: BattleCombatantID(rawValue: "character:\(character.character.characterId)"),
+                    name: character.character.name,
                     side: .ally,
-                    level: character.level,
+                    level: character.character.level,
                     formationIndex: formationIndex,
-                    currentHP: min(max(character.currentHP, 0), status.maxHP),
-                    status: status,
-                    actionRates: character.autoBattleSettings.rates,
-                    actionPriority: character.autoBattleSettings.priority
+                    currentHP: min(max(character.character.currentHP, 0), character.status.maxHP),
+                    status: character.status,
+                    actionRates: character.character.autoBattleSettings.rates,
+                    actionPriority: character.character.autoBattleSettings.priority
                 )
             )
         }

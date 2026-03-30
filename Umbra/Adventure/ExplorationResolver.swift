@@ -2,12 +2,18 @@
 
 import Foundation
 
+nonisolated struct ExplorationMemberStatusCacheEntry: Sendable {
+    let level: Int
+    let status: CharacterStatus
+}
+
 nonisolated enum ExplorationResolver {
     static func resolve(
         session: RunSessionRecord,
         upTo currentDate: Date,
         partyMembers: [CharacterRecord],
-        masterData: MasterData
+        masterData: MasterData,
+        cachedStatuses: inout [Int: ExplorationMemberStatusCacheEntry]
     ) throws -> RunSessionRecord {
         guard session.completion == nil else {
             return session
@@ -32,7 +38,9 @@ nonisolated enum ExplorationResolver {
         var currentPartyMembers = try preparedPartyMembers(
             from: partyMembers,
             memberCharacterIds: session.memberCharacterIds,
-            currentPartyHPs: session.currentPartyHPs
+            currentPartyHPs: session.currentPartyHPs,
+            experienceRewards: session.experienceRewards,
+            masterData: masterData
         )
         var completedBattleCount = session.completedBattleCount
         var currentPartyHPs = session.currentPartyHPs
@@ -53,7 +61,11 @@ nonisolated enum ExplorationResolver {
             )
             let result = try SingleBattleResolver.resolve(
                 context: battleContext,
-                partyMembers: currentPartyMembers,
+                partyMembers: try resolvedPartyMembers(
+                    from: currentPartyMembers,
+                    masterData: masterData,
+                    cachedStatuses: &cachedStatuses
+                ),
                 enemies: battlePlan.enemies,
                 masterData: masterData
             )
@@ -87,6 +99,11 @@ nonisolated enum ExplorationResolver {
                     additions: rewards.experienceRewards
                 )
                 dropRewards.append(contentsOf: rewards.dropRewards)
+                currentPartyMembers = applyExperienceRewards(
+                    rewards.experienceRewards,
+                    to: currentPartyMembers,
+                    masterData: masterData
+                )
 
                 if completedBattleCount == battlePlans.count {
                     completion = RunCompletionRecord(
@@ -193,18 +210,29 @@ nonisolated private extension ExplorationResolver {
     static func preparedPartyMembers(
         from partyMembers: [CharacterRecord],
         memberCharacterIds: [Int],
-        currentPartyHPs: [Int]
+        currentPartyHPs: [Int],
+        experienceRewards: [ExplorationExperienceReward],
+        masterData: MasterData
     ) throws -> [CharacterRecord] {
         guard memberCharacterIds.count == currentPartyHPs.count else {
             throw ExplorationError.invalidParty(partyId: 0)
         }
 
         let charactersById = Dictionary(uniqueKeysWithValues: partyMembers.map { ($0.characterId, $0) })
+        let racesById = Dictionary(uniqueKeysWithValues: masterData.races.map { ($0.id, $0) })
+        let experienceByCharacterId = experienceRewards.reduce(into: [Int: Int]()) { partial, reward in
+            partial[reward.characterId, default: 0] += reward.experience
+        }
         return try memberCharacterIds.enumerated().map { index, characterId in
             guard var character = charactersById[characterId] else {
                 throw ExplorationError.invalidRunMember(characterId: characterId)
             }
             character.currentHP = currentPartyHPs[index]
+            character = applyAccumulatedExperience(
+                to: character,
+                additionalExperience: experienceByCharacterId[characterId] ?? 0,
+                racesById: racesById
+            )
             return character
         }
     }
@@ -217,6 +245,72 @@ nonisolated private extension ExplorationResolver {
             var updatedMember = member
             updatedMember.currentHP = currentPartyHPs[index]
             return updatedMember
+        }
+    }
+
+    static func applyExperienceRewards(
+        _ rewards: [ExplorationExperienceReward],
+        to partyMembers: [CharacterRecord],
+        masterData: MasterData
+    ) -> [CharacterRecord] {
+        let experienceByCharacterId = rewards.reduce(into: [Int: Int]()) { partial, reward in
+            partial[reward.characterId, default: 0] += reward.experience
+        }
+        guard !experienceByCharacterId.isEmpty else {
+            return partyMembers
+        }
+
+        let racesById = Dictionary(uniqueKeysWithValues: masterData.races.map { ($0.id, $0) })
+        return partyMembers.map { member in
+            applyAccumulatedExperience(
+                to: member,
+                additionalExperience: experienceByCharacterId[member.characterId] ?? 0,
+                racesById: racesById
+            )
+        }
+    }
+
+    static func applyAccumulatedExperience(
+        to member: CharacterRecord,
+        additionalExperience: Int,
+        racesById: [Int: MasterData.Race]
+    ) -> CharacterRecord {
+        guard additionalExperience > 0 else {
+            return member
+        }
+
+        var updatedMember = member
+        updatedMember.experience += additionalExperience
+        if let race = racesById[updatedMember.raceId] {
+            updatedMember.level = CharacterLevelProgression.level(
+                for: updatedMember.experience,
+                levelCap: race.levelCap
+            )
+        }
+        return updatedMember
+    }
+
+    static func resolvedPartyMembers(
+        from partyMembers: [CharacterRecord],
+        masterData: MasterData,
+        cachedStatuses: inout [Int: ExplorationMemberStatusCacheEntry]
+    ) throws -> [PartyBattleMember] {
+        try partyMembers.map { member in
+            if let cachedStatus = cachedStatuses[member.characterId], cachedStatus.level == member.level {
+                return PartyBattleMember(character: member, status: cachedStatus.status)
+            }
+
+            guard let status = CharacterDerivedStatsCalculator.status(
+                for: member,
+                masterData: masterData
+            ) else {
+                throw ExplorationError.invalidRunMember(characterId: member.characterId)
+            }
+            cachedStatuses[member.characterId] = ExplorationMemberStatusCacheEntry(
+                level: member.level,
+                status: status
+            )
+            return PartyBattleMember(character: member, status: status)
         }
     }
 

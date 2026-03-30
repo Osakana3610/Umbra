@@ -18,25 +18,31 @@ final class ExplorationStore {
     private(set) var isMutating = false
     private(set) var lastOperationError: String?
     private(set) var runs: [RunSessionRecord] = []
+    private var isRefreshingProgress = false
+    private var progressRefreshTask: Task<Void, Never>?
 
     init(coreDataStore: ExplorationCoreDataStore) {
         self.coreDataStore = coreDataStore
         service = ExplorationSessionService(coreDataStore: coreDataStore)
     }
 
-    func loadIfNeeded() async {
+    func loadIfNeeded(masterData: MasterData) async {
         guard !isLoaded else {
+            scheduleProgressRefresh(using: masterData)
             return
         }
 
-        await reload()
+        await reload(masterData: masterData)
     }
 
-    func reload() async {
+    func reload(masterData: MasterData) async {
         lastOperationError = nil
 
         do {
-            applySnapshot(try await coreDataStore.loadSnapshot())
+            applySnapshot(
+                try await coreDataStore.loadSnapshot(),
+                masterData: masterData
+            )
         } catch {
             lastOperationError = Self.errorMessage(for: error)
         }
@@ -48,15 +54,18 @@ final class ExplorationStore {
         masterData: MasterData
     ) async -> (didApplyRewards: Bool, appliedInventoryCounts: [CompositeItemID: Int]) {
         guard !isMutating,
+              !isRefreshingProgress,
               runs.contains(where: { !$0.isCompleted }) else {
             return (false, [:])
         }
 
+        isRefreshingProgress = true
         lastOperationError = nil
+        defer { isRefreshingProgress = false }
 
         do {
             let snapshot = try await service.refreshRuns(at: currentDate, masterData: masterData)
-            applySnapshot(snapshot)
+            applySnapshot(snapshot, masterData: masterData)
             return (snapshot.didApplyRewards, snapshot.appliedInventoryCounts)
         } catch {
             lastOperationError = Self.errorMessage(for: error)
@@ -70,7 +79,7 @@ final class ExplorationStore {
         startedAt: Date,
         masterData: MasterData
     ) async {
-        await mutate {
+        await mutate(masterData: masterData) {
             try await service.startRun(
                 partyId: partyId,
                 labyrinthId: labyrinthId,
@@ -90,7 +99,7 @@ final class ExplorationStore {
             return
         }
 
-        await mutate {
+        await mutate(masterData: masterData) {
             try await service.startConfiguredRuns(
                 runsToStart,
                 startedAt: startedAt,
@@ -128,6 +137,7 @@ final class ExplorationStore {
     }
 
     private func mutate(
+        masterData: MasterData,
         _ operation: () async throws -> ExplorationRunSnapshot
     ) async {
         guard !isMutating else {
@@ -139,15 +149,61 @@ final class ExplorationStore {
         defer { isMutating = false }
 
         do {
-            applySnapshot(try await operation())
+            applySnapshot(try await operation(), masterData: masterData)
         } catch {
             lastOperationError = Self.errorMessage(for: error)
         }
     }
 
-    private func applySnapshot(_ snapshot: ExplorationRunSnapshot) {
+    private func applySnapshot(
+        _ snapshot: ExplorationRunSnapshot,
+        masterData: MasterData
+    ) {
         runs = snapshot.runs
         isLoaded = true
+        scheduleProgressRefresh(using: masterData)
+    }
+
+    private func scheduleProgressRefresh(using masterData: MasterData) {
+        progressRefreshTask?.cancel()
+
+        guard let nextProgressDate = nextProgressDate(using: masterData) else {
+            progressRefreshTask = nil
+            return
+        }
+
+        progressRefreshTask = Task { [weak self] in
+            let delay = max(nextProgressDate.timeIntervalSinceNow, 0)
+            if delay > 0 {
+                let nanoseconds = UInt64(delay * 1_000_000_000)
+                try? await Task.sleep(nanoseconds: nanoseconds)
+            }
+
+            guard !Task.isCancelled,
+                  let self else {
+                return
+            }
+
+            _ = await self.refreshProgress(
+                at: Date(),
+                masterData: masterData
+            )
+        }
+    }
+
+    private func nextProgressDate(using masterData: MasterData) -> Date? {
+        runs
+            .compactMap { run in
+                guard run.completion == nil,
+                      let labyrinth = masterData.labyrinths.first(where: { $0.id == run.labyrinthId }) else {
+                    return nil
+                }
+
+                return run.startedAt.addingTimeInterval(
+                    Double(labyrinth.progressIntervalSeconds * (run.completedBattleCount + 1))
+                )
+            }
+            .min()
     }
 
     private static func errorMessage(for error: Error) -> String {

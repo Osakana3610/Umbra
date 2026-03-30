@@ -112,10 +112,7 @@ struct AdventureHomeView: View {
             }
         }
         .task {
-            await explorationStore.loadIfNeeded()
-        }
-        .task(id: nextProgressDate) {
-            await waitUntilNextProgress()
+            await explorationStore.loadIfNeeded(masterData: masterData)
         }
         .refreshable {
             await refreshProgress()
@@ -143,12 +140,6 @@ struct AdventureHomeView: View {
             && playerState.gold >= PartyRecord.unlockCost
     }
 
-    private var nextProgressDate: Date? {
-        explorationStore.runs
-            .compactMap(nextProgressDate(for:))
-            .min()
-    }
-
     private func configuredLabyrinthId(for party: PartyRecord) -> Int? {
         guard let selectedLabyrinthId = party.selectedLabyrinthId,
               masterData.labyrinths.contains(where: { $0.id == selectedLabyrinthId }) else {
@@ -168,24 +159,6 @@ struct AdventureHomeView: View {
         return party.memberCharacterIds.allSatisfy { characterId in
             (rosterStore.charactersById[characterId]?.currentHP ?? 0) > 0
         }
-    }
-
-    private func waitUntilNextProgress() async {
-        guard let nextProgressDate else {
-            return
-        }
-
-        let delay = max(nextProgressDate.timeIntervalSinceNow, 0)
-        if delay > 0 {
-            let nanoseconds = UInt64(delay * 1_000_000_000)
-            try? await Task.sleep(nanoseconds: nanoseconds)
-        }
-
-        guard Task.isCancelled == false else {
-            return
-        }
-
-        await refreshProgress()
     }
 
     private func refreshProgress() async {
@@ -225,17 +198,6 @@ struct AdventureHomeView: View {
                 masterData: masterData
             )
         }
-    }
-
-    private func nextProgressDate(for run: RunSessionRecord) -> Date? {
-        guard run.completion == nil,
-              let labyrinth = masterData.labyrinths.first(where: { $0.id == run.labyrinthId }) else {
-            return nil
-        }
-
-        return run.startedAt.addingTimeInterval(
-            Double(labyrinth.progressIntervalSeconds * (run.completedBattleCount + 1))
-        )
     }
 }
 
@@ -358,7 +320,7 @@ private struct AdventurePartyPresentation {
                     .locale(Locale(identifier: "ja_JP"))
             )
             logHeaderText = "帰還時刻 \(returnedAt)"
-            logText = "\(labyrinthName)：\(Self.completionText(for: completion.reason)) / \(completion.gold) G / アイテム \(completion.dropRewards.count) 件"
+            logText = "\(labyrinthName)：\(Self.completionText(for: completion.reason))"
             actionTitle = "出撃"
             actionDisabled = !canStartRun
             logPrimaryStyle = .primary

@@ -106,7 +106,12 @@ actor ExplorationCoreDataStore {
         try await perform { context in
             let runEntities = try ExplorationCoreDataBridge.fetchRunEntities(in: context)
             return try runEntities.map { runEntity in
-                let session = ExplorationCoreDataBridge.makeRunDetailRecord(from: runEntity)
+                let session: RunSessionRecord
+                if runEntity.completedAt == nil {
+                    session = ExplorationCoreDataBridge.makeRunDetailRecord(from: runEntity)
+                } else {
+                    session = ExplorationCoreDataBridge.makeRunSummaryRecord(from: runEntity)
+                }
                 let livePartyMembers: [CharacterRecord]
                 if session.completion == nil {
                     livePartyMembers = try ExplorationCoreDataBridge.fetchRunPartyMembers(
@@ -125,49 +130,70 @@ actor ExplorationCoreDataStore {
         }
     }
 
-    func commitProgressUpdate(
-        currentSession: RunSessionRecord,
-        resolvedSession: RunSessionRecord,
+    func commitProgressUpdates(
+        _ updates: [(currentSession: RunSessionRecord, resolvedSession: RunSessionRecord)],
         masterData: MasterData
     ) async throws -> (didApplyRewards: Bool, appliedInventoryCounts: [CompositeItemID: Int]) {
         try await perform { context in
-            guard let entity = try ExplorationCoreDataBridge.fetchRunEntity(
-                partyId: resolvedSession.partyId,
-                partyRunId: resolvedSession.partyRunId,
-                in: context
-            ) else {
-                throw ExplorationError.runNotFound(
-                    partyId: resolvedSession.partyId,
-                    partyRunId: resolvedSession.partyRunId
-                )
-            }
-
-            if resolvedSession != currentSession {
-                try ExplorationCoreDataBridge.applyResolvedSession(
-                    resolvedSession,
-                    to: entity,
-                    in: context
-                )
-            }
-
-            guard let completion = resolvedSession.completion,
-                  !entity.rewardsApplied else {
+            guard !updates.isEmpty else {
                 return (
                     didApplyRewards: false,
                     appliedInventoryCounts: [:]
                 )
             }
-            let inventoryCounts = try ExplorationCoreDataBridge.applyCompletionRewards(
-                completion: completion,
-                currentPartyHPs: resolvedSession.currentPartyHPs,
-                memberCharacterIds: resolvedSession.memberCharacterIds,
-                in: context,
-                masterData: masterData
+
+            let runEntities = try ExplorationCoreDataBridge.fetchRunEntities(in: context)
+            let entitiesByIdentifier = Dictionary(
+                uniqueKeysWithValues: runEntities.map { entity in
+                    (ExplorationCoreDataBridge.runIdentifier(for: entity), entity)
+                }
             )
-            entity.rewardsApplied = true
+
+            var didApplyRewards = false
+            var appliedInventoryCounts: [CompositeItemID: Int] = [:]
+
+            for update in updates {
+                let currentSession = update.currentSession
+                let resolvedSession = update.resolvedSession
+                let identifier = resolvedSession.id
+
+                guard let entity = entitiesByIdentifier[identifier] else {
+                    throw ExplorationError.runNotFound(
+                        partyId: resolvedSession.partyId,
+                        partyRunId: resolvedSession.partyRunId
+                    )
+                }
+
+                if resolvedSession != currentSession {
+                    try ExplorationCoreDataBridge.applyResolvedSession(
+                        resolvedSession,
+                        to: entity,
+                        in: context
+                    )
+                }
+
+                guard let completion = resolvedSession.completion,
+                      !entity.rewardsApplied else {
+                    continue
+                }
+
+                let inventoryCounts = try ExplorationCoreDataBridge.applyCompletionRewards(
+                    completion: completion,
+                    currentPartyHPs: resolvedSession.currentPartyHPs,
+                    memberCharacterIds: resolvedSession.memberCharacterIds,
+                    in: context,
+                    masterData: masterData
+                )
+                entity.rewardsApplied = true
+                didApplyRewards = true
+                for (itemID, count) in inventoryCounts {
+                    appliedInventoryCounts[itemID, default: 0] += count
+                }
+            }
+
             return (
-                didApplyRewards: true,
-                appliedInventoryCounts: inventoryCounts
+                didApplyRewards: didApplyRewards,
+                appliedInventoryCounts: appliedInventoryCounts
             )
         }
     }
@@ -560,13 +586,19 @@ nonisolated private enum ExplorationCoreDataBridge {
             latestBattleOutcome: entity.latestBattleOutcomeRawValue.flatMap(BattleOutcome.init(rawValue:)),
             battleLogs: [],
             goldBuffer: Int(entity.goldBuffer),
-            experienceRewards: makeExperienceRewards(from: entity),
-            dropRewards: makeDropRewards(from: entity),
-            completion: makeCompletionRecord(from: entity)
+            experienceRewards: [],
+            dropRewards: [],
+            completion: makeCompletionRecord(
+                from: entity,
+                experienceRewards: [],
+                dropRewards: []
+            )
         )
     }
 
     static func makeRunDetailRecord(from entity: RunSessionEntity) -> RunSessionRecord {
+        let experienceRewards = makeExperienceRewards(from: entity)
+        let dropRewards = makeDropRewards(from: entity)
         var summary = makeRunSummaryRecord(from: entity)
         summary = RunSessionRecord(
             partyRunId: summary.partyRunId,
@@ -589,14 +621,22 @@ nonisolated private enum ExplorationCoreDataBridge {
             latestBattleOutcome: summary.latestBattleOutcome,
             battleLogs: makeBattleLogs(from: entity),
             goldBuffer: summary.goldBuffer,
-            experienceRewards: summary.experienceRewards,
-            dropRewards: summary.dropRewards,
-            completion: summary.completion
+            experienceRewards: experienceRewards,
+            dropRewards: dropRewards,
+            completion: makeCompletionRecord(
+                from: entity,
+                experienceRewards: experienceRewards,
+                dropRewards: dropRewards
+            )
         )
         return summary
     }
 
-    static func makeCompletionRecord(from entity: RunSessionEntity) -> RunCompletionRecord? {
+    static func makeCompletionRecord(
+        from entity: RunSessionEntity,
+        experienceRewards: [ExplorationExperienceReward],
+        dropRewards: [ExplorationDropReward]
+    ) -> RunCompletionRecord? {
         guard let completedAt = entity.completedAt,
               let rawValue = entity.completionReasonRawValue,
               let reason = RunCompletionReason(rawValue: rawValue) else {
@@ -608,8 +648,8 @@ nonisolated private enum ExplorationCoreDataBridge {
             reason: reason,
             completedLoopCount: Int(entity.completedLoopCount),
             gold: Int(entity.goldBuffer),
-            experienceRewards: makeExperienceRewards(from: entity),
-            dropRewards: makeDropRewards(from: entity)
+            experienceRewards: experienceRewards,
+            dropRewards: dropRewards
         )
     }
 
