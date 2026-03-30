@@ -87,12 +87,23 @@ final class PartyStore {
     }
 
     func addCharacter(characterId: Int, toParty partyId: Int) {
-        guard !isMutating, phase == .loaded else {
+        guard !isMutating,
+              phase == .loaded,
+              let targetPartyIndex = parties.firstIndex(where: { $0.partyId == partyId }) else {
             return
         }
 
+        let previousParties = parties
+        var updatedParties = parties
+
+        if let sourcePartyIndex = updatedParties.firstIndex(where: { $0.memberCharacterIds.contains(characterId) }) {
+            updatedParties[sourcePartyIndex].memberCharacterIds.removeAll { $0 == characterId }
+        }
+        updatedParties[targetPartyIndex].memberCharacterIds.append(characterId)
+
         isMutating = true
         lastOperationError = nil
+        applyParties(updatedParties)
 
         Task {
             defer { isMutating = false }
@@ -105,6 +116,7 @@ final class PartyStore {
                     )
                 )
             } catch {
+                applyParties(previousParties)
                 lastOperationError = Self.errorMessage(for: error)
             }
         }

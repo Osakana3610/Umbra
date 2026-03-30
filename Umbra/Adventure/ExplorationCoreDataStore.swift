@@ -670,7 +670,9 @@ nonisolated private enum ExplorationCoreDataBridge {
                     id: BattleCombatantID(rawValue: combatant.combatantIDRawValue ?? ""),
                     name: combatant.name ?? "",
                     side: BattleSide(rawValue: combatant.sideRawValue ?? "") ?? .enemy,
+                    imageAssetID: combatant.imageAssetID,
                     level: Int(combatant.level),
+                    initialHP: Int(combatant.initialHP),
                     maxHP: Int(combatant.maxHP),
                     remainingHP: Int(combatant.remainingHP),
                     formationIndex: Int(combatant.formationIndex)
@@ -886,7 +888,9 @@ nonisolated private enum ExplorationCoreDataBridge {
                 combatantEntity.combatantIDRawValue = combatant.id.rawValue
                 combatantEntity.name = combatant.name
                 combatantEntity.sideRawValue = combatant.side.rawValue
+                combatantEntity.imageAssetID = combatant.imageAssetID
                 combatantEntity.level = Int64(combatant.level)
+                combatantEntity.initialHP = Int64(combatant.initialHP)
                 combatantEntity.maxHP = Int64(combatant.maxHP)
                 combatantEntity.remainingHP = Int64(combatant.remainingHP)
                 combatantEntity.formationIndex = Int64(combatant.formationIndex)

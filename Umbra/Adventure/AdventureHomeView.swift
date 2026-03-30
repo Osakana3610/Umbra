@@ -14,6 +14,9 @@ struct AdventureHomeView: View {
             if rosterStore.playerState != nil {
                 ForEach(partyStore.parties) { party in
                     let status = explorationStore.status(for: party.partyId)
+                    let completedRuns = explorationStore.runs.filter {
+                        $0.partyId == party.partyId && $0.isCompleted
+                    }
                     let presentation = AdventurePartyPresentation(
                         party: party,
                         status: status,
@@ -74,6 +77,35 @@ struct AdventureHomeView: View {
                             AdventurePartyLogRow(presentation: presentation)
                                 .listRowInsets(EdgeInsets(top: 0, leading: 20, bottom: 0, trailing: 20))
                         }
+
+                        if !completedRuns.isEmpty {
+                            NavigationLink {
+                                PartyExplorationHistoryView(
+                                    partyId: party.partyId,
+                                    partyName: party.name,
+                                    masterData: masterData,
+                                    rosterStore: rosterStore,
+                                    partyStore: partyStore,
+                                    equipmentStore: equipmentStore,
+                                    explorationStore: explorationStore
+                                )
+                            } label: {
+                                HStack(spacing: 12) {
+                                    Text("過去の探索")
+                                        .foregroundStyle(.primary)
+
+                                    Spacer(minLength: 0)
+
+                                    Text("\(completedRuns.count)件")
+                                        .font(.footnote)
+                                        .foregroundStyle(.secondary)
+                                        .monospacedDigit()
+                                }
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityLabel("\(party.name)の過去の探索を見る")
+                            .listRowInsets(EdgeInsets(top: 0, leading: 20, bottom: 0, trailing: 20))
+                        }
                     }
                 }
 
@@ -113,9 +145,6 @@ struct AdventureHomeView: View {
         }
         .task {
             await explorationStore.loadIfNeeded(masterData: masterData)
-        }
-        .refreshable {
-            await refreshProgress()
         }
     }
 
@@ -159,20 +188,6 @@ struct AdventureHomeView: View {
         return party.memberCharacterIds.allSatisfy { characterId in
             (rosterStore.charactersById[characterId]?.currentHP ?? 0) > 0
         }
-    }
-
-    private func refreshProgress() async {
-        let refreshResult = await explorationStore.refreshProgress(at: Date(), masterData: masterData)
-        guard refreshResult.didApplyRewards else {
-            return
-        }
-
-        equipmentStore.applyInventoryGains(
-            refreshResult.appliedInventoryCounts,
-            masterData: masterData
-        )
-        rosterStore.reload()
-        partyStore.reload()
     }
 
     private func startRun(for party: PartyRecord) {

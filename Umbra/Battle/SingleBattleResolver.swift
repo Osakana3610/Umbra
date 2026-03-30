@@ -56,6 +56,7 @@ nonisolated private struct BattleResolutionEngine {
                     id: BattleCombatantID(rawValue: "character:\(character.character.characterId)"),
                     name: character.character.name,
                     side: .ally,
+                    imageAssetID: character.character.portraitAssetName,
                     level: character.character.level,
                     formationIndex: formationIndex,
                     currentHP: min(max(character.character.currentHP, 0), character.status.maxHP),
@@ -94,6 +95,7 @@ nonisolated private struct BattleResolutionEngine {
                     id: BattleCombatantID(rawValue: "enemy:\(enemy.id):\(formationIndex + 1)"),
                     name: enemy.name,
                     side: .enemy,
+                    imageAssetID: nil,
                     level: enemySeed.level,
                     formationIndex: formationIndex,
                     currentHP: status.maxHP,
@@ -166,7 +168,9 @@ nonisolated private struct BattleResolutionEngine {
                     id: combatant.id,
                     name: combatant.name,
                     side: combatant.side,
+                    imageAssetID: combatant.imageAssetID,
                     level: combatant.level,
+                    initialHP: combatant.initialHP,
                     maxHP: combatant.status.maxHP,
                     remainingHP: combatant.currentHP,
                     formationIndex: combatant.formationIndex
@@ -1485,8 +1489,10 @@ nonisolated private struct RuntimeCombatant {
     let id: BattleCombatantID
     let name: String
     let side: BattleSide
+    let imageAssetID: String?
     let level: Int
     let formationIndex: Int
+    let initialHP: Int
     var currentHP: Int
     let status: CharacterStatus
     let actionRates: CharacterActionRates
@@ -1503,6 +1509,7 @@ nonisolated private struct RuntimeCombatant {
         id: BattleCombatantID,
         name: String,
         side: BattleSide,
+        imageAssetID: String?,
         level: Int,
         formationIndex: Int,
         currentHP: Int,
@@ -1513,8 +1520,10 @@ nonisolated private struct RuntimeCombatant {
         self.id = id
         self.name = name
         self.side = side
+        self.imageAssetID = imageAssetID
         self.level = level
         self.formationIndex = formationIndex
+        self.initialHP = currentHP
         self.currentHP = currentHP
         self.status = status
         self.actionRates = actionRates

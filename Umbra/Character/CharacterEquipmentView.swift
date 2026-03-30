@@ -109,15 +109,6 @@ struct CharacterEquipmentView: View {
                         loadError = error.localizedDescription
                     }
                 }
-                .refreshable {
-                    do {
-                        try equipmentStore.reload(masterData: masterData)
-                        equipmentStore.prepareMergedSectionsIfNeeded(for: character, masterData: masterData)
-                        loadError = nil
-                    } catch {
-                        loadError = error.localizedDescription
-                    }
-                }
             } else {
                 ContentUnavailableView(
                     "キャラクターが見つかりません",

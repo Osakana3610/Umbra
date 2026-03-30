@@ -1,4 +1,4 @@
-// Shows one exploration session's progress, completion summary, and stored battle logs.
+// Shows one exploration session's summary and routes battle logs to a dedicated detail view.
 
 import SwiftUI
 
@@ -37,40 +37,65 @@ struct RunSessionDetailView: View {
         Group {
             if let run {
                 List {
-                    Section("探索") {
-                        LabeledContent("迷宮", value: labyrinthName(for: run))
-                        LabeledContent("開始", value: run.startedAt.formatted(date: .omitted, time: .shortened))
-
-                        if let completion = run.completion {
-                            LabeledContent("帰還", value: completion.completedAt.formatted(date: .omitted, time: .shortened))
-                            LabeledContent("結果", value: completionText(for: completion.reason))
-                        } else if let nextProgressDate = nextProgressDate(for: run) {
-                            LabeledContent("進行状況", value: "\(run.completedBattleCount)戦完了")
-                            LabeledContent("次の進行", value: nextProgressDate.formatted(date: .omitted, time: .standard))
-                        }
+                    Section("探索結果") {
+                        Text(explorationResultText(for: run))
                     }
 
-                    Section("パーティHP") {
-                        ForEach(Array(run.memberCharacterIds.enumerated()), id: \.offset) { offset, characterId in
-                            let characterName = rosterStore.charactersById[characterId]?.name ?? "character:\(characterId)"
-                            LabeledContent(characterName, value: "\(run.currentPartyHPs[safe: offset] ?? 0)")
+                    if let detailedRun {
+                        if detailedRun.battleLogs.isEmpty {
+                            Section {
+                                ContentUnavailableView(
+                                    "戦闘ログがありません",
+                                    systemImage: "text.page.slash",
+                                    description: Text("この探索ではまだ保存済みの戦闘がありません。")
+                                )
+                            }
+                        } else {
+                            Section("戦闘一覧") {
+                                ForEach(displayedBattleLogs(from: detailedRun)) { log in
+                                    NavigationLink {
+                                        RunSessionBattleLogDetailView(
+                                            log: log,
+                                            masterData: masterData
+                                        )
+                                    } label: {
+                                        BattleLogSummaryRow(
+                                            titleText: "\(log.battleRecord.floorNumber)F / 戦闘 \(log.battleRecord.battleNumber)",
+                                            resultText: completionText(for: log.battleRecord.result),
+                                            turnCount: log.battleRecord.turns.count,
+                                            footerText: defeatedPartyMemberText(for: log)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        Section {
+                            ProgressView()
+                                .frame(maxWidth: .infinity, alignment: .center)
                         }
                     }
 
                     if let completion = detailedRun?.completion {
-                        Section("報酬") {
-                            LabeledContent("ゴールド", value: "\(completion.gold) G")
+                        Section("入手ゴールド") {
+                            Text("\(completion.gold) G")
+                                .monospacedDigit()
+                        }
 
+                        Section("獲得経験値") {
                             if completion.experienceRewards.isEmpty {
                                 Text("経験値なし")
                                     .foregroundStyle(.secondary)
                             } else {
                                 ForEach(completion.experienceRewards) { reward in
                                     let characterName = rosterStore.charactersById[reward.characterId]?.name ?? "character:\(reward.characterId)"
-                                    LabeledContent(characterName, value: "\(reward.experience) EXP")
+                                    Text("\(characterName)：\(reward.experience) EXP")
+                                        .monospacedDigit()
                                 }
                             }
+                        }
 
+                        Section("ドロップアイテム") {
                             if completion.dropRewards.isEmpty {
                                 Text("アイテムなし")
                                     .foregroundStyle(.secondary)
@@ -87,61 +112,20 @@ struct RunSessionDetailView: View {
                             }
                         }
                     }
-
-                    if let detailedRun {
-                        if detailedRun.battleLogs.isEmpty {
-                            Section("戦闘ログ") {
-                                Text("まだ解決済みの戦闘はありません。")
-                                    .foregroundStyle(.secondary)
-                            }
-                        } else {
-                            ForEach(detailedRun.battleLogs) { log in
-                                Section("\(log.battleRecord.floorNumber)F / 戦闘 \(log.battleRecord.battleNumber)") {
-                                    Text(completionText(for: log.battleRecord.result))
-                                        .font(.headline)
-
-                                    ForEach(log.battleRecord.turns, id: \.turnNumber) { turn in
-                                        VStack(alignment: .leading, spacing: 8) {
-                                            Text("ターン \(turn.turnNumber)")
-                                                .font(.subheadline.weight(.semibold))
-
-                                            if turn.actions.isEmpty {
-                                                Text("行動なし")
-                                                    .foregroundStyle(.secondary)
-                                            } else {
-                                                ForEach(Array(turn.actions.enumerated()), id: \.offset) { _, action in
-                                                    VStack(alignment: .leading, spacing: 4) {
-                                                        Text(actionTitle(action, log: log))
-                                                            .font(.subheadline.weight(.medium))
-                                                        if !action.results.isEmpty {
-                                                            Text(actionResultText(action, log: log))
-                                                                .font(.caption)
-                                                                .foregroundStyle(.secondary)
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                        .padding(.vertical, 4)
-                                    }
-                                }
-                            }
-                        }
-                    } else {
-                        Section {
-                            ProgressView()
-                                .frame(maxWidth: .infinity, alignment: .center)
-                        }
-                    }
                 }
-                .navigationTitle("探索記録")
+                .listStyle(.insetGrouped)
+                .navigationTitle("\(partyName)の探索ログ")
                 .navigationBarTitleDisplayMode(.inline)
                 .task {
                     await explorationStore.loadIfNeeded(masterData: masterData)
                     await loadRunDetail()
                 }
-                .refreshable {
-                    await refreshProgress()
+                .task(id: progressKey(for: runSummary)) {
+                    guard runSummary != nil else {
+                        return
+                    }
+
+                    await loadRunDetail()
                 }
             } else {
                 ContentUnavailableView(
@@ -168,24 +152,8 @@ struct RunSessionDetailView: View {
         runDetail
     }
 
-    private func refreshProgress() async {
-        let previousProgressKey = progressKey(for: runDetail)
-        let refreshResult = await explorationStore.refreshProgress(at: Date(), masterData: masterData)
-        let refreshedProgressKey = progressKey(for: runSummary)
-
-        if runDetail == nil || previousProgressKey != refreshedProgressKey {
-            await loadRunDetail()
-        }
-
-        if explorationStore.lastOperationError == nil,
-           refreshResult.didApplyRewards {
-            equipmentStore.applyInventoryGains(
-                refreshResult.appliedInventoryCounts,
-                masterData: masterData
-            )
-            rosterStore.reload()
-            partyStore.reload()
-        }
+    private var partyName: String {
+        partyStore.partiesById[partyId]?.name ?? "パーティ\(partyId)"
     }
 
     private func loadRunDetail() async {
@@ -219,6 +187,56 @@ struct RunSessionDetailView: View {
         )
     }
 
+    private func displayedBattleLogs(from run: RunSessionRecord) -> [ExplorationBattleLog] {
+        Array(run.battleLogs.reversed())
+    }
+
+    private func defeatedPartyMemberText(for log: ExplorationBattleLog) -> String? {
+        let defeatedTargets = Set(
+            log.battleRecord.turns
+                .flatMap(\.actions)
+                .flatMap(\.results)
+                .filter { $0.flags.contains(.defeated) }
+                .map(\.targetId)
+        )
+
+        let defeatedNames = log.combatants
+            .filter { $0.side == .ally && defeatedTargets.contains($0.id) }
+            .sorted { $0.formationIndex < $1.formationIndex }
+            .map(\.name)
+
+        guard !defeatedNames.isEmpty else {
+            return nil
+        }
+
+        return "死亡：\(defeatedNames.joined(separator: "、"))"
+    }
+
+    private func explorationResultText(for run: RunSessionRecord) -> String {
+        let labyrinthName = labyrinthName(for: run)
+
+        if let completion = run.completion {
+            return "\(labyrinthName)：\(completionSummaryText(for: completion.reason))。"
+        }
+
+        if let nextProgressDate = nextProgressDate(for: run) {
+            return "\(labyrinthName)：探索中です。現在\(run.completedBattleCount)戦完了、次の進行は\(nextProgressDate.formatted(date: .omitted, time: .standard))です。"
+        }
+
+        return "\(labyrinthName)：探索中です。"
+    }
+
+    private func completionSummaryText(for reason: RunCompletionReason) -> String {
+        switch reason {
+        case .cleared:
+            "迷宮を踏破しました"
+        case .defeated:
+            "全滅しました"
+        case .draw:
+            "引き分けで帰還しました"
+        }
+    }
+
     private func completionText(for reason: RunCompletionReason) -> String {
         switch reason {
         case .cleared:
@@ -241,83 +259,28 @@ struct RunSessionDetailView: View {
         }
     }
 
-    private func actionTitle(
-        _ action: BattleActionRecord,
-        log: ExplorationBattleLog
-    ) -> String {
-        let actorName = log.combatants.first(where: { $0.id == action.actorId })?.name ?? action.actorId.rawValue
-        let actionName: String
+}
 
-        switch action.actionKind {
-        case .breath:
-            actionName = "ブレス"
-        case .attack:
-            actionName = "攻撃"
-        case .recoverySpell:
-            actionName = spellName(for: action.actionRef) ?? "回復魔法"
-        case .attackSpell:
-            actionName = spellName(for: action.actionRef) ?? "攻撃魔法"
-        case .defend:
-            actionName = "防御"
-        case .rescue:
-            actionName = "救出"
-        case .counter:
-            actionName = "反撃"
-        case .extraAttack:
-            actionName = "再攻撃"
-        case .pursuit:
-            actionName = "追撃"
-        }
+private struct BattleLogSummaryRow: View {
+    let titleText: String
+    let resultText: String
+    let turnCount: Int
+    let footerText: String?
 
-        if action.actionFlags.contains(.critical) {
-            return "\(actorName)の\(actionName)（必殺）"
-        }
-        return "\(actorName)の\(actionName)"
-    }
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(titleText)
+                .font(.headline)
 
-    private func actionResultText(
-        _ action: BattleActionRecord,
-        log: ExplorationBattleLog
-    ) -> String {
-        action.results.map { targetResult in
-            let targetName = log.combatants.first(where: { $0.id == targetResult.targetId })?.name
-                ?? targetResult.targetId.rawValue
-            let suffix: String
+            Text("\(resultText) / \(turnCount)ターン")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
 
-            switch targetResult.resultKind {
-            case .damage:
-                suffix = "\(targetName)に\(targetResult.value ?? 0)ダメージ"
-            case .heal:
-                suffix = "\(targetName)が\(targetResult.value ?? 0)回復"
-            case .miss:
-                suffix = "\(targetName)に回避された"
-            case .modifierApplied:
-                suffix = "\(targetName)へ効果付与"
-            case .ailmentRemoved:
-                suffix = "\(targetName)の状態異常回復"
+            if let footerText {
+                Text(footerText)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
-
-            let flags = targetResult.flags.map(flagText(for:)).joined(separator: " / ")
-            return flags.isEmpty ? suffix : "\(suffix)（\(flags)）"
-        }
-        .joined(separator: "、")
-    }
-
-    private func spellName(for spellId: Int?) -> String? {
-        guard let spellId else {
-            return nil
-        }
-        return masterData.spells.first(where: { $0.id == spellId })?.name
-    }
-
-    private func flagText(for flag: BattleTargetResultFlag) -> String {
-        switch flag {
-        case .defeated:
-            "戦闘不能"
-        case .revived:
-            "蘇生"
-        case .guarded:
-            "防御中"
         }
     }
 }

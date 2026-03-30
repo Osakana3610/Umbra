@@ -65,10 +65,12 @@ struct PartyMemberEditorView: View {
                                     addButton(
                                         accessibilityLabel: "\(character.name)を追加",
                                         action: {
-                                            partyStore.addCharacter(
-                                                characterId: character.characterId,
-                                                toParty: party.partyId
-                                            )
+                                            withAnimation {
+                                                partyStore.addCharacter(
+                                                    characterId: character.characterId,
+                                                    toParty: party.partyId
+                                                )
+                                            }
                                         }
                                     )
                                 }
@@ -127,10 +129,12 @@ struct PartyMemberEditorView: View {
                     presenting: transferCandidate
                 ) { candidate in
                     Button("移籍") {
-                        partyStore.addCharacter(
-                            characterId: candidate.character.characterId,
-                            toParty: party.partyId
-                        )
+                        withAnimation {
+                            partyStore.addCharacter(
+                                characterId: candidate.character.characterId,
+                                toParty: party.partyId
+                            )
+                        }
                         transferCandidate = nil
                     }
                     Button("キャンセル", role: .cancel) {

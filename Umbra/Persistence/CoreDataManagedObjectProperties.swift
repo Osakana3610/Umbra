@@ -127,6 +127,8 @@ extension RunSessionBattleCombatantEntity {
     @NSManaged nonisolated public var combatantIDRawValue: String?
     @NSManaged nonisolated public var combatantIndex: Int64
     @NSManaged nonisolated public var formationIndex: Int64
+    @NSManaged nonisolated public var imageAssetID: String?
+    @NSManaged nonisolated public var initialHP: Int64
     @NSManaged nonisolated public var level: Int64
     @NSManaged nonisolated public var maxHP: Int64
     @NSManaged nonisolated public var name: String?
@@ -407,4 +409,3 @@ extension RunSessionMemberEntity {
 extension RunSessionMemberEntity : Identifiable {
 
 }
-

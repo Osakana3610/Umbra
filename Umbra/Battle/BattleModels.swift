@@ -101,7 +101,9 @@ nonisolated struct BattleCombatantSnapshot: Codable, Equatable, Sendable, Identi
     let id: BattleCombatantID
     let name: String
     let side: BattleSide
+    let imageAssetID: String?
     let level: Int
+    let initialHP: Int
     let maxHP: Int
     let remainingHP: Int
     let formationIndex: Int
