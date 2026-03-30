@@ -17,7 +17,8 @@ actor ExplorationCoreDataStore {
             return ExplorationRunSnapshot(
                 runs: runs,
                 didApplyRewards: false,
-                appliedInventoryCounts: [:]
+                appliedInventoryCounts: [:],
+                dropNotificationBatches: []
             )
         }
     }

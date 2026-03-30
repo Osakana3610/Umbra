@@ -118,11 +118,17 @@ nonisolated struct ExplorationRunSnapshot: Equatable, Sendable {
     let runs: [RunSessionRecord]
     let didApplyRewards: Bool
     let appliedInventoryCounts: [CompositeItemID: Int]
+    let dropNotificationBatches: [ExplorationDropNotificationBatch]
 }
 
 nonisolated struct ExplorationPartyStatus: Equatable, Sendable {
     let activeRun: RunSessionRecord?
     let latestCompletedRun: RunSessionRecord?
+}
+
+nonisolated struct ExplorationDropNotificationBatch: Equatable, Sendable {
+    let partyId: Int
+    let dropRewards: [ExplorationDropReward]
 }
 
 nonisolated enum ExplorationError: LocalizedError {

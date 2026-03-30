@@ -3,15 +3,18 @@
 import SwiftUI
 
 struct RootTabView: View {
+    private static let statusBarBottomInset: CGFloat = 49
+
     let masterData: MasterData
     let rosterStore: GuildRosterStore
     let partyStore: PartyStore
     let equipmentStore: EquipmentInventoryStore
     let explorationStore: ExplorationStore
+    let itemDropNotificationService: ItemDropNotificationService
     let guildService: GuildService
 
     var body: some View {
-        TabView {
+        let tabView = TabView {
             NavigationStack {
                 PlaceholderRootView(
                     title: "ストーリー",
@@ -68,5 +71,49 @@ struct RootTabView: View {
                 Label("その他", systemImage: "ellipsis.circle")
             }
         }
+
+        Group {
+            if #available(iOS 26.0, *) {
+                tabView
+                    .tabViewBottomAccessory {
+                        if let playerState = rosterStore.playerState {
+                            PlayerStatusView(
+                                catTicketText: "キャット・チケット 0枚",
+                                premiumTimeText: "プレミアム・タイム なし",
+                                gold: playerState.gold,
+                                showsChrome: false
+                            )
+                        }
+                    }
+            } else {
+                tabView
+                    .safeAreaInset(edge: .bottom, spacing: 0) {
+                        if let playerState = rosterStore.playerState {
+                            PlayerStatusView(
+                                catTicketText: "キャット・チケット 0枚",
+                                premiumTimeText: "プレミアム・タイム なし",
+                                gold: playerState.gold,
+                                showsChrome: true
+                            )
+                            .padding(.bottom, Self.statusBarBottomInset)
+                        }
+                    }
+            }
+        }
+        .overlay(alignment: .bottomLeading) {
+            ItemDropNotificationView(
+                itemDropNotificationService: itemDropNotificationService
+            )
+            .padding(.leading, 20)
+            .padding(.bottom, notificationBottomPadding)
+        }
+    }
+
+    private var notificationBottomPadding: CGFloat {
+        if #available(iOS 26.0, *) {
+            return 112
+        }
+
+        return 106
     }
 }

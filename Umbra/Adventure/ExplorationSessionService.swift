@@ -134,6 +134,7 @@ final class ExplorationSessionService {
         resolvedUpdates.reserveCapacity(progressContexts.count)
         var didApplyRewards = false
         var appliedInventoryCounts: [CompositeItemID: Int] = [:]
+        var dropNotificationBatches: [ExplorationDropNotificationBatch] = []
         var activeRunIdentifiers: Set<String> = []
 
         for progressContext in progressContexts {
@@ -162,7 +163,7 @@ final class ExplorationSessionService {
             resolvedUpdates.append(
                 (currentSession: currentSession, resolvedSession: session)
             )
-            runs.append(session.summaryRecord)
+            runs.append(session.completion == nil ? session.summaryRecord : session)
         }
 
         cachedStatusesByRunIdentifier = cachedStatusesByRunIdentifier.filter {
@@ -177,15 +178,32 @@ final class ExplorationSessionService {
         for (itemID, count) in rewardApplication.appliedInventoryCounts {
             appliedInventoryCounts[itemID, default: 0] += count
         }
+        dropNotificationBatches = resolvedUpdates.compactMap(Self.dropNotificationBatch(from:))
 
         return ExplorationRunSnapshot(
             runs: runs,
             didApplyRewards: didApplyRewards,
-            appliedInventoryCounts: appliedInventoryCounts
+            appliedInventoryCounts: appliedInventoryCounts,
+            dropNotificationBatches: dropNotificationBatches
         )
     }
 
     private static func runIdentifier(for session: RunSessionRecord) -> String {
         "\(session.partyId):\(session.partyRunId)"
+    }
+
+    private static func dropNotificationBatch(
+        from update: (currentSession: RunSessionRecord, resolvedSession: RunSessionRecord)
+    ) -> ExplorationDropNotificationBatch? {
+        let currentRewardCount = update.currentSession.dropRewards.count
+        let resolvedDropRewards = update.resolvedSession.dropRewards
+        guard resolvedDropRewards.count > currentRewardCount else {
+            return nil
+        }
+
+        return ExplorationDropNotificationBatch(
+            partyId: update.resolvedSession.partyId,
+            dropRewards: Array(resolvedDropRewards.dropFirst(currentRewardCount))
+        )
     }
 }

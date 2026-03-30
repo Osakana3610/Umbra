@@ -13,6 +13,7 @@ struct ConfiguredRunStart: Sendable {
 final class ExplorationStore {
     private let coreDataStore: ExplorationCoreDataStore
     private let service: ExplorationSessionService
+    private let itemDropNotificationService: ItemDropNotificationService
 
     private(set) var isLoaded = false
     private(set) var isMutating = false
@@ -21,8 +22,12 @@ final class ExplorationStore {
     private var isRefreshingProgress = false
     private var progressRefreshTask: Task<Void, Never>?
 
-    init(coreDataStore: ExplorationCoreDataStore) {
+    init(
+        coreDataStore: ExplorationCoreDataStore,
+        itemDropNotificationService: ItemDropNotificationService
+    ) {
         self.coreDataStore = coreDataStore
+        self.itemDropNotificationService = itemDropNotificationService
         service = ExplorationSessionService(coreDataStore: coreDataStore)
     }
 
@@ -66,6 +71,7 @@ final class ExplorationStore {
         do {
             let snapshot = try await service.refreshRuns(at: currentDate, masterData: masterData)
             applySnapshot(snapshot, masterData: masterData)
+            itemDropNotificationService.publish(batches: snapshot.dropNotificationBatches)
             return (snapshot.didApplyRewards, snapshot.appliedInventoryCounts)
         } catch {
             lastOperationError = Self.errorMessage(for: error)

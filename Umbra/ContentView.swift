@@ -8,6 +8,7 @@ struct ContentView: View {
     let partyStore: PartyStore
     let equipmentStore: EquipmentInventoryStore
     let explorationStore: ExplorationStore
+    let itemDropNotificationService: ItemDropNotificationService
     let guildService: GuildService
 
     var body: some View {
@@ -40,6 +41,7 @@ struct ContentView: View {
                     partyStore: partyStore,
                     equipmentStore: equipmentStore,
                     explorationStore: explorationStore,
+                    itemDropNotificationService: itemDropNotificationService,
                     guildService: guildService
                 )
             }
@@ -60,14 +62,18 @@ struct ContentView: View {
         coreDataStore: guildCoreDataStore,
         explorationCoreDataStore: ExplorationCoreDataStore(container: persistenceController.container)
     )
+    let masterDataStore = MasterDataStore(phase: .loading)
+    let itemDropNotificationService = ItemDropNotificationService(masterDataStore: masterDataStore)
     return ContentView(
-        masterDataStore: MasterDataStore(phase: .loading),
+        masterDataStore: masterDataStore,
         rosterStore: GuildRosterStore(coreDataStore: guildCoreDataStore, service: guildService, phase: .loading),
         partyStore: PartyStore(coreDataStore: guildCoreDataStore, service: guildService, phase: .loading),
         equipmentStore: EquipmentInventoryStore(coreDataStore: guildCoreDataStore, service: guildService),
         explorationStore: ExplorationStore(
-            coreDataStore: ExplorationCoreDataStore(container: persistenceController.container)
+            coreDataStore: ExplorationCoreDataStore(container: persistenceController.container),
+            itemDropNotificationService: itemDropNotificationService
         ),
+        itemDropNotificationService: itemDropNotificationService,
         guildService: guildService
     )
 }

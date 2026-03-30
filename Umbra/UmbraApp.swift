@@ -11,18 +11,21 @@ struct UmbraApp: App {
     @State private var partyStore: PartyStore
     @State private var equipmentStore: EquipmentInventoryStore
     @State private var explorationStore: ExplorationStore
+    @State private var itemDropNotificationService: ItemDropNotificationService
 
     init() {
         let persistenceController = PersistenceController.shared
         let guildCoreDataStore = GuildCoreDataStore(container: persistenceController.container)
         let explorationCoreDataStore = ExplorationCoreDataStore(container: persistenceController.container)
+        let masterDataStore = MasterDataStore()
+        let itemDropNotificationService = ItemDropNotificationService(masterDataStore: masterDataStore)
         let guildService = GuildService(
             coreDataStore: guildCoreDataStore,
             explorationCoreDataStore: explorationCoreDataStore
         )
         self.persistenceController = persistenceController
         self.guildService = guildService
-        _masterDataStore = State(initialValue: MasterDataStore())
+        _masterDataStore = State(initialValue: masterDataStore)
         _rosterStore = State(
             initialValue: GuildRosterStore(
                 coreDataStore: guildCoreDataStore,
@@ -43,9 +46,11 @@ struct UmbraApp: App {
         )
         _explorationStore = State(
             initialValue: ExplorationStore(
-                coreDataStore: explorationCoreDataStore
+                coreDataStore: explorationCoreDataStore,
+                itemDropNotificationService: itemDropNotificationService
             )
         )
+        _itemDropNotificationService = State(initialValue: itemDropNotificationService)
     }
 
     var body: some Scene {
@@ -56,6 +61,7 @@ struct UmbraApp: App {
                 partyStore: partyStore,
                 equipmentStore: equipmentStore,
                 explorationStore: explorationStore,
+                itemDropNotificationService: itemDropNotificationService,
                 guildService: guildService
             )
         }

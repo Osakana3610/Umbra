@@ -379,8 +379,11 @@ struct UmbraTests {
             coreDataStore: guildCoreDataStore,
             explorationCoreDataStore: ExplorationCoreDataStore(container: container)
         )
+        let masterDataStore = MasterDataStore()
+        let itemDropNotificationService = ItemDropNotificationService(masterDataStore: masterDataStore)
         let explorationStore = ExplorationStore(
-            coreDataStore: ExplorationCoreDataStore(container: container)
+            coreDataStore: ExplorationCoreDataStore(container: container),
+            itemDropNotificationService: itemDropNotificationService
         )
         let masterData = try loadGeneratedMasterData()
 
