@@ -51,6 +51,7 @@ nonisolated struct RunSessionRecord: Equatable, Sendable, Identifiable {
     let startedAt: Date
     let rootSeed: UInt64
     let maximumLoopCount: Int
+    let memberSnapshots: [CharacterRecord]
     let memberCharacterIds: [Int]
     let completedBattleCount: Int
     let currentPartyHPs: [Int]
@@ -85,6 +86,7 @@ nonisolated struct RunSessionRecord: Equatable, Sendable, Identifiable {
             startedAt: startedAt,
             rootSeed: rootSeed,
             maximumLoopCount: maximumLoopCount,
+            memberSnapshots: memberSnapshots,
             memberCharacterIds: memberCharacterIds,
             completedBattleCount: completedBattleCount,
             currentPartyHPs: currentPartyHPs,

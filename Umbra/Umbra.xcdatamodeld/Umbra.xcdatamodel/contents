@@ -60,10 +60,24 @@
         <relationship name="members" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="RunSessionMemberEntity" inverseName="runSession" inverseEntity="RunSessionMemberEntity"/>
     </entity>
     <entity name="RunSessionMemberEntity" representedClassName="RunSessionMemberEntity" syncable="YES">
+        <attribute name="actionPriorityRawValue" optional="NO" attributeType="String" defaultValueString="breath,recoverySpell,attackSpell,attack"/>
+        <attribute name="attackRate" optional="NO" attributeType="Integer 64" defaultValueString="50" usesScalarValueType="YES"/>
+        <attribute name="attackSpellRate" optional="NO" attributeType="Integer 64" defaultValueString="50" usesScalarValueType="YES"/>
+        <attribute name="aptitudeId" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="breathRate" optional="NO" attributeType="Integer 64" defaultValueString="50" usesScalarValueType="YES"/>
         <attribute name="characterId" optional="NO" attributeType="Integer 64" usesScalarValueType="YES"/>
         <attribute name="currentHP" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="currentJobId" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="equippedItemStacksRawValue" optional="NO" attributeType="String" defaultValueString=""/>
+        <attribute name="experience" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="experienceMultiplier" optional="NO" attributeType="Double" defaultValueString="1"/>
         <attribute name="formationIndex" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="level" optional="NO" attributeType="Integer 64" defaultValueString="1" usesScalarValueType="YES"/>
+        <attribute name="name" optional="NO" attributeType="String" defaultValueString=""/>
+        <attribute name="portraitVariant" optional="NO" attributeType="Integer 64" defaultValueString="3" usesScalarValueType="YES"/>
+        <attribute name="previousJobId" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="raceId" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="recoverySpellRate" optional="NO" attributeType="Integer 64" defaultValueString="50" usesScalarValueType="YES"/>
         <relationship name="runSession" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="RunSessionEntity" inverseName="members" inverseEntity="RunSessionEntity"/>
     </entity>
     <entity name="RunSessionExperienceRewardEntity" representedClassName="RunSessionExperienceRewardEntity" syncable="YES">
@@ -134,7 +148,7 @@
         <element name="PartyEntity" positionX="-63" positionY="101" width="128" height="89"/>
         <element name="InventoryItemEntity" positionX="-63" positionY="197" width="128" height="74"/>
         <element name="RunSessionEntity" positionX="178" positionY="281" width="128" height="254"/>
-        <element name="RunSessionMemberEntity" positionX="392" positionY="281" width="128" height="104"/>
+        <element name="RunSessionMemberEntity" positionX="392" positionY="281" width="128" height="284"/>
         <element name="RunSessionExperienceRewardEntity" positionX="392" positionY="405" width="128" height="89"/>
         <element name="RunSessionDropRewardEntity" positionX="392" positionY="514" width="128" height="104"/>
         <element name="RunSessionBattleLogEntity" positionX="606" positionY="281" width="128" height="119"/>

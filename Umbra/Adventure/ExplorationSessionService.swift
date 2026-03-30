@@ -100,6 +100,7 @@ final class ExplorationSessionService {
                 startedAt: startedAt,
                 rootSeed: rootSeed,
                 maximumLoopCount: maximumLoopCount,
+                memberSnapshots: startContext.partyMembers,
                 memberCharacterIds: startContext.partyMembers.map(\.characterId),
                 completedBattleCount: 0,
                 currentPartyHPs: startContext.partyMembers.map(\.currentHP),
@@ -137,8 +138,7 @@ final class ExplorationSessionService {
         var dropNotificationBatches: [ExplorationDropNotificationBatch] = []
         var activeRunIdentifiers: Set<String> = []
 
-        for progressContext in progressContexts {
-            let currentSession = progressContext.session
+        for currentSession in progressContexts {
             let runIdentifier = Self.runIdentifier(for: currentSession)
             var cachedStatuses = cachedStatusesByRunIdentifier[runIdentifier] ?? [:]
             let session: RunSessionRecord
@@ -146,7 +146,6 @@ final class ExplorationSessionService {
                 session = try ExplorationResolver.resolve(
                     session: currentSession,
                     upTo: currentDate,
-                    partyMembers: progressContext.livePartyMembers,
                     masterData: masterData,
                     cachedStatuses: &cachedStatuses
                 )

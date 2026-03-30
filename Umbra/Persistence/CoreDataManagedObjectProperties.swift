@@ -398,10 +398,24 @@ extension RunSessionMemberEntity {
         return NSFetchRequest<RunSessionMemberEntity>(entityName: "RunSessionMemberEntity")
     }
 
+    @NSManaged nonisolated public var actionPriorityRawValue: String?
+    @NSManaged nonisolated public var attackRate: Int64
+    @NSManaged nonisolated public var attackSpellRate: Int64
+    @NSManaged nonisolated public var aptitudeId: Int64
+    @NSManaged nonisolated public var breathRate: Int64
     @NSManaged nonisolated public var characterId: Int64
     @NSManaged nonisolated public var currentHP: Int64
+    @NSManaged nonisolated public var currentJobId: Int64
+    @NSManaged nonisolated public var equippedItemStacksRawValue: String?
+    @NSManaged nonisolated public var experience: Int64
     @NSManaged nonisolated public var experienceMultiplier: Double
     @NSManaged nonisolated public var formationIndex: Int64
+    @NSManaged nonisolated public var level: Int64
+    @NSManaged nonisolated public var name: String?
+    @NSManaged nonisolated public var portraitVariant: Int64
+    @NSManaged nonisolated public var previousJobId: Int64
+    @NSManaged nonisolated public var raceId: Int64
+    @NSManaged nonisolated public var recoverySpellRate: Int64
     @NSManaged nonisolated public var runSession: RunSessionEntity?
 
 }

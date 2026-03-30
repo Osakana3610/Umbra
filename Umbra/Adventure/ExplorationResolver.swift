@@ -11,7 +11,6 @@ nonisolated enum ExplorationResolver {
     static func resolve(
         session: RunSessionRecord,
         upTo currentDate: Date,
-        partyMembers: [CharacterRecord],
         masterData: MasterData,
         cachedStatuses: inout [Int: ExplorationMemberStatusCacheEntry]
     ) throws -> RunSessionRecord {
@@ -36,7 +35,7 @@ nonisolated enum ExplorationResolver {
         }
 
         var currentPartyMembers = try preparedPartyMembers(
-            from: partyMembers,
+            from: session.memberSnapshots,
             memberCharacterIds: session.memberCharacterIds,
             currentPartyHPs: session.currentPartyHPs,
             experienceRewards: session.experienceRewards,
@@ -164,6 +163,7 @@ nonisolated enum ExplorationResolver {
             startedAt: session.startedAt,
             rootSeed: session.rootSeed,
             maximumLoopCount: session.maximumLoopCount,
+            memberSnapshots: session.memberSnapshots,
             memberCharacterIds: session.memberCharacterIds,
             completedBattleCount: completedBattleCount,
             currentPartyHPs: currentPartyHPs,

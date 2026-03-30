@@ -537,6 +537,60 @@ struct UmbraTests {
     }
 
     @Test
+    func refreshProgressUsesStoredRunMemberSnapshotsInsteadOfLiveCharacters() async throws {
+        let container = PersistenceController(inMemory: true).container
+        let guildCoreDataStore = GuildCoreDataStore(container: container)
+        let explorationCoreDataStore = ExplorationCoreDataStore(container: container)
+        let guildService = GuildService(
+            coreDataStore: guildCoreDataStore,
+            explorationCoreDataStore: explorationCoreDataStore
+        )
+        let explorationService = ExplorationSessionService(coreDataStore: explorationCoreDataStore)
+        let masterData = try loadGeneratedMasterData()
+
+        let character = try guildService.hireCharacter(
+            raceId: try #require(masterData.races.first?.id),
+            jobId: try #require(masterData.jobs.first?.id),
+            aptitudeId: try #require(masterData.aptitudes.first?.id),
+            masterData: masterData
+        ).character
+        _ = try await guildService.addCharacter(characterId: character.characterId, toParty: 1)
+        try promoteCharacter(
+            characterId: character.characterId,
+            level: 40,
+            in: container
+        )
+
+        let startedAt = Date(timeIntervalSinceReferenceDate: 320_000)
+        _ = try await explorationService.startRun(
+            partyId: 1,
+            labyrinthId: try #require(masterData.labyrinths.first(where: { $0.name == "デバッグの遺跡" })?.id),
+            startedAt: startedAt,
+            maximumLoopCount: 1,
+            masterData: masterData
+        )
+
+        try promoteCharacter(
+            characterId: character.characterId,
+            level: 1,
+            in: container
+        )
+
+        let snapshot = try await explorationService.refreshRuns(
+            at: startedAt.addingTimeInterval(10),
+            masterData: masterData
+        )
+        let completedRun = try #require(snapshot.runs.first)
+        let completion = try #require(completedRun.completion)
+
+        #expect(completion.reason == .cleared)
+        #expect(completion.gold == 40)
+        #expect(completion.experienceRewards == [
+            ExplorationExperienceReward(characterId: character.characterId, experience: 40)
+        ])
+    }
+
+    @Test
     func autoReviveRestoresDefeatedPartyMembersWhenRunReturns() async throws {
         let container = PersistenceController(inMemory: true).container
         let guildCoreDataStore = GuildCoreDataStore(container: container)

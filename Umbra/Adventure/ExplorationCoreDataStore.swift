@@ -103,30 +103,15 @@ actor ExplorationCoreDataStore {
         }
     }
 
-    func loadProgressContexts() async throws -> [(session: RunSessionRecord, livePartyMembers: [CharacterRecord])] {
+    func loadProgressContexts() async throws -> [RunSessionRecord] {
         try await perform { context in
             let runEntities = try ExplorationCoreDataBridge.fetchRunEntities(in: context)
-            return try runEntities.map { runEntity in
-                let session: RunSessionRecord
+            return runEntities.map { runEntity in
                 if runEntity.completedAt == nil {
-                    session = ExplorationCoreDataBridge.makeRunDetailRecord(from: runEntity)
-                } else {
-                    session = ExplorationCoreDataBridge.makeRunSummaryRecord(from: runEntity)
-                }
-                let livePartyMembers: [CharacterRecord]
-                if session.completion == nil {
-                    livePartyMembers = try ExplorationCoreDataBridge.fetchRunPartyMembers(
-                        for: session.memberCharacterIds,
-                        in: context
-                    )
-                } else {
-                    livePartyMembers = []
+                    return ExplorationCoreDataBridge.makeRunDetailRecord(from: runEntity)
                 }
 
-                return (
-                    session: session,
-                    livePartyMembers: livePartyMembers
-                )
+                return ExplorationCoreDataBridge.makeRunSummaryRecord(from: runEntity)
             }
         }
     }
@@ -348,21 +333,6 @@ nonisolated private enum ExplorationCoreDataBridge {
         return try context.fetch(request)
     }
 
-    static func fetchRunPartyMembers(
-        for characterIds: [Int],
-        in context: NSManagedObjectContext
-    ) throws -> [CharacterRecord] {
-        let entities = try fetchCharacterEntities(characterIds: characterIds, in: context)
-        let charactersById = Dictionary(uniqueKeysWithValues: entities.map { (Int($0.characterId), $0) })
-
-        return try characterIds.map { characterId in
-            guard let entity = charactersById[characterId] else {
-                throw ExplorationError.invalidRunMember(characterId: characterId)
-            }
-            return makeCharacterRecord(from: entity)
-        }
-    }
-
     static func fetchOrCreatePlayerState(
         in context: NSManagedObjectContext
     ) throws -> PlayerStateEntity {
@@ -434,6 +404,9 @@ nonisolated private enum ExplorationCoreDataBridge {
             memberEntity.characterId = Int64(characterId)
             memberEntity.currentHP = Int64(session.currentPartyHPs[formationIndex])
             memberEntity.experienceMultiplier = session.memberExperienceMultipliers[formationIndex]
+            if session.memberSnapshots.indices.contains(formationIndex) {
+                applyMemberSnapshot(session.memberSnapshots[formationIndex], to: memberEntity)
+            }
         }
     }
 
@@ -562,6 +535,7 @@ nonisolated private enum ExplorationCoreDataBridge {
 
     static func makeRunSummaryRecord(from entity: RunSessionEntity) -> RunSessionRecord {
         let members = orderedMembers(from: entity)
+        let memberSnapshots = members.map(makeCharacterRecord)
         let memberCharacterIds = members.map { Int($0.characterId) }
         let currentPartyHPs = members.map { Int($0.currentHP) }
         let memberExperienceMultipliers = members.map(\.experienceMultiplier)
@@ -574,6 +548,7 @@ nonisolated private enum ExplorationCoreDataBridge {
             startedAt: entity.startedAt ?? .distantPast,
             rootSeed: UInt64(bitPattern: entity.rootSeedSigned),
             maximumLoopCount: Int(entity.maximumLoopCount),
+            memberSnapshots: memberSnapshots,
             memberCharacterIds: memberCharacterIds,
             completedBattleCount: Int(entity.completedBattleCount),
             currentPartyHPs: currentPartyHPs,
@@ -609,6 +584,7 @@ nonisolated private enum ExplorationCoreDataBridge {
             startedAt: summary.startedAt,
             rootSeed: summary.rootSeed,
             maximumLoopCount: summary.maximumLoopCount,
+            memberSnapshots: summary.memberSnapshots,
             memberCharacterIds: summary.memberCharacterIds,
             completedBattleCount: summary.completedBattleCount,
             currentPartyHPs: summary.currentPartyHPs,
@@ -1005,6 +981,63 @@ nonisolated private enum ExplorationCoreDataBridge {
         }
     }
 
+    static func applyMemberSnapshot(
+        _ character: CharacterRecord,
+        to entity: RunSessionMemberEntity
+    ) {
+        entity.name = character.name
+        entity.raceId = Int64(character.raceId)
+        entity.previousJobId = Int64(character.previousJobId)
+        entity.currentJobId = Int64(character.currentJobId)
+        entity.aptitudeId = Int64(character.aptitudeId)
+        entity.portraitVariant = Int64(character.portraitGender.rawValue)
+        entity.experience = Int64(character.experience)
+        entity.level = Int64(character.level)
+        entity.equippedItemStacksRawValue = character.equippedItemStacks
+            .normalizedCompositeItemStacks()
+            .map { "\($0.itemID.rawValue)#\($0.count)" }
+            .joined(separator: "|")
+        entity.breathRate = Int64(character.autoBattleSettings.rates.breath)
+        entity.attackRate = Int64(character.autoBattleSettings.rates.attack)
+        entity.recoverySpellRate = Int64(character.autoBattleSettings.rates.recoverySpell)
+        entity.attackSpellRate = Int64(character.autoBattleSettings.rates.attackSpell)
+        entity.actionPriorityRawValue = character.autoBattleSettings.priority
+            .map(\.rawValue)
+            .joined(separator: ",")
+    }
+
+    static func makeCharacterRecord(from entity: RunSessionMemberEntity) -> CharacterRecord {
+        let parsedPriority = (entity.actionPriorityRawValue ?? "")
+            .split(separator: ",")
+            .compactMap { BattleActionKind(rawValue: String($0)) }
+        let priority = parsedPriority.count == CharacterAutoBattleSettings.default.priority.count
+            ? parsedPriority
+            : CharacterAutoBattleSettings.default.priority
+
+        return CharacterRecord(
+            characterId: Int(entity.characterId),
+            name: entity.name ?? "",
+            raceId: Int(entity.raceId),
+            previousJobId: Int(entity.previousJobId),
+            currentJobId: Int(entity.currentJobId),
+            aptitudeId: Int(entity.aptitudeId),
+            portraitGender: PortraitGender(rawValue: Int(entity.portraitVariant)) ?? .unisex,
+            experience: Int(entity.experience),
+            level: Int(entity.level),
+            currentHP: Int(entity.currentHP),
+            equippedItemStacks: equippedItemStacks(from: entity),
+            autoBattleSettings: CharacterAutoBattleSettings(
+                rates: CharacterActionRates(
+                    breath: Int(entity.breathRate),
+                    attack: Int(entity.attackRate),
+                    recoverySpell: Int(entity.recoverySpellRate),
+                    attackSpell: Int(entity.attackSpellRate)
+                ),
+                priority: priority
+            )
+        )
+    }
+
     static func makeCharacterRecord(from entity: CharacterEntity) -> CharacterRecord {
         let parsedPriority = (entity.actionPriorityRawValue ?? "")
             .split(separator: ",")
@@ -1038,6 +1071,22 @@ nonisolated private enum ExplorationCoreDataBridge {
     }
 
     static func equippedItemStacks(from entity: CharacterEntity) -> [CompositeItemStack] {
+        (entity.equippedItemStacksRawValue ?? "")
+            .split(separator: "|")
+            .compactMap { component in
+                let parts = component.split(separator: "#")
+                guard parts.count == 2,
+                      let itemID = CompositeItemID(rawValue: String(parts[0])),
+                      let count = Int(parts[1]),
+                      count > 0 else {
+                    return nil
+                }
+                return CompositeItemStack(itemID: itemID, count: count)
+            }
+            .normalizedCompositeItemStacks()
+    }
+
+    static func equippedItemStacks(from entity: RunSessionMemberEntity) -> [CompositeItemStack] {
         (entity.equippedItemStacksRawValue ?? "")
             .split(separator: "|")
             .compactMap { component in
