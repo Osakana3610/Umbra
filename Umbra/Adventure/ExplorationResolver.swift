@@ -8,49 +8,36 @@ nonisolated struct ExplorationMemberStatusCacheEntry: Sendable {
 }
 
 nonisolated enum ExplorationResolver {
-    static func resolve(
+    static func plan(
         session: RunSessionRecord,
-        upTo currentDate: Date,
         masterData: MasterData,
         cachedStatuses: inout [Int: ExplorationMemberStatusCacheEntry]
     ) throws -> RunSessionRecord {
-        guard session.completion == nil else {
-            return session
-        }
-
         guard let labyrinth = masterData.labyrinths.first(where: { $0.id == session.labyrinthId }) else {
             throw ExplorationError.invalidLabyrinth(labyrinthId: session.labyrinthId)
         }
 
-        let interval = max(labyrinth.progressIntervalSeconds, 1)
-        let elapsedBattleCount = max(
-            Int(currentDate.timeIntervalSince(session.startedAt)) / interval,
-            0
-        )
         let battlePlans = buildBattlePlans(for: session, labyrinth: labyrinth)
-        let resolvableBattleCount = min(elapsedBattleCount, battlePlans.count)
-
-        guard resolvableBattleCount > session.completedBattleCount else {
-            return session
-        }
+        let interval = max(labyrinth.progressIntervalSeconds, 1)
+        let battlesPerLoop = max(battlePlans.count / max(session.maximumLoopCount, 1), 1)
 
         var currentPartyMembers = try preparedPartyMembers(
             from: session.memberSnapshots,
             memberCharacterIds: session.memberCharacterIds,
-            currentPartyHPs: session.currentPartyHPs,
-            experienceRewards: session.experienceRewards,
+            currentPartyHPs: session.memberSnapshots.map(\.currentHP),
+            experienceRewards: [],
             masterData: masterData
         )
-        var completedBattleCount = session.completedBattleCount
-        var currentPartyHPs = session.currentPartyHPs
-        var battleLogs = session.battleLogs
-        var goldBuffer = session.goldBuffer
-        var experienceRewards = session.experienceRewards
-        var dropRewards = session.dropRewards
+        var completedBattleCount = 0
+        var currentPartyHPs = session.memberSnapshots.map(\.currentHP)
+        var battleLogs: [ExplorationBattleLog] = []
+        var goldBuffer = 0
+        var experienceRewards: [ExplorationExperienceReward] = []
+        var dropRewards: [ExplorationDropReward] = []
         let rewardContext = makeRewardContext(from: session, masterData: masterData)
         var completion: RunCompletionRecord?
 
-        while completedBattleCount < resolvableBattleCount, completion == nil {
+        while completedBattleCount < battlePlans.count, completion == nil {
             let battlePlan = battlePlans[completedBattleCount]
             let battleContext = BattleContext(
                 runId: session.id,
@@ -128,7 +115,7 @@ nonisolated enum ExplorationResolver {
                     reason: .defeated,
                     completedLoopCount: completedLoopCount(
                         completedBattleCount: completedBattleCount,
-                        battlesPerLoop: max(battlePlans.count / max(session.maximumLoopCount, 1), 1),
+                        battlesPerLoop: battlesPerLoop,
                         clearedAllBattles: false
                     ),
                     gold: goldBuffer,
@@ -145,7 +132,7 @@ nonisolated enum ExplorationResolver {
                     reason: .draw,
                     completedLoopCount: completedLoopCount(
                         completedBattleCount: completedBattleCount,
-                        battlesPerLoop: max(battlePlans.count / max(session.maximumLoopCount, 1), 1),
+                        battlesPerLoop: battlesPerLoop,
                         clearedAllBattles: false
                     ),
                     gold: goldBuffer,
@@ -172,14 +159,107 @@ nonisolated enum ExplorationResolver {
             rareDropMultiplier: session.rareDropMultiplier,
             titleDropMultiplier: session.titleDropMultiplier,
             partyAverageLuck: session.partyAverageLuck,
-            latestBattleFloorNumber: battleLogs.last?.battleRecord.floorNumber ?? session.latestBattleFloorNumber,
-            latestBattleNumber: battleLogs.last?.battleRecord.battleNumber ?? session.latestBattleNumber,
-            latestBattleOutcome: battleLogs.last?.battleRecord.result ?? session.latestBattleOutcome,
+            latestBattleFloorNumber: battleLogs.last?.battleRecord.floorNumber,
+            latestBattleNumber: battleLogs.last?.battleRecord.battleNumber,
+            latestBattleOutcome: battleLogs.last?.battleRecord.result,
             battleLogs: battleLogs,
             goldBuffer: goldBuffer,
             experienceRewards: experienceRewards,
             dropRewards: dropRewards,
             completion: completion
+        )
+    }
+
+    static func reveal(
+        session: RunSessionRecord,
+        upTo currentDate: Date,
+        masterData: MasterData
+    ) throws -> RunSessionRecord {
+        guard session.completion == nil else {
+            return session
+        }
+
+        guard let labyrinth = masterData.labyrinths.first(where: { $0.id == session.labyrinthId }) else {
+            throw ExplorationError.invalidLabyrinth(labyrinthId: session.labyrinthId)
+        }
+
+        let interval = max(labyrinth.progressIntervalSeconds, 1)
+        let revealedBattleCount = min(
+            max(Int(currentDate.timeIntervalSince(session.startedAt)) / interval, 0),
+            session.battleLogs.count
+        )
+        guard revealedBattleCount > session.completedBattleCount else {
+            return session
+        }
+
+        let latestBattleLog = revealedBattleCount > 0 ? session.battleLogs[revealedBattleCount - 1] : nil
+        let latestPartyHPs = latestBattleLog.map { battleLog in
+            battleLog.combatants
+                .filter { $0.side == .ally }
+                .sorted { $0.formationIndex < $1.formationIndex }
+                .map(\.remainingHP)
+        } ?? session.memberSnapshots.map(\.currentHP)
+        let completionReason: RunCompletionReason = switch latestBattleLog?.battleRecord.result ?? .draw {
+        case .victory:
+            .cleared
+        case .defeat:
+            .defeated
+        case .draw:
+            .draw
+        }
+        let revealedCompletedLoopCount: Int
+        if revealedBattleCount == session.battleLogs.count {
+            if latestBattleLog?.battleRecord.result == .victory {
+                revealedCompletedLoopCount = session.maximumLoopCount
+            } else {
+                revealedCompletedLoopCount = Self.completedLoopCount(
+                    completedBattleCount: revealedBattleCount,
+                    battlesPerLoop: max(session.battleLogs.count / max(session.maximumLoopCount, 1), 1),
+                    clearedAllBattles: false
+                )
+            }
+        } else {
+            revealedCompletedLoopCount = 0
+        }
+
+        return RunSessionRecord(
+            partyRunId: session.partyRunId,
+            partyId: session.partyId,
+            labyrinthId: session.labyrinthId,
+            targetFloorNumber: session.targetFloorNumber,
+            startedAt: session.startedAt,
+            rootSeed: session.rootSeed,
+            maximumLoopCount: session.maximumLoopCount,
+            memberSnapshots: session.memberSnapshots,
+            memberCharacterIds: session.memberCharacterIds,
+            completedBattleCount: revealedBattleCount,
+            currentPartyHPs: latestPartyHPs,
+            memberExperienceMultipliers: session.memberExperienceMultipliers,
+            goldMultiplier: session.goldMultiplier,
+            rareDropMultiplier: session.rareDropMultiplier,
+            titleDropMultiplier: session.titleDropMultiplier,
+            partyAverageLuck: session.partyAverageLuck,
+            latestBattleFloorNumber: latestBattleLog?.battleRecord.floorNumber,
+            latestBattleNumber: latestBattleLog?.battleRecord.battleNumber,
+            latestBattleOutcome: latestBattleLog?.battleRecord.result,
+            battleLogs: session.battleLogs,
+            goldBuffer: session.goldBuffer,
+            experienceRewards: session.experienceRewards,
+            dropRewards: session.dropRewards,
+            completion: revealedBattleCount == session.battleLogs.count
+                ? RunCompletionRecord(
+                    completedAt: completionDate(
+                        startedAt: session.startedAt,
+                        interval: interval,
+                        completedBattleCount: revealedBattleCount
+                    ),
+                    reason: completionReason,
+                    completedLoopCount: revealedCompletedLoopCount,
+                    gold: session.goldBuffer,
+                    experienceRewards: session.experienceRewards,
+                    dropRewards: session.dropRewards
+                )
+                : nil
         )
     }
 }

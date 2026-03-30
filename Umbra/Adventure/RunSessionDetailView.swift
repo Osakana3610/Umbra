@@ -42,7 +42,7 @@ struct RunSessionDetailView: View {
                     }
 
                     if let detailedRun {
-                        if detailedRun.battleLogs.isEmpty {
+                        if displayedBattleLogs(from: detailedRun).isEmpty {
                             Section {
                                 ContentUnavailableView(
                                     "戦闘ログがありません",
@@ -188,7 +188,7 @@ struct RunSessionDetailView: View {
     }
 
     private func displayedBattleLogs(from run: RunSessionRecord) -> [ExplorationBattleLog] {
-        Array(run.battleLogs.reversed())
+        Array(run.battleLogs.prefix(run.completedBattleCount).reversed())
     }
 
     private func defeatedPartyMemberText(for log: ExplorationBattleLog) -> String? {

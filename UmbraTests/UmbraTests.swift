@@ -480,6 +480,109 @@ struct UmbraTests {
     }
 
     @Test
+    func startingRunPrecomputesPlannedArtifactsWhileKeepingProgressHidden() async throws {
+        let container = PersistenceController(inMemory: true).container
+        let guildCoreDataStore = GuildCoreDataStore(container: container)
+        let explorationCoreDataStore = ExplorationCoreDataStore(container: container)
+        let guildService = GuildService(
+            coreDataStore: guildCoreDataStore,
+            explorationCoreDataStore: explorationCoreDataStore
+        )
+        let explorationService = ExplorationSessionService(coreDataStore: explorationCoreDataStore)
+        let masterData = try loadGeneratedMasterData()
+
+        let character = try guildService.hireCharacter(
+            raceId: try #require(masterData.races.first?.id),
+            jobId: try #require(masterData.jobs.first?.id),
+            aptitudeId: try #require(masterData.aptitudes.first?.id),
+            masterData: masterData
+        ).character
+        _ = try await guildService.addCharacter(characterId: character.characterId, toParty: 1)
+        try promoteCharacter(
+            characterId: character.characterId,
+            level: 40,
+            in: container
+        )
+
+        let startedAt = Date(timeIntervalSinceReferenceDate: 280_000)
+        let snapshot = try await explorationService.startRun(
+            partyId: 1,
+            labyrinthId: try #require(masterData.labyrinths.first(where: { $0.name == "デバッグの遺跡" })?.id),
+            startedAt: startedAt,
+            maximumLoopCount: 1,
+            masterData: masterData
+        )
+        let startedRun = try #require(snapshot.runs.first)
+        let storedDetail = try #require(await explorationCoreDataStore.loadRunDetail(partyId: 1, partyRunId: 1))
+
+        #expect(startedRun.completedBattleCount == 0)
+        #expect(startedRun.completion == nil)
+        #expect(startedRun.battleLogs.isEmpty)
+
+        #expect(storedDetail.completedBattleCount == 0)
+        #expect(storedDetail.completion == nil)
+        #expect(storedDetail.battleLogs.count == 1)
+        #expect(storedDetail.goldBuffer == 40)
+        #expect(storedDetail.experienceRewards == [
+            ExplorationExperienceReward(characterId: character.characterId, experience: 40)
+        ])
+    }
+
+    @Test
+    func refreshingRunRevealsProgressFromStoredBattlePlan() async throws {
+        let container = PersistenceController(inMemory: true).container
+        let guildCoreDataStore = GuildCoreDataStore(container: container)
+        let explorationCoreDataStore = ExplorationCoreDataStore(container: container)
+        let guildService = GuildService(
+            coreDataStore: guildCoreDataStore,
+            explorationCoreDataStore: explorationCoreDataStore
+        )
+        let explorationService = ExplorationSessionService(coreDataStore: explorationCoreDataStore)
+        let masterData = try loadGeneratedMasterData()
+
+        let character = try guildService.hireCharacter(
+            raceId: try #require(masterData.races.first?.id),
+            jobId: try #require(masterData.jobs.first?.id),
+            aptitudeId: try #require(masterData.aptitudes.first?.id),
+            masterData: masterData
+        ).character
+        _ = try await guildService.addCharacter(characterId: character.characterId, toParty: 1)
+        try promoteCharacter(
+            characterId: character.characterId,
+            level: 40,
+            in: container
+        )
+
+        let startedAt = Date(timeIntervalSinceReferenceDate: 290_000)
+        _ = try await explorationService.startRun(
+            partyId: 1,
+            labyrinthId: try #require(masterData.labyrinths.first?.id),
+            startedAt: startedAt,
+            maximumLoopCount: 1,
+            masterData: masterData
+        )
+
+        let plannedDetail = try #require(await explorationCoreDataStore.loadRunDetail(partyId: 1, partyRunId: 1))
+        let firstBattlePartyHPs = plannedDetail.battleLogs[0].combatants
+            .filter { $0.side == .ally }
+            .sorted { $0.formationIndex < $1.formationIndex }
+            .map(\.remainingHP)
+
+        let snapshot = try await explorationService.refreshRuns(
+            at: startedAt.addingTimeInterval(1),
+            masterData: masterData
+        )
+        let activeRun = try #require(snapshot.runs.first)
+        let refreshedDetail = try #require(await explorationCoreDataStore.loadRunDetail(partyId: 1, partyRunId: 1))
+
+        #expect(activeRun.completedBattleCount == 1)
+        #expect(activeRun.completion == nil)
+        #expect(refreshedDetail.battleLogs.count == plannedDetail.battleLogs.count)
+        #expect(refreshedDetail.completedBattleCount == 1)
+        #expect(refreshedDetail.currentPartyHPs == firstBattlePartyHPs)
+    }
+
+    @Test
     func refreshingCompletedRunAppliesRewardsToPlayerAndCharacterState() async throws {
         let container = PersistenceController(inMemory: true).container
         let guildCoreDataStore = GuildCoreDataStore(container: container)

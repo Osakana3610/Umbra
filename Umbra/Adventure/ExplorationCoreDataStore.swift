@@ -408,6 +408,21 @@ nonisolated private enum ExplorationCoreDataBridge {
                 applyMemberSnapshot(session.memberSnapshots[formationIndex], to: memberEntity)
             }
         }
+        appendBattleLogs(
+            session.battleLogs,
+            to: runEntity,
+            in: context
+        )
+        upsertExperienceRewards(
+            session.experienceRewards,
+            to: runEntity,
+            in: context
+        )
+        appendDropRewards(
+            session.dropRewards,
+            to: runEntity,
+            in: context
+        )
     }
 
     static func applyResolvedSession(
@@ -417,17 +432,6 @@ nonisolated private enum ExplorationCoreDataBridge {
     ) throws {
         applySessionScalars(session, to: entity)
         updateMembers(of: entity, with: session)
-        appendBattleLogs(
-            Array(session.battleLogs.dropFirst(existingBattleLogCount(of: entity))),
-            to: entity,
-            in: context
-        )
-        upsertExperienceRewards(session.experienceRewards, to: entity, in: context)
-        appendDropRewards(
-            Array(session.dropRewards.dropFirst(existingDropRewardCount(of: entity))),
-            to: entity,
-            in: context
-        )
     }
 
     static func applyCompletionRewards(
@@ -820,14 +824,6 @@ nonisolated private enum ExplorationCoreDataBridge {
         }
     }
 
-    static func existingBattleLogCount(of entity: RunSessionEntity) -> Int {
-        (entity.battleLogs as? Set<RunSessionBattleLogEntity>)?.count ?? 0
-    }
-
-    static func existingDropRewardCount(of entity: RunSessionEntity) -> Int {
-        (entity.dropRewards as? Set<RunSessionDropRewardEntity>)?.count ?? 0
-    }
-
     static func appendBattleLogs(
         _ battleLogs: [ExplorationBattleLog],
         to entity: RunSessionEntity,
@@ -837,8 +833,7 @@ nonisolated private enum ExplorationCoreDataBridge {
             return
         }
 
-        let startIndex = existingBattleLogCount(of: entity)
-        for (offset, battleLog) in battleLogs.enumerated() {
+        for (logIndex, battleLog) in battleLogs.enumerated() {
             guard let logEntity = NSEntityDescription.insertNewObject(
                 forEntityName: "RunSessionBattleLogEntity",
                 into: context
@@ -847,7 +842,7 @@ nonisolated private enum ExplorationCoreDataBridge {
             }
 
             logEntity.runSession = entity
-            logEntity.logIndex = Int64(startIndex + offset)
+            logEntity.logIndex = Int64(logIndex)
             logEntity.floorNumber = Int64(battleLog.battleRecord.floorNumber)
             logEntity.battleNumber = Int64(battleLog.battleRecord.battleNumber)
             logEntity.resultRawValue = battleLog.battleRecord.result.rawValue
