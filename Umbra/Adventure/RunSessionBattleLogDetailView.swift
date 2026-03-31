@@ -338,7 +338,7 @@ private struct RunSessionBattleParticipantSummaryView: View {
             } else {
                 ForEach(participants) { participant in
                     HStack(spacing: 8) {
-                        Text("\(participant.name) Lv\(participant.level)")
+                        Text("\(participant.name) Lv.\(participant.level)")
                             .font(.caption)
                             .foregroundStyle(.primary)
                             .frame(minWidth: 88, alignment: .leading)
@@ -368,7 +368,7 @@ private struct RunSessionBattleActionRowView: View {
 
             VStack(alignment: .leading, spacing: 4) {
                 if let actor = action.actor {
-                    Text("\(actor.name) Lv\(actor.level)")
+                    Text("\(actor.name) Lv.\(actor.level)")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }

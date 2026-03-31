@@ -11,12 +11,13 @@ struct PartyMemberEditorView: View {
 
     @State private var searchText = ""
     @State private var transferCandidate: TransferCandidate?
+    @State private var isEditingPartyMembers = false
 
     var body: some View {
         Group {
             if let party {
                 List {
-                    Section("パーティメンバー (\(party.memberCharacterIds.count)/\(PartyRecord.memberLimit))") {
+                    Section {
                         if partyMembers.isEmpty {
                             Text("まだメンバーがいません。控えから追加してください。")
                                 .foregroundStyle(.secondary)
@@ -33,16 +34,21 @@ struct PartyMemberEditorView: View {
                                     .disabled(!canEditMembers)
                                 }
                             }
-                            .onMove { offsets, destination in
-                                guard canEditMembers else {
-                                    return
-                                }
-                                partyStore.movePartyMembers(
-                                    partyId: party.partyId,
-                                    fromOffsets: offsets,
-                                    toOffset: destination
-                                )
+                            .onMove(perform: partyMembersMoveAction(for: party))
+                        }
+                    } header: {
+                        HStack(spacing: 8) {
+                            Text("パーティメンバー (\(party.memberCharacterIds.count)/\(PartyRecord.memberLimit))")
+
+                            Spacer()
+
+                            Button(isEditingPartyMembers ? "完了" : "編集") {
+                                isEditingPartyMembers.toggle()
                             }
+                            .buttonStyle(.borderless)
+                            .font(.footnote.weight(.semibold))
+                            .foregroundStyle(.tint)
+                            .disabled(!canShowMemberEditControl)
                         }
                     }
 
@@ -117,12 +123,12 @@ struct PartyMemberEditorView: View {
                 .listStyle(.insetGrouped)
                 .navigationTitle("メンバー編集")
                 .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .topBarTrailing) {
-                        EditButton()
-                            .disabled(partyMembers.count < 2 || !canEditMembers)
-                    }
-                }
+                .environment(
+                    \.editMode,
+                    Binding.constant(
+                        isEditingPartyMembers && canShowMemberEditControl ? .active : .inactive
+                    )
+                )
                 .alert(
                     "メンバーを移籍しますか？",
                     isPresented: isShowingTransferConfirmation,
@@ -166,6 +172,10 @@ struct PartyMemberEditorView: View {
 
     private var canEditMembers: Bool {
         !explorationStore.hasActiveRun(for: partyId)
+    }
+
+    private var canShowMemberEditControl: Bool {
+        canEditMembers && partyMembers.count >= 2
     }
 
     private var reserveMembers: [CharacterRecord] {
@@ -228,6 +238,22 @@ struct PartyMemberEditorView: View {
         }
     }
 
+    private func partyMembersMoveAction(
+        for party: PartyRecord
+    ) -> ((IndexSet, Int) -> Void)? {
+        guard isEditingPartyMembers, canEditMembers else {
+            return nil
+        }
+
+        return { offsets, destination in
+            partyStore.movePartyMembers(
+                partyId: party.partyId,
+                fromOffsets: offsets,
+                toOffset: destination
+            )
+        }
+    }
+
     @ViewBuilder
     private func addButton(
         accessibilityLabel: String,
@@ -283,12 +309,12 @@ private struct PartyCharacterRow<Accessory: View>: View {
                 Text(character.name)
                     .font(.headline)
 
-                Text("\(masterData.raceName(for: character.raceId)) / \(masterData.jobName(for: character.currentJobId)) / \(masterData.aptitudeName(for: character.aptitudeId))")
+                Text("\(masterData.raceName(for: character.raceId)) / \(masterData.jobDisplayName(for: character)) / \(masterData.aptitudeName(for: character.aptitudeId))")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
 
                 HStack(spacing: 12) {
-                    Text("Lv \(character.level)")
+                    Text("Lv.\(character.level)")
                     Text("HP \(character.currentHP)")
                 }
                 .font(.caption)

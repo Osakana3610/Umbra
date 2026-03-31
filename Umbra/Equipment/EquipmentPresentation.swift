@@ -67,12 +67,21 @@ extension MasterData {
         jobs.first(where: { $0.id == jobID })?.name ?? "不明"
     }
 
+    func jobDisplayName(for character: CharacterRecord) -> String {
+        let currentJobName = jobName(for: character.currentJobId)
+        guard character.previousJobId != 0 else {
+            return currentJobName
+        }
+
+        return "\(currentJobName)（\(jobName(for: character.previousJobId))）"
+    }
+
     func aptitudeName(for aptitudeID: Int) -> String {
         aptitudes.first(where: { $0.id == aptitudeID })?.name ?? "不明"
     }
 
     func characterSummaryText(for character: CharacterRecord) -> String {
-        "Lv \(character.level) / \(raceName(for: character.raceId)) / \(jobName(for: character.currentJobId)) / \(aptitudeName(for: character.aptitudeId))"
+        "Lv.\(character.level) / \(raceName(for: character.raceId)) / \(jobDisplayName(for: character)) / \(aptitudeName(for: character.aptitudeId))"
     }
 }
 

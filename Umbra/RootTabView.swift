@@ -28,7 +28,11 @@ struct RootTabView: View {
             }
 
             NavigationStack {
-                GuildHomeView(masterData: masterData, rosterStore: rosterStore)
+                GuildHomeView(
+                    masterData: masterData,
+                    rosterStore: rosterStore,
+                    explorationStore: explorationStore
+                )
             }
             .tabItem {
                 Label("ギルド", systemImage: "person.3")

@@ -1,10 +1,11 @@
-// Presents the guild overview with roster state and navigation into hiring.
+// Presents the guild overview with roster state and navigation into guild management screens.
 
 import SwiftUI
 
 struct GuildHomeView: View {
     let masterData: MasterData
     let rosterStore: GuildRosterStore
+    let explorationStore: ExplorationStore
 
     var body: some View {
         List {
@@ -54,22 +55,31 @@ struct GuildHomeView: View {
                             .foregroundStyle(.secondary)
                     } else {
                         ForEach(rosterStore.characters) { character in
-                            HStack(spacing: 12) {
-                                Image(character.portraitAssetName)
-                                    .resizable()
-                                    .scaledToFill()
-                                    .frame(width: 52, height: 52)
-                                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                            NavigationLink {
+                                CharacterDetailView(
+                                    characterId: character.characterId,
+                                    masterData: masterData,
+                                    rosterStore: rosterStore,
+                                    explorationStore: explorationStore
+                                )
+                            } label: {
+                                HStack(spacing: 12) {
+                                    Image(character.portraitAssetName)
+                                        .resizable()
+                                        .scaledToFill()
+                                        .frame(width: 52, height: 52)
+                                        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
 
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(character.name)
-                                        .font(.headline)
-                                    Text(summaryText(for: character))
-                                        .font(.subheadline)
-                                        .foregroundStyle(.secondary)
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text(character.name)
+                                            .font(.headline)
+                                        Text(summaryText(for: character))
+                                            .font(.subheadline)
+                                            .foregroundStyle(.secondary)
+                                    }
                                 }
+                                .padding(.vertical, 4)
                             }
-                            .padding(.vertical, 4)
                         }
                     }
                 }
