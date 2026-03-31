@@ -85,6 +85,18 @@ final class GuildCoreDataStore {
     }
 
     func saveCharacter(
+        _ character: CharacterRecord
+    ) throws {
+        let context = container.viewContext
+        guard let entity = try fetchCharacterEntity(characterId: character.characterId, in: context) else {
+            fatalError("CharacterEntity が見つかりません。 characterId=\(character.characterId)")
+        }
+
+        apply(character: character, to: entity)
+        try saveIfNeeded(context)
+    }
+
+    func saveCharacter(
         _ character: CharacterRecord,
         inventoryItemID: CompositeItemID,
         inventoryStack: CompositeItemStack?
@@ -94,24 +106,7 @@ final class GuildCoreDataStore {
             fatalError("CharacterEntity が見つかりません。 characterId=\(character.characterId)")
         }
 
-        entity.characterId = Int64(character.characterId)
-        entity.name = character.name
-        entity.raceId = Int64(character.raceId)
-        entity.previousJobId = Int64(character.previousJobId)
-        entity.currentJobId = Int64(character.currentJobId)
-        entity.aptitudeId = Int64(character.aptitudeId)
-        entity.portraitVariant = Int64(character.portraitGender.rawValue)
-        entity.experience = Int64(character.experience)
-        entity.level = Int64(character.level)
-        entity.currentHP = Int64(character.currentHP)
-        entity.breathRate = Int64(character.autoBattleSettings.rates.breath)
-        entity.attackRate = Int64(character.autoBattleSettings.rates.attack)
-        entity.recoverySpellRate = Int64(character.autoBattleSettings.rates.recoverySpell)
-        entity.attackSpellRate = Int64(character.autoBattleSettings.rates.attackSpell)
-        entity.actionPriorityRawValue = character.autoBattleSettings.priority
-            .map(\.rawValue)
-            .joined(separator: ",")
-        setEquippedItemStacks(character.equippedItemStacks, on: entity)
+        apply(character: character, to: entity)
 
         if let inventoryStack {
             let inventoryEntity = try fetchInventoryItemEntity(itemID: inventoryStack.itemID, in: context) ?? {
@@ -379,6 +374,30 @@ final class GuildCoreDataStore {
                 priority: priority
             )
         )
+    }
+
+    private func apply(
+        character: CharacterRecord,
+        to entity: CharacterEntity
+    ) {
+        entity.characterId = Int64(character.characterId)
+        entity.name = character.name
+        entity.raceId = Int64(character.raceId)
+        entity.previousJobId = Int64(character.previousJobId)
+        entity.currentJobId = Int64(character.currentJobId)
+        entity.aptitudeId = Int64(character.aptitudeId)
+        entity.portraitVariant = Int64(character.portraitGender.rawValue)
+        entity.experience = Int64(character.experience)
+        entity.level = Int64(character.level)
+        entity.currentHP = Int64(character.currentHP)
+        entity.breathRate = Int64(character.autoBattleSettings.rates.breath)
+        entity.attackRate = Int64(character.autoBattleSettings.rates.attack)
+        entity.recoverySpellRate = Int64(character.autoBattleSettings.rates.recoverySpell)
+        entity.attackSpellRate = Int64(character.autoBattleSettings.rates.attackSpell)
+        entity.actionPriorityRawValue = character.autoBattleSettings.priority
+            .map(\.rawValue)
+            .joined(separator: ",")
+        setEquippedItemStacks(character.equippedItemStacks, on: entity)
     }
 
     private func makePartyRecord(from entity: PartyEntity) -> PartyRecord {

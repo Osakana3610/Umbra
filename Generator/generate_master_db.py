@@ -232,26 +232,65 @@ def build_jobs(records: list[dict], skill_indices: dict[str, int]) -> list[dict]
         "criticalRate",
         "breathPower",
     )
+    job_indices = keyed_indices(records)
     jobs: list[dict] = []
     for index, record in enumerate(records, start=1):
         require_keys(record, ("id", "name", "hirePriceMultiplier", "coefficients"), f"job[{index}]")
         coefficients = record["coefficients"]
         require_keys(coefficients, coefficient_keys, f"job[{record['id']}].coefficients")
-        skill_ids = record.get("skillIds", [])
-        if not isinstance(skill_ids, list):
-            raise ValueError(f"Expected job[{record['id']}].skillIds to be an array")
-        for skill_id in skill_ids:
-            if not isinstance(skill_id, str):
-                raise ValueError(f"Expected job[{record['id']}].skillIds values to be strings")
-            if skill_id not in skill_indices:
-                raise ValueError(f"Unknown skillId '{skill_id}' in job[{record['id']}]")
+
+        def build_skill_ids(raw_value: object, field_name: str) -> list[int]:
+            if raw_value is None:
+                return []
+            if not isinstance(raw_value, list):
+                raise ValueError(f"Expected job[{record['id']}].{field_name} to be an array")
+
+            built_skill_ids: list[int] = []
+            for skill_id in raw_value:
+                if not isinstance(skill_id, str):
+                    raise ValueError(f"Expected job[{record['id']}].{field_name} values to be strings")
+                if skill_id not in skill_indices:
+                    raise ValueError(f"Unknown skillId '{skill_id}' in job[{record['id']}]")
+                built_skill_ids.append(skill_indices[skill_id])
+            return built_skill_ids
+
+        passive_skill_ids = build_skill_ids(record.get("passiveSkillIds"), "passiveSkillIds")
+        level_skill_ids = build_skill_ids(record.get("levelSkillIds"), "levelSkillIds")
+        raw_requirement = record.get("jobChangeRequirement")
+        job_change_requirement = None
+        if raw_requirement is not None:
+            if not isinstance(raw_requirement, dict):
+                raise ValueError(f"Expected job[{record['id']}].jobChangeRequirement to be an object")
+            allowed_keys = {"requiredCurrentJobId", "requiredLevel"}
+            unexpected_keys = sorted(set(raw_requirement) - allowed_keys)
+            if unexpected_keys:
+                unexpected_keys_text = ", ".join(unexpected_keys)
+                raise ValueError(
+                    f"Unexpected field(s) {unexpected_keys_text} in job[{record['id']}].jobChangeRequirement"
+                )
+            required_current_job_id = raw_requirement.get("requiredCurrentJobId", "")
+            required_level = raw_requirement.get("requiredLevel", 0)
+            if not isinstance(required_current_job_id, str):
+                raise ValueError(
+                    f"Expected job[{record['id']}].jobChangeRequirement.requiredCurrentJobId to be a string"
+                )
+            if required_current_job_id and required_current_job_id not in job_indices:
+                raise ValueError(
+                    f"Unknown requiredCurrentJobId '{required_current_job_id}' in job[{record['id']}]"
+                )
+            job_change_requirement = {
+                "requiredCurrentJobId": job_indices.get(required_current_job_id, 0),
+                "requiredLevel": int(required_level),
+            }
         jobs.append(
             {
                 "id": index,
                 "name": record["name"],
                 "hirePriceMultiplier": float(record["hirePriceMultiplier"]),
                 "coefficients": {key: float(coefficients[key]) for key in coefficient_keys},
-                "skillIds": [skill_indices[skill_id] for skill_id in skill_ids],
+                "passiveSkillIds": passive_skill_ids,
+                "levelSkillIds": level_skill_ids,
+                "jobChangeRequirement": job_change_requirement,
             }
         )
     return jobs

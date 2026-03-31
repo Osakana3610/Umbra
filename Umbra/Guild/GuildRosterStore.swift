@@ -169,6 +169,60 @@ final class GuildRosterStore {
         }
     }
 
+    func updateAutoBattleSettings(
+        characterId: Int,
+        autoBattleSettings: CharacterAutoBattleSettings
+    ) {
+        guard !isMutating, phase == .loaded else {
+            return
+        }
+
+        isMutating = true
+        lastOperationError = nil
+
+        Task {
+            defer { isMutating = false }
+
+            do {
+                let character = try await service.updateAutoBattleSettings(
+                    characterId: characterId,
+                    autoBattleSettings: autoBattleSettings
+                )
+                replaceCharacter(character)
+            } catch {
+                lastOperationError = Self.errorMessage(for: error)
+            }
+        }
+    }
+
+    func changeJob(
+        characterId: Int,
+        to targetJobId: Int,
+        masterData: MasterData
+    ) {
+        guard !isMutating, phase == .loaded else {
+            return
+        }
+
+        isMutating = true
+        lastOperationError = nil
+
+        Task {
+            defer { isMutating = false }
+
+            do {
+                let character = try await service.changeJob(
+                    characterId: characterId,
+                    to: targetJobId,
+                    masterData: masterData
+                )
+                replaceCharacter(character)
+            } catch {
+                lastOperationError = Self.errorMessage(for: error)
+            }
+        }
+    }
+
     func replaceCharacter(_ character: CharacterRecord) {
         charactersById[character.characterId] = character
 

@@ -88,8 +88,10 @@ nonisolated enum CharacterDerivedStatsCalculator {
         )
         let activeSkillIds = activeSkillIds(
             raceSkillIds: race.skillIds,
-            previousJobSkillIds: previousJob?.skillIds ?? [],
-            currentJobSkillIds: currentJob.skillIds + equipmentAggregation.itemSkillIDs
+            previousJobPassiveSkillIds: previousJob?.passiveSkillIds ?? [],
+            currentJobPassiveSkillIds: currentJob.passiveSkillIds,
+            currentJobLevelSkillIds: currentJob.levelSkillIds,
+            equipmentSkillIds: equipmentAggregation.itemSkillIDs
         )
 
         return status(
@@ -287,10 +289,18 @@ nonisolated enum CharacterDerivedStatsCalculator {
 
     private static func activeSkillIds(
         raceSkillIds: [Int],
-        previousJobSkillIds: [Int],
-        currentJobSkillIds: [Int]
+        previousJobPassiveSkillIds: [Int],
+        currentJobPassiveSkillIds: [Int],
+        currentJobLevelSkillIds: [Int],
+        equipmentSkillIds: [Int]
     ) -> [Int] {
-        deduplicatedSkillIds(raceSkillIds + previousJobSkillIds + currentJobSkillIds)
+        deduplicatedSkillIds(
+            raceSkillIds
+            + previousJobPassiveSkillIds
+            + currentJobPassiveSkillIds
+            + currentJobLevelSkillIds
+            + equipmentSkillIds
+        )
     }
 
     private static func deduplicatedSkillIds(_ skillIds: [Int]) -> [Int] {

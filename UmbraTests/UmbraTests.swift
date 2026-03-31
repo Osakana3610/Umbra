@@ -296,6 +296,214 @@ struct UmbraTests {
     }
 
     @Test
+    func updatingAutoBattleSettingsPersistsCharacterRates() async throws {
+        let container = PersistenceController(inMemory: true).container
+        let guildCoreDataStore = GuildCoreDataStore(container: container)
+        let guildService = GuildService(
+            coreDataStore: guildCoreDataStore,
+            explorationCoreDataStore: ExplorationCoreDataStore(container: container)
+        )
+        let masterData = try loadGeneratedMasterData()
+
+        let character = try guildService.hireCharacter(
+            raceId: try #require(masterData.races.first?.id),
+            jobId: try #require(masterData.jobs.first?.id),
+            aptitudeId: try #require(masterData.aptitudes.first?.id),
+            masterData: masterData
+        ).character
+
+        let updatedCharacter = try await guildService.updateAutoBattleSettings(
+            characterId: character.characterId,
+            autoBattleSettings: CharacterAutoBattleSettings(
+                rates: CharacterActionRates(
+                    breath: 10,
+                    attack: 20,
+                    recoverySpell: 30,
+                    attackSpell: 40
+                ),
+                priority: [.attackSpell, .attack, .recoverySpell, .breath]
+            )
+        )
+
+        #expect(updatedCharacter.autoBattleSettings.rates == CharacterActionRates(
+            breath: 10,
+            attack: 20,
+            recoverySpell: 30,
+            attackSpell: 40
+        ))
+        #expect(updatedCharacter.autoBattleSettings.priority == [.attackSpell, .attack, .recoverySpell, .breath])
+        #expect(
+            try guildCoreDataStore.loadCharacter(characterId: character.characterId)?.autoBattleSettings.rates
+                == CharacterActionRates(
+                    breath: 10,
+                    attack: 20,
+                    recoverySpell: 30,
+                    attackSpell: 40
+                )
+        )
+        #expect(
+            try guildCoreDataStore.loadCharacter(characterId: character.characterId)?.autoBattleSettings.priority
+                == [.attackSpell, .attack, .recoverySpell, .breath]
+        )
+    }
+
+    @Test
+    func changingJobUpdatesJobsAndKeepsOnlyPreviousPassiveSkills() async throws {
+        let container = PersistenceController(inMemory: true).container
+        let guildCoreDataStore = GuildCoreDataStore(container: container)
+        let guildService = GuildService(
+            coreDataStore: guildCoreDataStore,
+            explorationCoreDataStore: ExplorationCoreDataStore(container: container)
+        )
+        let masterData = try loadGeneratedMasterData()
+
+        let character = try guildService.hireCharacter(
+            raceId: try raceId(named: "人間", in: masterData),
+            jobId: try jobId(named: "魔導士", in: masterData),
+            aptitudeId: try #require(masterData.aptitudes.first?.id),
+            masterData: masterData
+        ).character
+
+        let updatedCharacter = try await guildService.changeJob(
+            characterId: character.characterId,
+            to: try jobId(named: "騎士", in: masterData),
+            masterData: masterData
+        )
+        let updatedStatus = try #require(
+            CharacterDerivedStatsCalculator.status(for: updatedCharacter, masterData: masterData)
+        )
+        let magicianJobId = try jobId(named: "魔導士", in: masterData)
+        let knightJobId = try jobId(named: "騎士", in: masterData)
+        let magicSkillId = try skillId(named: "魔法+10%", in: masterData)
+
+        #expect(updatedCharacter.previousJobId == magicianJobId)
+        #expect(updatedCharacter.currentJobId == knightJobId)
+        #expect(updatedStatus.spellIds.isEmpty)
+        #expect(updatedStatus.skillIds.contains(magicSkillId))
+    }
+
+    @Test
+    func changingJobTwiceFails() async throws {
+        let container = PersistenceController(inMemory: true).container
+        let guildCoreDataStore = GuildCoreDataStore(container: container)
+        let guildService = GuildService(
+            coreDataStore: guildCoreDataStore,
+            explorationCoreDataStore: ExplorationCoreDataStore(container: container)
+        )
+        let masterData = try loadGeneratedMasterData()
+
+        let character = try guildService.hireCharacter(
+            raceId: try #require(masterData.races.first?.id),
+            jobId: try #require(masterData.jobs.first?.id),
+            aptitudeId: try #require(masterData.aptitudes.first?.id),
+            masterData: masterData
+        ).character
+
+        _ = try await guildService.changeJob(
+            characterId: character.characterId,
+            to: try jobId(named: "剣士", in: masterData),
+            masterData: masterData
+        )
+
+        do {
+            _ = try await guildService.changeJob(
+                characterId: character.characterId,
+                to: try jobId(named: "狩人", in: masterData),
+                masterData: masterData
+            )
+            Issue.record("二度目の転職は失敗する必要があります。")
+        } catch {
+            let localizedError = error as? LocalizedError
+            #expect(localizedError?.errorDescription?.contains("転職済み") == true)
+        }
+    }
+
+    @Test
+    func changingJobClampsCurrentHPIntoRecalculatedRange() async throws {
+        let container = PersistenceController(inMemory: true).container
+        let guildCoreDataStore = GuildCoreDataStore(container: container)
+        let guildService = GuildService(
+            coreDataStore: guildCoreDataStore,
+            explorationCoreDataStore: ExplorationCoreDataStore(container: container)
+        )
+        let masterData = try loadGeneratedMasterData()
+
+        let overMaxCharacter = try guildService.hireCharacter(
+            raceId: try raceId(named: "人間", in: masterData),
+            jobId: try jobId(named: "魔導士", in: masterData),
+            aptitudeId: try #require(masterData.aptitudes.first?.id),
+            masterData: masterData
+        ).character
+        let belowZeroCharacter = try guildService.hireCharacter(
+            raceId: try raceId(named: "人間", in: masterData),
+            jobId: try jobId(named: "狩人", in: masterData),
+            aptitudeId: try #require(masterData.aptitudes.first?.id),
+            masterData: masterData
+        ).character
+
+        try setCurrentHP(characterId: overMaxCharacter.characterId, to: 99_999, in: container)
+        try setCurrentHP(characterId: belowZeroCharacter.characterId, to: -10, in: container)
+
+        let overMaxUpdatedCharacter = try await guildService.changeJob(
+            characterId: overMaxCharacter.characterId,
+            to: try jobId(named: "騎士", in: masterData),
+            masterData: masterData
+        )
+        let belowZeroUpdatedCharacter = try await guildService.changeJob(
+            characterId: belowZeroCharacter.characterId,
+            to: try jobId(named: "僧侶", in: masterData),
+            masterData: masterData
+        )
+
+        let overMaxStatus = try #require(
+            CharacterDerivedStatsCalculator.status(for: overMaxUpdatedCharacter, masterData: masterData)
+        )
+        let belowZeroStatus = try #require(
+            CharacterDerivedStatsCalculator.status(for: belowZeroUpdatedCharacter, masterData: masterData)
+        )
+
+        #expect(overMaxUpdatedCharacter.currentHP == overMaxStatus.maxHP)
+        #expect(belowZeroUpdatedCharacter.currentHP == 0)
+        #expect((0...belowZeroStatus.maxHP).contains(belowZeroUpdatedCharacter.currentHP))
+    }
+
+    @Test
+    func changingJobTrimsEquippedOverflowFromTailAndReturnsItemsToInventory() async throws {
+        let container = PersistenceController(inMemory: true).container
+        let guildCoreDataStore = GuildCoreDataStore(container: container)
+        let guildService = GuildService(
+            coreDataStore: guildCoreDataStore,
+            explorationCoreDataStore: ExplorationCoreDataStore(container: container)
+        )
+        let masterData = try loadGeneratedMasterData()
+
+        let character = try guildService.hireCharacter(
+            raceId: try raceId(named: "人間", in: masterData),
+            jobId: try jobId(named: "騎士", in: masterData),
+            aptitudeId: try #require(masterData.aptitudes.first?.id),
+            masterData: masterData
+        ).character
+        let equippedStacks = Array(masterData.items.prefix(4).map { item in
+            CompositeItemStack(itemID: CompositeItemID.baseItem(itemId: item.id), count: 1)
+        })
+        var persistedCharacter = try #require(
+            try guildCoreDataStore.loadCharacter(characterId: character.characterId)
+        )
+        persistedCharacter.equippedItemStacks = equippedStacks
+        try guildCoreDataStore.saveCharacter(persistedCharacter)
+
+        let updatedCharacter = try await guildService.changeJob(
+            characterId: character.characterId,
+            to: try jobId(named: "剣士", in: masterData),
+            masterData: masterData
+        )
+
+        #expect(updatedCharacter.equippedItemStacks == Array(equippedStacks.prefix(3)))
+        #expect(updatedCharacter.equippedItemCount == updatedCharacter.maximumEquippedItemCount)
+        #expect(try guildCoreDataStore.loadInventoryStacks() == [equippedStacks[3]])
+    }
+
+    @Test
     func equippingAndUnequippingUpdatesInventoryAndCharacterStacks() async throws {
         let container = PersistenceController(inMemory: true).container
         let guildCoreDataStore = GuildCoreDataStore(container: container)
@@ -539,6 +747,18 @@ struct UmbraTests {
                 masterData: masterData
             )
             Issue.record("探索中キャラクターの装備変更は失敗する必要があります。")
+        } catch {
+            let localizedError = error as? LocalizedError
+            #expect(localizedError?.errorDescription?.contains("出撃中") == true)
+        }
+
+        do {
+            _ = try await guildService.changeJob(
+                characterId: character.characterId,
+                to: try jobId(named: "剣士", in: masterData),
+                masterData: masterData
+            )
+            Issue.record("探索中キャラクターの転職は失敗する必要があります。")
         } catch {
             let localizedError = error as? LocalizedError
             #expect(localizedError?.errorDescription?.contains("出撃中") == true)
@@ -921,6 +1141,11 @@ private func raceId(named name: String, in masterData: MasterData) throws -> Int
 @MainActor
 private func jobId(named name: String, in masterData: MasterData) throws -> Int {
     try #require(masterData.jobs.first(where: { $0.name == name })?.id)
+}
+
+@MainActor
+private func skillId(named name: String, in masterData: MasterData) throws -> Int {
+    try #require(masterData.skills.first(where: { $0.name == name })?.id)
 }
 
 @MainActor

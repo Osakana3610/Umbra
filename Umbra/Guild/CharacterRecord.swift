@@ -6,8 +6,8 @@ nonisolated struct CharacterRecord: Identifiable, Equatable, Sendable {
     let characterId: Int
     var name: String
     let raceId: Int
-    let previousJobId: Int
-    let currentJobId: Int
+    var previousJobId: Int
+    var currentJobId: Int
     let aptitudeId: Int
     let portraitGender: PortraitGender
     var experience: Int

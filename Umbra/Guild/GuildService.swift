@@ -13,9 +13,12 @@ enum GuildServiceError: LocalizedError {
     case insufficientGold(required: Int, available: Int)
     case maxPartyCountReached
     case invalidParty(partyId: Int)
+    case invalidJobChangeTarget(jobId: Int)
     case invalidPartyName
     case partyFull(partyId: Int)
     case characterNotFound(characterId: Int)
+    case characterAlreadyChangedJob(characterId: Int)
+    case jobChangeRequirementNotMet(jobId: Int)
     case invalidPartyMemberOrder
     case invalidItemStack
     case invalidStackCount
@@ -35,12 +38,18 @@ enum GuildServiceError: LocalizedError {
             "これ以上パーティを解放できません。"
         case .invalidParty(let partyId):
             "パーティが見つかりません。 partyId=\(partyId)"
+        case .invalidJobChangeTarget(let jobId):
+            "転職先の職業が不正です。 jobId=\(jobId)"
         case .invalidPartyName:
             "パーティ名を入力してください。"
         case .partyFull(let partyId):
             "パーティ\(partyId)はすでに6人です。"
         case .characterNotFound(let characterId):
             "キャラクターが見つかりません。 characterId=\(characterId)"
+        case .characterAlreadyChangedJob(let characterId):
+            "キャラクター\(characterId)はすでに転職済みです。"
+        case .jobChangeRequirementNotMet(let jobId):
+            "転職条件を満たしていません。 jobId=\(jobId)"
         case .invalidPartyMemberOrder:
             "パーティ編成の並び順が不正です。"
         case .invalidItemStack:
@@ -137,6 +146,57 @@ final class GuildService {
         }
         try coreDataStore.saveRosterSnapshot(roster)
         return roster
+    }
+
+    func updateAutoBattleSettings(
+        characterId: Int,
+        autoBattleSettings: CharacterAutoBattleSettings
+    ) async throws -> CharacterRecord {
+        try await explorationCoreDataStore.validateCharacterMutationIsAllowed(characterId: characterId)
+        guard var character = try coreDataStore.loadCharacter(characterId: characterId) else {
+            throw GuildServiceError.characterNotFound(characterId: characterId)
+        }
+
+        character.autoBattleSettings = autoBattleSettings
+        try coreDataStore.saveCharacter(character)
+        return character
+    }
+
+    func changeJob(
+        characterId: Int,
+        to targetJobId: Int,
+        masterData: MasterData
+    ) async throws -> CharacterRecord {
+        try await explorationCoreDataStore.validateCharacterMutationIsAllowed(characterId: characterId)
+
+        guard var character = try coreDataStore.loadCharacter(characterId: characterId) else {
+            throw GuildServiceError.characterNotFound(characterId: characterId)
+        }
+        guard character.previousJobId == 0 else {
+            throw GuildServiceError.characterAlreadyChangedJob(characterId: characterId)
+        }
+        guard character.currentJobId != targetJobId,
+              let targetJob = masterData.jobs.first(where: { $0.id == targetJobId }) else {
+            throw GuildServiceError.invalidJobChangeTarget(jobId: targetJobId)
+        }
+        guard targetJob.canChange(fromCurrentJobId: character.currentJobId, level: character.level) else {
+            throw GuildServiceError.jobChangeRequirementNotMet(jobId: targetJobId)
+        }
+
+        character.previousJobId = character.currentJobId
+        character.currentJobId = targetJobId
+
+        let unequippedStacks = trimEquippedItemsToMaximum(on: &character)
+        clampCurrentHP(of: &character, masterData: masterData)
+        try coreDataStore.saveCharacter(character)
+
+        if !unequippedStacks.isEmpty {
+            let updatedInventoryStacks = (try coreDataStore.loadInventoryStacks() + unequippedStacks)
+                .normalizedCompositeItemStacks()
+            try coreDataStore.saveInventoryStacks(updatedInventoryStacks)
+        }
+
+        return character
     }
 
     func setAutoReviveDefeatedCharactersEnabled(_ isEnabled: Bool) throws -> GuildRosterSnapshot {
@@ -414,5 +474,38 @@ final class GuildService {
         }
 
         character.currentHP = status.maxHP
+    }
+
+    private func trimEquippedItemsToMaximum(
+        on character: inout CharacterRecord
+    ) -> [CompositeItemStack] {
+        var removedStacks: [CompositeItemStack] = []
+        var overflowCount = character.equippedItemCount - character.maximumEquippedItemCount
+
+        while overflowCount > 0,
+              let lastIndex = character.equippedItemStacks.indices.last {
+            let stack = character.equippedItemStacks[lastIndex]
+            let removedCount = min(stack.count, overflowCount)
+
+            removedStacks.append(
+                CompositeItemStack(
+                    itemID: stack.itemID,
+                    count: removedCount
+                )
+            )
+
+            if stack.count == removedCount {
+                character.equippedItemStacks.remove(at: lastIndex)
+            } else {
+                character.equippedItemStacks[lastIndex] = CompositeItemStack(
+                    itemID: stack.itemID,
+                    count: stack.count - removedCount
+                )
+            }
+
+            overflowCount -= removedCount
+        }
+
+        return removedStacks.normalizedCompositeItemStacks()
     }
 }

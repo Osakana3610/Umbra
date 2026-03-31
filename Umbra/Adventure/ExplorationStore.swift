@@ -150,6 +150,10 @@ final class ExplorationStore {
         status(for: partyId).activeRun != nil
     }
 
+    func hasActiveRun(forCharacterId characterId: Int) -> Bool {
+        runs.contains { !$0.isCompleted && $0.memberCharacterIds.contains(characterId) }
+    }
+
     func enforceCompletedRunRetention(masterData: MasterData) {
         guard isLoaded else {
             return

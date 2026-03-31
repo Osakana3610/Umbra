@@ -16,11 +16,12 @@
             "criticalRate": 1.0,
             "breathPower": 1.0
         },
-        "skillIds": [
+        "passiveSkillIds": [
             "maxHP_plus_10pct",
             "physicalDefense_plus_10pct",
             "counter"
-        ]
+        ],
+        "levelSkillIds": []
     },
     {
         "id": "swordsman",
@@ -39,11 +40,12 @@
             "criticalRate": 1.0,
             "breathPower": 1.0
         },
-        "skillIds": [
+        "passiveSkillIds": [
             "physicalAttack_plus_10pct",
             "criticalDamageMultiplier_plus_10pct",
             "extra_attack"
-        ]
+        ],
+        "levelSkillIds": []
     },
     {
         "id": "magician",
@@ -62,10 +64,12 @@
             "criticalRate": 1.0,
             "breathPower": 1.0
         },
-        "skillIds": [
-            "attack_magic_access",
-            "support_magic_access",
+        "passiveSkillIds": [
             "magic_plus_10pct"
+        ],
+        "levelSkillIds": [
+            "attack_magic_access",
+            "support_magic_access"
         ]
     },
     {
@@ -85,10 +89,12 @@
             "criticalRate": 1.0,
             "breathPower": 1.0
         },
-        "skillIds": [
-            "recovery_magic_access",
+        "passiveSkillIds": [
             "healing_plus_10pct",
             "rescue"
+        ],
+        "levelSkillIds": [
+            "recovery_magic_access"
         ]
     },
     {
@@ -108,10 +114,12 @@
             "criticalRate": 1.0,
             "breathPower": 1.0
         },
-        "skillIds": [
-            "barrier_magic_access",
+        "passiveSkillIds": [
             "magicDefense_plus_10pct",
             "magic_resistance_4_5"
+        ],
+        "levelSkillIds": [
+            "barrier_magic_access"
         ]
     },
     {
@@ -131,10 +139,11 @@
             "criticalRate": 1.0,
             "breathPower": 1.0
         },
-        "skillIds": [
+        "passiveSkillIds": [
             "rangedDamageMultiplier_plus_10pct",
             "actionSpeedMultiplier_plus_10pct",
             "pursuit"
-        ]
+        ],
+        "levelSkillIds": []
     }
 ]

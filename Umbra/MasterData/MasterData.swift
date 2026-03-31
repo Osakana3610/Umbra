@@ -73,7 +73,14 @@ extension MasterData {
         let name: String
         let hirePriceMultiplier: Double
         let coefficients: BattleStatCoefficients
-        let skillIds: [Int]
+        let passiveSkillIds: [Int]
+        let levelSkillIds: [Int]
+        let jobChangeRequirement: JobChangeRequirement?
+    }
+
+    nonisolated struct JobChangeRequirement: Decodable, Sendable {
+        let requiredCurrentJobId: Int
+        let requiredLevel: Int
     }
 
     nonisolated struct Aptitude: Identifiable, Decodable, Sendable {
