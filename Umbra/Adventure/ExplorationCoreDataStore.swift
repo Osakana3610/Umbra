@@ -41,8 +41,11 @@ actor ExplorationCoreDataStore {
     }
 
     func loadStartContext(
-        partyId: Int
-    ) async throws -> (nextPartyRunId: Int, partyMembers: [CharacterRecord]) {
+        partyId: Int,
+        labyrinthId: Int,
+        requestedDifficultyTitleId: Int?,
+        masterData: MasterData
+    ) async throws -> (nextPartyRunId: Int, partyMembers: [CharacterRecord], selectedDifficultyTitleId: Int) {
         try await perform { context in
             guard try !ExplorationCoreDataBridge.hasActiveRun(
                 partyId: partyId,
@@ -76,12 +79,36 @@ actor ExplorationCoreDataStore {
                 throw ExplorationError.partyHasDefeatedMember(partyId: partyId)
             }
 
+            for memberEntity in memberEntities {
+                try ExplorationCoreDataBridge.restoreCurrentHPToMax(
+                    of: memberEntity,
+                    masterData: masterData
+                )
+            }
+
+            let healedPartyMembers = try memberCharacterIds.map { characterId in
+                guard let entity = membersById[characterId] else {
+                    throw ExplorationError.invalidRunMember(characterId: characterId)
+                }
+                return ExplorationCoreDataBridge.makeCharacterRecord(from: entity)
+            }
+            let defaultDifficultyTitleId = masterData.defaultExplorationDifficultyTitle?.id ?? 1
+            let highestUnlockedDifficultyTitleId = try ExplorationCoreDataBridge.highestUnlockedDifficultyTitleId(
+                labyrinthId: labyrinthId,
+                defaultTitleId: defaultDifficultyTitleId,
+                in: context
+            )
+
             return (
                 nextPartyRunId: try ExplorationCoreDataBridge.nextPartyRunId(
                     partyId: partyId,
                     in: context
                 ),
-                partyMembers: partyMembers
+                partyMembers: healedPartyMembers,
+                selectedDifficultyTitleId: masterData.resolvedExplorationDifficultyTitleId(
+                    requestedTitleId: requestedDifficultyTitleId,
+                    highestUnlockedTitleId: highestUnlockedDifficultyTitleId
+                )
             )
         }
     }
@@ -171,6 +198,8 @@ actor ExplorationCoreDataStore {
 
                 let inventoryCounts = try ExplorationCoreDataBridge.applyCompletionRewards(
                     completion: completion,
+                    labyrinthId: resolvedSession.labyrinthId,
+                    selectedDifficultyTitleId: resolvedSession.selectedDifficultyTitleId,
                     currentPartyHPs: resolvedSession.currentPartyHPs,
                     memberCharacterIds: resolvedSession.memberCharacterIds,
                     in: context,
@@ -364,6 +393,32 @@ nonisolated private enum ExplorationCoreDataBridge {
         return try context.fetch(request)
     }
 
+    static func fetchLabyrinthProgressEntity(
+        labyrinthId: Int,
+        in context: NSManagedObjectContext
+    ) throws -> LabyrinthProgressEntity? {
+        let request = NSFetchRequest<LabyrinthProgressEntity>(entityName: "LabyrinthProgressEntity")
+        request.fetchLimit = 1
+        request.predicate = NSPredicate(format: "labyrinthId == %d", labyrinthId)
+        return try context.fetch(request).first
+    }
+
+    static func highestUnlockedDifficultyTitleId(
+        labyrinthId: Int,
+        defaultTitleId: Int,
+        in context: NSManagedObjectContext
+    ) throws -> Int {
+        guard let progressEntity = try fetchLabyrinthProgressEntity(
+            labyrinthId: labyrinthId,
+            in: context
+        ) else {
+            return defaultTitleId
+        }
+
+        let storedTitleId = Int(progressEntity.highestUnlockedDifficultyTitleId)
+        return storedTitleId > 0 ? storedTitleId : defaultTitleId
+    }
+
     static func fetchOrCreatePlayerState(
         in context: NSManagedObjectContext
     ) throws -> PlayerStateEntity {
@@ -467,6 +522,8 @@ nonisolated private enum ExplorationCoreDataBridge {
 
     static func applyCompletionRewards(
         completion: RunCompletionRecord,
+        labyrinthId: Int,
+        selectedDifficultyTitleId: Int,
         currentPartyHPs: [Int],
         memberCharacterIds: [Int],
         in context: NSManagedObjectContext,
@@ -525,7 +582,56 @@ nonisolated private enum ExplorationCoreDataBridge {
             in: context
         )
 
+        try unlockNextDifficultyIfNeeded(
+            completion: completion,
+            labyrinthId: labyrinthId,
+            selectedDifficultyTitleId: selectedDifficultyTitleId,
+            in: context,
+            masterData: masterData
+        )
+
         return inventoryCounts
+    }
+
+    static func unlockNextDifficultyIfNeeded(
+        completion: RunCompletionRecord,
+        labyrinthId: Int,
+        selectedDifficultyTitleId: Int,
+        in context: NSManagedObjectContext,
+        masterData: MasterData
+    ) throws {
+        guard completion.reason == .cleared,
+              let defaultTitleId = masterData.defaultExplorationDifficultyTitle?.id,
+              let nextTitleId = masterData.nextExplorationDifficultyTitleId(after: selectedDifficultyTitleId) else {
+            return
+        }
+
+        let entity = try fetchLabyrinthProgressEntity(
+            labyrinthId: labyrinthId,
+            in: context
+        ) ?? {
+            guard let insertedEntity = NSEntityDescription.insertNewObject(
+                forEntityName: "LabyrinthProgressEntity",
+                into: context
+            ) as? LabyrinthProgressEntity else {
+                fatalError("LabyrinthProgressEntity の生成に失敗しました。")
+            }
+            insertedEntity.labyrinthId = Int64(labyrinthId)
+            insertedEntity.highestUnlockedDifficultyTitleId = Int64(defaultTitleId)
+            return insertedEntity
+        }()
+
+        let titles = masterData.explorationDifficultyTitles
+        let currentHighestTitleId = Int(entity.highestUnlockedDifficultyTitleId) > 0
+            ? Int(entity.highestUnlockedDifficultyTitleId)
+            : defaultTitleId
+        let currentHighestIndex = titles.firstIndex(where: { $0.id == currentHighestTitleId }) ?? 0
+        let nextTitleIndex = titles.firstIndex(where: { $0.id == nextTitleId }) ?? currentHighestIndex
+        guard nextTitleIndex > currentHighestIndex else {
+            return
+        }
+
+        entity.highestUnlockedDifficultyTitleId = Int64(nextTitleId)
     }
 
     static func applyInventoryCounts(
@@ -579,6 +685,7 @@ nonisolated private enum ExplorationCoreDataBridge {
             partyRunId: Int(entity.partyRunId),
             partyId: Int(entity.partyId),
             labyrinthId: Int(entity.labyrinthId),
+            selectedDifficultyTitleId: Int(entity.selectedDifficultyTitleId),
             targetFloorNumber: Int(entity.targetFloorNumber),
             startedAt: entity.startedAt ?? .distantPast,
             rootSeed: UInt64(bitPattern: entity.rootSeedSigned),
@@ -615,6 +722,7 @@ nonisolated private enum ExplorationCoreDataBridge {
             partyRunId: summary.partyRunId,
             partyId: summary.partyId,
             labyrinthId: summary.labyrinthId,
+            selectedDifficultyTitleId: summary.selectedDifficultyTitleId,
             targetFloorNumber: summary.targetFloorNumber,
             startedAt: summary.startedAt,
             rootSeed: summary.rootSeed,
@@ -813,6 +921,7 @@ nonisolated private enum ExplorationCoreDataBridge {
         entity.partyRunId = Int64(session.partyRunId)
         entity.partyId = Int64(session.partyId)
         entity.labyrinthId = Int64(session.labyrinthId)
+        entity.selectedDifficultyTitleId = Int64(session.selectedDifficultyTitleId)
         entity.targetFloorNumber = Int64(session.targetFloorNumber)
         entity.startedAt = session.startedAt
         entity.rootSeedSigned = Int64(bitPattern: session.rootSeed)

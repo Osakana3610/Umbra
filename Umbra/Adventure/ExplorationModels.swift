@@ -47,6 +47,7 @@ nonisolated struct RunSessionRecord: Equatable, Sendable, Identifiable {
     let partyRunId: Int
     let partyId: Int
     let labyrinthId: Int
+    let selectedDifficultyTitleId: Int
     let targetFloorNumber: Int
     let startedAt: Date
     let rootSeed: UInt64
@@ -82,6 +83,7 @@ nonisolated struct RunSessionRecord: Equatable, Sendable, Identifiable {
             partyRunId: partyRunId,
             partyId: partyId,
             labyrinthId: labyrinthId,
+            selectedDifficultyTitleId: selectedDifficultyTitleId,
             targetFloorNumber: targetFloorNumber,
             startedAt: startedAt,
             rootSeed: rootSeed,

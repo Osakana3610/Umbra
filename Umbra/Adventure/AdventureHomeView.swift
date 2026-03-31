@@ -151,11 +151,16 @@ struct AdventureHomeView: View {
     private var bulkStartableRuns: [ConfiguredRunStart] {
         partyStore.parties.compactMap { party in
             guard canStartRun(for: party),
-                  let labyrinthId = configuredLabyrinthId(for: party) else {
+                  let labyrinthId = configuredLabyrinthId(for: party),
+                  let selectedDifficultyTitleId = configuredDifficultyTitleId(for: party) else {
                 return nil
             }
 
-            return ConfiguredRunStart(partyId: party.partyId, labyrinthId: labyrinthId)
+            return ConfiguredRunStart(
+                partyId: party.partyId,
+                labyrinthId: labyrinthId,
+                selectedDifficultyTitleId: selectedDifficultyTitleId
+            )
         }
     }
 
@@ -178,6 +183,19 @@ struct AdventureHomeView: View {
         return selectedLabyrinthId
     }
 
+    private func configuredDifficultyTitleId(for party: PartyRecord) -> Int? {
+        guard let labyrinthId = configuredLabyrinthId(for: party) else {
+            return nil
+        }
+
+        let highestUnlockedTitleId = rosterStore.labyrinthProgressByLabyrinthId[labyrinthId]?
+            .highestUnlockedDifficultyTitleId
+        return masterData.resolvedExplorationDifficultyTitleId(
+            requestedTitleId: party.selectedDifficultyTitleId,
+            highestUnlockedTitleId: highestUnlockedTitleId
+        )
+    }
+
     private func canStartRun(for party: PartyRecord) -> Bool {
         guard configuredLabyrinthId(for: party) != nil,
               !explorationStore.hasActiveRun(for: party.partyId),
@@ -191,7 +209,8 @@ struct AdventureHomeView: View {
     }
 
     private func startRun(for party: PartyRecord) {
-        guard let labyrinthId = configuredLabyrinthId(for: party) else {
+        guard let labyrinthId = configuredLabyrinthId(for: party),
+              let selectedDifficultyTitleId = configuredDifficultyTitleId(for: party) else {
             return
         }
 
@@ -199,6 +218,7 @@ struct AdventureHomeView: View {
             await explorationStore.startRun(
                 partyId: party.partyId,
                 labyrinthId: labyrinthId,
+                selectedDifficultyTitleId: selectedDifficultyTitleId,
                 startedAt: Date(),
                 masterData: masterData
             )
@@ -317,10 +337,19 @@ private struct AdventurePartyPresentation {
         totalHPText = displayedCurrentHPs.reduce(0, +).formatted()
 
         if let activeRun = status.activeRun {
-            let labyrinthName = masterData.labyrinths.first(where: { $0.id == activeRun.labyrinthId })?.name ?? "不明な迷宮"
+            let labyrinthName = masterData.labyrinths.first(where: { $0.id == activeRun.labyrinthId }).map { labyrinth in
+                masterData.explorationLabyrinthDisplayName(
+                    labyrinthName: labyrinth.name,
+                    difficultyTitleId: activeRun.selectedDifficultyTitleId
+                )
+            } ?? "不明な迷宮"
             let latestBattleText = activeRun.latestBattleOutcome.map(Self.battleText(for:)) ?? "探索開始"
             logHeaderText = Self.estimatedReturnText(for: activeRun, masterData: masterData)
-            logText = "\(labyrinthName)：\(latestBattleText)"
+            logText = Self.logText(
+                labyrinthName: labyrinthName,
+                floorNumber: activeRun.latestBattleFloorNumber,
+                statusText: latestBattleText
+            )
             actionTitle = "探索中"
             actionDisabled = true
             logPrimaryStyle = .primary
@@ -329,13 +358,22 @@ private struct AdventurePartyPresentation {
 
         if let latestCompletedRun = status.latestCompletedRun,
            let completion = latestCompletedRun.completion {
-            let labyrinthName = masterData.labyrinths.first(where: { $0.id == latestCompletedRun.labyrinthId })?.name ?? "不明な迷宮"
+            let labyrinthName = masterData.labyrinths.first(where: { $0.id == latestCompletedRun.labyrinthId }).map { labyrinth in
+                masterData.explorationLabyrinthDisplayName(
+                    labyrinthName: labyrinth.name,
+                    difficultyTitleId: latestCompletedRun.selectedDifficultyTitleId
+                )
+            } ?? "不明な迷宮"
             let returnedAt = completion.completedAt.formatted(
                 Date.FormatStyle(date: .numeric, time: .standard)
                     .locale(Locale(identifier: "ja_JP"))
             )
             logHeaderText = "帰還時刻 \(returnedAt)"
-            logText = "\(labyrinthName)：\(Self.completionText(for: completion.reason))"
+            logText = Self.logText(
+                labyrinthName: labyrinthName,
+                floorNumber: latestCompletedRun.latestBattleFloorNumber,
+                statusText: Self.completionText(for: completion.reason)
+            )
             actionTitle = "出撃"
             actionDisabled = !canStartRun
             logPrimaryStyle = .primary
@@ -344,19 +382,23 @@ private struct AdventurePartyPresentation {
 
         if let labyrinthId = party.selectedLabyrinthId,
            let labyrinth = masterData.labyrinths.first(where: { $0.id == labyrinthId }) {
+            let labyrinthName = masterData.explorationLabyrinthDisplayName(
+                labyrinthName: labyrinth.name,
+                difficultyTitleId: party.selectedDifficultyTitleId
+            )
             logHeaderText = "出撃先迷宮"
             if party.memberCharacterIds.isEmpty {
-                logText = "\(labyrinth.name)：メンバーを編成すると出撃できます。"
+                logText = "\(labyrinthName)：メンバーを編成すると出撃できます。"
                 actionTitle = "出撃"
                 actionDisabled = true
                 logPrimaryStyle = .secondary
             } else if displayedCurrentHPs.contains(0) {
-                logText = "\(labyrinth.name)：HPが0のメンバーを含むため出撃できません。"
+                logText = "\(labyrinthName)：HPが0のメンバーを含むため出撃できません。"
                 actionTitle = "出撃"
                 actionDisabled = true
                 logPrimaryStyle = .secondary
             } else {
-                logText = "\(labyrinth.name)：探索ログはまだありません。"
+                logText = "\(labyrinthName)：探索ログはまだありません。"
                 actionTitle = "出撃"
                 actionDisabled = !canStartRun
                 logPrimaryStyle = .secondary
@@ -392,6 +434,18 @@ private struct AdventurePartyPresentation {
             Double(totalBattleCount * labyrinth.progressIntervalSeconds)
         )
         return "帰還予定時刻 \(returnAt.formatted(Date.FormatStyle(date: .omitted, time: .standard).locale(Locale(identifier: "ja_JP"))))"
+    }
+
+    private static func logText(
+        labyrinthName: String,
+        floorNumber: Int?,
+        statusText: String
+    ) -> String {
+        guard let floorNumber else {
+            return "\(labyrinthName)：\(statusText)"
+        }
+
+        return "\(labyrinthName)：\(floorNumber)F / \(statusText)"
     }
 
     private static func battleText(for outcome: BattleOutcome) -> String {

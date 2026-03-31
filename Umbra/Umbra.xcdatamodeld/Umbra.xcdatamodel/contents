@@ -31,6 +31,7 @@
         <attribute name="memberCharacterIdsRawValue" optional="NO" attributeType="String" defaultValueString=""/>
         <attribute name="name" optional="NO" attributeType="String" defaultValueString="パーティ1"/>
         <attribute name="partyId" optional="NO" attributeType="Integer 64" usesScalarValueType="YES"/>
+        <attribute name="selectedDifficultyTitleId" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="selectedLabyrinthId" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
     </entity>
     <entity name="RunSessionEntity" representedClassName="RunSessionEntity" syncable="YES">
@@ -50,6 +51,7 @@
         <attribute name="rareDropMultiplier" optional="NO" attributeType="Double" defaultValueString="1"/>
         <attribute name="rewardsApplied" optional="NO" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="rootSeedSigned" optional="NO" attributeType="Integer 64" usesScalarValueType="YES"/>
+        <attribute name="selectedDifficultyTitleId" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="titleDropMultiplier" optional="NO" attributeType="Double" defaultValueString="1"/>
         <attribute name="startedAt" optional="NO" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="targetFloorNumber" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
@@ -142,11 +144,16 @@
         <attribute name="valueValue" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <relationship name="action" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="RunSessionBattleActionEntity" inverseName="results" inverseEntity="RunSessionBattleActionEntity"/>
     </entity>
+    <entity name="LabyrinthProgressEntity" representedClassName="LabyrinthProgressEntity" syncable="YES">
+        <attribute name="highestUnlockedDifficultyTitleId" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="labyrinthId" optional="NO" attributeType="Integer 64" usesScalarValueType="YES"/>
+    </entity>
     <elements>
         <element name="PlayerStateEntity" positionX="-63" positionY="-18" width="128" height="59"/>
         <element name="CharacterEntity" positionX="178" positionY="-18" width="128" height="254"/>
         <element name="PartyEntity" positionX="-63" positionY="101" width="128" height="89"/>
         <element name="InventoryItemEntity" positionX="-63" positionY="197" width="128" height="74"/>
+        <element name="LabyrinthProgressEntity" positionX="-63" positionY="281" width="128" height="74"/>
         <element name="RunSessionEntity" positionX="178" positionY="281" width="128" height="254"/>
         <element name="RunSessionMemberEntity" positionX="392" positionY="281" width="128" height="284"/>
         <element name="RunSessionExperienceRewardEntity" positionX="392" positionY="405" width="128" height="89"/>

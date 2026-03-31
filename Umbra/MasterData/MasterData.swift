@@ -307,3 +307,80 @@ nonisolated enum BattleActionKind: String, Decodable, Sendable {
     case recoverySpell
     case attackSpell
 }
+
+extension MasterData {
+    nonisolated var explorationDifficultyTitles: [Title] {
+        let sortedTitles = titles.sorted { lhs, rhs in
+            if lhs.positiveMultiplier != rhs.positiveMultiplier {
+                return lhs.positiveMultiplier < rhs.positiveMultiplier
+            }
+            return lhs.id < rhs.id
+        }
+        guard let untitledTitle = titles.first(where: { $0.key == "untitled" }) else {
+            return Array(sortedTitles.prefix(4))
+        }
+
+        let higherTitles = sortedTitles
+            .filter { $0.positiveMultiplier > untitledTitle.positiveMultiplier }
+        return [untitledTitle] + Array(higherTitles.prefix(3))
+    }
+
+    nonisolated var defaultExplorationDifficultyTitle: Title? {
+        explorationDifficultyTitles.first
+    }
+
+    nonisolated func explorationDifficultyTitle(id: Int?) -> Title? {
+        guard let id else {
+            return defaultExplorationDifficultyTitle
+        }
+
+        return explorationDifficultyTitles.first(where: { $0.id == id }) ?? defaultExplorationDifficultyTitle
+    }
+
+    nonisolated func nextExplorationDifficultyTitleId(after titleId: Int) -> Int? {
+        let titles = explorationDifficultyTitles
+        guard let index = titles.firstIndex(where: { $0.id == titleId }),
+              titles.indices.contains(index + 1) else {
+            return nil
+        }
+
+        return titles[index + 1].id
+    }
+
+    nonisolated func explorationDifficultyDisplayName(for titleId: Int?) -> String {
+        guard let title = explorationDifficultyTitle(id: titleId) else {
+            return "不明な難易度"
+        }
+
+        return title.name.isEmpty ? "無称号" : title.name
+    }
+
+    nonisolated func explorationLabyrinthDisplayName(
+        labyrinthName: String,
+        difficultyTitleId: Int?
+    ) -> String {
+        guard let title = explorationDifficultyTitle(id: difficultyTitleId),
+              !title.name.isEmpty else {
+            return labyrinthName
+        }
+
+        return "\(title.name)\(labyrinthName)"
+    }
+
+    nonisolated func resolvedExplorationDifficultyTitleId(
+        requestedTitleId: Int?,
+        highestUnlockedTitleId: Int?
+    ) -> Int {
+        let titles = explorationDifficultyTitles
+        guard let defaultTitle = defaultExplorationDifficultyTitle else {
+            return requestedTitleId ?? highestUnlockedTitleId ?? 1
+        }
+
+        let highestUnlockedId = highestUnlockedTitleId ?? defaultTitle.id
+        let unlockedIndex = titles.firstIndex(where: { $0.id == highestUnlockedId }) ?? 0
+        let requestedIndex = requestedTitleId.flatMap { titleId in
+            titles.firstIndex(where: { $0.id == titleId })
+        } ?? 0
+        return titles[min(requestedIndex, unlockedIndex)].id
+    }
+}

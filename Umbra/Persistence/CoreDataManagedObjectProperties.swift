@@ -56,6 +56,7 @@ extension PartyEntity {
     @NSManaged nonisolated public var memberCharacterIdsRawValue: String?
     @NSManaged nonisolated public var name: String?
     @NSManaged nonisolated public var partyId: Int64
+    @NSManaged nonisolated public var selectedDifficultyTitleId: Int64
     @NSManaged nonisolated public var selectedLabyrinthId: Int64
 
 }
@@ -77,6 +78,21 @@ extension PlayerStateEntity {
 }
 
 extension PlayerStateEntity : Identifiable {
+
+}
+
+extension LabyrinthProgressEntity {
+
+    @nonobjc nonisolated public class func fetchRequest() -> NSFetchRequest<LabyrinthProgressEntity> {
+        return NSFetchRequest<LabyrinthProgressEntity>(entityName: "LabyrinthProgressEntity")
+    }
+
+    @NSManaged nonisolated public var highestUnlockedDifficultyTitleId: Int64
+    @NSManaged nonisolated public var labyrinthId: Int64
+
+}
+
+extension LabyrinthProgressEntity : Identifiable {
 
 }
 
@@ -293,6 +309,7 @@ extension RunSessionEntity {
     @NSManaged nonisolated public var rareDropMultiplier: Double
     @NSManaged nonisolated public var rewardsApplied: Bool
     @NSManaged nonisolated public var rootSeedSigned: Int64
+    @NSManaged nonisolated public var selectedDifficultyTitleId: Int64
     @NSManaged nonisolated public var titleDropMultiplier: Double
     @NSManaged nonisolated public var startedAt: Date?
     @NSManaged nonisolated public var targetFloorNumber: Int64

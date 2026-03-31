@@ -23,6 +23,11 @@ public class PlayerStateEntity: NSManagedObject {
 
 }
 
+@objc(LabyrinthProgressEntity)
+public class LabyrinthProgressEntity: NSManagedObject {
+
+}
+
 @objc(RunSessionBattleActionEntity)
 public class RunSessionBattleActionEntity: NSManagedObject {
 
@@ -67,4 +72,3 @@ public class RunSessionExperienceRewardEntity: NSManagedObject {
 public class RunSessionMemberEntity: NSManagedObject {
 
 }
-

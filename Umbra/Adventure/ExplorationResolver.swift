@@ -16,8 +16,14 @@ nonisolated enum ExplorationResolver {
         guard let labyrinth = masterData.labyrinths.first(where: { $0.id == session.labyrinthId }) else {
             throw ExplorationError.invalidLabyrinth(labyrinthId: session.labyrinthId)
         }
+        let difficultyMultiplier = masterData.explorationDifficultyTitle(id: session.selectedDifficultyTitleId)?
+            .positiveMultiplier ?? 1.0
 
-        let battlePlans = buildBattlePlans(for: session, labyrinth: labyrinth)
+        let battlePlans = buildBattlePlans(
+            for: session,
+            labyrinth: labyrinth,
+            difficultyMultiplier: difficultyMultiplier
+        )
         let interval = max(labyrinth.progressIntervalSeconds, 1)
         let battlesPerLoop = max(battlePlans.count / max(session.maximumLoopCount, 1), 1)
 
@@ -146,6 +152,7 @@ nonisolated enum ExplorationResolver {
             partyRunId: session.partyRunId,
             partyId: session.partyId,
             labyrinthId: session.labyrinthId,
+            selectedDifficultyTitleId: session.selectedDifficultyTitleId,
             targetFloorNumber: session.targetFloorNumber,
             startedAt: session.startedAt,
             rootSeed: session.rootSeed,
@@ -226,6 +233,7 @@ nonisolated enum ExplorationResolver {
             partyRunId: session.partyRunId,
             partyId: session.partyId,
             labyrinthId: session.labyrinthId,
+            selectedDifficultyTitleId: session.selectedDifficultyTitleId,
             targetFloorNumber: session.targetFloorNumber,
             startedAt: session.startedAt,
             rootSeed: session.rootSeed,
@@ -279,6 +287,7 @@ nonisolated private extension ExplorationResolver {
         let titleDropMultiplier: Double
         let partyAverageLuck: Double
         let defaultTitle: MasterData.Title
+        let enemyTitle: MasterData.Title
     }
 
     struct BattleRewards {
@@ -396,7 +405,8 @@ nonisolated private extension ExplorationResolver {
 
     static func buildBattlePlans(
         for session: RunSessionRecord,
-        labyrinth: MasterData.Labyrinth
+        labyrinth: MasterData.Labyrinth,
+        difficultyMultiplier: Double
     ) -> [PlannedBattle] {
         var battlePlans: [PlannedBattle] = []
         battlePlans.reserveCapacity(
@@ -420,6 +430,7 @@ nonisolated private extension ExplorationResolver {
                                 enemies: resolveEncounterEnemies(
                                     for: floor,
                                     enemyCountCap: labyrinth.enemyCountCap,
+                                    difficultyMultiplier: difficultyMultiplier,
                                     loopIndex: loopIndex,
                                     battleNumber: globalBattleNumber,
                                     normalBattleIndex: normalBattleIndex,
@@ -437,7 +448,13 @@ nonisolated private extension ExplorationResolver {
                             floorNumber: floor.floorNumber,
                             battleNumber: globalBattleNumber,
                             enemies: fixedBattle.map { enemy in
-                                BattleEnemySeed(enemyId: enemy.enemyId, level: enemy.level)
+                                BattleEnemySeed(
+                                    enemyId: enemy.enemyId,
+                                    level: scaledEnemyLevel(
+                                        baseLevel: enemy.level,
+                                        difficultyMultiplier: difficultyMultiplier
+                                    )
+                                )
                             }
                         )
                     )
@@ -452,6 +469,7 @@ nonisolated private extension ExplorationResolver {
     static func resolveEncounterEnemies(
         for floor: MasterData.Floor,
         enemyCountCap: Int,
+        difficultyMultiplier: Double,
         loopIndex: Int,
         battleNumber: Int,
         normalBattleIndex: Int,
@@ -477,11 +495,23 @@ nonisolated private extension ExplorationResolver {
             for encounter in floor.encounters {
                 cumulativeWeight += encounter.weight
                 if roll < cumulativeWeight {
-                    return BattleEnemySeed(enemyId: encounter.enemyId, level: encounter.level)
+                    return BattleEnemySeed(
+                        enemyId: encounter.enemyId,
+                        level: scaledEnemyLevel(
+                            baseLevel: encounter.level,
+                            difficultyMultiplier: difficultyMultiplier
+                        )
+                    )
                 }
             }
             return floor.encounters.last.map { encounter in
-                BattleEnemySeed(enemyId: encounter.enemyId, level: encounter.level)
+                BattleEnemySeed(
+                    enemyId: encounter.enemyId,
+                    level: scaledEnemyLevel(
+                        baseLevel: encounter.level,
+                        difficultyMultiplier: difficultyMultiplier
+                    )
+                )
             }
         }
     }
@@ -490,7 +520,8 @@ nonisolated private extension ExplorationResolver {
         from session: RunSessionRecord,
         masterData: MasterData
     ) -> RewardContext {
-        let defaultTitle = masterData.titles.first(where: { $0.key == "untitled" }) ?? masterData.titles[0]
+        let defaultTitle = masterData.defaultExplorationDifficultyTitle ?? masterData.titles[0]
+        let enemyTitle = masterData.explorationDifficultyTitle(id: session.selectedDifficultyTitleId) ?? defaultTitle
 
         return RewardContext(
             memberCharacterIds: session.memberCharacterIds,
@@ -499,7 +530,8 @@ nonisolated private extension ExplorationResolver {
             rareDropMultiplier: session.rareDropMultiplier,
             titleDropMultiplier: session.titleDropMultiplier,
             partyAverageLuck: session.partyAverageLuck,
-            defaultTitle: defaultTitle
+            defaultTitle: defaultTitle,
+            enemyTitle: enemyTitle
         )
     }
 
@@ -746,7 +778,7 @@ nonisolated private extension ExplorationResolver {
         titles: [MasterData.Title],
         rootSeed: UInt64
     ) -> MasterData.Title {
-        let rollCount = max(Int(rewardContext.defaultTitle.positiveMultiplier.rounded()), 1)
+        let rollCount = max(Int(rewardContext.enemyTitle.positiveMultiplier.rounded()), 1)
         var bestTitle = rewardContext.defaultTitle
         for rollIndex in 0..<rollCount {
             let qualityBias = max(
@@ -754,7 +786,7 @@ nonisolated private extension ExplorationResolver {
                 (1 + rewardContext.partyAverageLuck / 100.0
                     + 0.15 * (cbrt(Double(enemyLevel)) - 1))
                     * rewardContext.titleDropMultiplier
-                    * rewardContext.defaultTitle.positiveMultiplier
+                    * rewardContext.enemyTitle.positiveMultiplier
             )
             let weightedTitles = titles.enumerated().map { index, title in
                 (
@@ -874,6 +906,13 @@ nonisolated private extension ExplorationResolver {
         }
 
         return values.last?.value
+    }
+
+    static func scaledEnemyLevel(
+        baseLevel: Int,
+        difficultyMultiplier: Double
+    ) -> Int {
+        max(Int((Double(baseLevel) * difficultyMultiplier).rounded()), 1)
     }
 
     static func completionDate(

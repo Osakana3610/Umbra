@@ -122,7 +122,11 @@ final class PartyStore {
         }
     }
 
-    func setSelectedLabyrinth(partyId: Int, selectedLabyrinthId: Int?) {
+    func setSelectedLabyrinth(
+        partyId: Int,
+        selectedLabyrinthId: Int?,
+        selectedDifficultyTitleId: Int?
+    ) {
         guard !isMutating, phase == .loaded else {
             return
         }
@@ -137,7 +141,8 @@ final class PartyStore {
                 applyParties(
                     try await service.setSelectedLabyrinth(
                         partyId: partyId,
-                        selectedLabyrinthId: selectedLabyrinthId
+                        selectedLabyrinthId: selectedLabyrinthId,
+                        selectedDifficultyTitleId: selectedDifficultyTitleId
                     )
                 )
             } catch {

@@ -173,7 +173,12 @@ struct RunSessionDetailView: View {
     }
 
     private func labyrinthName(for run: RunSessionRecord) -> String {
-        masterData.labyrinths.first(where: { $0.id == run.labyrinthId })?.name ?? "不明な迷宮"
+        masterData.labyrinths.first(where: { $0.id == run.labyrinthId }).map { labyrinth in
+            masterData.explorationLabyrinthDisplayName(
+                labyrinthName: labyrinth.name,
+                difficultyTitleId: run.selectedDifficultyTitleId
+            )
+        } ?? "不明な迷宮"
     }
 
     private func nextProgressDate(for run: RunSessionRecord) -> Date? {

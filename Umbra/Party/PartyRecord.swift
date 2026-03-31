@@ -13,6 +13,7 @@ struct PartyRecord: Identifiable, Equatable, Sendable {
     var name: String
     var memberCharacterIds: [Int]
     var selectedLabyrinthId: Int?
+    var selectedDifficultyTitleId: Int?
 
     var id: Int { partyId }
 

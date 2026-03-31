@@ -6,6 +6,7 @@ import Foundation
 struct GuildRosterSnapshot: Sendable {
     var playerState: PlayerState
     var characters: [CharacterRecord]
+    var labyrinthProgressRecords: [LabyrinthProgressRecord]
 }
 
 @MainActor
@@ -22,7 +23,8 @@ final class GuildCoreDataStore {
         try saveIfNeeded(context)
         return try GuildRosterSnapshot(
             playerState: makePlayerState(from: playerState),
-            characters: fetchCharacters(in: context).map(makeCharacterRecord)
+            characters: fetchCharacters(in: context).map(makeCharacterRecord),
+            labyrinthProgressRecords: fetchLabyrinthProgressEntities(in: context).map(makeLabyrinthProgressRecord)
         )
     }
 
@@ -33,7 +35,8 @@ final class GuildCoreDataStore {
         try saveIfNeeded(context)
         return try GuildRosterSnapshot(
             playerState: makePlayerState(from: playerState),
-            characters: fetchCharacters(in: context).map(makeCharacterRecord)
+            characters: fetchCharacters(in: context).map(makeCharacterRecord),
+            labyrinthProgressRecords: fetchLabyrinthProgressEntities(in: context).map(makeLabyrinthProgressRecord)
         )
     }
 
@@ -69,6 +72,7 @@ final class GuildCoreDataStore {
         playerState.nextCharacterId = Int64(snapshot.playerState.nextCharacterId)
         playerState.autoReviveDefeatedCharacters = snapshot.playerState.autoReviveDefeatedCharacters
         try syncCharacters(snapshot.characters, in: context)
+        try syncLabyrinthProgressRecords(snapshot.labyrinthProgressRecords, in: context)
         try saveIfNeeded(context)
     }
 
@@ -201,7 +205,38 @@ final class GuildCoreDataStore {
             entity.partyId = Int64(partyRecord.partyId)
             entity.name = partyRecord.name
             entity.selectedLabyrinthId = partyRecord.selectedLabyrinthId.map(Int64.init) ?? 0
+            entity.selectedDifficultyTitleId = partyRecord.selectedDifficultyTitleId.map(Int64.init) ?? 0
             setMemberCharacterIds(partyRecord.memberCharacterIds, on: entity)
+        }
+    }
+
+    private func syncLabyrinthProgressRecords(
+        _ records: [LabyrinthProgressRecord],
+        in context: NSManagedObjectContext
+    ) throws {
+        var existingByLabyrinthId = Dictionary(
+            uniqueKeysWithValues: try fetchLabyrinthProgressEntities(in: context).map { (Int($0.labyrinthId), $0) }
+        )
+        let incomingLabyrinthIds = Set(records.map(\.labyrinthId))
+
+        for (labyrinthId, entity) in existingByLabyrinthId where !incomingLabyrinthIds.contains(labyrinthId) {
+            context.delete(entity)
+        }
+
+        for record in records {
+            let entity = existingByLabyrinthId[record.labyrinthId] ?? {
+                guard let insertedEntity = NSEntityDescription.insertNewObject(
+                    forEntityName: "LabyrinthProgressEntity",
+                    into: context
+                ) as? LabyrinthProgressEntity else {
+                    fatalError("LabyrinthProgressEntity の生成に失敗しました。")
+                }
+                existingByLabyrinthId[record.labyrinthId] = insertedEntity
+                return insertedEntity
+            }()
+
+            entity.labyrinthId = Int64(record.labyrinthId)
+            entity.highestUnlockedDifficultyTitleId = Int64(record.highestUnlockedDifficultyTitleId)
         }
     }
 
@@ -288,6 +323,7 @@ final class GuildCoreDataStore {
         party.partyId = 1
         party.name = PartyRecord.defaultName(for: 1)
         party.selectedLabyrinthId = 0
+        party.selectedDifficultyTitleId = 0
         setMemberCharacterIds([], on: party)
         return try fetchPartyEntities(in: context)
     }
@@ -333,6 +369,14 @@ final class GuildCoreDataStore {
     ) throws -> [PartyEntity] {
         let request = NSFetchRequest<PartyEntity>(entityName: "PartyEntity")
         request.sortDescriptors = [NSSortDescriptor(key: "partyId", ascending: true)]
+        return try context.fetch(request)
+    }
+
+    private func fetchLabyrinthProgressEntities(
+        in context: NSManagedObjectContext
+    ) throws -> [LabyrinthProgressEntity] {
+        let request = NSFetchRequest<LabyrinthProgressEntity>(entityName: "LabyrinthProgressEntity")
+        request.sortDescriptors = [NSSortDescriptor(key: "labyrinthId", ascending: true)]
         return try context.fetch(request)
     }
 
@@ -405,7 +449,15 @@ final class GuildCoreDataStore {
             partyId: Int(entity.partyId),
             name: entity.name ?? PartyRecord.defaultName(for: Int(entity.partyId)),
             memberCharacterIds: memberCharacterIds(from: entity),
-            selectedLabyrinthId: entity.selectedLabyrinthId == 0 ? nil : Int(entity.selectedLabyrinthId)
+            selectedLabyrinthId: entity.selectedLabyrinthId == 0 ? nil : Int(entity.selectedLabyrinthId),
+            selectedDifficultyTitleId: entity.selectedDifficultyTitleId == 0 ? nil : Int(entity.selectedDifficultyTitleId)
+        )
+    }
+
+    private func makeLabyrinthProgressRecord(from entity: LabyrinthProgressEntity) -> LabyrinthProgressRecord {
+        LabyrinthProgressRecord(
+            labyrinthId: Int(entity.labyrinthId),
+            highestUnlockedDifficultyTitleId: Int(entity.highestUnlockedDifficultyTitleId)
         )
     }
 

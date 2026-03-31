@@ -12,12 +12,19 @@ final class ExplorationSessionService {
     func startRun(
         partyId: Int,
         labyrinthId: Int,
+        selectedDifficultyTitleId: Int,
         startedAt: Date,
         maximumLoopCount: Int,
         masterData: MasterData
     ) async throws -> ExplorationRunSnapshot {
         try await startConfiguredRuns(
-            [ConfiguredRunStart(partyId: partyId, labyrinthId: labyrinthId)],
+            [
+                ConfiguredRunStart(
+                    partyId: partyId,
+                    labyrinthId: labyrinthId,
+                    selectedDifficultyTitleId: selectedDifficultyTitleId
+                )
+            ],
             startedAt: startedAt,
             maximumLoopCount: maximumLoopCount,
             masterData: masterData
@@ -51,6 +58,7 @@ final class ExplorationSessionService {
                     partyRunId: plannedSession.partyRunId,
                     partyId: plannedSession.partyId,
                     labyrinthId: plannedSession.labyrinthId,
+                    selectedDifficultyTitleId: plannedSession.selectedDifficultyTitleId,
                     targetFloorNumber: plannedSession.targetFloorNumber,
                     startedAt: plannedSession.startedAt,
                     rootSeed: plannedSession.rootSeed,
@@ -129,7 +137,12 @@ final class ExplorationSessionService {
             throw ExplorationError.invalidLabyrinth(labyrinthId: runStart.labyrinthId)
         }
 
-        let startContext = try await coreDataStore.loadStartContext(partyId: runStart.partyId)
+        let startContext = try await coreDataStore.loadStartContext(
+            partyId: runStart.partyId,
+            labyrinthId: labyrinth.id,
+            requestedDifficultyTitleId: runStart.selectedDifficultyTitleId,
+            masterData: masterData
+        )
         let skillTable = Dictionary(uniqueKeysWithValues: masterData.skills.map { ($0.id, $0) })
         let memberStatuses = try startContext.partyMembers.map { member in
             guard let status = CharacterDerivedStatsCalculator.status(
@@ -171,6 +184,7 @@ final class ExplorationSessionService {
             partyRunId: startContext.nextPartyRunId,
             partyId: runStart.partyId,
             labyrinthId: labyrinth.id,
+            selectedDifficultyTitleId: startContext.selectedDifficultyTitleId,
             targetFloorNumber: labyrinth.floors.last?.floorNumber ?? 1,
             startedAt: startedAt,
             rootSeed: rootSeed,

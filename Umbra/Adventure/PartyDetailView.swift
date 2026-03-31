@@ -100,8 +100,25 @@ struct PartyDetailView: View {
                             .pickerStyle(.navigationLink)
                             .disabled(isRunLocked)
 
+                            if selectedLabyrinth != nil {
+                                Picker("探索難易度", selection: selectedDifficultyTitleBinding) {
+                                    ForEach(availableDifficultyTitles) { title in
+                                        Text(
+                                            masterData.explorationLabyrinthDisplayName(
+                                                labyrinthName: selectedLabyrinth?.name ?? "",
+                                                difficultyTitleId: title.id
+                                            )
+                                        )
+                                            .tag(title.id)
+                                    }
+                                }
+                                .pickerStyle(.menu)
+                                .tint(.secondary)
+                                .disabled(isRunLocked)
+                            }
+
                             if isRunLocked {
-                                Text("探索中は出撃先を変更できません。")
+                                Text("探索中は出撃先と探索難易度を変更できません。")
                                     .font(.footnote)
                                     .foregroundStyle(.secondary)
                             }
@@ -143,8 +160,41 @@ struct PartyDetailView: View {
     private var activeRun: RunSessionRecord? {
         explorationStore.status(for: partyId).activeRun
     }
+
     private var isRunLocked: Bool {
         activeRun != nil
+    }
+
+    private var selectedLabyrinth: MasterData.Labyrinth? {
+        guard let labyrinthId = party?.selectedLabyrinthId else {
+            return nil
+        }
+
+        return masterData.labyrinths.first(where: { $0.id == labyrinthId })
+    }
+
+    private var highestUnlockedDifficultyTitleId: Int? {
+        guard let labyrinthId = selectedLabyrinth?.id else {
+            return nil
+        }
+
+        return rosterStore.labyrinthProgressByLabyrinthId[labyrinthId]?.highestUnlockedDifficultyTitleId
+    }
+
+    private var availableDifficultyTitles: [MasterData.Title] {
+        guard selectedLabyrinth != nil else {
+            return []
+        }
+
+        let titles = masterData.explorationDifficultyTitles
+        let highestUnlockedTitleId = highestUnlockedDifficultyTitleId
+            ?? masterData.defaultExplorationDifficultyTitle?.id
+        guard let highestUnlockedTitleId,
+              let unlockedIndex = titles.firstIndex(where: { $0.id == highestUnlockedTitleId }) else {
+            return titles
+        }
+
+        return Array(titles.prefix(unlockedIndex + 1))
     }
 
     private var selectedLabyrinthBinding: Binding<Int?> {
@@ -156,9 +206,47 @@ struct PartyDetailView: View {
                 guard let party else {
                     return
                 }
+                let resolvedDifficultyTitleId: Int?
+                if let selectedLabyrinthId {
+                    let highestUnlockedTitleId = rosterStore.labyrinthProgressByLabyrinthId[selectedLabyrinthId]?
+                        .highestUnlockedDifficultyTitleId
+                    resolvedDifficultyTitleId = masterData.resolvedExplorationDifficultyTitleId(
+                        requestedTitleId: party.selectedDifficultyTitleId,
+                        highestUnlockedTitleId: highestUnlockedTitleId
+                    )
+                } else {
+                    resolvedDifficultyTitleId = nil
+                }
                 partyStore.setSelectedLabyrinth(
                     partyId: party.partyId,
-                    selectedLabyrinthId: selectedLabyrinthId
+                    selectedLabyrinthId: selectedLabyrinthId,
+                    selectedDifficultyTitleId: resolvedDifficultyTitleId
+                )
+            }
+        )
+    }
+
+    private var selectedDifficultyTitleBinding: Binding<Int> {
+        Binding(
+            get: {
+                guard let party else {
+                    return masterData.defaultExplorationDifficultyTitle?.id ?? 0
+                }
+
+                return masterData.resolvedExplorationDifficultyTitleId(
+                    requestedTitleId: party.selectedDifficultyTitleId,
+                    highestUnlockedTitleId: highestUnlockedDifficultyTitleId
+                )
+            },
+            set: { selectedDifficultyTitleId in
+                guard let party else {
+                    return
+                }
+
+                partyStore.setSelectedLabyrinth(
+                    partyId: party.partyId,
+                    selectedLabyrinthId: party.selectedLabyrinthId,
+                    selectedDifficultyTitleId: selectedDifficultyTitleId
                 )
             }
         )

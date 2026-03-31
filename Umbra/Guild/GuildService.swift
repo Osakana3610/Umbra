@@ -225,7 +225,8 @@ final class GuildService {
                 partyId: nextPartyId,
                 name: PartyRecord.defaultName(for: nextPartyId),
                 memberCharacterIds: [],
-                selectedLabyrinthId: nil
+                selectedLabyrinthId: nil,
+                selectedDifficultyTitleId: nil
             )
         )
         roster.playerState.gold -= PartyRecord.unlockCost
@@ -249,12 +250,14 @@ final class GuildService {
 
     func setSelectedLabyrinth(
         partyId: Int,
-        selectedLabyrinthId: Int?
+        selectedLabyrinthId: Int?,
+        selectedDifficultyTitleId: Int?
     ) async throws -> [PartyRecord] {
         try await explorationCoreDataStore.validatePartyMutationIsAllowed(partyId: partyId)
         var parties = try coreDataStore.loadParties()
         let index = try partyIndex(for: partyId, in: parties)
         parties[index].selectedLabyrinthId = selectedLabyrinthId
+        parties[index].selectedDifficultyTitleId = selectedDifficultyTitleId
         try coreDataStore.saveParties(parties)
         return parties
     }

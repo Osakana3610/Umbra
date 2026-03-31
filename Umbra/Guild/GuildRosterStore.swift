@@ -13,6 +13,8 @@ final class GuildRosterStore {
     private(set) var playerState: PlayerState?
     private(set) var characters: [CharacterRecord]
     private(set) var charactersById: [Int: CharacterRecord]
+    private(set) var labyrinthProgressRecords: [LabyrinthProgressRecord]
+    private(set) var labyrinthProgressByLabyrinthId: [Int: LabyrinthProgressRecord]
     private(set) var isMutating = false
     private(set) var lastOperationError: String?
     private(set) var lastHireMessage: String?
@@ -28,6 +30,8 @@ final class GuildRosterStore {
         playerState = nil
         characters = []
         charactersById = [:]
+        labyrinthProgressRecords = []
+        labyrinthProgressByLabyrinthId = [:]
     }
 
     func loadIfNeeded() {
@@ -48,13 +52,14 @@ final class GuildRosterStore {
         playerState = nil
         characters = []
         charactersById = [:]
+        labyrinthProgressRecords = []
+        labyrinthProgressByLabyrinthId = [:]
         lastOperationError = nil
         lastHireMessage = nil
 
         do {
             let snapshot = try coreDataStore.loadRosterSnapshot()
-            playerState = snapshot.playerState
-            applyCharacters(snapshot.characters)
+            applySnapshot(snapshot)
             phase = .loaded
         } catch {
             phase = .failed(Self.errorMessage(for: error))
@@ -69,8 +74,7 @@ final class GuildRosterStore {
 
         do {
             let snapshot = try coreDataStore.loadFreshRosterSnapshot()
-            playerState = snapshot.playerState
-            applyCharacters(snapshot.characters)
+            applySnapshot(snapshot)
             lastOperationError = nil
         } catch {
             lastOperationError = Self.errorMessage(for: error)
@@ -124,8 +128,7 @@ final class GuildRosterStore {
                 characterId: characterId,
                 masterData: masterData
             )
-            playerState = snapshot.playerState
-            applyCharacters(snapshot.characters)
+            applySnapshot(snapshot)
         } catch {
             lastOperationError = Self.errorMessage(for: error)
         }
@@ -142,8 +145,7 @@ final class GuildRosterStore {
 
         do {
             let snapshot = try service.reviveAllDefeated(masterData: masterData)
-            playerState = snapshot.playerState
-            applyCharacters(snapshot.characters)
+            applySnapshot(snapshot)
         } catch {
             lastOperationError = Self.errorMessage(for: error)
         }
@@ -162,8 +164,7 @@ final class GuildRosterStore {
 
         do {
             let snapshot = try service.setAutoReviveDefeatedCharactersEnabled(isEnabled)
-            playerState = snapshot.playerState
-            applyCharacters(snapshot.characters)
+            applySnapshot(snapshot)
         } catch {
             lastOperationError = Self.errorMessage(for: error)
         }
@@ -238,6 +239,15 @@ final class GuildRosterStore {
     private func applyCharacters(_ characters: [CharacterRecord]) {
         self.characters = characters
         charactersById = Dictionary(uniqueKeysWithValues: characters.map { ($0.characterId, $0) })
+    }
+
+    private func applySnapshot(_ snapshot: GuildRosterSnapshot) {
+        playerState = snapshot.playerState
+        applyCharacters(snapshot.characters)
+        labyrinthProgressRecords = snapshot.labyrinthProgressRecords
+        labyrinthProgressByLabyrinthId = Dictionary(
+            uniqueKeysWithValues: snapshot.labyrinthProgressRecords.map { ($0.labyrinthId, $0) }
+        )
     }
 
     private static func errorMessage(for error: Error) -> String {

@@ -6,6 +6,7 @@ import Observation
 struct ConfiguredRunStart: Sendable {
     let partyId: Int
     let labyrinthId: Int
+    let selectedDifficultyTitleId: Int
 }
 
 @MainActor
@@ -90,6 +91,7 @@ final class ExplorationStore {
     func startRun(
         partyId: Int,
         labyrinthId: Int,
+        selectedDifficultyTitleId: Int,
         startedAt: Date,
         masterData: MasterData
     ) async {
@@ -97,6 +99,7 @@ final class ExplorationStore {
             try await service.startRun(
                 partyId: partyId,
                 labyrinthId: labyrinthId,
+                selectedDifficultyTitleId: selectedDifficultyTitleId,
                 startedAt: startedAt,
                 maximumLoopCount: 1,
                 masterData: masterData
@@ -176,6 +179,7 @@ final class ExplorationStore {
 
         do {
             applySnapshot(try await operation(), masterData: masterData)
+            rosterStore?.refreshFromPersistence()
         } catch {
             lastOperationError = Self.errorMessage(for: error)
         }
