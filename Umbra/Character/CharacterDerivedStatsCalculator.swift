@@ -272,6 +272,14 @@ nonisolated enum CharacterDerivedStatsCalculator {
                 skillAdjustments: skillAdjustments
             )
         )
+        let spellDamageMultipliersBySpellID = spellSpecificBattleDerivedValues(
+            target: "spellDamageMultiplier",
+            skillAdjustments: skillAdjustments
+        )
+        let spellResistanceMultipliersBySpellID = spellSpecificBattleDerivedValues(
+            target: "magicResistanceMultiplier",
+            skillAdjustments: skillAdjustments
+        )
 
         return CharacterStatus(
             baseStats: baseStats,
@@ -283,7 +291,9 @@ nonisolated enum CharacterDerivedStatsCalculator {
             interruptKinds: skillAdjustments.interruptKinds.sorted { $0.rawValue < $1.rawValue },
             canUseBreath: skillAdjustments.canUseBreath,
             isUnarmed: isUnarmed,
-            weaponRangeClass: weaponRangeClass
+            weaponRangeClass: weaponRangeClass,
+            spellDamageMultipliersBySpellID: spellDamageMultipliersBySpellID,
+            spellResistanceMultipliersBySpellID: spellResistanceMultipliersBySpellID
         )
     }
 
@@ -395,6 +405,21 @@ nonisolated enum CharacterDerivedStatsCalculator {
         return max(rawValue, 0.0)
     }
 
+    private static func spellSpecificBattleDerivedValues(
+        target: String,
+        skillAdjustments: SkillAdjustments
+    ) -> [Int: Double] {
+        let pctAdds = skillAdjustments.spellSpecificBattleDerivedPctAdds[target, default: [:]]
+        let multipliers = skillAdjustments.spellSpecificBattleDerivedMultipliers[target, default: [:]]
+        let spellIDs = Set(pctAdds.keys).union(multipliers.keys)
+
+        return spellIDs.reduce(into: [:]) { partialResult, spellID in
+            let rawValue = (1.0 + pctAdds[spellID, default: 0.0])
+                * multipliers[spellID, default: 1.0]
+            partialResult[spellID] = max(rawValue, 0.0)
+        }
+    }
+
     private static func average(_ lhs: Int, _ rhs: Int) -> Double {
         Double(lhs + rhs) / 2.0
     }
@@ -405,6 +430,8 @@ nonisolated private struct SkillAdjustments {
     var battleStatPctAdds: [String: Double] = [:]
     var battleDerivedPctAdds: [String: Double] = [:]
     var battleDerivedMultipliers: [String: Double] = [:]
+    var spellSpecificBattleDerivedPctAdds: [String: [Int: Double]] = [:]
+    var spellSpecificBattleDerivedMultipliers: [String: [Int: Double]] = [:]
     var grantedSpellIds = Set<Int>()
     var revokedSpellIds = Set<Int>()
     var interruptKinds = Set<InterruptKind>()
@@ -432,6 +459,20 @@ nonisolated private struct SkillAdjustments {
             guard let target = effect.target,
                   let operation = effect.operation,
                   let value = effect.value else {
+                return
+            }
+
+            if !effect.spellIds.isEmpty {
+                for spellID in effect.spellIds {
+                    switch operation {
+                    case "pctAdd":
+                        spellSpecificBattleDerivedPctAdds[target, default: [:]][spellID, default: 0.0] += value
+                    case "mul":
+                        spellSpecificBattleDerivedMultipliers[target, default: [:]][spellID, default: 1.0] *= value
+                    default:
+                        return
+                    }
+                }
                 return
             }
 

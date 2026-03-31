@@ -482,6 +482,16 @@ def build_spells(records: list[dict]) -> list[dict]:
         if effect_target is not None and effect_target not in VALID_EFFECT_TARGETS:
             raise ValueError(f"Unsupported effectTarget '{effect_target}' in spell[{record['id']}]")
 
+        status_id = record.get("statusId")
+        if status_id is not None and int(status_id) <= 0:
+            raise ValueError(f"Unsupported statusId '{status_id}' in spell[{record['id']}]")
+
+        status_chance = record.get("statusChance")
+        if status_chance is not None:
+            status_chance = float(status_chance)
+            if not 0.0 <= status_chance <= 1.0:
+                raise ValueError(f"Unsupported statusChance '{status_chance}' in spell[{record['id']}]")
+
         spells.append(
             {
                 "id": index,
@@ -492,6 +502,8 @@ def build_spells(records: list[dict]) -> list[dict]:
                 "targetCount": int(record["targetCount"]),
                 "multiplier": float(record["multiplier"]) if "multiplier" in record else None,
                 "effectTarget": effect_target,
+                "statusId": int(status_id) if status_id is not None else None,
+                "statusChance": status_chance,
             }
         )
     return spells

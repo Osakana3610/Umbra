@@ -10,9 +10,19 @@ nonisolated struct CharacterStatus: Equatable, Sendable {
     let canUseBreath: Bool
     let isUnarmed: Bool
     let weaponRangeClass: ItemRangeClass
+    let spellDamageMultipliersBySpellID: [Int: Double]
+    let spellResistanceMultipliersBySpellID: [Int: Double]
 
     var maxHP: Int {
         battleStats.maxHP
+    }
+
+    func spellDamageMultiplier(for spellID: Int) -> Double {
+        spellDamageMultipliersBySpellID[spellID] ?? 1.0
+    }
+
+    func magicResistanceMultiplier(for spellID: Int) -> Double {
+        spellResistanceMultipliersBySpellID[spellID] ?? 1.0
     }
 }
 

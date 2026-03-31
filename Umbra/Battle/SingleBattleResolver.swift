@@ -351,6 +351,13 @@ nonisolated private struct BattleResolutionEngine {
         let actionFlags = criticalTriggered ? [BattleActionFlag.critical] : []
 
         if hitMultiplier == 0 {
+            let generatedInterrupts = queuedAction.canTriggerInterrupts
+                ? interruptActions(
+                    after: queuedAction,
+                    targetIndex: targetIndex,
+                    targetWasDefeated: false
+                )
+                : []
             return ResolvedAction(
                 record: BattleActionRecord(
                     actorId: actor.id,
@@ -368,7 +375,7 @@ nonisolated private struct BattleResolutionEngine {
                         )
                     ]
                 ),
-                generatedInterrupts: []
+                generatedInterrupts: generatedInterrupts
             )
         }
 
@@ -376,6 +383,7 @@ nonisolated private struct BattleResolutionEngine {
         let guarded = target.isDefending
         var multiplier = actor.status.battleDerivedStats.physicalDamageMultiplier
         multiplier *= formationMultiplier(for: actor)
+        multiplier *= weaponDamageMultiplier(for: actor)
         multiplier *= queuedAction.attackPowerMultiplier
         if actor.attackBuffActive {
             multiplier *= 1.5
@@ -574,11 +582,12 @@ nonisolated private struct BattleResolutionEngine {
             }
 
             let actor = combatants[actorIndex]
-            let results = targetIndices.enumerated().map { offset, targetIndex in
+            let results = targetIndices.enumerated().flatMap { offset, targetIndex in
                 let target = combatants[targetIndex]
                 let guarded = target.isDefending
                 let multiplier = actor.status.battleDerivedStats.magicDamageMultiplier
                     * actor.status.battleDerivedStats.spellDamageMultiplier
+                    * actor.status.spellDamageMultiplier(for: spell.id)
                     * (actor.magicBuffActive ? 1.5 : 1.0)
                     * (spell.multiplier ?? 1.0)
                 let damage = damageValue(
@@ -586,16 +595,27 @@ nonisolated private struct BattleResolutionEngine {
                         max(actor.status.battleStats.magic - target.status.battleStats.magicDefense, 0)
                     ),
                     multiplier: multiplier,
-                    resistance: target.status.battleDerivedStats.magicResistanceMultiplier,
+                    resistance: target.status.battleDerivedStats.magicResistanceMultiplier
+                        * target.status.magicResistanceMultiplier(for: spell.id),
                     barrierMultiplier: target.magicBarrierActive ? 0.5 : 1.0,
                     guarded: guarded
                 )
-                return applyDamage(
+                let damageResult = applyDamage(
                     damage,
                     to: targetIndex,
                     guarded: guarded,
                     purposeSubaction: offset + 1
                 )
+                var targetResults = [damageResult]
+                if let ailmentResult = applySpellAilmentIfNeeded(
+                    spell,
+                    from: actorIndex,
+                    to: targetIndex,
+                    subactionNumber: offset + 1
+                ) {
+                    targetResults.append(ailmentResult)
+                }
+                return targetResults
             }
 
             return ResolvedAction(
@@ -1078,6 +1098,41 @@ nonisolated private struct BattleResolutionEngine {
         )
     }
 
+    private mutating func applySpellAilmentIfNeeded(
+        _ spell: MasterData.Spell,
+        from actorIndex: Int,
+        to targetIndex: Int,
+        subactionNumber: Int
+    ) -> BattleTargetResult? {
+        guard let statusId = spell.statusId,
+              let statusChance = spell.statusChance,
+              let ailment = BattleAilment(rawValue: statusId),
+              combatants[targetIndex].isAlive,
+              !combatants[targetIndex].ailments.contains(ailment) else {
+            return nil
+        }
+
+        let roll = uniform(
+            turn: currentTurn,
+            action: currentActionNumber,
+            subaction: subactionNumber,
+            roll: 6,
+            purpose: "status.apply.\(combatants[actorIndex].id.rawValue).spell.\(spell.id).\(combatants[targetIndex].id.rawValue)"
+        )
+        guard roll < statusChance else {
+            return nil
+        }
+
+        combatants[targetIndex].ailments.insert(ailment)
+        return BattleTargetResult(
+            targetId: combatants[targetIndex].id,
+            resultKind: .modifierApplied,
+            value: nil,
+            statusId: ailment.rawValue,
+            flags: []
+        )
+    }
+
     private mutating func removeAilment(
         from targetIndex: Int,
         actionNumber: Int
@@ -1116,6 +1171,19 @@ nonisolated private struct BattleResolutionEngine {
             case .back:
                 0.70
             }
+        }
+    }
+
+    private func weaponDamageMultiplier(for combatant: RuntimeCombatant) -> Double {
+        if combatant.status.isUnarmed {
+            return combatant.status.battleDerivedStats.meleeDamageMultiplier * 1.5
+        }
+
+        switch combatant.status.weaponRangeClass {
+        case .ranged:
+            return combatant.status.battleDerivedStats.rangedDamageMultiplier
+        case .none, .melee:
+            return combatant.status.battleDerivedStats.meleeDamageMultiplier
         }
     }
 

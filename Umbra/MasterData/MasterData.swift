@@ -142,6 +142,32 @@ extension MasterData {
         let targetCount: Int
         let multiplier: Double?
         let effectTarget: String?
+        let statusId: Int?
+        let statusChance: Double?
+
+        init(
+            id: Int,
+            name: String,
+            category: SpellCategory,
+            kind: SpellKind,
+            targetSide: TargetSide,
+            targetCount: Int,
+            multiplier: Double? = nil,
+            effectTarget: String? = nil,
+            statusId: Int? = nil,
+            statusChance: Double? = nil
+        ) {
+            self.id = id
+            self.name = name
+            self.category = category
+            self.kind = kind
+            self.targetSide = targetSide
+            self.targetCount = targetCount
+            self.multiplier = multiplier
+            self.effectTarget = effectTarget
+            self.statusId = statusId
+            self.statusChance = statusChance
+        }
     }
 
     nonisolated struct RecruitNames: Decodable, Sendable {

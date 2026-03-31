@@ -161,9 +161,17 @@ struct RunSessionBattleLogDetailView: View {
         case .miss:
             baseText = "\(targetName)に命中せず"
         case .modifierApplied:
-            baseText = "\(targetName)へ効果を付与"
+            if let ailmentName = ailmentName(for: result.statusId) {
+                baseText = "\(targetName)を\(ailmentName)状態にした"
+            } else {
+                baseText = "\(targetName)へ効果を付与"
+            }
         case .ailmentRemoved:
-            baseText = "\(targetName)の状態異常を回復"
+            if let ailmentName = ailmentName(for: result.statusId) {
+                baseText = "\(targetName)の\(ailmentName)を回復"
+            } else {
+                baseText = "\(targetName)の状態異常を回復"
+            }
         }
 
         let flags = result.flags.map(flagText(for:)).joined(separator: " / ")
@@ -212,6 +220,17 @@ struct RunSessionBattleLogDetailView: View {
             "蘇生"
         case .guarded:
             "防御中"
+        }
+    }
+
+    private func ailmentName(for statusID: Int?) -> String? {
+        switch statusID {
+        case BattleAilment.sleep.rawValue:
+            "眠り"
+        case nil:
+            nil
+        case .some:
+            "状態異常"
         }
     }
 
