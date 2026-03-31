@@ -5,7 +5,7 @@ import SwiftUI
 struct PlayerStatusView: View {
     let catTicketText: String
     let premiumTimeText: String
-    let gold: Int
+    let rosterStore: GuildRosterStore
     let showsChrome: Bool
 
     var body: some View {
@@ -46,7 +46,7 @@ struct PlayerStatusView: View {
 
                 Spacer(minLength: 0)
 
-                Text("\(gold)G")
+                Text("\(rosterStore.playerState?.gold ?? 0)G")
             }
         }
         .font(.footnote)

@@ -44,7 +44,7 @@ struct RootTabView: View {
                 )
             }
             .tabItem {
-                Label("冒険", systemImage: "figure.walk")
+                Label("冒険", systemImage: "map")
             }
 
             NavigationStack {
@@ -60,10 +60,11 @@ struct RootTabView: View {
             }
 
             NavigationStack {
-                DebugMenuView(
+                OtherMenuView(
                     masterData: masterData,
                     guildService: guildService,
-                    equipmentStore: equipmentStore
+                    equipmentStore: equipmentStore,
+                    explorationStore: explorationStore
                 )
                 .navigationTitle("その他")
             }
@@ -76,11 +77,11 @@ struct RootTabView: View {
             if #available(iOS 26.0, *) {
                 tabView
                     .tabViewBottomAccessory {
-                        if let playerState = rosterStore.playerState {
+                        if rosterStore.playerState != nil {
                             PlayerStatusView(
                                 catTicketText: "キャット・チケット 0枚",
                                 premiumTimeText: "プレミアム・タイム なし",
-                                gold: playerState.gold,
+                                rosterStore: rosterStore,
                                 showsChrome: false
                             )
                         }
@@ -88,11 +89,11 @@ struct RootTabView: View {
             } else {
                 tabView
                     .safeAreaInset(edge: .bottom, spacing: 0) {
-                        if let playerState = rosterStore.playerState {
+                        if rosterStore.playerState != nil {
                             PlayerStatusView(
                                 catTicketText: "キャット・チケット 0枚",
                                 premiumTimeText: "プレミアム・タイム なし",
-                                gold: playerState.gold,
+                                rosterStore: rosterStore,
                                 showsChrome: true
                             )
                             .padding(.bottom, Self.statusBarBottomInset)

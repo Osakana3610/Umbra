@@ -14,6 +14,7 @@ final class ExplorationStore {
     private let coreDataStore: ExplorationCoreDataStore
     private let service: ExplorationSessionService
     private let itemDropNotificationService: ItemDropNotificationService
+    private let rosterStore: GuildRosterStore?
 
     private(set) var isLoaded = false
     private(set) var isMutating = false
@@ -21,13 +22,16 @@ final class ExplorationStore {
     private(set) var runs: [RunSessionRecord] = []
     private var isRefreshingProgress = false
     private var progressRefreshTask: Task<Void, Never>?
+    private var retentionPruneTask: Task<Void, Never>?
 
     init(
         coreDataStore: ExplorationCoreDataStore,
-        itemDropNotificationService: ItemDropNotificationService
+        itemDropNotificationService: ItemDropNotificationService,
+        rosterStore: GuildRosterStore? = nil
     ) {
         self.coreDataStore = coreDataStore
         self.itemDropNotificationService = itemDropNotificationService
+        self.rosterStore = rosterStore
         service = ExplorationSessionService(coreDataStore: coreDataStore)
     }
 
@@ -48,6 +52,7 @@ final class ExplorationStore {
                 try await coreDataStore.loadSnapshot(),
                 masterData: masterData
             )
+            scheduleCompletedRunRetentionPrune(using: masterData)
         } catch {
             lastOperationError = Self.errorMessage(for: error)
         }
@@ -71,6 +76,9 @@ final class ExplorationStore {
         do {
             let snapshot = try await service.refreshRuns(at: currentDate, masterData: masterData)
             applySnapshot(snapshot, masterData: masterData)
+            if snapshot.didApplyRewards {
+                rosterStore?.refreshFromPersistence()
+            }
             itemDropNotificationService.publish(batches: snapshot.dropNotificationBatches)
             return (snapshot.didApplyRewards, snapshot.appliedInventoryCounts)
         } catch {
@@ -142,6 +150,14 @@ final class ExplorationStore {
         status(for: partyId).activeRun != nil
     }
 
+    func enforceCompletedRunRetention(masterData: MasterData) {
+        guard isLoaded else {
+            return
+        }
+
+        scheduleCompletedRunRetentionPrune(using: masterData)
+    }
+
     private func mutate(
         masterData: MasterData,
         _ operation: () async throws -> ExplorationRunSnapshot
@@ -194,6 +210,30 @@ final class ExplorationStore {
                 at: Date(),
                 masterData: masterData
             )
+        }
+    }
+
+    private func scheduleCompletedRunRetentionPrune(using masterData: MasterData) {
+        retentionPruneTask?.cancel()
+        retentionPruneTask = Task(priority: .utility) { [weak self] in
+            guard let self else {
+                return
+            }
+
+            do {
+                guard try await self.coreDataStore.pruneCompletedRunsExceedingRetentionLimit() else {
+                    return
+                }
+
+                let snapshot = try await self.coreDataStore.loadSnapshot()
+                guard !Task.isCancelled else {
+                    return
+                }
+
+                self.applySnapshot(snapshot, masterData: masterData)
+            } catch {
+                return
+            }
         }
     }
 

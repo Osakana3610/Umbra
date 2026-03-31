@@ -64,14 +64,16 @@ struct ContentView: View {
     )
     let masterDataStore = MasterDataStore(phase: .loading)
     let itemDropNotificationService = ItemDropNotificationService(masterDataStore: masterDataStore)
+    let rosterStore = GuildRosterStore(coreDataStore: guildCoreDataStore, service: guildService, phase: .loading)
     return ContentView(
         masterDataStore: masterDataStore,
-        rosterStore: GuildRosterStore(coreDataStore: guildCoreDataStore, service: guildService, phase: .loading),
+        rosterStore: rosterStore,
         partyStore: PartyStore(coreDataStore: guildCoreDataStore, service: guildService, phase: .loading),
         equipmentStore: EquipmentInventoryStore(coreDataStore: guildCoreDataStore, service: guildService),
         explorationStore: ExplorationStore(
             coreDataStore: ExplorationCoreDataStore(container: persistenceController.container),
-            itemDropNotificationService: itemDropNotificationService
+            itemDropNotificationService: itemDropNotificationService,
+            rosterStore: rosterStore
         ),
         itemDropNotificationService: itemDropNotificationService,
         guildService: guildService

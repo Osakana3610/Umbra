@@ -76,14 +76,6 @@ struct GuildHomeView: View {
             }
         }
         .navigationTitle("ギルド")
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button("一括蘇生") {
-                    rosterStore.reviveAllDefeated(masterData: masterData)
-                }
-                .disabled(defeatedCharacters.isEmpty || rosterStore.isMutating)
-            }
-        }
     }
 
     private var defeatedCharacters: [CharacterRecord] {

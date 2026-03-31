@@ -76,6 +76,14 @@ struct ReviveMenuView: View {
             }
         }
         .navigationTitle("蘇生メニュー")
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button("一括蘇生") {
+                    rosterStore.reviveAllDefeated(masterData: masterData)
+                }
+                .disabled(defeatedCharacters.isEmpty || rosterStore.isMutating)
+            }
+        }
     }
 
     private var defeatedCharacters: [CharacterRecord] {

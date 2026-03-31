@@ -26,6 +26,17 @@ final class GuildCoreDataStore {
         )
     }
 
+    func loadFreshRosterSnapshot() throws -> GuildRosterSnapshot {
+        let context = container.viewContext
+        context.reset()
+        let playerState = try fetchOrCreatePlayerState(in: context)
+        try saveIfNeeded(context)
+        return try GuildRosterSnapshot(
+            playerState: makePlayerState(from: playerState),
+            characters: fetchCharacters(in: context).map(makeCharacterRecord)
+        )
+    }
+
     func loadParties() throws -> [PartyRecord] {
         let context = container.viewContext
         _ = try fetchOrCreateInitialParties(in: context)

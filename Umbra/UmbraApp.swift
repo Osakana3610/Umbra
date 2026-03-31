@@ -47,7 +47,8 @@ struct UmbraApp: App {
         _explorationStore = State(
             initialValue: ExplorationStore(
                 coreDataStore: explorationCoreDataStore,
-                itemDropNotificationService: itemDropNotificationService
+                itemDropNotificationService: itemDropNotificationService,
+                rosterStore: _rosterStore.wrappedValue
             )
         )
         _itemDropNotificationService = State(initialValue: itemDropNotificationService)

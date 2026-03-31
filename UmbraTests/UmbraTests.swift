@@ -381,9 +381,15 @@ struct UmbraTests {
         )
         let masterDataStore = MasterDataStore()
         let itemDropNotificationService = ItemDropNotificationService(masterDataStore: masterDataStore)
+        let rosterStore = GuildRosterStore(
+            coreDataStore: guildCoreDataStore,
+            service: guildService,
+            phase: .loaded
+        )
         let explorationStore = ExplorationStore(
             coreDataStore: ExplorationCoreDataStore(container: container),
-            itemDropNotificationService: itemDropNotificationService
+            itemDropNotificationService: itemDropNotificationService,
+            rosterStore: rosterStore
         )
         let masterData = try loadGeneratedMasterData()
 
@@ -423,6 +429,66 @@ struct UmbraTests {
         let runs = explorationStore.runs.sorted { $0.partyId < $1.partyId }
         #expect(runs.count == 2)
         #expect(runs.allSatisfy { $0.startedAt == startedAt })
+    }
+
+    @Test
+    func explorationProgressRefreshesRosterStoreGold() async throws {
+        let container = PersistenceController(inMemory: true).container
+        let guildCoreDataStore = GuildCoreDataStore(container: container)
+        let explorationCoreDataStore = ExplorationCoreDataStore(container: container)
+        let guildService = GuildService(
+            coreDataStore: guildCoreDataStore,
+            explorationCoreDataStore: explorationCoreDataStore
+        )
+        let masterDataStore = MasterDataStore()
+        let itemDropNotificationService = ItemDropNotificationService(masterDataStore: masterDataStore)
+        let rosterStore = GuildRosterStore(
+            coreDataStore: guildCoreDataStore,
+            service: guildService
+        )
+        let explorationStore = ExplorationStore(
+            coreDataStore: explorationCoreDataStore,
+            itemDropNotificationService: itemDropNotificationService,
+            rosterStore: rosterStore
+        )
+        let masterData = try loadGeneratedMasterData()
+
+        let character = try guildService.hireCharacter(
+            raceId: try #require(masterData.races.first?.id),
+            jobId: try #require(masterData.jobs.first?.id),
+            aptitudeId: try #require(masterData.aptitudes.first?.id),
+            masterData: masterData
+        ).character
+        _ = try await guildService.addCharacter(characterId: character.characterId, toParty: 1)
+        try promoteCharacter(
+            characterId: character.characterId,
+            level: 40,
+            in: container
+        )
+
+        rosterStore.reload()
+        let startingGold = try #require(rosterStore.playerState?.gold)
+        let startedAt = Date(timeIntervalSinceReferenceDate: 300_000)
+
+        await explorationStore.startRun(
+            partyId: 1,
+            labyrinthId: try #require(masterData.labyrinths.first(where: { $0.name == "デバッグの遺跡" })?.id),
+            startedAt: startedAt,
+            masterData: masterData
+        )
+
+        let result = await explorationStore.refreshProgress(
+            at: startedAt.addingTimeInterval(10),
+            masterData: masterData
+        )
+        let completionGold = try #require(explorationStore.runs.first?.completion?.gold)
+
+        #expect(result.didApplyRewards)
+        #expect(completionGold == 40)
+        #expect(try guildCoreDataStore.loadRosterSnapshot().playerState.gold == startingGold + completionGold)
+        #expect(try guildCoreDataStore.loadFreshRosterSnapshot().playerState.gold == startingGold + completionGold)
+        rosterStore.refreshFromPersistence()
+        #expect(rosterStore.playerState?.gold == startingGold + completionGold)
     }
 
     @Test
@@ -736,6 +802,47 @@ struct UmbraTests {
         #expect(updatedCharacter.currentHP > 0)
     }
 
+    @Test
+    func completedExplorationLogsArePrunedByRetentionCount() async throws {
+        let previousValue = UserDefaults.standard.object(forKey: ExplorationLogRetentionLimit.userDefaultsKey)
+        defer {
+            if let previousValue {
+                UserDefaults.standard.set(previousValue, forKey: ExplorationLogRetentionLimit.userDefaultsKey)
+            } else {
+                UserDefaults.standard.removeObject(forKey: ExplorationLogRetentionLimit.userDefaultsKey)
+            }
+        }
+
+        UserDefaults.standard.set(2, forKey: ExplorationLogRetentionLimit.userDefaultsKey)
+
+        let explorationCoreDataStore = ExplorationCoreDataStore(
+            container: PersistenceController(inMemory: true).container
+        )
+        try await explorationCoreDataStore.insertRun(
+            makeCompletedRunRecord(
+                partyRunId: 1,
+                startedAt: Date(timeIntervalSinceReferenceDate: 1_000)
+            )
+        )
+        try await explorationCoreDataStore.insertRun(
+            makeCompletedRunRecord(
+                partyRunId: 2,
+                startedAt: Date(timeIntervalSinceReferenceDate: 2_000)
+            )
+        )
+        try await explorationCoreDataStore.insertRun(
+            makeCompletedRunRecord(
+                partyRunId: 3,
+                startedAt: Date(timeIntervalSinceReferenceDate: 3_000)
+            )
+        )
+
+        #expect(try await explorationCoreDataStore.pruneCompletedRunsExceedingRetentionLimit())
+        #expect(try await explorationCoreDataStore.loadRunDetail(partyId: 1, partyRunId: 1) == nil)
+        #expect(try await explorationCoreDataStore.loadRunDetail(partyId: 1, partyRunId: 2) != nil)
+        #expect(try await explorationCoreDataStore.loadRunDetail(partyId: 1, partyRunId: 3) != nil)
+    }
+
 }
 
 @MainActor
@@ -821,6 +928,45 @@ private func spellIds(named names: [String], in masterData: MasterData) throws -
     try names.map { name in
         try #require(masterData.spells.first(where: { $0.name == name })?.id)
     }
+}
+
+private func makeCompletedRunRecord(
+    partyRunId: Int,
+    startedAt: Date
+) -> RunSessionRecord {
+    RunSessionRecord(
+        partyRunId: partyRunId,
+        partyId: 1,
+        labyrinthId: 1,
+        targetFloorNumber: 1,
+        startedAt: startedAt,
+        rootSeed: UInt64(partyRunId),
+        maximumLoopCount: 1,
+        memberSnapshots: [],
+        memberCharacterIds: [],
+        completedBattleCount: 0,
+        currentPartyHPs: [],
+        memberExperienceMultipliers: [],
+        goldMultiplier: 1,
+        rareDropMultiplier: 1,
+        titleDropMultiplier: 1,
+        partyAverageLuck: 0,
+        latestBattleFloorNumber: nil,
+        latestBattleNumber: nil,
+        latestBattleOutcome: nil,
+        battleLogs: [],
+        goldBuffer: 0,
+        experienceRewards: [],
+        dropRewards: [],
+        completion: RunCompletionRecord(
+            completedAt: startedAt.addingTimeInterval(60),
+            reason: .cleared,
+            completedLoopCount: 1,
+            gold: 0,
+            experienceRewards: [],
+            dropRewards: []
+        )
+    )
 }
 
 private func debugItemGenerationMasterData() -> MasterData {

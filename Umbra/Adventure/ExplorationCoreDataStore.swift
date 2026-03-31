@@ -103,6 +103,12 @@ actor ExplorationCoreDataStore {
         }
     }
 
+    func pruneCompletedRunsExceedingRetentionLimit() async throws -> Bool {
+        try await perform { context in
+            try ExplorationCoreDataBridge.pruneCompletedRunsExceedingRetentionLimit(in: context)
+        }
+    }
+
     func loadProgressContexts() async throws -> [RunSessionRecord] {
         try await perform { context in
             let runEntities = try ExplorationCoreDataBridge.fetchRunEntities(in: context)
@@ -257,6 +263,31 @@ nonisolated private enum ExplorationCoreDataBridge {
             partyRunId
         )
         return try context.fetch(request).first
+    }
+
+    static func pruneCompletedRunsExceedingRetentionLimit(
+        in context: NSManagedObjectContext
+    ) throws -> Bool {
+        let retentionCount = ExplorationLogRetentionLimit.configuredCount()
+        let request = NSFetchRequest<NSManagedObjectID>(entityName: "RunSessionEntity")
+        request.resultType = .managedObjectIDResultType
+        request.predicate = NSPredicate(format: "completedAt != nil")
+        request.sortDescriptors = [
+            NSSortDescriptor(key: "completedAt", ascending: false),
+            NSSortDescriptor(key: "partyId", ascending: false),
+            NSSortDescriptor(key: "partyRunId", ascending: false),
+        ]
+
+        let objectIDs = try context.fetch(request)
+        guard objectIDs.count > retentionCount else {
+            return false
+        }
+
+        for objectID in objectIDs.dropFirst(retentionCount) {
+            context.delete(try context.existingObject(with: objectID))
+        }
+
+        return true
     }
 
     static func hasActiveRun(

@@ -61,6 +61,22 @@ final class GuildRosterStore {
         }
     }
 
+    func refreshFromPersistence() {
+        guard phase == .loaded,
+              !isMutating else {
+            return
+        }
+
+        do {
+            let snapshot = try coreDataStore.loadFreshRosterSnapshot()
+            playerState = snapshot.playerState
+            applyCharacters(snapshot.characters)
+            lastOperationError = nil
+        } catch {
+            lastOperationError = Self.errorMessage(for: error)
+        }
+    }
+
     func hireCharacter(
         raceId: Int,
         jobId: Int,
