@@ -689,7 +689,6 @@ nonisolated private enum ExplorationCoreDataBridge {
             targetFloorNumber: Int(entity.targetFloorNumber),
             startedAt: entity.startedAt ?? .distantPast,
             rootSeed: UInt64(bitPattern: entity.rootSeedSigned),
-            maximumLoopCount: Int(entity.maximumLoopCount),
             memberSnapshots: memberSnapshots,
             memberCharacterIds: memberCharacterIds,
             completedBattleCount: Int(entity.completedBattleCount),
@@ -726,7 +725,6 @@ nonisolated private enum ExplorationCoreDataBridge {
             targetFloorNumber: summary.targetFloorNumber,
             startedAt: summary.startedAt,
             rootSeed: summary.rootSeed,
-            maximumLoopCount: summary.maximumLoopCount,
             memberSnapshots: summary.memberSnapshots,
             memberCharacterIds: summary.memberCharacterIds,
             completedBattleCount: summary.completedBattleCount,
@@ -766,7 +764,6 @@ nonisolated private enum ExplorationCoreDataBridge {
         return RunCompletionRecord(
             completedAt: completedAt,
             reason: reason,
-            completedLoopCount: Int(entity.completedLoopCount),
             gold: Int(entity.goldBuffer),
             experienceRewards: experienceRewards,
             dropRewards: dropRewards
@@ -925,7 +922,6 @@ nonisolated private enum ExplorationCoreDataBridge {
         entity.targetFloorNumber = Int64(session.targetFloorNumber)
         entity.startedAt = session.startedAt
         entity.rootSeedSigned = Int64(bitPattern: session.rootSeed)
-        entity.maximumLoopCount = Int64(session.maximumLoopCount)
         entity.completedBattleCount = Int64(session.completedBattleCount)
         entity.goldBuffer = Int64(session.goldBuffer)
         entity.goldMultiplier = session.goldMultiplier
@@ -939,11 +935,9 @@ nonisolated private enum ExplorationCoreDataBridge {
         if let completion = session.completion {
             entity.completedAt = completion.completedAt
             entity.completionReasonRawValue = completion.reason.rawValue
-            entity.completedLoopCount = Int64(completion.completedLoopCount)
         } else {
             entity.completedAt = nil
             entity.completionReasonRawValue = nil
-            entity.completedLoopCount = 0
         }
     }
 

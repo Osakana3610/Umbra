@@ -22,12 +22,17 @@ final class ItemDropNotificationService {
     }
 
     private let masterDataStore: MasterDataStore
+    private let userDefaults: UserDefaults
     private let maxNotificationCount = 20
 
     private(set) var droppedItems: [DroppedItemNotification] = []
 
-    init(masterDataStore: MasterDataStore) {
+    init(
+        masterDataStore: MasterDataStore,
+        userDefaults: UserDefaults = .standard
+    ) {
         self.masterDataStore = masterDataStore
+        self.userDefaults = userDefaults
     }
 
     func publish(batches: [ExplorationDropNotificationBatch]) {
@@ -37,10 +42,18 @@ final class ItemDropNotificationService {
         }
 
         let displayNameResolver = EquipmentDisplayNameResolver(masterData: masterData)
+        let itemsById = Dictionary(uniqueKeysWithValues: masterData.items.map { ($0.id, $0) })
         var notifications: [DroppedItemNotification] = []
 
         for batch in batches {
-            for reward in batch.dropRewards where reward.itemID.isValidEquipmentIdentity {
+            for reward in batch.dropRewards
+            where reward.itemID.isValidEquipmentIdentity
+                && itemsById[reward.itemID.baseItemId] != nil
+                && ItemDropNotificationSettings.allowsNotification(
+                    for: reward.itemID,
+                    rarity: itemsById[reward.itemID.baseItemId]?.rarity ?? .normal,
+                    userDefaults: userDefaults
+                ) {
                 notifications.append(
                     DroppedItemNotification(
                         id: UUID(),

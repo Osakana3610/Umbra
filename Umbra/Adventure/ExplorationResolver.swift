@@ -25,7 +25,6 @@ nonisolated enum ExplorationResolver {
             difficultyMultiplier: difficultyMultiplier
         )
         let interval = max(labyrinth.progressIntervalSeconds, 1)
-        let battlesPerLoop = max(battlePlans.count / max(session.maximumLoopCount, 1), 1)
 
         var currentPartyMembers = try preparedPartyMembers(
             from: session.memberSnapshots,
@@ -105,7 +104,6 @@ nonisolated enum ExplorationResolver {
                             completedBattleCount: completedBattleCount
                         ),
                         reason: .cleared,
-                        completedLoopCount: session.maximumLoopCount,
                         gold: goldBuffer,
                         experienceRewards: experienceRewards,
                         dropRewards: dropRewards
@@ -119,11 +117,6 @@ nonisolated enum ExplorationResolver {
                         completedBattleCount: completedBattleCount
                     ),
                     reason: .defeated,
-                    completedLoopCount: completedLoopCount(
-                        completedBattleCount: completedBattleCount,
-                        battlesPerLoop: battlesPerLoop,
-                        clearedAllBattles: false
-                    ),
                     gold: goldBuffer,
                     experienceRewards: experienceRewards,
                     dropRewards: dropRewards
@@ -136,11 +129,6 @@ nonisolated enum ExplorationResolver {
                         completedBattleCount: completedBattleCount
                     ),
                     reason: .draw,
-                    completedLoopCount: completedLoopCount(
-                        completedBattleCount: completedBattleCount,
-                        battlesPerLoop: battlesPerLoop,
-                        clearedAllBattles: false
-                    ),
                     gold: goldBuffer,
                     experienceRewards: experienceRewards,
                     dropRewards: dropRewards
@@ -156,7 +144,6 @@ nonisolated enum ExplorationResolver {
             targetFloorNumber: session.targetFloorNumber,
             startedAt: session.startedAt,
             rootSeed: session.rootSeed,
-            maximumLoopCount: session.maximumLoopCount,
             memberSnapshots: session.memberSnapshots,
             memberCharacterIds: session.memberCharacterIds,
             completedBattleCount: completedBattleCount,
@@ -214,20 +201,6 @@ nonisolated enum ExplorationResolver {
         case .draw:
             .draw
         }
-        let revealedCompletedLoopCount: Int
-        if revealedBattleCount == session.battleLogs.count {
-            if latestBattleLog?.battleRecord.result == .victory {
-                revealedCompletedLoopCount = session.maximumLoopCount
-            } else {
-                revealedCompletedLoopCount = Self.completedLoopCount(
-                    completedBattleCount: revealedBattleCount,
-                    battlesPerLoop: max(session.battleLogs.count / max(session.maximumLoopCount, 1), 1),
-                    clearedAllBattles: false
-                )
-            }
-        } else {
-            revealedCompletedLoopCount = 0
-        }
 
         return RunSessionRecord(
             partyRunId: session.partyRunId,
@@ -237,7 +210,6 @@ nonisolated enum ExplorationResolver {
             targetFloorNumber: session.targetFloorNumber,
             startedAt: session.startedAt,
             rootSeed: session.rootSeed,
-            maximumLoopCount: session.maximumLoopCount,
             memberSnapshots: session.memberSnapshots,
             memberCharacterIds: session.memberCharacterIds,
             completedBattleCount: revealedBattleCount,
@@ -262,7 +234,6 @@ nonisolated enum ExplorationResolver {
                         completedBattleCount: revealedBattleCount
                     ),
                     reason: completionReason,
-                    completedLoopCount: revealedCompletedLoopCount,
                     gold: session.goldBuffer,
                     experienceRewards: session.experienceRewards,
                     dropRewards: session.dropRewards
@@ -412,54 +383,51 @@ nonisolated private extension ExplorationResolver {
         battlePlans.reserveCapacity(
             labyrinth.floors.reduce(0) { partial, floor in
                 partial + floor.battleCount
-            } * session.maximumLoopCount
+            }
         )
 
         var globalBattleNumber = 1
-        for loopIndex in 1...session.maximumLoopCount {
-            for floor in labyrinth.floors {
-                let fixedBattle = floor.fixedBattle ?? []
-                let normalBattleCount = max(floor.battleCount - (fixedBattle.isEmpty ? 0 : 1), 0)
+        for floor in labyrinth.floors {
+            let fixedBattle = floor.fixedBattle ?? []
+            let normalBattleCount = max(floor.battleCount - (fixedBattle.isEmpty ? 0 : 1), 0)
 
-                if normalBattleCount > 0 {
-                    for normalBattleIndex in 1...normalBattleCount {
-                        battlePlans.append(
-                            PlannedBattle(
-                                floorNumber: floor.floorNumber,
-                                battleNumber: globalBattleNumber,
-                                enemies: resolveEncounterEnemies(
-                                    for: floor,
-                                    enemyCountCap: labyrinth.enemyCountCap,
-                                    difficultyMultiplier: difficultyMultiplier,
-                                    loopIndex: loopIndex,
-                                    battleNumber: globalBattleNumber,
-                                    normalBattleIndex: normalBattleIndex,
-                                    rootSeed: session.rootSeed
-                                )
-                            )
-                        )
-                        globalBattleNumber += 1
-                    }
-                }
-
-                if !fixedBattle.isEmpty {
+            if normalBattleCount > 0 {
+                for normalBattleIndex in 1...normalBattleCount {
                     battlePlans.append(
                         PlannedBattle(
                             floorNumber: floor.floorNumber,
                             battleNumber: globalBattleNumber,
-                            enemies: fixedBattle.map { enemy in
-                                BattleEnemySeed(
-                                    enemyId: enemy.enemyId,
-                                    level: scaledEnemyLevel(
-                                        baseLevel: enemy.level,
-                                        difficultyMultiplier: difficultyMultiplier
-                                    )
-                                )
-                            }
+                            enemies: resolveEncounterEnemies(
+                                for: floor,
+                                enemyCountCap: labyrinth.enemyCountCap,
+                                difficultyMultiplier: difficultyMultiplier,
+                                battleNumber: globalBattleNumber,
+                                normalBattleIndex: normalBattleIndex,
+                                rootSeed: session.rootSeed
+                            )
                         )
                     )
                     globalBattleNumber += 1
                 }
+            }
+
+            if !fixedBattle.isEmpty {
+                battlePlans.append(
+                    PlannedBattle(
+                        floorNumber: floor.floorNumber,
+                        battleNumber: globalBattleNumber,
+                        enemies: fixedBattle.map { enemy in
+                            BattleEnemySeed(
+                                enemyId: enemy.enemyId,
+                                level: scaledEnemyLevel(
+                                    baseLevel: enemy.level,
+                                    difficultyMultiplier: difficultyMultiplier
+                                )
+                            )
+                        }
+                    )
+                )
+                globalBattleNumber += 1
             }
         }
 
@@ -470,7 +438,6 @@ nonisolated private extension ExplorationResolver {
         for floor: MasterData.Floor,
         enemyCountCap: Int,
         difficultyMultiplier: Double,
-        loopIndex: Int,
         battleNumber: Int,
         normalBattleIndex: Int,
         rootSeed: UInt64
@@ -485,7 +452,7 @@ nonisolated private extension ExplorationResolver {
         }
 
         return (1...enemyCountCap).compactMap { enemySlot in
-            let purpose = "loop:\(loopIndex):battle:\(battleNumber):normal:\(normalBattleIndex):slot:\(enemySlot):encounter"
+            let purpose = "battle:\(battleNumber):normal:\(normalBattleIndex):slot:\(enemySlot):encounter"
             let roll = ExplorationDeterministicRandom.integer(
                 upperBound: totalWeight,
                 rootSeed: rootSeed,
@@ -921,18 +888,6 @@ nonisolated private extension ExplorationResolver {
         completedBattleCount: Int
     ) -> Date {
         startedAt.addingTimeInterval(Double(interval * completedBattleCount))
-    }
-
-    static func completedLoopCount(
-        completedBattleCount: Int,
-        battlesPerLoop: Int,
-        clearedAllBattles: Bool
-    ) -> Int {
-        if clearedAllBattles {
-            return max(completedBattleCount / max(battlesPerLoop, 1), 0)
-        }
-
-        return max((completedBattleCount - 1) / max(battlesPerLoop, 1), 0)
     }
 
     static func clamp(

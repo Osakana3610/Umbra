@@ -206,6 +206,13 @@ final class GuildService {
         return roster
     }
 
+    func setLastProgressedAt(_ date: Date) throws -> GuildRosterSnapshot {
+        var roster = try coreDataStore.loadRosterSnapshot()
+        roster.playerState.lastProgressedAt = date
+        try coreDataStore.saveRosterSnapshot(roster)
+        return roster
+    }
+
     func unlockParty() throws -> [PartyRecord] {
         var roster = try coreDataStore.loadRosterSnapshot()
         var parties = try coreDataStore.loadParties()

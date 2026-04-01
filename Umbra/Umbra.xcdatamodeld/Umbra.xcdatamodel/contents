@@ -25,6 +25,7 @@
     <entity name="PlayerStateEntity" representedClassName="PlayerStateEntity" syncable="YES">
         <attribute name="autoReviveDefeatedCharacters" optional="NO" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="gold" optional="NO" attributeType="Integer 64" defaultValueString="1000" usesScalarValueType="YES"/>
+        <attribute name="lastProgressedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="nextCharacterId" optional="NO" attributeType="Integer 64" defaultValueString="1" usesScalarValueType="YES"/>
     </entity>
     <entity name="PartyEntity" representedClassName="PartyEntity" syncable="YES">
@@ -37,14 +38,12 @@
     <entity name="RunSessionEntity" representedClassName="RunSessionEntity" syncable="YES">
         <attribute name="completedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="completedBattleCount" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
-        <attribute name="completedLoopCount" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="completionReasonRawValue" optional="YES" attributeType="String"/>
         <attribute name="goldBuffer" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="labyrinthId" optional="NO" attributeType="Integer 64" usesScalarValueType="YES"/>
         <attribute name="latestBattleFloorNumber" optional="NO" attributeType="Integer 64" defaultValueString="-1" usesScalarValueType="YES"/>
         <attribute name="latestBattleNumber" optional="NO" attributeType="Integer 64" defaultValueString="-1" usesScalarValueType="YES"/>
         <attribute name="latestBattleOutcomeRawValue" optional="YES" attributeType="String"/>
-        <attribute name="maximumLoopCount" optional="NO" attributeType="Integer 64" defaultValueString="1" usesScalarValueType="YES"/>
         <attribute name="partyAverageLuck" optional="NO" attributeType="Double" defaultValueString="0"/>
         <attribute name="partyId" optional="NO" attributeType="Integer 64" usesScalarValueType="YES"/>
         <attribute name="partyRunId" optional="NO" attributeType="Integer 64" usesScalarValueType="YES"/>

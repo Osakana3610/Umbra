@@ -3,7 +3,6 @@
 import Foundation
 
 nonisolated enum ExplorationLogRetentionLimit: Int, CaseIterable, Identifiable {
-    case count100 = 100
     case count200 = 200
     case count300 = 300
     case count400 = 400
@@ -27,6 +26,6 @@ nonisolated enum ExplorationLogRetentionLimit: Int, CaseIterable, Identifiable {
         userDefaults: UserDefaults = .standard
     ) -> Int {
         let configuredCount = userDefaults.object(forKey: userDefaultsKey) as? Int
-        return configuredCount.map { max($0, 1) } ?? defaultValue.rawValue
+        return configuredCount.map { max($0, count200.rawValue) } ?? defaultValue.rawValue
     }
 }

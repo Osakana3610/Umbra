@@ -14,7 +14,6 @@ final class ExplorationSessionService {
         labyrinthId: Int,
         selectedDifficultyTitleId: Int,
         startedAt: Date,
-        maximumLoopCount: Int,
         masterData: MasterData
     ) async throws -> ExplorationRunSnapshot {
         try await startConfiguredRuns(
@@ -26,7 +25,6 @@ final class ExplorationSessionService {
                 )
             ],
             startedAt: startedAt,
-            maximumLoopCount: maximumLoopCount,
             masterData: masterData
         )
     }
@@ -34,7 +32,6 @@ final class ExplorationSessionService {
     func startConfiguredRuns(
         _ runsToStart: [ConfiguredRunStart],
         startedAt: Date,
-        maximumLoopCount: Int,
         masterData: MasterData
     ) async throws -> ExplorationRunSnapshot {
         guard !runsToStart.isEmpty else {
@@ -47,7 +44,6 @@ final class ExplorationSessionService {
                 session: try await makeInitialSession(
                     runStart: runStart,
                     startedAt: startedAt,
-                    maximumLoopCount: maximumLoopCount,
                     masterData: masterData
                 ),
                 masterData: masterData,
@@ -62,7 +58,6 @@ final class ExplorationSessionService {
                     targetFloorNumber: plannedSession.targetFloorNumber,
                     startedAt: plannedSession.startedAt,
                     rootSeed: plannedSession.rootSeed,
-                    maximumLoopCount: plannedSession.maximumLoopCount,
                     memberSnapshots: plannedSession.memberSnapshots,
                     memberCharacterIds: plannedSession.memberCharacterIds,
                     completedBattleCount: 0,
@@ -130,7 +125,6 @@ final class ExplorationSessionService {
     private func makeInitialSession(
         runStart: ConfiguredRunStart,
         startedAt: Date,
-        maximumLoopCount: Int,
         masterData: MasterData
     ) async throws -> RunSessionRecord {
         guard let labyrinth = masterData.labyrinths.first(where: { $0.id == runStart.labyrinthId }) else {
@@ -188,7 +182,6 @@ final class ExplorationSessionService {
             targetFloorNumber: labyrinth.floors.last?.floorNumber ?? 1,
             startedAt: startedAt,
             rootSeed: rootSeed,
-            maximumLoopCount: maximumLoopCount,
             memberSnapshots: startContext.partyMembers,
             memberCharacterIds: startContext.partyMembers.map(\.characterId),
             completedBattleCount: 0,

@@ -73,6 +73,7 @@ extension PlayerStateEntity {
 
     @NSManaged nonisolated public var autoReviveDefeatedCharacters: Bool
     @NSManaged nonisolated public var gold: Int64
+    @NSManaged nonisolated public var lastProgressedAt: Date?
     @NSManaged nonisolated public var nextCharacterId: Int64
 
 }
@@ -295,14 +296,12 @@ extension RunSessionEntity {
 
     @NSManaged nonisolated public var completedAt: Date?
     @NSManaged nonisolated public var completedBattleCount: Int64
-    @NSManaged nonisolated public var completedLoopCount: Int64
     @NSManaged nonisolated public var completionReasonRawValue: String?
     @NSManaged nonisolated public var goldBuffer: Int64
     @NSManaged nonisolated public var labyrinthId: Int64
     @NSManaged nonisolated public var latestBattleFloorNumber: Int64
     @NSManaged nonisolated public var latestBattleNumber: Int64
     @NSManaged nonisolated public var latestBattleOutcomeRawValue: String?
-    @NSManaged nonisolated public var maximumLoopCount: Int64
     @NSManaged nonisolated public var partyAverageLuck: Double
     @NSManaged nonisolated public var partyId: Int64
     @NSManaged nonisolated public var partyRunId: Int64

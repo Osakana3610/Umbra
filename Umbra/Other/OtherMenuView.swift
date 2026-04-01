@@ -10,9 +10,17 @@ struct OtherMenuView: View {
 
     @AppStorage(ExplorationLogRetentionLimit.userDefaultsKey)
     private var explorationLogRetentionCount = ExplorationLogRetentionLimit.defaultValue.rawValue
-
     var body: some View {
         Form {
+            Section {
+                NavigationLink("アイテムドロップ通知") {
+                    ItemDropNotificationSettingsView(masterData: masterData)
+                        .navigationTitle("アイテムドロップ通知")
+                }
+            } header: {
+                Text("通知")
+            }
+
             Section {
                 Picker("保存件数", selection: $explorationLogRetentionCount) {
                     ForEach(ExplorationLogRetentionLimit.allCases) { limit in

@@ -37,7 +37,6 @@ nonisolated struct ExplorationDropReward: Codable, Equatable, Sendable, Identifi
 nonisolated struct RunCompletionRecord: Codable, Equatable, Sendable {
     let completedAt: Date
     let reason: RunCompletionReason
-    let completedLoopCount: Int
     let gold: Int
     let experienceRewards: [ExplorationExperienceReward]
     let dropRewards: [ExplorationDropReward]
@@ -51,7 +50,6 @@ nonisolated struct RunSessionRecord: Equatable, Sendable, Identifiable {
     let targetFloorNumber: Int
     let startedAt: Date
     let rootSeed: UInt64
-    let maximumLoopCount: Int
     let memberSnapshots: [CharacterRecord]
     let memberCharacterIds: [Int]
     let completedBattleCount: Int
@@ -87,7 +85,6 @@ nonisolated struct RunSessionRecord: Equatable, Sendable, Identifiable {
             targetFloorNumber: targetFloorNumber,
             startedAt: startedAt,
             rootSeed: rootSeed,
-            maximumLoopCount: maximumLoopCount,
             memberSnapshots: memberSnapshots,
             memberCharacterIds: memberCharacterIds,
             completedBattleCount: completedBattleCount,
@@ -108,7 +105,6 @@ nonisolated struct RunSessionRecord: Equatable, Sendable, Identifiable {
                 RunCompletionRecord(
                     completedAt: completion.completedAt,
                     reason: completion.reason,
-                    completedLoopCount: completion.completedLoopCount,
                     gold: completion.gold,
                     experienceRewards: [],
                     dropRewards: []

@@ -49,8 +49,8 @@
         "dropWeight": 16
     },
     {
-        "id": "abhorrent",
-        "name": "悍ましい",
+        "id": "grisly",
+        "name": "惨烈な",
         "positiveMultiplier": 3.1748,
         "negativeMultiplier": 0.315,
         "dropWeight": 4

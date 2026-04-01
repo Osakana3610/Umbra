@@ -140,7 +140,7 @@ struct AdventureHomeView: View {
                 Button("一括出撃") {
                     startAllRuns()
                 }
-                .disabled(bulkStartableRuns.isEmpty || explorationStore.isMutating)
+                .disabled(bulkStartableRuns.isEmpty || explorationStore.isSortieLocked)
             }
         }
         .task {
@@ -197,7 +197,8 @@ struct AdventureHomeView: View {
     }
 
     private func canStartRun(for party: PartyRecord) -> Bool {
-        guard configuredLabyrinthId(for: party) != nil,
+        guard !explorationStore.isSortieLocked,
+              configuredLabyrinthId(for: party) != nil,
               !explorationStore.hasActiveRun(for: party.partyId),
               !party.memberCharacterIds.isEmpty else {
             return false

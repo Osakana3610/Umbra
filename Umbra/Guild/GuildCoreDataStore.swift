@@ -71,6 +71,7 @@ final class GuildCoreDataStore {
         playerState.gold = Int64(snapshot.playerState.gold)
         playerState.nextCharacterId = Int64(snapshot.playerState.nextCharacterId)
         playerState.autoReviveDefeatedCharacters = snapshot.playerState.autoReviveDefeatedCharacters
+        playerState.lastProgressedAt = snapshot.playerState.lastProgressedAt
         try syncCharacters(snapshot.characters, in: context)
         try syncLabyrinthProgressRecords(snapshot.labyrinthProgressRecords, in: context)
         try saveIfNeeded(context)
@@ -384,7 +385,8 @@ final class GuildCoreDataStore {
         PlayerState(
             gold: Int(entity.gold),
             nextCharacterId: Int(entity.nextCharacterId),
-            autoReviveDefeatedCharacters: entity.autoReviveDefeatedCharacters
+            autoReviveDefeatedCharacters: entity.autoReviveDefeatedCharacters,
+            lastProgressedAt: entity.lastProgressedAt
         )
     }
 

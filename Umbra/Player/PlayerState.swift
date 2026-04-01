@@ -6,10 +6,12 @@ nonisolated struct PlayerState: Equatable, Sendable {
     var gold: Int
     var nextCharacterId: Int
     var autoReviveDefeatedCharacters: Bool
+    var lastProgressedAt: Date?
 
     static let initial = PlayerState(
         gold: 1000,
         nextCharacterId: 1,
-        autoReviveDefeatedCharacters: false
+        autoReviveDefeatedCharacters: false,
+        lastProgressedAt: nil
     )
 }

@@ -296,6 +296,28 @@ struct UmbraTests {
     }
 
     @Test
+    func recordingLastProgressedAtPersistsPlayerCheckpoint() throws {
+        let container = PersistenceController(inMemory: true).container
+        let guildCoreDataStore = GuildCoreDataStore(container: container)
+        let guildService = GuildService(
+            coreDataStore: guildCoreDataStore,
+            explorationCoreDataStore: ExplorationCoreDataStore(container: container)
+        )
+        let rosterStore = GuildRosterStore(
+            coreDataStore: guildCoreDataStore,
+            service: guildService
+        )
+
+        rosterStore.reload()
+        let checkpointDate = Date(timeIntervalSinceReferenceDate: 123_456)
+        rosterStore.recordLastProgressedAt(checkpointDate)
+        let persistedCheckpointDate = try guildCoreDataStore.loadRosterSnapshot().playerState.lastProgressedAt
+
+        #expect(rosterStore.playerState?.lastProgressedAt == checkpointDate)
+        #expect(persistedCheckpointDate == checkpointDate)
+    }
+
+    @Test
     func updatingAutoBattleSettingsPersistsCharacterRates() async throws {
         let container = PersistenceController(inMemory: true).container
         let guildCoreDataStore = GuildCoreDataStore(container: container)
@@ -623,11 +645,13 @@ struct UmbraTests {
             [
                 ConfiguredRunStart(
                     partyId: 1,
-                    labyrinthId: try #require(masterData.labyrinths.first?.id)
+                    labyrinthId: try #require(masterData.labyrinths.first?.id),
+                    selectedDifficultyTitleId: try #require(masterData.defaultExplorationDifficultyTitle?.id)
                 ),
                 ConfiguredRunStart(
                     partyId: 2,
-                    labyrinthId: try #require(masterData.labyrinths.first?.id)
+                    labyrinthId: try #require(masterData.labyrinths.first?.id),
+                    selectedDifficultyTitleId: try #require(masterData.defaultExplorationDifficultyTitle?.id)
                 ),
             ],
             startedAt: startedAt,
@@ -682,6 +706,7 @@ struct UmbraTests {
         await explorationStore.startRun(
             partyId: 1,
             labyrinthId: try #require(masterData.labyrinths.first(where: { $0.name == "デバッグの遺跡" })?.id),
+            selectedDifficultyTitleId: try #require(masterData.defaultExplorationDifficultyTitle?.id),
             startedAt: startedAt,
             masterData: masterData
         )
@@ -698,6 +723,90 @@ struct UmbraTests {
         #expect(try guildCoreDataStore.loadFreshRosterSnapshot().playerState.gold == startingGold + completionGold)
         rosterStore.refreshFromPersistence()
         #expect(rosterStore.playerState?.gold == startingGold + completionGold)
+    }
+
+    @Test
+    func resumeIdleProgressStartsAutomaticRunsAfterExistingRunCompletes() async throws {
+        let container = PersistenceController(inMemory: true).container
+        let guildCoreDataStore = GuildCoreDataStore(container: container)
+        let explorationCoreDataStore = ExplorationCoreDataStore(container: container)
+        let guildService = GuildService(
+            coreDataStore: guildCoreDataStore,
+            explorationCoreDataStore: explorationCoreDataStore
+        )
+        let masterDataStore = MasterDataStore()
+        let itemDropNotificationService = ItemDropNotificationService(masterDataStore: masterDataStore)
+        let rosterStore = GuildRosterStore(
+            coreDataStore: guildCoreDataStore,
+            service: guildService
+        )
+        let partyStore = PartyStore(
+            coreDataStore: guildCoreDataStore,
+            service: guildService
+        )
+        let explorationStore = ExplorationStore(
+            coreDataStore: explorationCoreDataStore,
+            itemDropNotificationService: itemDropNotificationService,
+            rosterStore: rosterStore
+        )
+        let masterData = try loadGeneratedMasterData()
+        let defaultDifficultyTitleId = try #require(masterData.defaultExplorationDifficultyTitle?.id)
+        let labyrinth = try #require(masterData.labyrinths.first(where: { $0.name == "デバッグの遺跡" }))
+        let runDurationSeconds = labyrinth.floors.reduce(0) { partialResult, floor in
+            partialResult + floor.battleCount
+        } * labyrinth.progressIntervalSeconds
+
+        let character = try guildService.hireCharacter(
+            raceId: try #require(masterData.races.first?.id),
+            jobId: try #require(masterData.jobs.first?.id),
+            aptitudeId: try #require(masterData.aptitudes.first?.id),
+            masterData: masterData
+        ).character
+        _ = try await guildService.addCharacter(characterId: character.characterId, toParty: 1)
+        _ = try await guildService.setSelectedLabyrinth(
+            partyId: 1,
+            selectedLabyrinthId: labyrinth.id,
+            selectedDifficultyTitleId: defaultDifficultyTitleId
+        )
+        try promoteCharacter(
+            characterId: character.characterId,
+            level: 40,
+            in: container
+        )
+        try setCurrentHP(characterId: character.characterId, to: 999, in: container)
+
+        rosterStore.reload()
+        partyStore.reload()
+        let startedAt = Date(timeIntervalSinceReferenceDate: 410_000)
+        await explorationStore.startRun(
+            partyId: 1,
+            labyrinthId: labyrinth.id,
+            selectedDifficultyTitleId: defaultDifficultyTitleId,
+            startedAt: startedAt,
+            masterData: masterData
+        )
+        rosterStore.recordLastProgressedAt(startedAt)
+
+        let resumedAt = startedAt.addingTimeInterval(Double(runDurationSeconds * 3))
+        let checkpointDate = try #require(rosterStore.playerState?.lastProgressedAt)
+        let didResume = await explorationStore.resumeIdleProgress(
+            since: checkpointDate,
+            currentDate: resumedAt,
+            parties: partyStore.parties,
+            masterData: masterData
+        )
+
+        let completedRuns = explorationStore.runs
+            .filter(\.isCompleted)
+            .sorted { $0.startedAt < $1.startedAt }
+        #expect(didResume)
+        #expect(explorationStore.runs.count == 2)
+        #expect(completedRuns.count == 2)
+        #expect(explorationStore.runs.allSatisfy { $0.isCompleted })
+        #expect(completedRuns.map(\.startedAt) == [
+            startedAt,
+            startedAt.addingTimeInterval(Double(runDurationSeconds))
+        ])
     }
 
     @Test
@@ -728,8 +837,8 @@ struct UmbraTests {
         _ = try await explorationService.startRun(
             partyId: 1,
             labyrinthId: try #require(masterData.labyrinths.first?.id),
+            selectedDifficultyTitleId: try #require(masterData.defaultExplorationDifficultyTitle?.id),
             startedAt: Date(timeIntervalSinceReferenceDate: 200_000),
-            maximumLoopCount: 1,
             masterData: masterData
         )
 
@@ -796,8 +905,8 @@ struct UmbraTests {
         let snapshot = try await explorationService.startRun(
             partyId: 1,
             labyrinthId: try #require(masterData.labyrinths.first(where: { $0.name == "デバッグの遺跡" })?.id),
+            selectedDifficultyTitleId: try #require(masterData.defaultExplorationDifficultyTitle?.id),
             startedAt: startedAt,
-            maximumLoopCount: 1,
             masterData: masterData
         )
         let startedRun = try #require(snapshot.runs.first)
@@ -846,8 +955,8 @@ struct UmbraTests {
         _ = try await explorationService.startRun(
             partyId: 1,
             labyrinthId: try #require(masterData.labyrinths.first?.id),
+            selectedDifficultyTitleId: try #require(masterData.defaultExplorationDifficultyTitle?.id),
             startedAt: startedAt,
-            maximumLoopCount: 1,
             masterData: masterData
         )
 
@@ -901,8 +1010,8 @@ struct UmbraTests {
         _ = try await explorationService.startRun(
             partyId: 1,
             labyrinthId: try #require(masterData.labyrinths.first(where: { $0.name == "デバッグの遺跡" })?.id),
+            selectedDifficultyTitleId: try #require(masterData.defaultExplorationDifficultyTitle?.id),
             startedAt: startedAt,
-            maximumLoopCount: 1,
             masterData: masterData
         )
 
@@ -959,8 +1068,8 @@ struct UmbraTests {
         _ = try await explorationService.startRun(
             partyId: 1,
             labyrinthId: try #require(masterData.labyrinths.first(where: { $0.name == "デバッグの遺跡" })?.id),
+            selectedDifficultyTitleId: try #require(masterData.defaultExplorationDifficultyTitle?.id),
             startedAt: startedAt,
-            maximumLoopCount: 1,
             masterData: masterData
         )
 
@@ -1009,8 +1118,8 @@ struct UmbraTests {
         _ = try await explorationService.startRun(
             partyId: 1,
             labyrinthId: try #require(masterData.labyrinths.first(where: { $0.name == "デバッグの塔" })?.id),
+            selectedDifficultyTitleId: try #require(masterData.defaultExplorationDifficultyTitle?.id),
             startedAt: startedAt,
-            maximumLoopCount: 1,
             masterData: masterData
         )
 
@@ -1468,29 +1577,194 @@ struct UmbraTests {
         let explorationCoreDataStore = ExplorationCoreDataStore(
             container: PersistenceController(inMemory: true).container
         )
-        try await explorationCoreDataStore.insertRun(
-            makeCompletedRunRecord(
-                partyRunId: 1,
-                startedAt: Date(timeIntervalSinceReferenceDate: 1_000)
+        for partyRunId in 1...201 {
+            try await explorationCoreDataStore.insertRun(
+                makeCompletedRunRecord(
+                    partyRunId: partyRunId,
+                    startedAt: Date(timeIntervalSinceReferenceDate: Double(partyRunId) * 1_000)
+                )
             )
-        )
-        try await explorationCoreDataStore.insertRun(
-            makeCompletedRunRecord(
-                partyRunId: 2,
-                startedAt: Date(timeIntervalSinceReferenceDate: 2_000)
-            )
-        )
-        try await explorationCoreDataStore.insertRun(
-            makeCompletedRunRecord(
-                partyRunId: 3,
-                startedAt: Date(timeIntervalSinceReferenceDate: 3_000)
-            )
-        )
+        }
 
         #expect(try await explorationCoreDataStore.pruneCompletedRunsExceedingRetentionLimit())
         #expect(try await explorationCoreDataStore.loadRunDetail(partyId: 1, partyRunId: 1) == nil)
         #expect(try await explorationCoreDataStore.loadRunDetail(partyId: 1, partyRunId: 2) != nil)
-        #expect(try await explorationCoreDataStore.loadRunDetail(partyId: 1, partyRunId: 3) != nil)
+        #expect(try await explorationCoreDataStore.loadRunDetail(partyId: 1, partyRunId: 201) != nil)
+    }
+
+    @Test
+    func publishFormatsPartyPrefixedDisplayText() {
+        let masterData = itemDropNotificationTestMasterData()
+        let masterDataStore = MasterDataStore(phase: .loaded(masterData))
+        let userDefaults = UserDefaults(suiteName: #function)!
+        userDefaults.removePersistentDomain(forName: #function)
+        let service = ItemDropNotificationService(
+            masterDataStore: masterDataStore,
+            userDefaults: userDefaults
+        )
+
+        service.publish(
+            batches: [
+                ExplorationDropNotificationBatch(
+                    partyId: 3,
+                    dropRewards: [
+                        ExplorationDropReward(
+                            itemID: CompositeItemID(
+                                baseSuperRareId: 1,
+                                baseTitleId: 1,
+                                baseItemId: 1,
+                                jewelSuperRareId: 0,
+                                jewelTitleId: 0,
+                                jewelItemId: 0
+                            ),
+                            sourceFloorNumber: 1,
+                            sourceBattleNumber: 1
+                        ),
+                        ExplorationDropReward(
+                            itemID: CompositeItemID.baseItem(itemId: 1),
+                            sourceFloorNumber: 1,
+                            sourceBattleNumber: 2
+                        )
+                    ]
+                )
+            ]
+        )
+
+        #expect(service.droppedItems.count == 2)
+        #expect(service.droppedItems[0].displayText == "PT3：極光剣")
+        #expect(service.droppedItems[0].isSuperRare)
+        #expect(service.droppedItems[1].displayText == "PT3：剣")
+    }
+
+    @Test
+    func clearRemovesPublishedNotifications() {
+        let masterDataStore = MasterDataStore(phase: .loaded(itemDropNotificationTestMasterData()))
+        let userDefaults = UserDefaults(suiteName: #function)!
+        userDefaults.removePersistentDomain(forName: #function)
+        let service = ItemDropNotificationService(
+            masterDataStore: masterDataStore,
+            userDefaults: userDefaults
+        )
+
+        service.publish(
+            batches: [
+                ExplorationDropNotificationBatch(
+                    partyId: 1,
+                    dropRewards: [
+                        ExplorationDropReward(
+                            itemID: .baseItem(itemId: 1),
+                            sourceFloorNumber: 1,
+                            sourceBattleNumber: 1
+                        )
+                    ]
+                )
+            ]
+        )
+        service.clear()
+
+        #expect(service.droppedItems.isEmpty)
+    }
+
+    @Test
+    func publishSkipsNotificationsForDisabledTitle() {
+        let masterDataStore = MasterDataStore(phase: .loaded(itemDropNotificationTestMasterData()))
+        let userDefaults = UserDefaults(suiteName: #function)!
+        userDefaults.removePersistentDomain(forName: #function)
+        ItemDropNotificationSettings.setTitleEnabled(false, titleId: 1, userDefaults: userDefaults)
+        let service = ItemDropNotificationService(
+            masterDataStore: masterDataStore,
+            userDefaults: userDefaults
+        )
+
+        service.publish(
+            batches: [
+                ExplorationDropNotificationBatch(
+                    partyId: 1,
+                    dropRewards: [
+                        ExplorationDropReward(
+                            itemID: .baseItem(itemId: 1, titleId: 1),
+                            sourceFloorNumber: 1,
+                            sourceBattleNumber: 1
+                        )
+                    ]
+                )
+            ]
+        )
+
+        #expect(!ItemDropNotificationSettings.allowsNotification(
+            for: .baseItem(itemId: 1, titleId: 1),
+            rarity: .normal,
+            userDefaults: userDefaults
+        ))
+        #expect(service.droppedItems.isEmpty)
+    }
+
+    @Test
+    func publishSkipsNotificationsForDisabledSuperRare() {
+        let masterDataStore = MasterDataStore(phase: .loaded(itemDropNotificationTestMasterData()))
+        let userDefaults = UserDefaults(suiteName: #function)!
+        userDefaults.removePersistentDomain(forName: #function)
+        ItemDropNotificationSettings.setSuperRareEnabled(false, superRareId: 1, userDefaults: userDefaults)
+        let service = ItemDropNotificationService(
+            masterDataStore: masterDataStore,
+            userDefaults: userDefaults
+        )
+
+        service.publish(
+            batches: [
+                ExplorationDropNotificationBatch(
+                    partyId: 1,
+                    dropRewards: [
+                        ExplorationDropReward(
+                            itemID: .baseItem(itemId: 1, superRareId: 1),
+                            sourceFloorNumber: 1,
+                            sourceBattleNumber: 1
+                        )
+                    ]
+                )
+            ]
+        )
+
+        #expect(!ItemDropNotificationSettings.allowsNotification(
+            for: .baseItem(itemId: 1, superRareId: 1),
+            rarity: .normal,
+            userDefaults: userDefaults
+        ))
+        #expect(service.droppedItems.isEmpty)
+    }
+
+    @Test
+    func publishSkipsNotificationsForIgnoredNormalRarityItems() {
+        let masterDataStore = MasterDataStore(phase: .loaded(itemDropNotificationTestMasterData()))
+        let userDefaults = UserDefaults(suiteName: #function)!
+        userDefaults.removePersistentDomain(forName: #function)
+        ItemDropNotificationSettings.setIgnoresNormalRarityItems(true, userDefaults: userDefaults)
+        let service = ItemDropNotificationService(
+            masterDataStore: masterDataStore,
+            userDefaults: userDefaults
+        )
+
+        service.publish(
+            batches: [
+                ExplorationDropNotificationBatch(
+                    partyId: 1,
+                    dropRewards: [
+                        ExplorationDropReward(
+                            itemID: .baseItem(itemId: 1),
+                            sourceFloorNumber: 1,
+                            sourceBattleNumber: 1
+                        )
+                    ]
+                )
+            ]
+        )
+
+        #expect(!ItemDropNotificationSettings.allowsNotification(
+            for: .baseItem(itemId: 1),
+            rarity: .normal,
+            userDefaults: userDefaults
+        ))
+        #expect(service.droppedItems.isEmpty)
     }
 
 }
@@ -1524,6 +1798,74 @@ private func loadGeneratedMasterData() throws -> MasterData {
 
     let fileURL = generatedMasterDataURL()
     return try MasterDataLoader.load(fileURL: fileURL)
+}
+
+private func itemDropNotificationTestMasterData() -> MasterData {
+    MasterData(
+        metadata: MasterData.Metadata(generator: "test"),
+        races: [],
+        jobs: [],
+        aptitudes: [],
+        items: [
+            MasterData.Item(
+                id: 1,
+                name: "剣",
+                category: .sword,
+                rarity: .normal,
+                basePrice: 10,
+                nativeBaseStats: MasterData.BaseStats(
+                    vitality: 0,
+                    strength: 0,
+                    mind: 0,
+                    intelligence: 0,
+                    agility: 0,
+                    luck: 0
+                ),
+                nativeBattleStats: MasterData.BattleStats(
+                    maxHP: 0,
+                    physicalAttack: 0,
+                    physicalDefense: 0,
+                    magic: 0,
+                    magicDefense: 0,
+                    healing: 0,
+                    accuracy: 0,
+                    evasion: 0,
+                    attackCount: 0,
+                    criticalRate: 0,
+                    breathPower: 0
+                ),
+                skillIds: [],
+                rangeClass: .melee,
+                normalDropTier: 1
+            )
+        ],
+        titles: [
+            MasterData.Title(
+                id: 1,
+                key: "light",
+                name: "光",
+                positiveMultiplier: 1,
+                negativeMultiplier: 1,
+                dropWeight: 1
+            )
+        ],
+        superRares: [
+            MasterData.SuperRare(
+                id: 1,
+                name: "極",
+                skillIds: []
+            )
+        ],
+        skills: [],
+        spells: [],
+        recruitNames: MasterData.RecruitNames(
+            male: [],
+            female: [],
+            unisex: []
+        ),
+        enemies: [],
+        labyrinths: []
+    )
 }
 
 private func generatedMasterDataURL() -> URL {
@@ -1897,10 +2239,10 @@ private func makeCompletedRunRecord(
         partyRunId: partyRunId,
         partyId: 1,
         labyrinthId: 1,
+        selectedDifficultyTitleId: 1,
         targetFloorNumber: 1,
         startedAt: startedAt,
         rootSeed: UInt64(partyRunId),
-        maximumLoopCount: 1,
         memberSnapshots: [],
         memberCharacterIds: [],
         completedBattleCount: 0,
@@ -1920,7 +2262,6 @@ private func makeCompletedRunRecord(
         completion: RunCompletionRecord(
             completedAt: startedAt.addingTimeInterval(60),
             reason: .cleared,
-            completedLoopCount: 1,
             gold: 0,
             experienceRewards: [],
             dropRewards: []

@@ -3,6 +3,8 @@ import SwiftUI
 // Shows app loading state and routes into the guild dashboard once data is ready.
 
 struct ContentView: View {
+    @Environment(\.scenePhase) private var scenePhase
+
     let masterDataStore: MasterDataStore
     let rosterStore: GuildRosterStore
     let partyStore: PartyStore
@@ -44,6 +46,27 @@ struct ContentView: View {
                     itemDropNotificationService: itemDropNotificationService,
                     guildService: guildService
                 )
+                .task {
+                    guard scenePhase == .active else {
+                        return
+                    }
+
+                    await resumeIdleProgress(masterData: masterData)
+                }
+                .onChange(of: scenePhase) { _, newPhase in
+                    switch newPhase {
+                    case .active:
+                        Task {
+                            await resumeIdleProgress(masterData: masterData)
+                        }
+                    case .background:
+                        rosterStore.recordLastProgressedAt(Date())
+                    case .inactive:
+                        break
+                    @unknown default:
+                        break
+                    }
+                }
             }
         }
         .task {
@@ -52,6 +75,26 @@ struct ContentView: View {
             partyStore.loadIfNeeded()
             _ = await masterDataLoad
         }
+    }
+
+    private func resumeIdleProgress(masterData: MasterData) async {
+        rosterStore.refreshFromPersistence()
+        partyStore.reload()
+        await explorationStore.reload(masterData: masterData)
+
+        let resumedAt = Date()
+        let checkpointDate = rosterStore.playerState?.lastProgressedAt
+        let didResume = await explorationStore.resumeIdleProgress(
+            since: checkpointDate,
+            currentDate: resumedAt,
+            parties: partyStore.parties,
+            masterData: masterData
+        )
+        guard didResume else {
+            return
+        }
+
+        rosterStore.recordLastProgressedAt(resumedAt)
     }
 }
 
