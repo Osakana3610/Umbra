@@ -21,6 +21,10 @@ nonisolated struct CharacterRecord: Identifiable, Equatable, Sendable {
     var portraitAssetName: String {
         "job_\(currentJobId)_\(portraitGender.rawValue)"
     }
+
+    var orderedEquippedItemStacks: [CompositeItemStack] {
+        equippedItemStacks.sorted { $0.itemID.isOrdered(before: $1.itemID) }
+    }
 }
 
 nonisolated enum PortraitGender: Int, CaseIterable, Sendable {

@@ -87,11 +87,11 @@ private struct PartyEquipmentMemberRow: View {
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
 
-                if character.equippedItemStacks.isEmpty {
+                if character.orderedEquippedItemStacks.isEmpty {
                     Text("装備なし")
                         .foregroundStyle(.secondary)
                 } else {
-                    ForEach(character.equippedItemStacks) { stack in
+                    ForEach(character.orderedEquippedItemStacks) { stack in
                         let displayName = nameResolver.displayName(for: stack.itemID)
                         Text(stack.count > 1 ? "\(displayName) x\(stack.count)" : displayName)
                             .font(stack.itemID.baseSuperRareId > 0 ? .body.weight(.semibold) : .body)

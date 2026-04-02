@@ -28,6 +28,8 @@ nonisolated enum CharacterDerivedStatsCalculator {
         ),
         itemSkillIDs: [],
         isUnarmed: true,
+        hasMeleeWeapon: false,
+        hasRangedWeapon: false,
         weaponRangeClass: .none
     )
 
@@ -102,6 +104,8 @@ nonisolated enum CharacterDerivedStatsCalculator {
             masterData: masterData,
             equipmentBattleStats: equipmentAggregation.battleStats,
             isUnarmed: equipmentAggregation.isUnarmed,
+            hasMeleeWeapon: equipmentAggregation.hasMeleeWeapon,
+            hasRangedWeapon: equipmentAggregation.hasRangedWeapon,
             weaponRangeClass: equipmentAggregation.weaponRangeClass
         )
     }
@@ -114,6 +118,8 @@ nonisolated enum CharacterDerivedStatsCalculator {
         masterData: MasterData,
         equipmentBattleStats: CharacterBattleStats = defaultEquipmentAggregation.battleStats,
         isUnarmed: Bool = defaultEquipmentAggregation.isUnarmed,
+        hasMeleeWeapon: Bool = defaultEquipmentAggregation.hasMeleeWeapon,
+        hasRangedWeapon: Bool = defaultEquipmentAggregation.hasRangedWeapon,
         weaponRangeClass: ItemRangeClass = defaultEquipmentAggregation.weaponRangeClass
     ) -> CharacterStatus? {
         guard let currentJob = masterData.jobs.first(where: { $0.id == jobId }) else {
@@ -291,6 +297,8 @@ nonisolated enum CharacterDerivedStatsCalculator {
             interruptKinds: skillAdjustments.interruptKinds.sorted { $0.rawValue < $1.rawValue },
             canUseBreath: skillAdjustments.canUseBreath,
             isUnarmed: isUnarmed,
+            hasMeleeWeapon: hasMeleeWeapon,
+            hasRangedWeapon: hasRangedWeapon,
             weaponRangeClass: weaponRangeClass,
             spellDamageMultipliersBySpellID: spellDamageMultipliersBySpellID,
             spellResistanceMultipliersBySpellID: spellResistanceMultipliersBySpellID

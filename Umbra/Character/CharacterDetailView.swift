@@ -627,11 +627,11 @@ private struct CharacterEquipmentSectionView: View {
 
     var body: some View {
         Section {
-            if character.equippedItemStacks.isEmpty {
+            if character.orderedEquippedItemStacks.isEmpty {
                 Text("装備なし")
                     .foregroundStyle(.secondary)
             } else {
-                ForEach(character.equippedItemStacks) { stack in
+                ForEach(character.orderedEquippedItemStacks) { stack in
                     LabeledContent(nameResolver.displayName(for: stack.itemID)) {
                         Text("x\(stack.count)")
                             .monospacedDigit()

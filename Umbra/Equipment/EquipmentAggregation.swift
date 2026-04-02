@@ -18,6 +18,8 @@ nonisolated struct EquipmentAggregation: Equatable, Sendable {
     let battleStats: CharacterBattleStats
     let itemSkillIDs: [Int]
     let isUnarmed: Bool
+    let hasMeleeWeapon: Bool
+    let hasRangedWeapon: Bool
     let weaponRangeClass: ItemRangeClass
 }
 
@@ -105,6 +107,8 @@ nonisolated struct EquipmentAggregator {
             battleStats: battleStats,
             itemSkillIDs: itemSkillIDs,
             isUnarmed: totalWeaponAttack <= 0,
+            hasMeleeWeapon: hasMeleeWeapon,
+            hasRangedWeapon: hasRangedWeapon,
             weaponRangeClass: resolvedWeaponRangeClass(
                 hasMeleeWeapon: hasMeleeWeapon,
                 hasRangedWeapon: hasRangedWeapon

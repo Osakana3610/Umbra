@@ -9,6 +9,8 @@ nonisolated struct CharacterStatus: Equatable, Sendable {
     let interruptKinds: [InterruptKind]
     let canUseBreath: Bool
     let isUnarmed: Bool
+    let hasMeleeWeapon: Bool
+    let hasRangedWeapon: Bool
     let weaponRangeClass: ItemRangeClass
     let spellDamageMultipliersBySpellID: [Int: Double]
     let spellResistanceMultipliersBySpellID: [Int: Double]

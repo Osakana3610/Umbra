@@ -489,6 +489,8 @@ final class GuildService {
     private func trimEquippedItemsToMaximum(
         on character: inout CharacterRecord
     ) -> [CompositeItemStack] {
+        character.equippedItemStacks = character.orderedEquippedItemStacks
+
         var removedStacks: [CompositeItemStack] = []
         var overflowCount = character.equippedItemCount - character.maximumEquippedItemCount
 

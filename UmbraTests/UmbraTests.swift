@@ -182,6 +182,22 @@ struct UmbraTests {
     }
 
     @Test
+    func equipmentAggregationKeepsBothWeaponRangesWhenMixed() throws {
+        let masterData = try loadGeneratedMasterData()
+        let meleeItemID = try #require(masterData.items.first(where: { $0.rangeClass == .melee })?.id)
+        let rangedItemID = try #require(masterData.items.first(where: { $0.rangeClass == .ranged })?.id)
+        let aggregation = try EquipmentAggregator(masterData: masterData).aggregate(
+            equippedItemStacks: [
+                CompositeItemStack(itemID: .baseItem(itemId: meleeItemID), count: 1),
+                CompositeItemStack(itemID: .baseItem(itemId: rangedItemID), count: 1)
+            ]
+        )
+
+        #expect(aggregation.hasMeleeWeapon)
+        #expect(aggregation.hasRangedWeapon)
+    }
+
+    @Test
     func unlockPartyConsumesGoldAndCreatesSequentialParty() async throws {
         let container = PersistenceController(inMemory: true).container
         let guildCoreDataStore = GuildCoreDataStore(container: container)
@@ -505,9 +521,18 @@ struct UmbraTests {
             aptitudeId: try #require(masterData.aptitudes.first?.id),
             masterData: masterData
         ).character
-        let equippedStacks = Array(masterData.items.prefix(4).map { item in
-            CompositeItemStack(itemID: CompositeItemID.baseItem(itemId: item.id), count: 1)
-        })
+        let sortedItemIDs = masterData.items.prefix(4).map(\.id).sorted()
+        #expect(sortedItemIDs.count == 4)
+        let equippedStacks = [
+            CompositeItemStack(itemID: CompositeItemID.baseItem(itemId: sortedItemIDs[2]), count: 1),
+            CompositeItemStack(itemID: CompositeItemID.baseItem(itemId: sortedItemIDs[0]), count: 1),
+            CompositeItemStack(itemID: CompositeItemID.baseItem(itemId: sortedItemIDs[3]), count: 1),
+            CompositeItemStack(itemID: CompositeItemID.baseItem(itemId: sortedItemIDs[1]), count: 1)
+        ]
+        let expectedRetainedStacks = Array(equippedStacks.sorted { $0.itemID.isOrdered(before: $1.itemID) }.prefix(3))
+        let expectedRemovedStack = try #require(
+            equippedStacks.max { $0.itemID.isOrdered(before: $1.itemID) }
+        )
         var persistedCharacter = try #require(
             try guildCoreDataStore.loadCharacter(characterId: character.characterId)
         )
@@ -520,9 +545,9 @@ struct UmbraTests {
             masterData: masterData
         )
 
-        #expect(updatedCharacter.equippedItemStacks == Array(equippedStacks.prefix(3)))
+        #expect(updatedCharacter.equippedItemStacks == expectedRetainedStacks)
         #expect(updatedCharacter.equippedItemCount == updatedCharacter.maximumEquippedItemCount)
-        #expect(try guildCoreDataStore.loadInventoryStacks() == [equippedStacks[3]])
+        #expect(try guildCoreDataStore.loadInventoryStacks() == [expectedRemovedStack])
     }
 
     @Test
@@ -1463,6 +1488,8 @@ struct UmbraTests {
             ),
             battleDerivedStats: makeBattleDerivedStats(rangedDamageMultiplier: 2.0),
             isUnarmed: false,
+            hasMeleeWeapon: false,
+            hasRangedWeapon: true,
             weaponRangeClass: .ranged
         )
 
@@ -1482,6 +1509,87 @@ struct UmbraTests {
             defender: enemyStatus,
             formationMultiplier: 0.70,
             weaponMultiplier: 2.0
+        )
+        #expect(damage == expected)
+    }
+
+    @Test
+    func mixedWeaponsApplyBothFormationMultipliers() throws {
+        let masterData = makeBattleTestMasterData(
+            enemyBaseStats: battleBaseStats(vitality: 1)
+        )
+        let resolvedEnemyStatus = CharacterDerivedStatsCalculator.status(
+            baseStats: battleCharacterBaseStats(vitality: 1),
+            jobId: 1,
+            level: 1,
+            skillIds: [],
+            masterData: masterData
+        )
+        let enemyStatus = try #require(resolvedEnemyStatus)
+        let allyStatus = makeBattleTestStatus(
+            battleStats: CharacterBattleStats(
+                maxHP: 100,
+                physicalAttack: 20,
+                physicalDefense: 0,
+                magic: 0,
+                magicDefense: 0,
+                healing: 0,
+                accuracy: 1_000,
+                evasion: 0,
+                attackCount: 1,
+                criticalRate: 0,
+                breathPower: 0
+            ),
+            isUnarmed: false,
+            hasMeleeWeapon: true,
+            hasRangedWeapon: true,
+            weaponRangeClass: .ranged
+        )
+        let defendingStatus = makeBattleTestStatus(
+            battleStats: CharacterBattleStats(
+                maxHP: 100,
+                physicalAttack: 1,
+                physicalDefense: 0,
+                magic: 0,
+                magicDefense: 0,
+                healing: 0,
+                accuracy: 0,
+                evasion: 0,
+                attackCount: 1,
+                criticalRate: 0,
+                breathPower: 0
+            )
+        )
+        let defendOnly = makeAutoBattleSettings(
+            breath: 0,
+            attack: 0,
+            recoverySpell: 0,
+            attackSpell: 0,
+            priority: [.attack, .breath, .recoverySpell, .attackSpell]
+        )
+
+        let result = try #require(
+            firstResolvedBattle(
+                matchingSeeds: 0..<256,
+                partyMembers: [
+                    makePartyBattleMember(id: 1, name: "前衛1", status: defendingStatus, autoBattleSettings: defendOnly),
+                    makePartyBattleMember(id: 2, name: "前衛2", status: defendingStatus, autoBattleSettings: defendOnly),
+                    makePartyBattleMember(id: 3, name: "中衛1", status: defendingStatus, autoBattleSettings: defendOnly),
+                    makePartyBattleMember(id: 4, name: "中衛2", status: defendingStatus, autoBattleSettings: defendOnly),
+                    makePartyBattleMember(id: 5, name: "後衛", status: allyStatus)
+                ],
+                masterData: masterData
+            ) { result in
+                firstDamageValue(in: result, actionKind: .attack) != nil
+            }
+        )
+
+        let damage = try #require(firstDamageValue(in: result, actionKind: .attack))
+        let expected = expectedPhysicalDamage(
+            attacker: allyStatus,
+            defender: enemyStatus,
+            formationMultiplier: 0.70,
+            weaponMultiplier: 1.0
         )
         #expect(damage == expected)
     }
@@ -3352,6 +3460,8 @@ private func makeBattleTestStatus(
     interruptKinds: [InterruptKind] = [],
     canUseBreath: Bool = false,
     isUnarmed: Bool = false,
+    hasMeleeWeapon: Bool? = nil,
+    hasRangedWeapon: Bool? = nil,
     weaponRangeClass: ItemRangeClass = .melee,
     spellDamageMultipliersBySpellID: [Int: Double] = [:],
     spellResistanceMultipliersBySpellID: [Int: Double] = [:]
@@ -3365,6 +3475,8 @@ private func makeBattleTestStatus(
         interruptKinds: interruptKinds,
         canUseBreath: canUseBreath,
         isUnarmed: isUnarmed,
+        hasMeleeWeapon: hasMeleeWeapon ?? (weaponRangeClass == .melee),
+        hasRangedWeapon: hasRangedWeapon ?? (weaponRangeClass == .ranged),
         weaponRangeClass: weaponRangeClass,
         spellDamageMultipliersBySpellID: spellDamageMultipliersBySpellID,
         spellResistanceMultipliersBySpellID: spellResistanceMultipliersBySpellID

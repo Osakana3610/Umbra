@@ -189,6 +189,10 @@ struct CharacterEquipmentView: View {
             return "格闘"
         }
 
+        if status.hasMeleeWeapon && status.hasRangedWeapon {
+            return "近距離+遠距離"
+        }
+
         switch status.weaponRangeClass {
         case .none:
             return "補助"

@@ -1152,26 +1152,18 @@ nonisolated private struct BattleResolutionEngine {
     }
 
     private func formationMultiplier(for combatant: RuntimeCombatant) -> Double {
-        switch combatant.status.weaponRangeClass {
-        case .ranged:
-            switch formationRank(for: combatant.formationIndex) {
-            case .front:
-                0.70
-            case .middle:
-                0.85
-            case .back:
-                1.00
-            }
-        case .none, .melee:
-            switch formationRank(for: combatant.formationIndex) {
-            case .front:
-                1.00
-            case .middle:
-                0.85
-            case .back:
-                0.70
-            }
+        let rank = formationRank(for: combatant.formationIndex)
+        var multiplier = 1.0
+
+        if combatant.status.isUnarmed || combatant.status.hasMeleeWeapon {
+            multiplier *= meleeFormationMultiplier(for: rank)
         }
+
+        if combatant.status.hasRangedWeapon {
+            multiplier *= rangedFormationMultiplier(for: rank)
+        }
+
+        return multiplier
     }
 
     private func weaponDamageMultiplier(for combatant: RuntimeCombatant) -> Double {
@@ -1195,6 +1187,28 @@ nonisolated private struct BattleResolutionEngine {
             .middle
         default:
             .back
+        }
+    }
+
+    private func meleeFormationMultiplier(for rank: FormationRank) -> Double {
+        switch rank {
+        case .front:
+            1.00
+        case .middle:
+            0.85
+        case .back:
+            0.70
+        }
+    }
+
+    private func rangedFormationMultiplier(for rank: FormationRank) -> Double {
+        switch rank {
+        case .front:
+            0.70
+        case .middle:
+            0.85
+        case .back:
+            1.00
         }
     }
 
