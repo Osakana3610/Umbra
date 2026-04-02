@@ -285,6 +285,7 @@ nonisolated private struct BattleResolutionEngine {
 
         let actor = combatants[queuedAction.actorIndex]
         var results: [BattleTargetResult] = []
+        var fallenTargetIndices: [Int] = []
         for (subactionNumber, targetIndex) in targetIndices.enumerated() {
             let guarded = combatants[targetIndex].isDefending
             let damage = damageValue(
@@ -307,6 +308,9 @@ nonisolated private struct BattleResolutionEngine {
                 purposeSubaction: subactionNumber + 1
             )
             results.append(targetResult)
+            if targetResult.flags.contains(.defeated) {
+                fallenTargetIndices.append(targetIndex)
+            }
         }
 
         return ResolvedAction(
@@ -318,7 +322,10 @@ nonisolated private struct BattleResolutionEngine {
                 targetIds: targetIndices.map { combatants[$0].id },
                 results: results
             ),
-            generatedInterrupts: []
+            generatedInterrupts: rescueInterruptActions(
+                after: queuedAction,
+                fallenTargetIndices: fallenTargetIndices
+            )
         )
     }
 
@@ -351,13 +358,13 @@ nonisolated private struct BattleResolutionEngine {
         let actionFlags = criticalTriggered ? [BattleActionFlag.critical] : []
 
         if hitMultiplier == 0 {
-            let generatedInterrupts = queuedAction.canTriggerInterrupts
+            let generatedInterrupts = (queuedAction.canTriggerInterrupts
                 ? interruptActions(
                     after: queuedAction,
                     targetIndex: targetIndex,
                     targetWasDefeated: false
                 )
-                : []
+                : [])
             return ResolvedAction(
                 record: BattleActionRecord(
                     actorId: actor.id,
@@ -409,8 +416,12 @@ nonisolated private struct BattleResolutionEngine {
         )
 
         var generatedInterrupts: [QueuedAction] = []
+        generatedInterrupts = rescueInterruptActions(
+            after: queuedAction,
+            fallenTargetIndices: targetResult.flags.contains(.defeated) ? [targetIndex] : []
+        )
         if queuedAction.canTriggerInterrupts {
-            generatedInterrupts = interruptActions(
+            generatedInterrupts += interruptActions(
                 after: queuedAction,
                 targetIndex: targetIndex,
                 targetWasDefeated: targetResult.flags.contains(.defeated)
@@ -582,6 +593,7 @@ nonisolated private struct BattleResolutionEngine {
             }
 
             let actor = combatants[actorIndex]
+            var fallenTargetIndices: [Int] = []
             let results = targetIndices.enumerated().flatMap { offset, targetIndex in
                 let target = combatants[targetIndex]
                 let guarded = target.isDefending
@@ -606,6 +618,9 @@ nonisolated private struct BattleResolutionEngine {
                     guarded: guarded,
                     purposeSubaction: offset + 1
                 )
+                if damageResult.flags.contains(.defeated) {
+                    fallenTargetIndices.append(targetIndex)
+                }
                 var targetResults = [damageResult]
                 if let ailmentResult = applySpellAilmentIfNeeded(
                     spell,
@@ -627,7 +642,10 @@ nonisolated private struct BattleResolutionEngine {
                     targetIds: targetIndices.map { combatants[$0].id },
                     results: results
                 ),
-                generatedInterrupts: []
+                generatedInterrupts: rescueInterruptActions(
+                    after: queuedAction,
+                    fallenTargetIndices: fallenTargetIndices
+                )
             )
         case .buff:
             let targetIndices = livingIndices(on: combatants[actorIndex].side)
@@ -746,6 +764,74 @@ nonisolated private struct BattleResolutionEngine {
         )
     }
 
+    private mutating func rescueInterruptActions(
+        after queuedAction: QueuedAction,
+        fallenTargetIndices: [Int]
+    ) -> [QueuedAction] {
+        let rescueTargets = sanitizedRescueTargetIndices(
+            after: queuedAction,
+            fallenTargetIndices: fallenTargetIndices
+        )
+        guard !rescueTargets.isEmpty else {
+            return []
+        }
+
+        let targetSide = combatants[rescueTargets[0]].side
+        let rescueHolders = combatants.indices.filter { index in
+            combatants[index].side == targetSide
+                && combatants[index].canAct
+                && combatants[index].status.interruptKinds.contains(.rescue)
+                && selectRescueSpell(for: index) != nil
+        }
+
+        return rescueHolders.compactMap { rescuerIndex in
+            let roll = uniform(
+                turn: currentTurn,
+                action: currentActionNumber,
+                subaction: 1,
+                roll: rescuerIndex + 1,
+                purpose: "interrupt.rescue.\(combatants[rescuerIndex].id.rawValue)"
+            )
+            guard roll < probability(for: .recoverySpell, rates: combatants[rescuerIndex].actionRates) else {
+                return nil
+            }
+            return QueuedAction(
+                actorIndex: rescuerIndex,
+                recordKind: .rescue,
+                fixedTargetIndices: rescueTargets,
+                criticalAllowed: false,
+                canTriggerInterrupts: false
+            )
+        }
+    }
+
+    private func sanitizedRescueTargetIndices(
+        after queuedAction: QueuedAction,
+        fallenTargetIndices: [Int]
+    ) -> [Int] {
+        guard combatants[queuedAction.actorIndex].side == .enemy else {
+            return []
+        }
+
+        switch queuedAction.recordKind {
+        case .attack, .counter, .extraAttack, .pursuit, .breath, .attackSpell:
+            break
+        case .recoverySpell, .defend, .rescue:
+            return []
+        }
+
+        var rescueTargets: [Int] = []
+        for targetIndex in fallenTargetIndices {
+            guard !targetIndex.isOutOfBounds(in: combatants),
+                  combatants[targetIndex].side == .ally,
+                  !rescueTargets.contains(targetIndex) else {
+                continue
+            }
+            rescueTargets.append(targetIndex)
+        }
+        return rescueTargets
+    }
+
     private mutating func interruptActions(
         after queuedAction: QueuedAction,
         targetIndex: Int,
@@ -753,36 +839,6 @@ nonisolated private struct BattleResolutionEngine {
     ) -> [QueuedAction] {
         let actorIndex = queuedAction.actorIndex
         var queuedInterrupts: [QueuedAction] = []
-
-        if targetWasDefeated {
-            let rescueHolders = combatants.indices.filter { index in
-                combatants[index].side == combatants[targetIndex].side
-                    && combatants[index].canAct
-                    && combatants[index].status.interruptKinds.contains(.rescue)
-                    && selectRescueSpell(for: index) != nil
-            }
-
-            for rescuerIndex in rescueHolders {
-                let roll = uniform(
-                    turn: currentTurn,
-                    action: currentActionNumber,
-                    subaction: 1,
-                    roll: rescuerIndex + 1,
-                    purpose: "interrupt.rescue.\(combatants[rescuerIndex].id.rawValue)"
-                )
-                if roll < probability(for: .recoverySpell, rates: combatants[rescuerIndex].actionRates) {
-                    queuedInterrupts.append(
-                        QueuedAction(
-                            actorIndex: rescuerIndex,
-                            recordKind: .rescue,
-                            fixedTargetIndices: [targetIndex],
-                            criticalAllowed: false,
-                            canTriggerInterrupts: false
-                        )
-                    )
-                }
-            }
-        }
 
         if combatants[targetIndex].canAct && combatants[targetIndex].status.interruptKinds.contains(.counter) {
             let roll = uniform(

@@ -151,6 +151,29 @@ final class GuildRosterStore {
         }
     }
 
+    func renameCharacter(
+        characterId: Int,
+        name: String
+    ) {
+        guard !isMutating, phase == .loaded else {
+            return
+        }
+
+        isMutating = true
+        lastOperationError = nil
+        defer { isMutating = false }
+
+        do {
+            let character = try service.renameCharacter(
+                characterId: characterId,
+                name: name
+            )
+            replaceCharacter(character)
+        } catch {
+            lastOperationError = Self.errorMessage(for: error)
+        }
+    }
+
     func setAutoReviveDefeatedCharactersEnabled(
         _ isEnabled: Bool
     ) {

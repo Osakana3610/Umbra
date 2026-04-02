@@ -48,6 +48,12 @@ struct CharacterDetailView: View {
                     draftRates: $draftRates,
                     draftPriority: $draftPriority,
                     isMutating: rosterStore.isMutating,
+                    onNameChange: { updatedName in
+                        rosterStore.renameCharacter(
+                            characterId: character.characterId,
+                            name: updatedName
+                        )
+                    },
                     onAutoBattleSettingsChange: { updatedSettings in
                         persistAutoBattleSettings(updatedSettings, current: character.autoBattleSettings)
                     }
@@ -142,10 +148,13 @@ private struct CharacterDetailLoadedView: View {
     @Binding var draftRates: CharacterActionRates
     @Binding var draftPriority: [BattleActionKind]
     let isMutating: Bool
+    let onNameChange: (String) -> Void
     let onAutoBattleSettingsChange: (CharacterAutoBattleSettings) -> Void
 
     @State private var presentedSheet: CharacterDetailSheet?
     @State private var isEditingAutoBattlePriority = false
+    @State private var draftName = ""
+    @FocusState private var isNameFieldFocused: Bool
 
     var body: some View {
         List {
@@ -153,7 +162,11 @@ private struct CharacterDetailLoadedView: View {
                 CharacterDetailHeaderView(
                     character: character,
                     summaryText: summaryText,
-                    hpText: hpText
+                    hpText: hpText,
+                    draftName: $draftName,
+                    isNameFieldFocused: $isNameFieldFocused,
+                    isMutating: isMutating,
+                    onCommitName: commitCharacterName
                 )
             }
 
@@ -248,13 +261,40 @@ private struct CharacterDetailLoadedView: View {
                                 presentedSheet = nil
                             }
                         }
-                    }
+                }
             }
+        }
+        .task(id: character.characterId) {
+            if draftName.isEmpty {
+                draftName = character.name
+            }
+        }
+        .onChange(of: character.name) { _, newValue in
+            guard !isNameFieldFocused else {
+                return
+            }
+
+            draftName = newValue
         }
     }
 
     private func presentJobChange() {
         presentedSheet = .jobChange
+    }
+
+    private func commitCharacterName() {
+        let normalizedName = draftName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !normalizedName.isEmpty else {
+            draftName = character.name
+            return
+        }
+        guard normalizedName != character.name else {
+            draftName = normalizedName
+            return
+        }
+
+        draftName = normalizedName
+        onNameChange(normalizedName)
     }
 
     private func persistAutoBattleSettings() {
@@ -357,6 +397,10 @@ private struct CharacterDetailHeaderView: View {
     let character: CharacterRecord
     let summaryText: String
     let hpText: String
+    @Binding var draftName: String
+    let isNameFieldFocused: FocusState<Bool>.Binding
+    let isMutating: Bool
+    let onCommitName: () -> Void
 
     var body: some View {
         HStack(alignment: .top, spacing: 16) {
@@ -367,8 +411,22 @@ private struct CharacterDetailHeaderView: View {
                 .clipShape(.rect(cornerRadius: 16))
 
             VStack(alignment: .leading, spacing: 8) {
-                Text(character.name)
-                    .font(.title3.weight(.semibold))
+                TextField("名前", text: $draftName)
+                    .textFieldStyle(.roundedBorder)
+                    .focused(isNameFieldFocused)
+                    .submitLabel(.done)
+                    .disabled(isMutating)
+                    .onSubmit {
+                        onCommitName()
+                    }
+                    .onChange(of: isNameFieldFocused.wrappedValue) { _, isFocused in
+                        guard !isFocused else {
+                            return
+                        }
+
+                        onCommitName()
+                    }
+                    .accessibilityLabel("キャラクター名")
 
                 Text(summaryText)
 

@@ -57,6 +57,7 @@ extension PartyEntity {
     @NSManaged nonisolated public var name: String?
     @NSManaged nonisolated public var partyId: Int64
     @NSManaged nonisolated public var pendingAutomaticRunCount: Int64
+    @NSManaged nonisolated public var pendingAutomaticRunStartedAt: Date?
     @NSManaged nonisolated public var selectedDifficultyTitleId: Int64
     @NSManaged nonisolated public var selectedLabyrinthId: Int64
 

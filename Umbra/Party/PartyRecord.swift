@@ -16,6 +16,7 @@ struct PartyRecord: Identifiable, Equatable, Sendable {
     var selectedLabyrinthId: Int?
     var selectedDifficultyTitleId: Int?
     var pendingAutomaticRunCount: Int = 0
+    var pendingAutomaticRunStartedAt: Date? = nil
 
     var id: Int { partyId }
 

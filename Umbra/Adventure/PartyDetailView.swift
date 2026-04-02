@@ -11,6 +11,7 @@ struct PartyDetailView: View {
     let explorationStore: ExplorationStore
 
     @State private var partyNameDraft = ""
+    @State private var presentedCharacter: CharacterRecord?
     @FocusState private var isPartyNameFieldFocused: Bool
 
     var body: some View {
@@ -38,26 +39,23 @@ struct PartyDetailView: View {
                             PartyMembersView(
                                 memberCharacterIds: party.memberCharacterIds,
                                 charactersById: rosterStore.charactersById,
-                                displayedHPs: activeRun?.currentPartyHPs
+                                displayedHPs: activeRun?.currentPartyHPs,
+                                onSelectCharacter: { character in
+                                    presentedCharacter = character
+                                }
                             )
                         }
                         .padding(.bottom, 4)
                     }
 
                     Section {
-                        HStack(spacing: 12) {
-                            Text("パーティのスキルを見る")
-                                .foregroundStyle(.primary)
-
-                            Spacer()
-
-                            Text("未実装")
-                                .font(.footnote)
-                                .foregroundStyle(.secondary)
-
-                            Image(systemName: "chevron.right")
-                                .font(.footnote)
-                                .foregroundStyle(.tertiary)
+                        NavigationLink("パーティのスキルを見る") {
+                            PartySkillSummaryView(
+                                partyId: party.partyId,
+                                masterData: masterData,
+                                rosterStore: rosterStore,
+                                partyStore: partyStore
+                            )
                         }
 
                         if isRunLocked {
@@ -135,6 +133,23 @@ struct PartyDetailView: View {
                 .listStyle(.insetGrouped)
                 .navigationTitle("パーティ詳細")
                 .navigationBarTitleDisplayMode(.inline)
+                .sheet(item: $presentedCharacter) { character in
+                    NavigationStack {
+                        CharacterDetailView(
+                            characterId: character.characterId,
+                            masterData: masterData,
+                            rosterStore: rosterStore,
+                            explorationStore: explorationStore
+                        )
+                        .toolbar {
+                            ToolbarItem(placement: .topBarTrailing) {
+                                Button("閉じる") {
+                                    presentedCharacter = nil
+                                }
+                            }
+                        }
+                    }
+                }
                 .task {
                     if partyNameDraft.isEmpty {
                         partyNameDraft = party.name

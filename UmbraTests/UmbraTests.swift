@@ -46,6 +46,7 @@ struct UmbraTests {
         let container = PersistenceController(inMemory: true).container
         let guildCoreDataStore = GuildCoreDataStore(container: container)
         let backgroundedAt = Date(timeIntervalSinceReferenceDate: 12_345)
+        let pendingStartedAt = Date(timeIntervalSinceReferenceDate: 12_346)
 
         var snapshot = try guildCoreDataStore.loadRosterSnapshot()
         snapshot.playerState.lastBackgroundedAt = backgroundedAt
@@ -53,6 +54,7 @@ struct UmbraTests {
 
         var parties = try guildCoreDataStore.loadParties()
         parties[0].pendingAutomaticRunCount = 2
+        parties[0].pendingAutomaticRunStartedAt = pendingStartedAt
         try guildCoreDataStore.saveParties(parties)
 
         let reloadedSnapshot = try guildCoreDataStore.loadFreshRosterSnapshot()
@@ -64,7 +66,8 @@ struct UmbraTests {
                 partyId: 1,
                 name: "パーティ1",
                 memberCharacterIds: [],
-                pendingAutomaticRunCount: 2
+                pendingAutomaticRunCount: 2,
+                pendingAutomaticRunStartedAt: pendingStartedAt
             )
         ])
     }
@@ -207,6 +210,142 @@ struct UmbraTests {
             magicResistanceMultiplier: 1.0,
             breathResistanceMultiplier: 0.8
         ))
+    }
+
+    @Test
+    func completeStatusCalculationAppliesAllBattleStatMultiplierAndRevokesGrantedSpell() throws {
+        let attackSpell = MasterData.Spell(
+            id: 1,
+            name: "火球",
+            category: .attack,
+            kind: .damage,
+            targetSide: .enemy,
+            targetCount: 1,
+            multiplier: 1.0
+        )
+        let grantSkill = MasterData.Skill(
+            id: 1,
+            name: "火球習得",
+            description: "火球を習得する。",
+            effects: [
+                MasterData.SkillEffect(
+                    kind: .magicAccess,
+                    target: nil,
+                    operation: "grant",
+                    value: nil,
+                    spellIds: [attackSpell.id],
+                    condition: nil,
+                    interruptKind: nil
+                )
+            ]
+        )
+        let revokeSkill = MasterData.Skill(
+            id: 2,
+            name: "火球忘却",
+            description: "火球を忘却する。",
+            effects: [
+                MasterData.SkillEffect(
+                    kind: .magicAccess,
+                    target: nil,
+                    operation: "revoke",
+                    value: nil,
+                    spellIds: [attackSpell.id],
+                    condition: nil,
+                    interruptKind: nil
+                )
+            ]
+        )
+        let allStatSkill = MasterData.Skill(
+            id: 3,
+            name: "全能力強化",
+            description: "全戦闘能力値が上昇する。",
+            effects: [
+                MasterData.SkillEffect(
+                    kind: .allBattleStatMultiplier,
+                    target: nil,
+                    operation: nil,
+                    value: 1.5,
+                    spellIds: [],
+                    condition: nil,
+                    interruptKind: nil
+                )
+            ]
+        )
+        let masterData = makeBattleTestMasterData(
+            skills: [grantSkill, revokeSkill, allStatSkill],
+            spells: [attackSpell],
+            allyBaseStats: battleBaseStats(vitality: 10, strength: 10),
+            allyRaceSkillIds: [grantSkill.id, revokeSkill.id, allStatSkill.id],
+            enemyBaseStats: battleBaseStats(vitality: 1)
+        )
+        let character = makeBattleTestCharacter(
+            id: 1,
+            name: "賢者",
+            currentHP: 100,
+            autoBattleSettings: makeAutoBattleSettings(
+                breath: 0,
+                attack: 100,
+                recoverySpell: 0,
+                attackSpell: 100,
+                priority: [.attackSpell, .attack, .recoverySpell, .breath]
+            )
+        )
+
+        let status = try #require(CharacterDerivedStatsCalculator.status(for: character, masterData: masterData))
+
+        #expect(status.battleStats.maxHP == 45)
+        #expect(status.battleStats.physicalAttack == 9)
+        #expect(status.spellIds.isEmpty)
+    }
+
+    @Test
+    func unarmedConditionalSkillOnlyAppliesWhileUnarmed() throws {
+        let unarmedSkill = MasterData.Skill(
+            id: 1,
+            name: "素手攻撃強化",
+            description: "格闘状態のとき物理攻撃が増加する。",
+            effects: [
+                MasterData.SkillEffect(
+                    kind: .battleStatModifier,
+                    target: "physicalAttack",
+                    operation: "pctAdd",
+                    value: 1.0,
+                    spellIds: [],
+                    condition: .unarmed,
+                    interruptKind: nil
+                )
+            ]
+        )
+        let masterData = makeBattleTestMasterData(
+            skills: [unarmedSkill],
+            allyBaseStats: battleBaseStats(strength: 10),
+            allyRaceSkillIds: [unarmedSkill.id],
+            enemyBaseStats: battleBaseStats(vitality: 1)
+        )
+
+        let armedStatus = try #require(
+            CharacterDerivedStatsCalculator.status(
+                baseStats: battleCharacterBaseStats(strength: 10),
+                jobId: 1,
+                level: 1,
+                skillIds: [unarmedSkill.id],
+                masterData: masterData,
+                isUnarmed: false
+            )
+        )
+        let unarmedStatus = try #require(
+            CharacterDerivedStatsCalculator.status(
+                baseStats: battleCharacterBaseStats(strength: 10),
+                jobId: 1,
+                level: 1,
+                skillIds: [unarmedSkill.id],
+                masterData: masterData,
+                isUnarmed: true
+            )
+        )
+
+        #expect(armedStatus.battleStats.physicalAttack == 6)
+        #expect(unarmedStatus.battleStats.physicalAttack == 12)
     }
 
     @Test
@@ -393,20 +532,21 @@ struct UmbraTests {
         #expect(allRunsCompleted)
         #expect(runs.map(\.startedAt) == [
             Date(timeIntervalSinceReferenceDate: 100),
-            Date(timeIntervalSinceReferenceDate: 101),
-            Date(timeIntervalSinceReferenceDate: 102),
-            Date(timeIntervalSinceReferenceDate: 103),
+            Date(timeIntervalSinceReferenceDate: 110),
+            Date(timeIntervalSinceReferenceDate: 111),
+            Date(timeIntervalSinceReferenceDate: 112),
         ])
         #expect(runs.compactMap { $0.completion?.completedAt } == [
             Date(timeIntervalSinceReferenceDate: 101),
-            Date(timeIntervalSinceReferenceDate: 102),
-            Date(timeIntervalSinceReferenceDate: 103),
-            Date(timeIntervalSinceReferenceDate: 104),
+            Date(timeIntervalSinceReferenceDate: 111),
+            Date(timeIntervalSinceReferenceDate: 112),
+            Date(timeIntervalSinceReferenceDate: 113),
         ])
         let persistedRoster = try guildCoreDataStore.loadRosterSnapshot()
         let persistedParty = try #require(guildCoreDataStore.loadParties().first)
         #expect(persistedRoster.playerState.lastBackgroundedAt == nil)
         #expect(persistedParty.pendingAutomaticRunCount == 0)
+        #expect(persistedParty.pendingAutomaticRunStartedAt == nil)
     }
 
     @Test
@@ -458,6 +598,7 @@ struct UmbraTests {
 
         let persistedParty = try #require(guildCoreDataStore.loadParties().first)
         #expect(persistedParty.pendingAutomaticRunCount == PartyRecord.maxPendingAutomaticRunCount)
+        #expect(persistedParty.pendingAutomaticRunStartedAt == Date(timeIntervalSinceReferenceDate: 100))
     }
 
     @Test
@@ -3100,6 +3241,767 @@ struct UmbraTests {
             .extraAttack,
             .pursuit
         ])
+    }
+
+    @Test
+    func rescueTriggersWhenEnemyAttackDefeatsAnAlly() throws {
+        let healAllSpell = MasterData.Spell(
+            id: 1,
+            name: "ヒールオール",
+            category: .recovery,
+            kind: .heal,
+            targetSide: .ally,
+            targetCount: 0,
+            multiplier: 1.0
+        )
+        let masterData = makeBattleTestMasterData(
+            spells: [healAllSpell],
+            enemyBaseStats: battleBaseStats(vitality: 100, strength: 100, agility: 1_000),
+            enemyActionRates: MasterData.ActionRates(
+                breath: 0,
+                attack: 100,
+                recoverySpell: 0,
+                attackSpell: 0
+            )
+        )
+        let rescuerStatus = makeBattleTestStatus(
+            battleStats: CharacterBattleStats(
+                maxHP: 100,
+                physicalAttack: 0,
+                physicalDefense: 0,
+                magic: 0,
+                magicDefense: 0,
+                healing: 30,
+                accuracy: 0,
+                evasion: 0,
+                attackCount: 1,
+                criticalRate: 0,
+                breathPower: 0
+            ),
+            spellIds: [healAllSpell.id],
+            interruptKinds: [.rescue]
+        )
+        let victimStatus = makeBattleTestStatus(
+            battleStats: CharacterBattleStats(
+                maxHP: 40,
+                physicalAttack: 0,
+                physicalDefense: 0,
+                magic: 0,
+                magicDefense: 0,
+                healing: 0,
+                accuracy: 0,
+                evasion: 0,
+                attackCount: 1,
+                criticalRate: 0,
+                breathPower: 0
+            )
+        )
+
+        let result = try #require(
+            firstResolvedBattle(
+                matchingSeeds: 0..<8_192,
+                partyMembers: [
+                    makePartyBattleMember(
+                        id: 1,
+                        name: "僧侶",
+                        status: rescuerStatus,
+                        autoBattleSettings: makeAutoBattleSettings(
+                            breath: 0,
+                            attack: 0,
+                            recoverySpell: 100,
+                            attackSpell: 0,
+                            priority: [.recoverySpell, .attack, .attackSpell, .breath]
+                        )
+                    ),
+                    makePartyBattleMember(id: 2, name: "前衛", status: victimStatus, currentHP: 1)
+                ],
+                masterData: masterData
+            ) { result in
+                guard let firstTurn = result.battleRecord.turns.first,
+                      firstTurn.actions.count >= 2 else {
+                    return false
+                }
+                let attack = firstTurn.actions[0]
+                let rescue = firstTurn.actions[1]
+                return attack.actionKind == .attack
+                    && attack.targetIds == [BattleCombatantID(rawValue: "character:2")]
+                    && rescue.actionKind == .rescue
+                    && rescue.targetIds == [BattleCombatantID(rawValue: "character:2")]
+                    && rescue.results.first?.flags.contains(.revived) == true
+            }
+        )
+
+        let firstTurn = try #require(result.battleRecord.turns.first)
+        #expect(Array(firstTurn.actions.prefix(2).map(\.actionKind)) == [.attack, .rescue])
+        #expect(firstTurn.actions[1].results.first?.value == 30)
+    }
+
+    @Test
+    func rescueTriggersWhenEnemyCounterDefeatsAnAlly() throws {
+        let healAllSpell = MasterData.Spell(
+            id: 1,
+            name: "ヒールオール",
+            category: .recovery,
+            kind: .heal,
+            targetSide: .ally,
+            targetCount: 0,
+            multiplier: 1.0
+        )
+        let counterSkill = MasterData.Skill(
+            id: 2,
+            name: "反撃",
+            description: "反撃する。",
+            effects: [
+                MasterData.SkillEffect(
+                    kind: .interruptGrant,
+                    target: nil,
+                    operation: nil,
+                    value: nil,
+                    spellIds: [],
+                    condition: nil,
+                    interruptKind: .counter
+                )
+            ]
+        )
+        let masterData = makeBattleTestMasterData(
+            skills: [counterSkill],
+            spells: [healAllSpell],
+            enemyBaseStats: battleBaseStats(vitality: 100, strength: 100, agility: 1),
+            enemySkillIds: [counterSkill.id],
+            enemyActionRates: MasterData.ActionRates(
+                breath: 0,
+                attack: 0,
+                recoverySpell: 0,
+                attackSpell: 0
+            )
+        )
+        let rescuerStatus = makeBattleTestStatus(
+            battleStats: CharacterBattleStats(
+                maxHP: 100,
+                physicalAttack: 0,
+                physicalDefense: 0,
+                magic: 0,
+                magicDefense: 0,
+                healing: 30,
+                accuracy: 0,
+                evasion: 0,
+                attackCount: 1,
+                criticalRate: 0,
+                breathPower: 0
+            ),
+            spellIds: [healAllSpell.id],
+            interruptKinds: [.rescue]
+        )
+        let attackerStatus = makeBattleTestStatus(
+            baseStats: battleCharacterBaseStats(agility: 1_000),
+            battleStats: CharacterBattleStats(
+                maxHP: 40,
+                physicalAttack: 1,
+                physicalDefense: 0,
+                magic: 0,
+                magicDefense: 0,
+                healing: 0,
+                accuracy: 1_000,
+                evasion: 0,
+                attackCount: 1,
+                criticalRate: 0,
+                breathPower: 0
+            )
+        )
+
+        let result = try #require(
+            firstResolvedBattle(
+                matchingSeeds: 0..<8_192,
+                partyMembers: [
+                    makePartyBattleMember(
+                        id: 1,
+                        name: "僧侶",
+                        status: rescuerStatus,
+                        autoBattleSettings: makeAutoBattleSettings(
+                            breath: 0,
+                            attack: 0,
+                            recoverySpell: 100,
+                            attackSpell: 0,
+                            priority: [.recoverySpell, .attack, .attackSpell, .breath]
+                        )
+                    ),
+                    makePartyBattleMember(id: 2, name: "剣士", status: attackerStatus, currentHP: 1)
+                ],
+                masterData: masterData
+            ) { result in
+                guard let firstTurn = result.battleRecord.turns.first,
+                      firstTurn.actions.count >= 3 else {
+                    return false
+                }
+                let attack = firstTurn.actions[0]
+                let counter = firstTurn.actions[1]
+                let rescue = firstTurn.actions[2]
+                return attack.actionKind == .attack
+                    && counter.actionKind == .counter
+                    && counter.targetIds == [BattleCombatantID(rawValue: "character:2")]
+                    && counter.results.first?.flags.contains(.defeated) == true
+                    && rescue.actionKind == .rescue
+                    && rescue.targetIds == [BattleCombatantID(rawValue: "character:2")]
+                    && rescue.results.first?.flags.contains(.revived) == true
+            }
+        )
+
+        let firstTurn = try #require(result.battleRecord.turns.first)
+        #expect(Array(firstTurn.actions.prefix(3).map(\.actionKind)) == [.attack, .counter, .rescue])
+    }
+
+    @Test
+    func rescueTriggersWhenEnemyBreathDefeatsMultipleAllies() throws {
+        let healAllSpell = MasterData.Spell(
+            id: 1,
+            name: "ヒールオール",
+            category: .recovery,
+            kind: .heal,
+            targetSide: .ally,
+            targetCount: 0,
+            multiplier: 1.0
+        )
+        let breathSkill = MasterData.Skill(
+            id: 2,
+            name: "ブレス",
+            description: "ブレスを使う。",
+            effects: [
+                MasterData.SkillEffect(
+                    kind: .breathAccess,
+                    target: nil,
+                    operation: nil,
+                    value: nil,
+                    spellIds: [],
+                    condition: nil,
+                    interruptKind: nil
+                )
+            ]
+        )
+        let masterData = makeBattleTestMasterData(
+            skills: [breathSkill],
+            spells: [healAllSpell],
+            enemyBaseStats: battleBaseStats(vitality: 100, agility: 1_000),
+            enemySkillIds: [breathSkill.id],
+            enemyActionRates: MasterData.ActionRates(
+                breath: 100,
+                attack: 0,
+                recoverySpell: 0,
+                attackSpell: 0
+            ),
+            enemyActionPriority: [.breath, .attack, .recoverySpell, .attackSpell]
+        )
+        let rescuerStatus = makeBattleTestStatus(
+            battleStats: CharacterBattleStats(
+                maxHP: 100,
+                physicalAttack: 0,
+                physicalDefense: 0,
+                magic: 0,
+                magicDefense: 0,
+                healing: 30,
+                accuracy: 0,
+                evasion: 0,
+                attackCount: 1,
+                criticalRate: 0,
+                breathPower: 0
+            ),
+            spellIds: [healAllSpell.id],
+            interruptKinds: [.rescue]
+        )
+        let victimStatus = makeBattleTestStatus(
+            battleStats: CharacterBattleStats(
+                maxHP: 40,
+                physicalAttack: 0,
+                physicalDefense: 0,
+                magic: 0,
+                magicDefense: 0,
+                healing: 0,
+                accuracy: 0,
+                evasion: 0,
+                attackCount: 1,
+                criticalRate: 0,
+                breathPower: 0
+            )
+        )
+
+        let result = try SingleBattleResolver.resolve(
+            context: BattleContext(
+                runId: RunSessionID(partyId: 1, partyRunId: 1),
+                rootSeed: 0,
+                floorNumber: 1,
+                battleNumber: 1
+            ),
+            partyMembers: [
+                makePartyBattleMember(
+                    id: 1,
+                    name: "僧侶",
+                    status: rescuerStatus,
+                    autoBattleSettings: makeAutoBattleSettings(
+                        breath: 0,
+                        attack: 0,
+                        recoverySpell: 100,
+                        attackSpell: 0,
+                        priority: [.recoverySpell, .attack, .attackSpell, .breath]
+                    )
+                ),
+                makePartyBattleMember(id: 2, name: "前衛A", status: victimStatus, currentHP: 1),
+                makePartyBattleMember(id: 3, name: "前衛B", status: victimStatus, currentHP: 1)
+            ],
+            enemies: [BattleEnemySeed(enemyId: 1, level: 1)],
+            masterData: masterData
+        )
+
+        let firstTurn = try #require(result.battleRecord.turns.first)
+        let rescue = try #require(firstTurn.actions.dropFirst().first(where: { $0.actionKind == .rescue }))
+
+        #expect(Array(firstTurn.actions.prefix(2).map(\.actionKind)) == [.breath, .rescue])
+        #expect(Set(rescue.targetIds) == Set([
+            BattleCombatantID(rawValue: "character:2"),
+            BattleCombatantID(rawValue: "character:3")
+        ]))
+        #expect(rescue.results.allSatisfy { $0.flags.contains(.revived) && $0.value == 30 })
+    }
+
+    @Test
+    func rescueTriggersWhenEnemyAttackSpellDefeatsMultipleAllies() throws {
+        let healAllSpell = MasterData.Spell(
+            id: 1,
+            name: "ヒールオール",
+            category: .recovery,
+            kind: .heal,
+            targetSide: .ally,
+            targetCount: 0,
+            multiplier: 1.0
+        )
+        let attackSpell = MasterData.Spell(
+            id: 2,
+            name: "ファイアストーム",
+            category: .attack,
+            kind: .damage,
+            targetSide: .enemy,
+            targetCount: 3,
+            multiplier: 1.0
+        )
+        let attackSpellSkill = MasterData.Skill(
+            id: 3,
+            name: "ファイアストーム習得",
+            description: "ファイアストームを習得する。",
+            effects: [
+                MasterData.SkillEffect(
+                    kind: .magicAccess,
+                    target: nil,
+                    operation: "grant",
+                    value: nil,
+                    spellIds: [attackSpell.id],
+                    condition: nil,
+                    interruptKind: nil
+                )
+            ]
+        )
+        let masterData = makeBattleTestMasterData(
+            skills: [attackSpellSkill],
+            spells: [healAllSpell, attackSpell],
+            enemyBaseStats: battleBaseStats(vitality: 100, intelligence: 100, agility: 1_000),
+            enemySkillIds: [attackSpellSkill.id],
+            enemyActionRates: MasterData.ActionRates(
+                breath: 0,
+                attack: 0,
+                recoverySpell: 0,
+                attackSpell: 100
+            ),
+            enemyActionPriority: [.attackSpell, .attack, .recoverySpell, .breath]
+        )
+        let rescuerStatus = makeBattleTestStatus(
+            battleStats: CharacterBattleStats(
+                maxHP: 100,
+                physicalAttack: 0,
+                physicalDefense: 0,
+                magic: 0,
+                magicDefense: 0,
+                healing: 30,
+                accuracy: 0,
+                evasion: 0,
+                attackCount: 1,
+                criticalRate: 0,
+                breathPower: 0
+            ),
+            spellIds: [healAllSpell.id],
+            interruptKinds: [.rescue]
+        )
+        let victimStatus = makeBattleTestStatus(
+            battleStats: CharacterBattleStats(
+                maxHP: 40,
+                physicalAttack: 0,
+                physicalDefense: 0,
+                magic: 0,
+                magicDefense: 0,
+                healing: 0,
+                accuracy: 0,
+                evasion: 0,
+                attackCount: 1,
+                criticalRate: 0,
+                breathPower: 0
+            )
+        )
+
+        let result = try SingleBattleResolver.resolve(
+            context: BattleContext(
+                runId: RunSessionID(partyId: 1, partyRunId: 1),
+                rootSeed: 0,
+                floorNumber: 1,
+                battleNumber: 1
+            ),
+            partyMembers: [
+                makePartyBattleMember(
+                    id: 1,
+                    name: "僧侶",
+                    status: rescuerStatus,
+                    autoBattleSettings: makeAutoBattleSettings(
+                        breath: 0,
+                        attack: 0,
+                        recoverySpell: 100,
+                        attackSpell: 0,
+                        priority: [.recoverySpell, .attack, .attackSpell, .breath]
+                    )
+                ),
+                makePartyBattleMember(id: 2, name: "前衛A", status: victimStatus, currentHP: 1),
+                makePartyBattleMember(id: 3, name: "前衛B", status: victimStatus, currentHP: 1)
+            ],
+            enemies: [BattleEnemySeed(enemyId: 1, level: 1)],
+            masterData: masterData
+        )
+
+        let firstTurn = try #require(result.battleRecord.turns.first)
+        let rescue = try #require(firstTurn.actions.dropFirst().first(where: { $0.actionKind == .rescue }))
+
+        #expect(Array(firstTurn.actions.prefix(2).map(\.actionKind)) == [.attackSpell, .rescue])
+        #expect(Set(rescue.targetIds) == Set([
+            BattleCombatantID(rawValue: "character:2"),
+            BattleCombatantID(rawValue: "character:3")
+        ]))
+        #expect(rescue.results.allSatisfy { $0.flags.contains(.revived) && $0.value == 30 })
+    }
+
+    @Test
+    func rescueDoesNotTriggerWhenNoAllyIsDefeated() throws {
+        let healAllSpell = MasterData.Spell(
+            id: 1,
+            name: "ヒールオール",
+            category: .recovery,
+            kind: .heal,
+            targetSide: .ally,
+            targetCount: 0,
+            multiplier: 1.0
+        )
+        let masterData = makeBattleTestMasterData(
+            spells: [healAllSpell],
+            enemyBaseStats: battleBaseStats(vitality: 100, strength: 1, agility: 1_000),
+            enemyActionRates: MasterData.ActionRates(
+                breath: 0,
+                attack: 100,
+                recoverySpell: 0,
+                attackSpell: 0
+            )
+        )
+        let rescuerStatus = makeBattleTestStatus(
+            battleStats: CharacterBattleStats(
+                maxHP: 100,
+                physicalAttack: 0,
+                physicalDefense: 0,
+                magic: 0,
+                magicDefense: 0,
+                healing: 30,
+                accuracy: 0,
+                evasion: 0,
+                attackCount: 1,
+                criticalRate: 0,
+                breathPower: 0
+            ),
+            spellIds: [healAllSpell.id],
+            interruptKinds: [.rescue]
+        )
+
+        let result = try SingleBattleResolver.resolve(
+            context: BattleContext(
+                runId: RunSessionID(partyId: 1, partyRunId: 1),
+                rootSeed: 0,
+                floorNumber: 1,
+                battleNumber: 1
+            ),
+            partyMembers: [makePartyBattleMember(id: 1, name: "僧侶", status: rescuerStatus)],
+            enemies: [BattleEnemySeed(enemyId: 1, level: 1)],
+            masterData: masterData
+        )
+
+        #expect(result.battleRecord.turns.flatMap(\.actions).contains { $0.actionKind == .rescue } == false)
+    }
+
+    @Test
+    func attackBuffIncreasesLaterPhysicalAttackDamage() throws {
+        let attackBuffSpell = MasterData.Spell(
+            id: 1,
+            name: "攻撃バフ",
+            category: .attack,
+            kind: .buff,
+            targetSide: .ally,
+            targetCount: 0,
+            multiplier: 1.5,
+            effectTarget: "physicalDamage"
+        )
+        let masterData = makeBattleTestMasterData(
+            spells: [attackBuffSpell],
+            enemyBaseStats: battleBaseStats(vitality: 100),
+            enemyActionRates: MasterData.ActionRates(
+                breath: 0,
+                attack: 0,
+                recoverySpell: 0,
+                attackSpell: 0
+            )
+        )
+        let allyStatus = makeBattleTestStatus(
+            baseStats: battleCharacterBaseStats(agility: 1_000),
+            battleStats: CharacterBattleStats(
+                maxHP: 100,
+                physicalAttack: 20,
+                physicalDefense: 0,
+                magic: 0,
+                magicDefense: 0,
+                healing: 0,
+                accuracy: 1_000,
+                evasion: 0,
+                attackCount: 1,
+                criticalRate: 0,
+                breathPower: 0
+            ),
+            spellIds: [attackBuffSpell.id]
+        )
+
+        let result = try SingleBattleResolver.resolve(
+            context: BattleContext(
+                runId: RunSessionID(partyId: 1, partyRunId: 1),
+                rootSeed: 0,
+                floorNumber: 1,
+                battleNumber: 1
+            ),
+            partyMembers: [
+                makePartyBattleMember(
+                    id: 1,
+                    name: "剣士",
+                    status: allyStatus,
+                    autoBattleSettings: makeAutoBattleSettings(
+                        breath: 0,
+                        attack: 100,
+                        recoverySpell: 0,
+                        attackSpell: 100,
+                        priority: [.attackSpell, .attack, .recoverySpell, .breath]
+                    )
+                )
+            ],
+            enemies: [BattleEnemySeed(enemyId: 1, level: 1)],
+            masterData: masterData
+        )
+
+        let allyActions = result.battleRecord.turns
+            .flatMap(\.actions)
+            .filter { $0.actorId == BattleCombatantID(rawValue: "character:1") }
+        let firstAttack = try #require(allyActions.first(where: { $0.actionKind == .attack }))
+
+        #expect(allyActions.first?.actionKind == .attackSpell)
+        let enemyStatus = try #require(
+            CharacterDerivedStatsCalculator.status(
+                baseStats: battleCharacterBaseStats(vitality: 100),
+                jobId: 1,
+                level: 1,
+                skillIds: [],
+                masterData: masterData
+            )
+        )
+        let expectedDamage = max(
+            Int(
+                (
+                    Double(max(allyStatus.battleStats.physicalAttack - enemyStatus.battleStats.physicalDefense, 0))
+                    * 1.5
+                ).rounded()
+            ),
+            1
+        )
+
+        #expect(firstAttack.results.first?.value == expectedDamage)
+    }
+
+    @Test
+    func physicalBarrierReducesIncomingPhysicalDamage() throws {
+        let physicalBarrierSpell = MasterData.Spell(
+            id: 1,
+            name: "物理バリア",
+            category: .recovery,
+            kind: .barrier,
+            targetSide: .ally,
+            targetCount: 0,
+            multiplier: 0.5,
+            effectTarget: "physicalDamageTaken"
+        )
+        let barrierAccessSkill = MasterData.Skill(
+            id: 1,
+            name: "物理バリア習得",
+            description: "物理バリアを習得する。",
+            effects: [
+                MasterData.SkillEffect(
+                    kind: .magicAccess,
+                    target: nil,
+                    operation: "grant",
+                    value: nil,
+                    spellIds: [physicalBarrierSpell.id],
+                    condition: nil,
+                    interruptKind: nil
+                )
+            ]
+        )
+        let masterData = makeBattleTestMasterData(
+            skills: [barrierAccessSkill],
+            spells: [physicalBarrierSpell],
+            enemyBaseStats: battleBaseStats(vitality: 100, agility: 1_000),
+            enemySkillIds: [barrierAccessSkill.id],
+            enemyActionRates: MasterData.ActionRates(
+                breath: 0,
+                attack: 0,
+                recoverySpell: 100,
+                attackSpell: 0
+            ),
+            enemyActionPriority: [.recoverySpell, .attack, .attackSpell, .breath]
+        )
+        let allyStatus = makeBattleTestStatus(
+            baseStats: battleCharacterBaseStats(agility: 1),
+            battleStats: CharacterBattleStats(
+                maxHP: 100,
+                physicalAttack: 20,
+                physicalDefense: 0,
+                magic: 0,
+                magicDefense: 0,
+                healing: 0,
+                accuracy: 1_000,
+                evasion: 0,
+                attackCount: 1,
+                criticalRate: 0,
+                breathPower: 0
+            )
+        )
+
+        let result = try SingleBattleResolver.resolve(
+            context: BattleContext(
+                runId: RunSessionID(partyId: 1, partyRunId: 1),
+                rootSeed: 0,
+                floorNumber: 1,
+                battleNumber: 1
+            ),
+            partyMembers: [makePartyBattleMember(id: 1, name: "剣士", status: allyStatus)],
+            enemies: [BattleEnemySeed(enemyId: 1, level: 1)],
+            masterData: masterData
+        )
+
+        let enemyStatus = try #require(
+            CharacterDerivedStatsCalculator.status(
+                baseStats: battleCharacterBaseStats(vitality: 100, agility: 1_000),
+                jobId: 1,
+                level: 1,
+                skillIds: [barrierAccessSkill.id],
+                masterData: masterData
+            )
+        )
+        let firstTurn = try #require(result.battleRecord.turns.first)
+        let firstAction = try #require(firstTurn.actions.first)
+        let secondAction = try #require(firstTurn.actions.last)
+        let expectedDamage = max(
+            Int(
+                (
+                    Double(max(allyStatus.battleStats.physicalAttack - enemyStatus.battleStats.physicalDefense, 0))
+                    * 0.5
+                ).rounded()
+            ),
+            1
+        )
+
+        #expect(firstAction.actorId == BattleCombatantID(rawValue: "enemy:1:1"))
+        #expect(firstAction.actionKind == .recoverySpell)
+        #expect(secondAction.actorId == BattleCombatantID(rawValue: "character:1"))
+        #expect(secondAction.actionKind == .attack)
+        #expect(secondAction.results.first?.value == expectedDamage)
+    }
+
+    @Test
+    func nuclearSpellTargetsAllLivingCombatants() throws {
+        let nuclearSpell = MasterData.Spell(
+            id: 1,
+            name: "核攻撃",
+            category: .attack,
+            kind: .damage,
+            targetSide: .both,
+            targetCount: 0,
+            multiplier: 1.0
+        )
+        let masterData = makeBattleTestMasterData(
+            spells: [nuclearSpell],
+            enemyBaseStats: battleBaseStats(vitality: 100),
+            enemyActionRates: MasterData.ActionRates(
+                breath: 0,
+                attack: 0,
+                recoverySpell: 0,
+                attackSpell: 0
+            )
+        )
+        let casterStatus = makeBattleTestStatus(
+            baseStats: battleCharacterBaseStats(agility: 1_000),
+            battleStats: CharacterBattleStats(
+                maxHP: 100,
+                physicalAttack: 0,
+                physicalDefense: 0,
+                magic: 20,
+                magicDefense: 0,
+                healing: 0,
+                accuracy: 0,
+                evasion: 0,
+                attackCount: 1,
+                criticalRate: 0,
+                breathPower: 0
+            ),
+            spellIds: [nuclearSpell.id]
+        )
+
+        let result = try SingleBattleResolver.resolve(
+            context: BattleContext(
+                runId: RunSessionID(partyId: 1, partyRunId: 1),
+                rootSeed: 0,
+                floorNumber: 1,
+                battleNumber: 1
+            ),
+            partyMembers: [
+                makePartyBattleMember(
+                    id: 1,
+                    name: "魔導士",
+                    status: casterStatus,
+                    autoBattleSettings: makeAutoBattleSettings(
+                        breath: 0,
+                        attack: 0,
+                        recoverySpell: 0,
+                        attackSpell: 100,
+                        priority: [.attackSpell, .attack, .recoverySpell, .breath]
+                    )
+                )
+            ],
+            enemies: [
+                BattleEnemySeed(enemyId: 1, level: 1),
+                BattleEnemySeed(enemyId: 1, level: 1)
+            ],
+            masterData: masterData
+        )
+
+        let firstAction = try #require(result.battleRecord.turns.first?.actions.first)
+
+        #expect(firstAction.actionKind == .attackSpell)
+        #expect(Set(firstAction.targetIds) == Set([
+            BattleCombatantID(rawValue: "character:1"),
+            BattleCombatantID(rawValue: "enemy:1:1"),
+            BattleCombatantID(rawValue: "enemy:1:2")
+        ]))
     }
 
     @Test

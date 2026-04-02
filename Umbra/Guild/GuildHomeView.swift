@@ -5,7 +5,11 @@ import SwiftUI
 struct GuildHomeView: View {
     let masterData: MasterData
     let rosterStore: GuildRosterStore
+    let partyStore: PartyStore
+    let equipmentStore: EquipmentInventoryStore
     let explorationStore: ExplorationStore
+    let guildService: GuildService
+    @State private var presentedCharacter: CharacterRecord?
 
     var body: some View {
         List {
@@ -55,41 +59,69 @@ struct GuildHomeView: View {
                             .foregroundStyle(.secondary)
                     } else {
                         ForEach(rosterStore.characters) { character in
-                            NavigationLink {
-                                CharacterDetailView(
-                                    characterId: character.characterId,
-                                    masterData: masterData,
-                                    rosterStore: rosterStore,
-                                    explorationStore: explorationStore
-                                )
-                            } label: {
-                                HStack(spacing: 12) {
-                                    Image(character.portraitAssetName)
-                                        .resizable()
-                                        .scaledToFill()
-                                        .frame(width: 52, height: 52)
-                                        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                            HStack(spacing: 12) {
+                                Image(character.portraitAssetName)
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: 52, height: 52)
+                                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
 
-                                    VStack(alignment: .leading, spacing: 4) {
-                                        Text(character.name)
-                                            .font(.headline)
-                                        Text(summaryText(for: character))
-                                            .font(.subheadline)
-                                            .foregroundStyle(.secondary)
-                                    }
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(character.name)
+                                        .font(.headline)
+                                    Text(summaryText(for: character))
+                                        .font(.subheadline)
+                                        .foregroundStyle(.secondary)
                                 }
-                                .padding(.vertical, 4)
+
+                                Spacer(minLength: 0)
+
+                                Button {
+                                    presentedCharacter = character
+                                } label: {
+                                    Image(systemName: "info.circle")
+                                        .foregroundStyle(.tint)
+                                }
+                                .buttonStyle(.borderless)
+                                .accessibilityLabel("\(character.name)の詳細")
                             }
+                            .padding(.vertical, 4)
                         }
+                    }
+                }
+
+                Section("整理") {
+                    NavigationLink("解雇") {
+                        CharacterDismissalView(
+                            masterData: masterData,
+                            rosterStore: rosterStore,
+                            partyStore: partyStore,
+                            equipmentStore: equipmentStore,
+                            explorationStore: explorationStore,
+                            guildService: guildService
+                        )
                     }
                 }
             }
         }
         .navigationTitle("ギルド")
-    }
-
-    private var defeatedCharacters: [CharacterRecord] {
-        rosterStore.characters.filter { $0.currentHP == 0 }
+        .sheet(item: $presentedCharacter) { character in
+            NavigationStack {
+                CharacterDetailView(
+                    characterId: character.characterId,
+                    masterData: masterData,
+                    rosterStore: rosterStore,
+                    explorationStore: explorationStore
+                )
+                .toolbar {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button("閉じる") {
+                            presentedCharacter = nil
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private func summaryText(for character: CharacterRecord) -> String {

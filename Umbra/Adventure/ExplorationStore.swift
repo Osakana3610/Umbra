@@ -353,8 +353,7 @@ final class ExplorationStore {
             guard party.pendingAutomaticRunCount > 0,
                   status(for: party.partyId).activeRun == nil,
                   let labyrinthId = party.selectedLabyrinthId,
-                  masterData.labyrinths.contains(where: { $0.id == labyrinthId }),
-                  let completedAt = status(for: party.partyId).latestCompletedRun?.completion?.completedAt else {
+                  masterData.labyrinths.contains(where: { $0.id == labyrinthId }) else {
                 continue
             }
 
@@ -364,11 +363,15 @@ final class ExplorationStore {
                 requestedTitleId: party.selectedDifficultyTitleId,
                 highestUnlockedTitleId: highestUnlockedDifficultyTitleId
             )
+            guard let startedAt = party.pendingAutomaticRunStartedAt
+                ?? status(for: party.partyId).latestCompletedRun?.completion?.completedAt else {
+                continue
+            }
             return (
                 partyId: party.partyId,
                 labyrinthId: labyrinthId,
                 selectedDifficultyTitleId: selectedDifficultyTitleId,
-                startedAt: completedAt
+                startedAt: startedAt
             )
         }
 

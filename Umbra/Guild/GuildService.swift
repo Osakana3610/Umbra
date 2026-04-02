@@ -25,6 +25,7 @@ enum GuildServiceError: LocalizedError {
     case inventoryItemUnavailable
     case equipLimitReached(maximumCount: Int)
     case equippedItemNotFound
+    case invalidCharacterName
     case characterNotDefeated(characterId: Int)
     case invalidCharacterState(characterId: Int)
 
@@ -62,6 +63,8 @@ enum GuildServiceError: LocalizedError {
             "これ以上装備できません。装備上限は\(maximumCount)件です。"
         case .equippedItemNotFound:
             "装備中のアイテムが見つかりません。"
+        case .invalidCharacterName:
+            "名前を入力してください。"
         case .characterNotDefeated(let characterId):
             "キャラクターは戦闘不能ではありません。 characterId=\(characterId)"
         case .invalidCharacterState(let characterId):
@@ -146,6 +149,48 @@ final class GuildService {
         }
         try coreDataStore.saveRosterSnapshot(roster)
         return roster
+    }
+
+    func renameCharacter(
+        characterId: Int,
+        name: String
+    ) throws -> CharacterRecord {
+        let normalizedName = Self.normalizedCharacterName(name)
+        guard !normalizedName.isEmpty else {
+            throw GuildServiceError.invalidCharacterName
+        }
+
+        guard var character = try coreDataStore.loadCharacter(characterId: characterId) else {
+            throw GuildServiceError.characterNotFound(characterId: characterId)
+        }
+
+        character.name = normalizedName
+        try coreDataStore.saveCharacter(character)
+        return character
+    }
+
+    func deleteCharacter(
+        characterId: Int
+    ) async throws {
+        try await explorationCoreDataStore.validateCharacterMutationIsAllowed(characterId: characterId)
+
+        var roster = try coreDataStore.loadRosterSnapshot()
+        let characterIndex = try characterIndex(for: characterId, in: roster.characters)
+        let character = roster.characters.remove(at: characterIndex)
+
+        var parties = try coreDataStore.loadParties()
+        for index in parties.indices {
+            parties[index].memberCharacterIds.removeAll { $0 == characterId }
+        }
+
+        let inventoryStacks = (try coreDataStore.loadInventoryStacks() + character.equippedItemStacks)
+            .normalizedCompositeItemStacks()
+
+        try coreDataStore.saveRosterState(
+            roster,
+            parties: parties,
+            inventoryStacks: inventoryStacks
+        )
     }
 
     func updateAutoBattleSettings(
@@ -238,8 +283,16 @@ final class GuildService {
                     continue
                 }
 
+                let additionalRunCount = elapsedSeconds / runDurationSeconds
+                guard additionalRunCount > 0 else {
+                    continue
+                }
+
+                if parties[index].pendingAutomaticRunCount == 0 {
+                    parties[index].pendingAutomaticRunStartedAt = backgroundedAt
+                }
                 parties[index].pendingAutomaticRunCount = min(
-                    parties[index].pendingAutomaticRunCount + (elapsedSeconds / runDurationSeconds),
+                    parties[index].pendingAutomaticRunCount + additionalRunCount,
                     PartyRecord.maxPendingAutomaticRunCount
                 )
             }
@@ -254,6 +307,7 @@ final class GuildService {
         var parties = try coreDataStore.loadParties()
         let index = try partyIndex(for: partyId, in: parties)
         parties[index].pendingAutomaticRunCount = max(parties[index].pendingAutomaticRunCount - 1, 0)
+        parties[index].pendingAutomaticRunStartedAt = nil
         try coreDataStore.saveParties(parties)
     }
 
@@ -563,5 +617,9 @@ final class GuildService {
         }
 
         return removedStacks.normalizedCompositeItemStacks()
+    }
+
+    private static func normalizedCharacterName(_ name: String) -> String {
+        name.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 }

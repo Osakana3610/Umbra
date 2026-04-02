@@ -89,6 +89,24 @@ final class GuildCoreDataStore {
         try saveIfNeeded(context)
     }
 
+    func saveRosterState(
+        _ snapshot: GuildRosterSnapshot,
+        parties: [PartyRecord],
+        inventoryStacks: [CompositeItemStack]
+    ) throws {
+        let context = container.viewContext
+        let playerState = try fetchOrCreatePlayerState(in: context)
+        playerState.gold = Int64(snapshot.playerState.gold)
+        playerState.nextCharacterId = Int64(snapshot.playerState.nextCharacterId)
+        playerState.autoReviveDefeatedCharacters = snapshot.playerState.autoReviveDefeatedCharacters
+        playerState.lastBackgroundedAt = snapshot.playerState.lastBackgroundedAt
+        try syncCharacters(snapshot.characters, in: context)
+        try syncParties(parties, in: context)
+        try syncInventoryStacks(inventoryStacks, in: context)
+        try syncLabyrinthProgressRecords(snapshot.labyrinthProgressRecords, in: context)
+        try saveIfNeeded(context)
+    }
+
     func saveCharacter(
         _ character: CharacterRecord
     ) throws {
@@ -206,6 +224,7 @@ final class GuildCoreDataStore {
             entity.partyId = Int64(partyRecord.partyId)
             entity.name = partyRecord.name
             entity.pendingAutomaticRunCount = Int64(partyRecord.pendingAutomaticRunCount)
+            entity.pendingAutomaticRunStartedAt = partyRecord.pendingAutomaticRunStartedAt
             entity.selectedLabyrinthId = partyRecord.selectedLabyrinthId.map(Int64.init) ?? 0
             entity.selectedDifficultyTitleId = partyRecord.selectedDifficultyTitleId.map(Int64.init) ?? 0
             setMemberCharacterIds(partyRecord.memberCharacterIds, on: entity)
@@ -326,6 +345,7 @@ final class GuildCoreDataStore {
         party.partyId = 1
         party.name = PartyRecord.defaultName(for: 1)
         party.pendingAutomaticRunCount = 0
+        party.pendingAutomaticRunStartedAt = nil
         party.selectedLabyrinthId = 0
         party.selectedDifficultyTitleId = 0
         setMemberCharacterIds([], on: party)
@@ -456,7 +476,8 @@ final class GuildCoreDataStore {
             memberCharacterIds: memberCharacterIds(from: entity),
             selectedLabyrinthId: entity.selectedLabyrinthId == 0 ? nil : Int(entity.selectedLabyrinthId),
             selectedDifficultyTitleId: entity.selectedDifficultyTitleId == 0 ? nil : Int(entity.selectedDifficultyTitleId),
-            pendingAutomaticRunCount: Int(entity.pendingAutomaticRunCount)
+            pendingAutomaticRunCount: Int(entity.pendingAutomaticRunCount),
+            pendingAutomaticRunStartedAt: entity.pendingAutomaticRunStartedAt
         )
     }
 

@@ -31,7 +31,10 @@ struct RootTabView: View {
                 GuildHomeView(
                     masterData: masterData,
                     rosterStore: rosterStore,
-                    explorationStore: explorationStore
+                    partyStore: partyStore,
+                    equipmentStore: equipmentStore,
+                    explorationStore: explorationStore,
+                    guildService: guildService
                 )
             }
             .tabItem {
