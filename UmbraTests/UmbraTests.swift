@@ -876,6 +876,90 @@ struct UmbraTests {
     }
 
     @Test
+    func startingRunRestoresLivingPartyMembersToMaxHP() async throws {
+        let container = PersistenceController(inMemory: true).container
+        let guildCoreDataStore = GuildCoreDataStore(container: container)
+        let explorationCoreDataStore = ExplorationCoreDataStore(container: container)
+        let guildService = GuildService(
+            coreDataStore: guildCoreDataStore,
+            explorationCoreDataStore: explorationCoreDataStore
+        )
+        let explorationService = ExplorationSessionService(coreDataStore: explorationCoreDataStore)
+        let masterData = try loadGeneratedMasterData()
+
+        let character = try guildService.hireCharacter(
+            raceId: try #require(masterData.races.first?.id),
+            jobId: try #require(masterData.jobs.first?.id),
+            aptitudeId: try #require(masterData.aptitudes.first?.id),
+            masterData: masterData
+        ).character
+        _ = try await guildService.addCharacter(characterId: character.characterId, toParty: 1)
+        try promoteCharacter(
+            characterId: character.characterId,
+            level: 10,
+            in: container
+        )
+        try setCurrentHP(characterId: character.characterId, to: 3, in: container)
+
+        let injuredCharacterRecord = try guildCoreDataStore.loadCharacter(characterId: character.characterId)
+        let injuredCharacter = try #require(injuredCharacterRecord)
+        let maxHP = try #require(
+            CharacterDerivedStatsCalculator.status(for: injuredCharacter, masterData: masterData)?.maxHP
+        )
+
+        let snapshot = try await explorationService.startRun(
+            partyId: 1,
+            labyrinthId: try #require(masterData.labyrinths.first?.id),
+            selectedDifficultyTitleId: try #require(masterData.defaultExplorationDifficultyTitle?.id),
+            startedAt: Date(timeIntervalSinceReferenceDate: 260_000),
+            masterData: masterData
+        )
+        let startedRun = try #require(snapshot.runs.first)
+        let persistedCharacterRecord = try guildCoreDataStore.loadCharacter(characterId: character.characterId)
+        let persistedCharacter = try #require(persistedCharacterRecord)
+
+        #expect(startedRun.memberSnapshots.map(\.currentHP) == [maxHP])
+        #expect(startedRun.currentPartyHPs == [maxHP])
+        #expect(persistedCharacter.currentHP == maxHP)
+    }
+
+    @Test
+    func startingRunRejectsPartyContainingDefeatedMember() async throws {
+        let container = PersistenceController(inMemory: true).container
+        let guildCoreDataStore = GuildCoreDataStore(container: container)
+        let explorationCoreDataStore = ExplorationCoreDataStore(container: container)
+        let guildService = GuildService(
+            coreDataStore: guildCoreDataStore,
+            explorationCoreDataStore: explorationCoreDataStore
+        )
+        let explorationService = ExplorationSessionService(coreDataStore: explorationCoreDataStore)
+        let masterData = try loadGeneratedMasterData()
+
+        let character = try guildService.hireCharacter(
+            raceId: try #require(masterData.races.first?.id),
+            jobId: try #require(masterData.jobs.first?.id),
+            aptitudeId: try #require(masterData.aptitudes.first?.id),
+            masterData: masterData
+        ).character
+        _ = try await guildService.addCharacter(characterId: character.characterId, toParty: 1)
+        try setCurrentHP(characterId: character.characterId, to: 0, in: container)
+
+        do {
+            _ = try await explorationService.startRun(
+                partyId: 1,
+                labyrinthId: try #require(masterData.labyrinths.first?.id),
+                selectedDifficultyTitleId: try #require(masterData.defaultExplorationDifficultyTitle?.id),
+                startedAt: Date(timeIntervalSinceReferenceDate: 270_000),
+                masterData: masterData
+            )
+            Issue.record("HP 0 のメンバーを含むパーティは出撃できてはいけません。")
+        } catch {
+            let localizedError = error as? LocalizedError
+            #expect(localizedError?.errorDescription?.contains("HPが0") == true)
+        }
+    }
+
+    @Test
     func startingRunPrecomputesPlannedArtifactsWhileKeepingProgressHidden() async throws {
         let container = PersistenceController(inMemory: true).container
         let guildCoreDataStore = GuildCoreDataStore(container: container)
@@ -981,6 +1065,119 @@ struct UmbraTests {
     }
 
     @Test
+    func loadRunDetailPreservesActionTargetIdsIndependentFromResults() async throws {
+        let explorationCoreDataStore = ExplorationCoreDataStore(
+            container: PersistenceController(inMemory: true).container
+        )
+        let firstTargetId = BattleCombatantID(rawValue: "enemy:1:1")
+        let secondTargetId = BattleCombatantID(rawValue: "enemy:1:2")
+
+        try await explorationCoreDataStore.insertRun(
+            RunSessionRecord(
+                partyRunId: 1,
+                partyId: 1,
+                labyrinthId: 1,
+                selectedDifficultyTitleId: 1,
+                targetFloorNumber: 1,
+                startedAt: Date(timeIntervalSinceReferenceDate: 295_000),
+                rootSeed: 1,
+                memberSnapshots: [],
+                memberCharacterIds: [],
+                completedBattleCount: 0,
+                currentPartyHPs: [],
+                memberExperienceMultipliers: [],
+                goldMultiplier: 1,
+                rareDropMultiplier: 1,
+                titleDropMultiplier: 1,
+                partyAverageLuck: 0,
+                latestBattleFloorNumber: nil,
+                latestBattleNumber: nil,
+                latestBattleOutcome: nil,
+                battleLogs: [
+                    ExplorationBattleLog(
+                        battleRecord: BattleRecord(
+                            runId: RunSessionID(partyId: 1, partyRunId: 1),
+                            floorNumber: 1,
+                            battleNumber: 1,
+                            result: .victory,
+                            turns: [
+                                BattleTurnRecord(
+                                    turnNumber: 1,
+                                    actions: [
+                                        BattleActionRecord(
+                                            actorId: BattleCombatantID(rawValue: "character:1"),
+                                            actionKind: .attack,
+                                            actionRef: nil,
+                                            actionFlags: [],
+                                            targetIds: [firstTargetId, secondTargetId],
+                                            results: [
+                                                BattleTargetResult(
+                                                    targetId: secondTargetId,
+                                                    resultKind: .damage,
+                                                    value: 12,
+                                                    statusId: nil,
+                                                    flags: []
+                                                )
+                                            ]
+                                        )
+                                    ]
+                                )
+                            ]
+                        ),
+                        combatants: [
+                            BattleCombatantSnapshot(
+                                id: BattleCombatantID(rawValue: "character:1"),
+                                name: "前衛",
+                                side: .ally,
+                                imageAssetID: nil,
+                                level: 1,
+                                initialHP: 10,
+                                maxHP: 10,
+                                remainingHP: 10,
+                                formationIndex: 0
+                            ),
+                            BattleCombatantSnapshot(
+                                id: firstTargetId,
+                                name: "敵A",
+                                side: .enemy,
+                                imageAssetID: nil,
+                                level: 1,
+                                initialHP: 10,
+                                maxHP: 10,
+                                remainingHP: 10,
+                                formationIndex: 0
+                            ),
+                            BattleCombatantSnapshot(
+                                id: secondTargetId,
+                                name: "敵B",
+                                side: .enemy,
+                                imageAssetID: nil,
+                                level: 1,
+                                initialHP: 10,
+                                maxHP: 10,
+                                remainingHP: 0,
+                                formationIndex: 1
+                            )
+                        ]
+                    )
+                ],
+                goldBuffer: 0,
+                experienceRewards: [],
+                dropRewards: [],
+                completion: nil
+            )
+        )
+
+        let storedDetail = try #require(await explorationCoreDataStore.loadRunDetail(partyId: 1, partyRunId: 1))
+        let storedAction = try #require(
+            storedDetail.battleLogs.first?.battleRecord.turns.first?.actions.first
+        )
+
+        #expect(storedAction.targetIds == [firstTargetId, secondTargetId])
+        #expect(storedAction.results.map(\.targetId) == [secondTargetId])
+    }
+
+    @Test
     func refreshingCompletedRunAppliesRewardsToPlayerAndCharacterState() async throws {
         let container = PersistenceController(inMemory: true).container
         let guildCoreDataStore = GuildCoreDataStore(container: container)
@@ -1036,6 +1233,55 @@ struct UmbraTests {
         #expect(rosterSnapshot.playerState.gold == PlayerState.initial.gold - 1 + completion.gold)
         #expect(updatedCharacter.experience == 40)
         #expect(updatedCharacter.currentHP == completedRun.currentPartyHPs.first)
+    }
+
+    @Test
+    func clearingRunUnlocksNextExplorationDifficulty() async throws {
+        let container = PersistenceController(inMemory: true).container
+        let guildCoreDataStore = GuildCoreDataStore(container: container)
+        let explorationCoreDataStore = ExplorationCoreDataStore(container: container)
+        let guildService = GuildService(
+            coreDataStore: guildCoreDataStore,
+            explorationCoreDataStore: explorationCoreDataStore
+        )
+        let explorationService = ExplorationSessionService(coreDataStore: explorationCoreDataStore)
+        let masterData = try loadGeneratedMasterData()
+        let labyrinthId = try #require(masterData.labyrinths.first(where: { $0.name == "デバッグの遺跡" })?.id)
+        let defaultDifficultyTitleId = try #require(masterData.defaultExplorationDifficultyTitle?.id)
+        let nextDifficultyTitleId = try #require(
+            masterData.nextExplorationDifficultyTitleId(after: defaultDifficultyTitleId)
+        )
+
+        let character = try guildService.hireCharacter(
+            raceId: try #require(masterData.races.first?.id),
+            jobId: try #require(masterData.jobs.first?.id),
+            aptitudeId: try #require(masterData.aptitudes.first?.id),
+            masterData: masterData
+        ).character
+        _ = try await guildService.addCharacter(characterId: character.characterId, toParty: 1)
+        try promoteCharacter(
+            characterId: character.characterId,
+            level: 40,
+            in: container
+        )
+        try setCurrentHP(characterId: character.characterId, to: 999, in: container)
+
+        _ = try await explorationService.startRun(
+            partyId: 1,
+            labyrinthId: labyrinthId,
+            selectedDifficultyTitleId: defaultDifficultyTitleId,
+            startedAt: Date(timeIntervalSinceReferenceDate: 310_000),
+            masterData: masterData
+        )
+        _ = try await explorationService.refreshRuns(
+            at: Date(timeIntervalSinceReferenceDate: 310_010),
+            masterData: masterData
+        )
+
+        let progressRecord = try guildCoreDataStore.loadFreshRosterSnapshot().labyrinthProgressRecords.first {
+            $0.labyrinthId == labyrinthId
+        }
+        #expect(progressRecord?.highestUnlockedDifficultyTitleId == nextDifficultyTitleId)
     }
 
     @Test
@@ -1446,7 +1692,7 @@ struct UmbraTests {
 
         let result = try SingleBattleResolver.resolve(
             context: BattleContext(
-                runId: "spell-specific",
+                runId: RunSessionID(partyId: 1, partyRunId: 1),
                 rootSeed: 0,
                 floorNumber: 1,
                 battleNumber: 1
@@ -1540,7 +1786,7 @@ struct UmbraTests {
 
         let result = try SingleBattleResolver.resolve(
             context: BattleContext(
-                runId: "sleep-test",
+                runId: RunSessionID(partyId: 1, partyRunId: 1),
                 rootSeed: 0,
                 floorNumber: 1,
                 battleNumber: 1
@@ -1559,6 +1805,1107 @@ struct UmbraTests {
                 $0.resultKind == .modifierApplied && $0.statusId == BattleAilment.sleep.rawValue
             })
         )
+    }
+
+    @Test
+    func battleFallsBackToDefendWhenAllActionCandidatesAreRejected() throws {
+        let masterData = makeBattleTestMasterData(
+            enemyBaseStats: battleBaseStats(vitality: 100),
+            enemyActionRates: MasterData.ActionRates(
+                breath: 0,
+                attack: 0,
+                recoverySpell: 0,
+                attackSpell: 0
+            )
+        )
+        let allyStatus = makeBattleTestStatus(
+            battleStats: CharacterBattleStats(
+                maxHP: 100,
+                physicalAttack: 0,
+                physicalDefense: 0,
+                magic: 0,
+                magicDefense: 0,
+                healing: 0,
+                accuracy: 0,
+                evasion: 0,
+                attackCount: 1,
+                criticalRate: 0,
+                breathPower: 0
+            )
+        )
+        let allySettings = makeAutoBattleSettings(
+            breath: 0,
+            attack: 0,
+            recoverySpell: 0,
+            attackSpell: 0,
+            priority: [.attack, .recoverySpell, .attackSpell, .breath]
+        )
+
+        let result = try SingleBattleResolver.resolve(
+            context: BattleContext(
+                runId: RunSessionID(partyId: 1, partyRunId: 1),
+                rootSeed: 0,
+                floorNumber: 1,
+                battleNumber: 1
+            ),
+            partyMembers: [
+                makePartyBattleMember(
+                    id: 1,
+                    name: "防御役",
+                    status: allyStatus,
+                    autoBattleSettings: allySettings
+                )
+            ],
+            enemies: [BattleEnemySeed(enemyId: 1, level: 1)],
+            masterData: masterData
+        )
+
+        #expect(result.result == .draw)
+        #expect(result.battleRecord.turns.count == 20)
+        #expect(
+            result.battleRecord.turns.allSatisfy { turn in
+                turn.actions.allSatisfy { $0.actionKind == .defend }
+            }
+        )
+    }
+
+    @Test
+    func explorationDrawDoesNotGrantRewards() throws {
+        let masterData = makeExplorationBattleTestMasterData(
+            allyBaseStats: battleBaseStats(vitality: 100, agility: 100),
+            enemyBaseStats: battleBaseStats(vitality: 100),
+            enemyActionRates: MasterData.ActionRates(
+                breath: 0,
+                attack: 0,
+                recoverySpell: 0,
+                attackSpell: 0
+            ),
+            labyrinths: [
+                MasterData.Labyrinth(
+                    id: 1,
+                    name: "引き分け迷宮",
+                    enemyCountCap: 1,
+                    progressIntervalSeconds: 1,
+                    floors: [
+                        MasterData.Floor(
+                            id: 1,
+                            floorNumber: 1,
+                            battleCount: 1,
+                            encounters: [MasterData.Encounter(enemyId: 1, level: 1, weight: 1)],
+                            fixedBattle: nil
+                        )
+                    ]
+                )
+            ]
+        )
+        let session = RunSessionRecord(
+            partyRunId: 1,
+            partyId: 1,
+            labyrinthId: 1,
+            selectedDifficultyTitleId: 1,
+            targetFloorNumber: 1,
+            startedAt: Date(timeIntervalSinceReferenceDate: 600_000),
+            rootSeed: 0,
+            memberSnapshots: [
+                makeBattleTestCharacter(
+                    id: 1,
+                    name: "防御役",
+                    currentHP: 100,
+                    autoBattleSettings: makeAutoBattleSettings(
+                        breath: 0,
+                        attack: 0,
+                        recoverySpell: 0,
+                        attackSpell: 0,
+                        priority: [.attack, .recoverySpell, .attackSpell, .breath]
+                    )
+                )
+            ],
+            memberCharacterIds: [1],
+            completedBattleCount: 0,
+            currentPartyHPs: [100],
+            memberExperienceMultipliers: [1.0],
+            goldMultiplier: 1,
+            rareDropMultiplier: 1,
+            titleDropMultiplier: 1,
+            partyAverageLuck: 0,
+            latestBattleFloorNumber: nil,
+            latestBattleNumber: nil,
+            latestBattleOutcome: nil,
+            battleLogs: [],
+            goldBuffer: 0,
+            experienceRewards: [],
+            dropRewards: [],
+            completion: nil
+        )
+        var cachedStatuses: [Int: ExplorationMemberStatusCacheEntry] = [:]
+
+        let plannedSession = try ExplorationResolver.plan(
+            session: session,
+            masterData: masterData,
+            cachedStatuses: &cachedStatuses
+        )
+
+        #expect(plannedSession.completedBattleCount == 1)
+        #expect(plannedSession.battleLogs.count == 1)
+        #expect(plannedSession.battleLogs.first?.battleRecord.result == .draw)
+        #expect(plannedSession.completion?.reason == .draw)
+        #expect(plannedSession.goldBuffer == 0)
+        #expect(plannedSession.experienceRewards.isEmpty)
+        #expect(plannedSession.dropRewards.isEmpty)
+    }
+
+    @Test
+    func recoverySpellTargetsLowestCurrentHPMember() throws {
+        let healSpell = MasterData.Spell(
+            id: 1,
+            name: "ヒール",
+            category: .recovery,
+            kind: .heal,
+            targetSide: .ally,
+            targetCount: 1,
+            multiplier: 1.0
+        )
+        let healSkill = MasterData.Skill(
+            id: 1,
+            name: "ヒール習得",
+            description: "ヒールを習得する。",
+            effects: [
+                MasterData.SkillEffect(
+                    kind: .magicAccess,
+                    target: nil,
+                    operation: "grant",
+                    value: nil,
+                    spellIds: [healSpell.id],
+                    condition: nil,
+                    interruptKind: nil
+                )
+            ]
+        )
+        let masterData = makeBattleTestMasterData(
+            skills: [healSkill],
+            spells: [healSpell],
+            enemyBaseStats: battleBaseStats(vitality: 100),
+            enemyActionRates: MasterData.ActionRates(
+                breath: 0,
+                attack: 0,
+                recoverySpell: 0,
+                attackSpell: 0
+            )
+        )
+        let healerCharacter = makeBattleTestCharacter(
+            id: 1,
+            name: "僧侶",
+            currentHP: 100,
+            autoBattleSettings: makeAutoBattleSettings(
+                breath: 0,
+                attack: 0,
+                recoverySpell: 100,
+                attackSpell: 0,
+                priority: [.recoverySpell, .attack, .attackSpell, .breath]
+            )
+        )
+        let healerStatus = makeBattleTestStatus(
+            baseStats: battleCharacterBaseStats(agility: 1_000),
+            battleStats: CharacterBattleStats(
+                maxHP: 100,
+                physicalAttack: 0,
+                physicalDefense: 0,
+                magic: 0,
+                magicDefense: 0,
+                healing: 30,
+                accuracy: 0,
+                evasion: 0,
+                attackCount: 1,
+                criticalRate: 0,
+                breathPower: 0
+            ),
+            spellIds: [healSpell.id]
+        )
+        let firstTarget = PartyBattleMember(
+            character: makeBattleTestCharacter(
+                id: 2,
+                name: "前衛A",
+                currentHP: 50,
+                level: 5,
+                autoBattleSettings: makeAutoBattleSettings(
+                    breath: 0,
+                    attack: 0,
+                    recoverySpell: 0,
+                    attackSpell: 0,
+                    priority: [.attack, .recoverySpell, .attackSpell, .breath]
+                )
+            ),
+            status: makeBattleTestStatus(
+                battleStats: CharacterBattleStats(
+                    maxHP: 100,
+                    physicalAttack: 0,
+                    physicalDefense: 0,
+                    magic: 0,
+                    magicDefense: 0,
+                    healing: 0,
+                    accuracy: 0,
+                    evasion: 0,
+                    attackCount: 1,
+                    criticalRate: 0,
+                    breathPower: 0
+                )
+            )
+        )
+        let secondTarget = PartyBattleMember(
+            character: makeBattleTestCharacter(
+                id: 3,
+                name: "前衛B",
+                currentHP: 40,
+                level: 10,
+                autoBattleSettings: makeAutoBattleSettings(
+                    breath: 0,
+                    attack: 0,
+                    recoverySpell: 0,
+                    attackSpell: 0,
+                    priority: [.attack, .recoverySpell, .attackSpell, .breath]
+                )
+            ),
+            status: makeBattleTestStatus(
+                battleStats: CharacterBattleStats(
+                    maxHP: 100,
+                    physicalAttack: 0,
+                    physicalDefense: 0,
+                    magic: 0,
+                    magicDefense: 0,
+                    healing: 0,
+                    accuracy: 0,
+                    evasion: 0,
+                    attackCount: 1,
+                    criticalRate: 0,
+                    breathPower: 0
+                )
+            )
+        )
+
+        let result = try SingleBattleResolver.resolve(
+            context: BattleContext(
+                runId: RunSessionID(partyId: 1, partyRunId: 1),
+                rootSeed: 0,
+                floorNumber: 1,
+                battleNumber: 1
+            ),
+            partyMembers: [
+                PartyBattleMember(character: healerCharacter, status: healerStatus),
+                firstTarget,
+                secondTarget
+            ],
+            enemies: [BattleEnemySeed(enemyId: 1, level: 1)],
+            masterData: masterData
+        )
+
+        let firstAction = try #require(result.battleRecord.turns.first?.actions.first)
+        #expect(firstAction.actionKind == .recoverySpell)
+        #expect(firstAction.targetIds == [BattleCombatantID(rawValue: "character:3")])
+    }
+
+    @Test
+    func recoverySpellBreaksHPTiesByHigherLevel() throws {
+        let healSpell = MasterData.Spell(
+            id: 1,
+            name: "ヒール",
+            category: .recovery,
+            kind: .heal,
+            targetSide: .ally,
+            targetCount: 1,
+            multiplier: 1.0
+        )
+        let healSkill = MasterData.Skill(
+            id: 1,
+            name: "ヒール習得",
+            description: "ヒールを習得する。",
+            effects: [
+                MasterData.SkillEffect(
+                    kind: .magicAccess,
+                    target: nil,
+                    operation: "grant",
+                    value: nil,
+                    spellIds: [healSpell.id],
+                    condition: nil,
+                    interruptKind: nil
+                )
+            ]
+        )
+        let masterData = makeBattleTestMasterData(
+            skills: [healSkill],
+            spells: [healSpell],
+            enemyBaseStats: battleBaseStats(vitality: 100),
+            enemyActionRates: MasterData.ActionRates(
+                breath: 0,
+                attack: 0,
+                recoverySpell: 0,
+                attackSpell: 0
+            )
+        )
+        let healerCharacter = makeBattleTestCharacter(
+            id: 1,
+            name: "僧侶",
+            currentHP: 100,
+            autoBattleSettings: makeAutoBattleSettings(
+                breath: 0,
+                attack: 0,
+                recoverySpell: 100,
+                attackSpell: 0,
+                priority: [.recoverySpell, .attack, .attackSpell, .breath]
+            )
+        )
+        let healerStatus = makeBattleTestStatus(
+            baseStats: battleCharacterBaseStats(agility: 1_000),
+            battleStats: CharacterBattleStats(
+                maxHP: 100,
+                physicalAttack: 0,
+                physicalDefense: 0,
+                magic: 0,
+                magicDefense: 0,
+                healing: 30,
+                accuracy: 0,
+                evasion: 0,
+                attackCount: 1,
+                criticalRate: 0,
+                breathPower: 0
+            ),
+            spellIds: [healSpell.id]
+        )
+        let lowerLevelTarget = PartyBattleMember(
+            character: makeBattleTestCharacter(
+                id: 2,
+                name: "前衛A",
+                currentHP: 40,
+                level: 5,
+                autoBattleSettings: makeAutoBattleSettings(
+                    breath: 0,
+                    attack: 0,
+                    recoverySpell: 0,
+                    attackSpell: 0,
+                    priority: [.attack, .recoverySpell, .attackSpell, .breath]
+                )
+            ),
+            status: makeBattleTestStatus(
+                battleStats: CharacterBattleStats(
+                    maxHP: 100,
+                    physicalAttack: 0,
+                    physicalDefense: 0,
+                    magic: 0,
+                    magicDefense: 0,
+                    healing: 0,
+                    accuracy: 0,
+                    evasion: 0,
+                    attackCount: 1,
+                    criticalRate: 0,
+                    breathPower: 0
+                )
+            )
+        )
+        let higherLevelTarget = PartyBattleMember(
+            character: makeBattleTestCharacter(
+                id: 3,
+                name: "前衛B",
+                currentHP: 40,
+                level: 10,
+                autoBattleSettings: makeAutoBattleSettings(
+                    breath: 0,
+                    attack: 0,
+                    recoverySpell: 0,
+                    attackSpell: 0,
+                    priority: [.attack, .recoverySpell, .attackSpell, .breath]
+                )
+            ),
+            status: makeBattleTestStatus(
+                battleStats: CharacterBattleStats(
+                    maxHP: 100,
+                    physicalAttack: 0,
+                    physicalDefense: 0,
+                    magic: 0,
+                    magicDefense: 0,
+                    healing: 0,
+                    accuracy: 0,
+                    evasion: 0,
+                    attackCount: 1,
+                    criticalRate: 0,
+                    breathPower: 0
+                )
+            )
+        )
+
+        let result = try SingleBattleResolver.resolve(
+            context: BattleContext(
+                runId: RunSessionID(partyId: 1, partyRunId: 1),
+                rootSeed: 0,
+                floorNumber: 1,
+                battleNumber: 1
+            ),
+            partyMembers: [
+                PartyBattleMember(character: healerCharacter, status: healerStatus),
+                lowerLevelTarget,
+                higherLevelTarget
+            ],
+            enemies: [BattleEnemySeed(enemyId: 1, level: 1)],
+            masterData: masterData
+        )
+
+        let firstAction = try #require(result.battleRecord.turns.first?.actions.first)
+        #expect(firstAction.actionKind == .recoverySpell)
+        #expect(firstAction.targetIds == [BattleCombatantID(rawValue: "character:3")])
+    }
+
+    @Test
+    func encounterPlanningScalesEnemyLevelAndAllowsDuplicatesUpToCap() throws {
+        let hardTitle = MasterData.Title(
+            id: 2,
+            key: "hard",
+            name: "高難度",
+            positiveMultiplier: 1.6,
+            negativeMultiplier: 1.0,
+            dropWeight: 1
+        )
+        let masterData = makeExplorationBattleTestMasterData(
+            enemyBaseStats: battleBaseStats(vitality: 1),
+            titles: [
+                MasterData.Title(
+                    id: 1,
+                    key: "untitled",
+                    name: "無名",
+                    positiveMultiplier: 1.0,
+                    negativeMultiplier: 1.0,
+                    dropWeight: 1
+                ),
+                hardTitle
+            ],
+            labyrinths: [
+                MasterData.Labyrinth(
+                    id: 1,
+                    name: "重複迷宮",
+                    enemyCountCap: 3,
+                    progressIntervalSeconds: 1,
+                    floors: [
+                        MasterData.Floor(
+                            id: 1,
+                            floorNumber: 1,
+                            battleCount: 1,
+                            encounters: [MasterData.Encounter(enemyId: 1, level: 3, weight: 1)],
+                            fixedBattle: nil
+                        )
+                    ]
+                )
+            ]
+        )
+        let session = RunSessionRecord(
+            partyRunId: 1,
+            partyId: 1,
+            labyrinthId: 1,
+            selectedDifficultyTitleId: hardTitle.id,
+            targetFloorNumber: 1,
+            startedAt: Date(timeIntervalSinceReferenceDate: 610_000),
+            rootSeed: 0,
+            memberSnapshots: [
+                makeBattleTestCharacter(
+                    id: 1,
+                    name: "探索者",
+                    currentHP: 100,
+                    autoBattleSettings: makeAutoBattleSettings(
+                        breath: 100,
+                        attack: 0,
+                        recoverySpell: 0,
+                        attackSpell: 0,
+                        priority: [.breath, .attack, .recoverySpell, .attackSpell]
+                    )
+                )
+            ],
+            memberCharacterIds: [1],
+            completedBattleCount: 0,
+            currentPartyHPs: [100],
+            memberExperienceMultipliers: [1.0],
+            goldMultiplier: 1,
+            rareDropMultiplier: 1,
+            titleDropMultiplier: 1,
+            partyAverageLuck: 0,
+            latestBattleFloorNumber: nil,
+            latestBattleNumber: nil,
+            latestBattleOutcome: nil,
+            battleLogs: [],
+            goldBuffer: 0,
+            experienceRewards: [],
+            dropRewards: [],
+            completion: nil
+        )
+        var cachedStatuses: [Int: ExplorationMemberStatusCacheEntry] = [:]
+
+        let plannedSession = try ExplorationResolver.plan(
+            session: session,
+            masterData: masterData,
+            cachedStatuses: &cachedStatuses
+        )
+        let enemySnapshots = plannedSession.battleLogs.first?.combatants.filter { $0.side == .enemy } ?? []
+
+        #expect(enemySnapshots.count == 3)
+        #expect(enemySnapshots.allSatisfy { $0.name == "テスト敵" })
+        #expect(enemySnapshots.allSatisfy { $0.level == 5 })
+    }
+
+    @Test
+    func defendingHalvesPhysicalAttackDamage() throws {
+        let masterData = makeBattleTestMasterData(
+            enemyBaseStats: battleBaseStats(vitality: 100, agility: 1_000),
+            enemyActionRates: MasterData.ActionRates(
+                breath: 0,
+                attack: 0,
+                recoverySpell: 0,
+                attackSpell: 0
+            )
+        )
+        let enemyStatus = try #require(
+            CharacterDerivedStatsCalculator.status(
+                baseStats: battleCharacterBaseStats(vitality: 100, agility: 1_000),
+                jobId: 1,
+                level: 1,
+                skillIds: [],
+                masterData: masterData
+            )
+        )
+        let allyStatus = makeBattleTestStatus(
+            baseStats: battleCharacterBaseStats(agility: 1),
+            battleStats: CharacterBattleStats(
+                maxHP: 100,
+                physicalAttack: 20,
+                physicalDefense: 0,
+                magic: 0,
+                magicDefense: 0,
+                healing: 0,
+                accuracy: 1_000,
+                evasion: 0,
+                attackCount: 1,
+                criticalRate: 0,
+                breathPower: 0
+            )
+        )
+
+        let result = try SingleBattleResolver.resolve(
+            context: BattleContext(
+                runId: RunSessionID(partyId: 1, partyRunId: 1),
+                rootSeed: 0,
+                floorNumber: 1,
+                battleNumber: 1
+            ),
+            partyMembers: [makePartyBattleMember(id: 1, name: "剣士", status: allyStatus)],
+            enemies: [BattleEnemySeed(enemyId: 1, level: 1)],
+            masterData: masterData
+        )
+
+        let firstTurn = try #require(result.battleRecord.turns.first)
+        #expect(Array(firstTurn.actions.prefix(2).map(\.actionKind)) == [.defend, .attack])
+        let attackResult = try #require(firstTurn.actions.last?.results.first)
+        let expectedDamage = max(
+            Int(
+                (
+                    Double(max(allyStatus.battleStats.physicalAttack - enemyStatus.battleStats.physicalDefense, 0))
+                    * 0.5
+                ).rounded()
+            ),
+            1
+        )
+        #expect(attackResult.value == expectedDamage)
+        #expect(attackResult.flags.contains(.guarded))
+    }
+
+    @Test
+    func defendingHalvesBreathDamage() throws {
+        let masterData = makeBattleTestMasterData(
+            enemyBaseStats: battleBaseStats(vitality: 100, agility: 1_000),
+            enemyActionRates: MasterData.ActionRates(
+                breath: 0,
+                attack: 0,
+                recoverySpell: 0,
+                attackSpell: 0
+            )
+        )
+        let enemyStatus = try #require(
+            CharacterDerivedStatsCalculator.status(
+                baseStats: battleCharacterBaseStats(vitality: 100, agility: 1_000),
+                jobId: 1,
+                level: 1,
+                skillIds: [],
+                masterData: masterData
+            )
+        )
+        let allyStatus = makeBattleTestStatus(
+            baseStats: battleCharacterBaseStats(agility: 1),
+            battleStats: CharacterBattleStats(
+                maxHP: 100,
+                physicalAttack: 0,
+                physicalDefense: 0,
+                magic: 0,
+                magicDefense: 0,
+                healing: 0,
+                accuracy: 0,
+                evasion: 0,
+                attackCount: 1,
+                criticalRate: 0,
+                breathPower: 20
+            ),
+            canUseBreath: true
+        )
+
+        let result = try SingleBattleResolver.resolve(
+            context: BattleContext(
+                runId: RunSessionID(partyId: 1, partyRunId: 1),
+                rootSeed: 0,
+                floorNumber: 1,
+                battleNumber: 1
+            ),
+            partyMembers: [
+                makePartyBattleMember(
+                    id: 1,
+                    name: "竜人",
+                    status: allyStatus,
+                    autoBattleSettings: makeAutoBattleSettings(
+                        breath: 100,
+                        attack: 0,
+                        recoverySpell: 0,
+                        attackSpell: 0,
+                        priority: [.breath, .attack, .recoverySpell, .attackSpell]
+                    )
+                )
+            ],
+            enemies: [BattleEnemySeed(enemyId: 1, level: 1)],
+            masterData: masterData
+        )
+
+        let firstTurn = try #require(result.battleRecord.turns.first)
+        #expect(Array(firstTurn.actions.prefix(2).map(\.actionKind)) == [.defend, .breath])
+        let breathResult = try #require(firstTurn.actions.last?.results.first)
+        let expectedDamage = max(
+            Int(
+                (
+                    Double(max(allyStatus.battleStats.breathPower - enemyStatus.battleStats.physicalDefense, 0))
+                    * 0.5
+                ).rounded()
+            ),
+            1
+        )
+        #expect(breathResult.value == expectedDamage)
+        #expect(breathResult.flags.contains(.guarded))
+    }
+
+    @Test
+    func defendingHalvesAttackSpellDamage() throws {
+        let attackSpell = MasterData.Spell(
+            id: 1,
+            name: "火球",
+            category: .attack,
+            kind: .damage,
+            targetSide: .enemy,
+            targetCount: 1,
+            multiplier: 1.0
+        )
+        let masterData = makeBattleTestMasterData(
+            spells: [attackSpell],
+            enemyBaseStats: battleBaseStats(vitality: 100, agility: 1_000),
+            enemyActionRates: MasterData.ActionRates(
+                breath: 0,
+                attack: 0,
+                recoverySpell: 0,
+                attackSpell: 0
+            )
+        )
+        let enemyStatus = try #require(
+            CharacterDerivedStatsCalculator.status(
+                baseStats: battleCharacterBaseStats(vitality: 100, agility: 1_000),
+                jobId: 1,
+                level: 1,
+                skillIds: [],
+                masterData: masterData
+            )
+        )
+        let allyStatus = makeBattleTestStatus(
+            baseStats: battleCharacterBaseStats(agility: 1),
+            battleStats: CharacterBattleStats(
+                maxHP: 100,
+                physicalAttack: 0,
+                physicalDefense: 0,
+                magic: 20,
+                magicDefense: 0,
+                healing: 0,
+                accuracy: 0,
+                evasion: 0,
+                attackCount: 1,
+                criticalRate: 0,
+                breathPower: 0
+            ),
+            spellIds: [attackSpell.id]
+        )
+
+        let result = try SingleBattleResolver.resolve(
+            context: BattleContext(
+                runId: RunSessionID(partyId: 1, partyRunId: 1),
+                rootSeed: 0,
+                floorNumber: 1,
+                battleNumber: 1
+            ),
+            partyMembers: [
+                makePartyBattleMember(
+                    id: 1,
+                    name: "魔導士",
+                    status: allyStatus,
+                    autoBattleSettings: makeAutoBattleSettings(
+                        breath: 0,
+                        attack: 0,
+                        recoverySpell: 0,
+                        attackSpell: 100,
+                        priority: [.attackSpell, .attack, .recoverySpell, .breath]
+                    )
+                )
+            ],
+            enemies: [BattleEnemySeed(enemyId: 1, level: 1)],
+            masterData: masterData
+        )
+
+        let firstTurn = try #require(result.battleRecord.turns.first)
+        #expect(Array(firstTurn.actions.prefix(2).map(\.actionKind)) == [.defend, .attackSpell])
+        let spellResult = try #require(firstTurn.actions.last?.results.first)
+        let expectedDamage = max(
+            Int(
+                (
+                    Double(max(allyStatus.battleStats.magic - enemyStatus.battleStats.magicDefense, 0))
+                    * 0.5
+                ).rounded()
+            ),
+            1
+        )
+        #expect(spellResult.value == expectedDamage)
+        #expect(spellResult.flags.contains(.guarded))
+    }
+
+    @Test
+    func attackSpellTargetsDistinctEnemiesWithoutDuplicates() throws {
+        let attackSpell = MasterData.Spell(
+            id: 1,
+            name: "連鎖火球",
+            category: .attack,
+            kind: .damage,
+            targetSide: .enemy,
+            targetCount: 2,
+            multiplier: 1.0
+        )
+        let masterData = makeBattleTestMasterData(
+            spells: [attackSpell],
+            enemyBaseStats: battleBaseStats(vitality: 100),
+            enemyActionRates: MasterData.ActionRates(
+                breath: 0,
+                attack: 0,
+                recoverySpell: 0,
+                attackSpell: 0
+            )
+        )
+        let allyStatus = makeBattleTestStatus(
+            baseStats: battleCharacterBaseStats(agility: 1_000),
+            battleStats: CharacterBattleStats(
+                maxHP: 100,
+                physicalAttack: 0,
+                physicalDefense: 0,
+                magic: 20,
+                magicDefense: 0,
+                healing: 0,
+                accuracy: 0,
+                evasion: 0,
+                attackCount: 1,
+                criticalRate: 0,
+                breathPower: 0
+            ),
+            spellIds: [attackSpell.id]
+        )
+
+        let result = try SingleBattleResolver.resolve(
+            context: BattleContext(
+                runId: RunSessionID(partyId: 1, partyRunId: 1),
+                rootSeed: 0,
+                floorNumber: 1,
+                battleNumber: 1
+            ),
+            partyMembers: [
+                makePartyBattleMember(
+                    id: 1,
+                    name: "魔導士",
+                    status: allyStatus,
+                    autoBattleSettings: makeAutoBattleSettings(
+                        breath: 0,
+                        attack: 0,
+                        recoverySpell: 0,
+                        attackSpell: 100,
+                        priority: [.attackSpell, .attack, .recoverySpell, .breath]
+                    )
+                )
+            ],
+            enemies: [
+                BattleEnemySeed(enemyId: 1, level: 1),
+                BattleEnemySeed(enemyId: 1, level: 1),
+                BattleEnemySeed(enemyId: 1, level: 1)
+            ],
+            masterData: masterData
+        )
+
+        let firstAction = try #require(result.battleRecord.turns.first?.actions.first)
+        #expect(firstAction.actionKind == .attackSpell)
+        #expect(firstAction.targetIds.count == 2)
+        #expect(Set(firstAction.targetIds).count == 2)
+    }
+
+    @Test
+    func attackSpellTargetsAllLivingEnemiesWhenTargetCountExceedsLivingCount() throws {
+        let attackSpell = MasterData.Spell(
+            id: 1,
+            name: "大火球",
+            category: .attack,
+            kind: .damage,
+            targetSide: .enemy,
+            targetCount: 3,
+            multiplier: 1.0
+        )
+        let masterData = makeBattleTestMasterData(
+            spells: [attackSpell],
+            enemyBaseStats: battleBaseStats(vitality: 100),
+            enemyActionRates: MasterData.ActionRates(
+                breath: 0,
+                attack: 0,
+                recoverySpell: 0,
+                attackSpell: 0
+            )
+        )
+        let allyStatus = makeBattleTestStatus(
+            baseStats: battleCharacterBaseStats(agility: 1_000),
+            battleStats: CharacterBattleStats(
+                maxHP: 100,
+                physicalAttack: 0,
+                physicalDefense: 0,
+                magic: 20,
+                magicDefense: 0,
+                healing: 0,
+                accuracy: 0,
+                evasion: 0,
+                attackCount: 1,
+                criticalRate: 0,
+                breathPower: 0
+            ),
+            spellIds: [attackSpell.id]
+        )
+
+        let result = try SingleBattleResolver.resolve(
+            context: BattleContext(
+                runId: RunSessionID(partyId: 1, partyRunId: 1),
+                rootSeed: 0,
+                floorNumber: 1,
+                battleNumber: 1
+            ),
+            partyMembers: [
+                makePartyBattleMember(
+                    id: 1,
+                    name: "魔導士",
+                    status: allyStatus,
+                    autoBattleSettings: makeAutoBattleSettings(
+                        breath: 0,
+                        attack: 0,
+                        recoverySpell: 0,
+                        attackSpell: 100,
+                        priority: [.attackSpell, .attack, .recoverySpell, .breath]
+                    )
+                )
+            ],
+            enemies: [
+                BattleEnemySeed(enemyId: 1, level: 1),
+                BattleEnemySeed(enemyId: 1, level: 1)
+            ],
+            masterData: masterData
+        )
+
+        let firstAction = try #require(result.battleRecord.turns.first?.actions.first)
+        #expect(firstAction.actionKind == .attackSpell)
+        #expect(firstAction.targetIds.count == 2)
+        #expect(Set(firstAction.targetIds).count == 2)
+    }
+
+    @Test
+    func sameSpellIsUsedAtMostOncePerBattle() throws {
+        let attackSpell = MasterData.Spell(
+            id: 1,
+            name: "火球",
+            category: .attack,
+            kind: .damage,
+            targetSide: .enemy,
+            targetCount: 1,
+            multiplier: 1.0
+        )
+        let attackSpellSkill = MasterData.Skill(
+            id: 1,
+            name: "火球習得",
+            description: "火球を習得する。",
+            effects: [
+                MasterData.SkillEffect(
+                    kind: .magicAccess,
+                    target: nil,
+                    operation: "grant",
+                    value: nil,
+                    spellIds: [attackSpell.id],
+                    condition: nil,
+                    interruptKind: nil
+                )
+            ]
+        )
+        let masterData = makeBattleTestMasterData(
+            skills: [attackSpellSkill],
+            spells: [attackSpell],
+            allyRaceSkillIds: [attackSpellSkill.id],
+            enemyBaseStats: battleBaseStats(vitality: 100),
+            enemyActionRates: MasterData.ActionRates(
+                breath: 0,
+                attack: 0,
+                recoverySpell: 0,
+                attackSpell: 0
+            )
+        )
+        let allyCharacter = makeBattleTestCharacter(
+            id: 1,
+            name: "魔術師",
+            currentHP: 100,
+            autoBattleSettings: makeAutoBattleSettings(
+                breath: 0,
+                attack: 0,
+                recoverySpell: 0,
+                attackSpell: 100,
+                priority: [.attackSpell, .attack, .recoverySpell, .breath]
+            )
+        )
+        let allyStatus = makeBattleTestStatus(
+            battleStats: CharacterBattleStats(
+                maxHP: 100,
+                physicalAttack: 0,
+                physicalDefense: 0,
+                magic: 1,
+                magicDefense: 0,
+                healing: 0,
+                accuracy: 0,
+                evasion: 0,
+                attackCount: 1,
+                criticalRate: 0,
+                breathPower: 0
+            ),
+            spellIds: [attackSpell.id]
+        )
+
+        let result = try SingleBattleResolver.resolve(
+            context: BattleContext(
+                runId: RunSessionID(partyId: 1, partyRunId: 1),
+                rootSeed: 0,
+                floorNumber: 1,
+                battleNumber: 1
+            ),
+            partyMembers: [PartyBattleMember(character: allyCharacter, status: allyStatus)],
+            enemies: [BattleEnemySeed(enemyId: 1, level: 1)],
+            masterData: masterData
+        )
+
+        let allyActions = result.battleRecord.turns
+            .flatMap(\.actions)
+            .filter { $0.actorId == BattleCombatantID(rawValue: "character:1") }
+
+        #expect(allyActions.filter { $0.actionKind == .attackSpell }.count == 1)
+        #expect(allyActions.dropFirst().allSatisfy { $0.actionKind == .defend })
+    }
+
+    @Test
+    func simultaneousInterruptsResolveInPriorityOrder() throws {
+        let counterSkill = MasterData.Skill(
+            id: 1,
+            name: "反撃",
+            description: "反撃する。",
+            effects: [
+                MasterData.SkillEffect(
+                    kind: .interruptGrant,
+                    target: nil,
+                    operation: nil,
+                    value: nil,
+                    spellIds: [],
+                    condition: nil,
+                    interruptKind: .counter
+                )
+            ]
+        )
+        let masterData = makeBattleTestMasterData(
+            skills: [counterSkill],
+            enemyBaseStats: battleBaseStats(vitality: 100, agility: 1),
+            enemySkillIds: [counterSkill.id],
+            enemyActionRates: MasterData.ActionRates(
+                breath: 0,
+                attack: 0,
+                recoverySpell: 0,
+                attackSpell: 0
+            )
+        )
+        let attackerStatus = makeBattleTestStatus(
+            baseStats: battleCharacterBaseStats(agility: 1_000),
+            battleStats: CharacterBattleStats(
+                maxHP: 100,
+                physicalAttack: 5,
+                physicalDefense: 0,
+                magic: 0,
+                magicDefense: 0,
+                healing: 0,
+                accuracy: 1_000,
+                evasion: 0,
+                attackCount: 1,
+                criticalRate: 0,
+                breathPower: 0
+            ),
+            interruptKinds: [.extraAttack]
+        )
+        let pursuerStatus = makeBattleTestStatus(
+            baseStats: battleCharacterBaseStats(agility: 500),
+            battleStats: CharacterBattleStats(
+                maxHP: 100,
+                physicalAttack: 5,
+                physicalDefense: 0,
+                magic: 0,
+                magicDefense: 0,
+                healing: 0,
+                accuracy: 1_000,
+                evasion: 0,
+                attackCount: 1,
+                criticalRate: 0,
+                breathPower: 0
+            ),
+            interruptKinds: [.pursuit]
+        )
+
+        let result = try #require(
+            firstResolvedBattle(
+                matchingSeeds: 0..<8_192,
+                partyMembers: [
+                    makePartyBattleMember(id: 1, name: "剣士", status: attackerStatus),
+                    makePartyBattleMember(id: 2, name: "狩人", status: pursuerStatus)
+                ],
+                masterData: masterData
+            ) { result in
+                guard let firstTurn = result.battleRecord.turns.first else {
+                    return false
+                }
+                return Array(firstTurn.actions.prefix(4).map(\.actionKind)) == [
+                    .attack,
+                    .counter,
+                    .extraAttack,
+                    .pursuit
+                ]
+            }
+        )
+
+        let firstTurn = try #require(result.battleRecord.turns.first)
+        #expect(Array(firstTurn.actions.prefix(4).map(\.actionKind)) == [
+            .attack,
+            .counter,
+            .extraAttack,
+            .pursuit
+        ])
     }
 
     @Test
@@ -1738,7 +3085,7 @@ struct UmbraTests {
         let masterDataStore = MasterDataStore(phase: .loaded(itemDropNotificationTestMasterData()))
         let userDefaults = UserDefaults(suiteName: #function)!
         userDefaults.removePersistentDomain(forName: #function)
-        ItemDropNotificationSettings.setIgnoresNormalRarityItems(true, userDefaults: userDefaults)
+        ItemDropNotificationSettings.setShowsNormalRarityItems(false, userDefaults: userDefaults)
         let service = ItemDropNotificationService(
             masterDataStore: masterDataStore,
             userDefaults: userDefaults
@@ -2069,6 +3416,7 @@ private func makeBattleTestCharacter(
     id: Int,
     name: String,
     currentHP: Int,
+    level: Int = 1,
     autoBattleSettings: CharacterAutoBattleSettings
 ) -> CharacterRecord {
     CharacterRecord(
@@ -2080,7 +3428,7 @@ private func makeBattleTestCharacter(
         aptitudeId: 1,
         portraitGender: .male,
         experience: 0,
-        level: 1,
+        level: level,
         currentHP: currentHP,
         autoBattleSettings: autoBattleSettings
     )
@@ -2173,6 +3521,104 @@ private func makeBattleTestMasterData(
     )
 }
 
+private func makeExplorationBattleTestMasterData(
+    skills: [MasterData.Skill] = [],
+    spells: [MasterData.Spell] = [],
+    allyBaseStats: MasterData.BaseStats = battleBaseStats(),
+    allyRaceSkillIds: [Int] = [],
+    enemyBaseStats: MasterData.BaseStats,
+    enemySkillIds: [Int] = [],
+    enemyActionRates: MasterData.ActionRates = MasterData.ActionRates(
+        breath: 0,
+        attack: 0,
+        recoverySpell: 0,
+        attackSpell: 0
+    ),
+    enemyActionPriority: [BattleActionKind] = [.attack, .breath, .recoverySpell, .attackSpell],
+    titles: [MasterData.Title] = [
+        MasterData.Title(
+            id: 1,
+            key: "untitled",
+            name: "無名",
+            positiveMultiplier: 1.0,
+            negativeMultiplier: 1.0,
+            dropWeight: 1
+        )
+    ],
+    labyrinths: [MasterData.Labyrinth]
+) -> MasterData {
+    let coefficients = MasterData.BattleStatCoefficients(
+        maxHP: 1.0,
+        physicalAttack: 1.0,
+        physicalDefense: 1.0,
+        magic: 1.0,
+        magicDefense: 1.0,
+        healing: 1.0,
+        accuracy: 1.0,
+        evasion: 1.0,
+        attackCount: 1.0,
+        criticalRate: 1.0,
+        breathPower: 1.0
+    )
+
+    return MasterData(
+        metadata: MasterData.Metadata(generator: "test"),
+        races: [
+            MasterData.Race(
+                id: 1,
+                name: "テスト種族",
+                levelCap: 99,
+                baseHirePrice: 1,
+                baseStats: allyBaseStats,
+                skillIds: allyRaceSkillIds
+            )
+        ],
+        jobs: [
+            MasterData.Job(
+                id: 1,
+                name: "テスト職",
+                hirePriceMultiplier: 1.0,
+                coefficients: coefficients,
+                passiveSkillIds: [],
+                levelSkillIds: [],
+                jobChangeRequirement: nil
+            )
+        ],
+        aptitudes: [
+            MasterData.Aptitude(
+                id: 1,
+                name: "テスト資質"
+            )
+        ],
+        items: [],
+        titles: titles,
+        superRares: [],
+        skills: skills,
+        spells: spells,
+        recruitNames: MasterData.RecruitNames(
+            male: [],
+            female: [],
+            unisex: []
+        ),
+        enemies: [
+            MasterData.Enemy(
+                id: 1,
+                name: "テスト敵",
+                enemyRace: .monster,
+                jobId: 1,
+                baseStats: enemyBaseStats,
+                goldBaseValue: 10,
+                experienceBaseValue: 10,
+                skillIds: enemySkillIds,
+                rareDropItemIds: [],
+                actionRates: enemyActionRates,
+                actionPriority: enemyActionPriority
+            )
+        ],
+        labyrinths: labyrinths
+    )
+}
+
 private func firstResolvedBattle(
     matchingSeeds seeds: Range<Int>,
     partyMembers: [PartyBattleMember],
@@ -2182,7 +3628,7 @@ private func firstResolvedBattle(
     for seed in seeds {
         let result = try SingleBattleResolver.resolve(
             context: BattleContext(
-                runId: "test-\(seed)",
+                runId: RunSessionID(partyId: 1, partyRunId: seed + 1),
                 rootSeed: UInt64(seed),
                 floorNumber: 1,
                 battleNumber: 1
