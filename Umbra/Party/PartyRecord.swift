@@ -8,12 +8,14 @@ struct PartyRecord: Identifiable, Equatable, Sendable {
     static let unlockCost = 1
     static let defaultNamePrefix = "パーティ"
     static let maxNameLength = 50
+    static let maxPendingAutomaticRunCount = 20
 
     let partyId: Int
     var name: String
     var memberCharacterIds: [Int]
     var selectedLabyrinthId: Int?
     var selectedDifficultyTitleId: Int?
+    var pendingAutomaticRunCount: Int = 0
 
     var id: Int { partyId }
 

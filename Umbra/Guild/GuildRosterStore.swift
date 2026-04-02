@@ -170,19 +170,6 @@ final class GuildRosterStore {
         }
     }
 
-    func recordLastProgressedAt(_ date: Date) {
-        guard phase == .loaded else {
-            return
-        }
-
-        do {
-            applySnapshot(try service.setLastProgressedAt(date))
-            lastOperationError = nil
-        } catch {
-            lastOperationError = Self.errorMessage(for: error)
-        }
-    }
-
     func updateAutoBattleSettings(
         characterId: Int,
         autoBattleSettings: CharacterAutoBattleSettings

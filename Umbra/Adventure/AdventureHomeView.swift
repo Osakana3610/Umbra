@@ -215,22 +215,24 @@ struct AdventureHomeView: View {
             return
         }
 
+        let startedAt = Date()
         Task {
             await explorationStore.startRun(
                 partyId: party.partyId,
                 labyrinthId: labyrinthId,
                 selectedDifficultyTitleId: selectedDifficultyTitleId,
-                startedAt: Date(),
+                startedAt: startedAt,
                 masterData: masterData
             )
         }
     }
 
     private func startAllRuns() {
+        let startedAt = Date()
         Task {
             await explorationStore.startConfiguredRuns(
                 bulkStartableRuns,
-                startedAt: Date(),
+                startedAt: startedAt,
                 masterData: masterData
             )
         }

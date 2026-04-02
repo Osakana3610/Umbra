@@ -42,6 +42,34 @@ struct UmbraTests {
     }
 
     @Test
+    func playerBackgroundTimestampAndPartyPendingRunsPersist() throws {
+        let container = PersistenceController(inMemory: true).container
+        let guildCoreDataStore = GuildCoreDataStore(container: container)
+        let backgroundedAt = Date(timeIntervalSinceReferenceDate: 12_345)
+
+        var snapshot = try guildCoreDataStore.loadRosterSnapshot()
+        snapshot.playerState.lastBackgroundedAt = backgroundedAt
+        try guildCoreDataStore.saveRosterSnapshot(snapshot)
+
+        var parties = try guildCoreDataStore.loadParties()
+        parties[0].pendingAutomaticRunCount = 2
+        try guildCoreDataStore.saveParties(parties)
+
+        let reloadedSnapshot = try guildCoreDataStore.loadFreshRosterSnapshot()
+        let reloadedParties = try guildCoreDataStore.loadParties()
+
+        #expect(reloadedSnapshot.playerState.lastBackgroundedAt == backgroundedAt)
+        #expect(reloadedParties == [
+            PartyRecord(
+                partyId: 1,
+                name: "パーティ1",
+                memberCharacterIds: [],
+                pendingAutomaticRunCount: 2
+            )
+        ])
+    }
+
+    @Test
     func hireCharacterPersistsPlayerAndCharacterState() async throws {
         let container = PersistenceController(inMemory: true).container
         let guildCoreDataStore = GuildCoreDataStore(container: container)
@@ -269,6 +297,170 @@ struct UmbraTests {
     }
 
     @Test
+    func resumingBackgroundProgressChainsAutomaticRunsFromLatestCompletionTime() async throws {
+        let container = PersistenceController(inMemory: true).container
+        let guildCoreDataStore = GuildCoreDataStore(container: container)
+        let explorationCoreDataStore = ExplorationCoreDataStore(container: container)
+        let guildService = GuildService(
+            coreDataStore: guildCoreDataStore,
+            explorationCoreDataStore: explorationCoreDataStore
+        )
+        let masterDataStore = MasterDataStore()
+        let itemDropNotificationService = ItemDropNotificationService(masterDataStore: masterDataStore)
+        let rosterStore = GuildRosterStore(
+            coreDataStore: guildCoreDataStore,
+            service: guildService,
+            phase: .loaded
+        )
+        let partyStore = PartyStore(
+            coreDataStore: guildCoreDataStore,
+            service: guildService,
+            phase: .loaded
+        )
+        let explorationStore = ExplorationStore(
+            coreDataStore: explorationCoreDataStore,
+            itemDropNotificationService: itemDropNotificationService,
+            rosterStore: rosterStore
+        )
+        let masterData = makeExplorationBattleTestMasterData(
+            allyBaseStats: battleBaseStats(vitality: 10),
+            enemyBaseStats: battleBaseStats(vitality: 1),
+            labyrinths: [
+                MasterData.Labyrinth(
+                    id: 1,
+                    name: "自動周回迷宮",
+                    enemyCountCap: 1,
+                    progressIntervalSeconds: 1,
+                    floors: [
+                        MasterData.Floor(
+                            id: 1,
+                            floorNumber: 1,
+                            battleCount: 1,
+                            encounters: [MasterData.Encounter(enemyId: 1, level: 1, weight: 1)],
+                            fixedBattle: nil
+                        )
+                    ]
+                )
+            ]
+        )
+
+        rosterStore.reload()
+        partyStore.reload()
+
+        let character = try guildService.hireCharacter(
+            raceId: 1,
+            jobId: 1,
+            aptitudeId: 1,
+            masterData: masterData
+        ).character
+        _ = try await guildService.addCharacter(characterId: character.characterId, toParty: 1)
+        _ = try await guildService.setSelectedLabyrinth(
+            partyId: 1,
+            selectedLabyrinthId: 1,
+            selectedDifficultyTitleId: 1
+        )
+
+        rosterStore.reload()
+        partyStore.reload()
+
+        let firstStartedAt = Date(timeIntervalSinceReferenceDate: 100)
+        await explorationStore.startRun(
+            partyId: 1,
+            labyrinthId: 1,
+            selectedDifficultyTitleId: 1,
+            startedAt: firstStartedAt,
+            masterData: masterData
+        )
+        _ = await explorationStore.refreshProgress(
+            at: firstStartedAt.addingTimeInterval(1),
+            masterData: masterData
+        )
+
+        try guildService.recordBackgroundedAt(Date(timeIntervalSinceReferenceDate: 110))
+        await explorationStore.resumeBackgroundProgress(
+            reopenedAt: Date(timeIntervalSinceReferenceDate: 113),
+            partyStore: partyStore,
+            guildService: guildService,
+            masterData: masterData
+        )
+
+        let runs = explorationStore.runs
+            .filter { $0.partyId == 1 }
+            .sorted { $0.partyRunId < $1.partyRunId }
+        let allRunsCompleted = runs.allSatisfy { $0.isCompleted }
+
+        #expect(runs.count == 4)
+        #expect(allRunsCompleted)
+        #expect(runs.map(\.startedAt) == [
+            Date(timeIntervalSinceReferenceDate: 100),
+            Date(timeIntervalSinceReferenceDate: 101),
+            Date(timeIntervalSinceReferenceDate: 102),
+            Date(timeIntervalSinceReferenceDate: 103),
+        ])
+        #expect(runs.compactMap { $0.completion?.completedAt } == [
+            Date(timeIntervalSinceReferenceDate: 101),
+            Date(timeIntervalSinceReferenceDate: 102),
+            Date(timeIntervalSinceReferenceDate: 103),
+            Date(timeIntervalSinceReferenceDate: 104),
+        ])
+        let persistedRoster = try guildCoreDataStore.loadRosterSnapshot()
+        let persistedParty = try #require(guildCoreDataStore.loadParties().first)
+        #expect(persistedRoster.playerState.lastBackgroundedAt == nil)
+        #expect(persistedParty.pendingAutomaticRunCount == 0)
+    }
+
+    @Test
+    func queuingAutomaticRunsCapsPendingCountAtTwenty() async throws {
+        let container = PersistenceController(inMemory: true).container
+        let guildCoreDataStore = GuildCoreDataStore(container: container)
+        let guildService = GuildService(
+            coreDataStore: guildCoreDataStore,
+            explorationCoreDataStore: ExplorationCoreDataStore(container: container)
+        )
+        let masterData = makeExplorationBattleTestMasterData(
+            allyBaseStats: battleBaseStats(vitality: 10),
+            enemyBaseStats: battleBaseStats(vitality: 1),
+            labyrinths: [
+                MasterData.Labyrinth(
+                    id: 1,
+                    name: "上限確認迷宮",
+                    enemyCountCap: 1,
+                    progressIntervalSeconds: 1,
+                    floors: [
+                        MasterData.Floor(
+                            id: 1,
+                            floorNumber: 1,
+                            battleCount: 1,
+                            encounters: [MasterData.Encounter(enemyId: 1, level: 1, weight: 1)],
+                            fixedBattle: nil
+                        )
+                    ]
+                )
+            ]
+        )
+
+        _ = try guildService.hireCharacter(
+            raceId: 1,
+            jobId: 1,
+            aptitudeId: 1,
+            masterData: masterData
+        )
+        _ = try await guildService.setSelectedLabyrinth(
+            partyId: 1,
+            selectedLabyrinthId: 1,
+            selectedDifficultyTitleId: 1
+        )
+        try guildService.recordBackgroundedAt(Date(timeIntervalSinceReferenceDate: 100))
+        try guildService.queueAutomaticRunsForResume(
+            reopenedAt: Date(timeIntervalSinceReferenceDate: 140),
+            masterData: masterData
+        )
+
+        let persistedParty = try #require(guildCoreDataStore.loadParties().first)
+        #expect(persistedParty.pendingAutomaticRunCount == PartyRecord.maxPendingAutomaticRunCount)
+    }
+
+    @Test
     func reviveOperationsRestoreDefeatedCharactersAndPersistAutoReviveSetting() throws {
         let container = PersistenceController(inMemory: true).container
         let guildCoreDataStore = GuildCoreDataStore(container: container)
@@ -309,28 +501,6 @@ struct UmbraTests {
         let updatedSnapshot = try guildService.setAutoReviveDefeatedCharactersEnabled(true)
         #expect(updatedSnapshot.playerState.autoReviveDefeatedCharacters)
         #expect(try guildCoreDataStore.loadRosterSnapshot().playerState.autoReviveDefeatedCharacters)
-    }
-
-    @Test
-    func recordingLastProgressedAtPersistsPlayerCheckpoint() throws {
-        let container = PersistenceController(inMemory: true).container
-        let guildCoreDataStore = GuildCoreDataStore(container: container)
-        let guildService = GuildService(
-            coreDataStore: guildCoreDataStore,
-            explorationCoreDataStore: ExplorationCoreDataStore(container: container)
-        )
-        let rosterStore = GuildRosterStore(
-            coreDataStore: guildCoreDataStore,
-            service: guildService
-        )
-
-        rosterStore.reload()
-        let checkpointDate = Date(timeIntervalSinceReferenceDate: 123_456)
-        rosterStore.recordLastProgressedAt(checkpointDate)
-        let persistedCheckpointDate = try guildCoreDataStore.loadRosterSnapshot().playerState.lastProgressedAt
-
-        #expect(rosterStore.playerState?.lastProgressedAt == checkpointDate)
-        #expect(persistedCheckpointDate == checkpointDate)
     }
 
     @Test
@@ -748,90 +918,6 @@ struct UmbraTests {
         #expect(try guildCoreDataStore.loadFreshRosterSnapshot().playerState.gold == startingGold + completionGold)
         rosterStore.refreshFromPersistence()
         #expect(rosterStore.playerState?.gold == startingGold + completionGold)
-    }
-
-    @Test
-    func resumeIdleProgressStartsAutomaticRunsAfterExistingRunCompletes() async throws {
-        let container = PersistenceController(inMemory: true).container
-        let guildCoreDataStore = GuildCoreDataStore(container: container)
-        let explorationCoreDataStore = ExplorationCoreDataStore(container: container)
-        let guildService = GuildService(
-            coreDataStore: guildCoreDataStore,
-            explorationCoreDataStore: explorationCoreDataStore
-        )
-        let masterDataStore = MasterDataStore()
-        let itemDropNotificationService = ItemDropNotificationService(masterDataStore: masterDataStore)
-        let rosterStore = GuildRosterStore(
-            coreDataStore: guildCoreDataStore,
-            service: guildService
-        )
-        let partyStore = PartyStore(
-            coreDataStore: guildCoreDataStore,
-            service: guildService
-        )
-        let explorationStore = ExplorationStore(
-            coreDataStore: explorationCoreDataStore,
-            itemDropNotificationService: itemDropNotificationService,
-            rosterStore: rosterStore
-        )
-        let masterData = try loadGeneratedMasterData()
-        let defaultDifficultyTitleId = try #require(masterData.defaultExplorationDifficultyTitle?.id)
-        let labyrinth = try #require(masterData.labyrinths.first(where: { $0.name == "デバッグの遺跡" }))
-        let runDurationSeconds = labyrinth.floors.reduce(0) { partialResult, floor in
-            partialResult + floor.battleCount
-        } * labyrinth.progressIntervalSeconds
-
-        let character = try guildService.hireCharacter(
-            raceId: try #require(masterData.races.first?.id),
-            jobId: try #require(masterData.jobs.first?.id),
-            aptitudeId: try #require(masterData.aptitudes.first?.id),
-            masterData: masterData
-        ).character
-        _ = try await guildService.addCharacter(characterId: character.characterId, toParty: 1)
-        _ = try await guildService.setSelectedLabyrinth(
-            partyId: 1,
-            selectedLabyrinthId: labyrinth.id,
-            selectedDifficultyTitleId: defaultDifficultyTitleId
-        )
-        try promoteCharacter(
-            characterId: character.characterId,
-            level: 40,
-            in: container
-        )
-        try setCurrentHP(characterId: character.characterId, to: 999, in: container)
-
-        rosterStore.reload()
-        partyStore.reload()
-        let startedAt = Date(timeIntervalSinceReferenceDate: 410_000)
-        await explorationStore.startRun(
-            partyId: 1,
-            labyrinthId: labyrinth.id,
-            selectedDifficultyTitleId: defaultDifficultyTitleId,
-            startedAt: startedAt,
-            masterData: masterData
-        )
-        rosterStore.recordLastProgressedAt(startedAt)
-
-        let resumedAt = startedAt.addingTimeInterval(Double(runDurationSeconds * 3))
-        let checkpointDate = try #require(rosterStore.playerState?.lastProgressedAt)
-        let didResume = await explorationStore.resumeIdleProgress(
-            since: checkpointDate,
-            currentDate: resumedAt,
-            parties: partyStore.parties,
-            masterData: masterData
-        )
-
-        let completedRuns = explorationStore.runs
-            .filter(\.isCompleted)
-            .sorted { $0.startedAt < $1.startedAt }
-        #expect(didResume)
-        #expect(explorationStore.runs.count == 2)
-        #expect(completedRuns.count == 2)
-        #expect(explorationStore.runs.allSatisfy { $0.isCompleted })
-        #expect(completedRuns.map(\.startedAt) == [
-            startedAt,
-            startedAt.addingTimeInterval(Double(runDurationSeconds))
-        ])
     }
 
     @Test

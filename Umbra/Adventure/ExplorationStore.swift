@@ -12,8 +12,6 @@ struct ConfiguredRunStart: Sendable {
 @MainActor
 @Observable
 final class ExplorationStore {
-    private static let automaticRunCatchUpLimit = 20
-
     private let coreDataStore: ExplorationCoreDataStore
     private let service: ExplorationSessionService
     private let itemDropNotificationService: ItemDropNotificationService
@@ -24,12 +22,12 @@ final class ExplorationStore {
     private(set) var lastOperationError: String?
     private(set) var runs: [RunSessionRecord] = []
     private var isRefreshingProgress = false
-    private var isResumingIdleProgress = false
+    private var isResumingAutomaticRuns = false
     private var progressRefreshTask: Task<Void, Never>?
     private var retentionPruneTask: Task<Void, Never>?
 
     var isSortieLocked: Bool {
-        isMutating || isResumingIdleProgress
+        isMutating || isResumingAutomaticRuns
     }
 
     init(
@@ -131,6 +129,88 @@ final class ExplorationStore {
         }
     }
 
+    func recordBackgroundedAt(
+        _ date: Date,
+        guildService: GuildService
+    ) {
+        do {
+            try guildService.recordBackgroundedAt(date)
+            rosterStore?.refreshFromPersistence()
+            lastOperationError = nil
+        } catch {
+            lastOperationError = Self.errorMessage(for: error)
+        }
+    }
+
+    func resumeBackgroundProgress(
+        reopenedAt: Date,
+        partyStore: PartyStore,
+        guildService: GuildService,
+        masterData: MasterData
+    ) async {
+        guard !isResumingAutomaticRuns else {
+            return
+        }
+
+        isResumingAutomaticRuns = true
+        defer { isResumingAutomaticRuns = false }
+
+        rosterStore?.refreshFromPersistence()
+        partyStore.reload()
+        await reload(masterData: masterData)
+        _ = await refreshProgress(
+            at: reopenedAt,
+            masterData: masterData
+        )
+        guard lastOperationError == nil else {
+            return
+        }
+
+        do {
+            try guildService.queueAutomaticRunsForResume(
+                reopenedAt: reopenedAt,
+                masterData: masterData
+            )
+            rosterStore?.refreshFromPersistence()
+            partyStore.reload()
+        } catch {
+            lastOperationError = Self.errorMessage(for: error)
+            return
+        }
+
+        while let pendingRun = nextPendingAutomaticRun(
+            partyStore: partyStore,
+            masterData: masterData
+        ) {
+            await startRun(
+                partyId: pendingRun.partyId,
+                labyrinthId: pendingRun.labyrinthId,
+                selectedDifficultyTitleId: pendingRun.selectedDifficultyTitleId,
+                startedAt: pendingRun.startedAt,
+                masterData: masterData
+            )
+            guard lastOperationError == nil else {
+                return
+            }
+
+            do {
+                try guildService.consumePendingAutomaticRun(partyId: pendingRun.partyId)
+                partyStore.reload()
+            } catch {
+                lastOperationError = Self.errorMessage(for: error)
+                return
+            }
+
+            _ = await refreshProgress(
+                at: reopenedAt,
+                masterData: masterData
+            )
+            guard lastOperationError == nil else {
+                return
+            }
+        }
+    }
+
     func status(for partyId: Int) -> ExplorationPartyStatus {
         let partyRuns = runs.filter { $0.partyId == partyId }
         return ExplorationPartyStatus(
@@ -168,83 +248,6 @@ final class ExplorationStore {
         }
 
         scheduleCompletedRunRetentionPrune(using: masterData)
-    }
-
-    @discardableResult
-    func resumeIdleProgress(
-        since checkpointDate: Date?,
-        currentDate: Date,
-        parties: [PartyRecord],
-        masterData: MasterData
-    ) async -> Bool {
-        guard !isMutating,
-              !isRefreshingProgress,
-              !isResumingIdleProgress else {
-            return false
-        }
-
-        guard let checkpointDate,
-              checkpointDate < currentDate,
-              let rosterStore else {
-            return true
-        }
-
-        isResumingIdleProgress = true
-        defer { isResumingIdleProgress = false }
-
-        _ = await refreshProgress(at: currentDate, masterData: masterData)
-        guard lastOperationError == nil else {
-            return false
-        }
-
-        for party in parties {
-            guard let runStart = automaticRunStart(for: party, masterData: masterData, rosterStore: rosterStore),
-                  let runDurationSeconds = automaticRunDurationSeconds(
-                    labyrinthId: runStart.labyrinthId,
-                    masterData: masterData
-                  ) else {
-                continue
-            }
-
-            let availableAt = automaticRunAvailableAt(
-                for: party.partyId,
-                checkpointDate: checkpointDate
-            )
-            let automaticRunCount = min(
-                Int(currentDate.timeIntervalSince(availableAt) / Double(runDurationSeconds)),
-                Self.automaticRunCatchUpLimit
-            )
-            guard automaticRunCount > 0 else {
-                continue
-            }
-
-            for automaticRunIndex in 0..<automaticRunCount {
-                guard canAutomaticallyStartRun(for: party, rosterStore: rosterStore) else {
-                    break
-                }
-
-                let startedAt = availableAt.addingTimeInterval(
-                    Double(runDurationSeconds * automaticRunIndex)
-                )
-                await startRun(
-                    partyId: runStart.partyId,
-                    labyrinthId: runStart.labyrinthId,
-                    selectedDifficultyTitleId: runStart.selectedDifficultyTitleId,
-                    startedAt: startedAt,
-                    masterData: masterData
-                )
-                guard lastOperationError == nil else {
-                    return false
-                }
-
-                _ = await refreshProgress(at: currentDate, masterData: masterData)
-                guard lastOperationError == nil else {
-                    return false
-                }
-            }
-        }
-
-        return true
     }
 
     private func mutate(
@@ -342,99 +345,34 @@ final class ExplorationStore {
             .min()
     }
 
-    private func automaticRunStart(
-        for party: PartyRecord,
-        masterData: MasterData,
-        rosterStore: GuildRosterStore
-    ) -> ConfiguredRunStart? {
-        guard canAutomaticallyStartRun(for: party, rosterStore: rosterStore),
-              let labyrinthId = configuredLabyrinthId(for: party, masterData: masterData),
-              let selectedDifficultyTitleId = configuredDifficultyTitleId(
-                for: party,
-                masterData: masterData,
-                rosterStore: rosterStore
-              ) else {
-            return nil
-        }
-
-        return ConfiguredRunStart(
-            partyId: party.partyId,
-            labyrinthId: labyrinthId,
-            selectedDifficultyTitleId: selectedDifficultyTitleId
-        )
-    }
-
-    private func automaticRunAvailableAt(
-        for partyId: Int,
-        checkpointDate: Date
-    ) -> Date {
-        let latestCompletionDate = runs
-            .filter { $0.partyId == partyId }
-            .compactMap { $0.completion?.completedAt }
-            .max()
-
-        return max(checkpointDate, latestCompletionDate ?? checkpointDate)
-    }
-
-    private func automaticRunDurationSeconds(
-        labyrinthId: Int,
+    private func nextPendingAutomaticRun(
+        partyStore: PartyStore,
         masterData: MasterData
-    ) -> Int? {
-        guard let labyrinth = masterData.labyrinths.first(where: { $0.id == labyrinthId }) else {
-            return nil
+    ) -> (partyId: Int, labyrinthId: Int, selectedDifficultyTitleId: Int, startedAt: Date)? {
+        for party in partyStore.parties {
+            guard party.pendingAutomaticRunCount > 0,
+                  status(for: party.partyId).activeRun == nil,
+                  let labyrinthId = party.selectedLabyrinthId,
+                  masterData.labyrinths.contains(where: { $0.id == labyrinthId }),
+                  let completedAt = status(for: party.partyId).latestCompletedRun?.completion?.completedAt else {
+                continue
+            }
+
+            let highestUnlockedDifficultyTitleId = rosterStore?.labyrinthProgressByLabyrinthId[labyrinthId]?
+                .highestUnlockedDifficultyTitleId
+            let selectedDifficultyTitleId = masterData.resolvedExplorationDifficultyTitleId(
+                requestedTitleId: party.selectedDifficultyTitleId,
+                highestUnlockedTitleId: highestUnlockedDifficultyTitleId
+            )
+            return (
+                partyId: party.partyId,
+                labyrinthId: labyrinthId,
+                selectedDifficultyTitleId: selectedDifficultyTitleId,
+                startedAt: completedAt
+            )
         }
 
-        let totalBattleCount = labyrinth.floors.reduce(0) { partialResult, floor in
-            partialResult + floor.battleCount
-        }
-        guard totalBattleCount > 0 else {
-            return nil
-        }
-
-        return totalBattleCount * labyrinth.progressIntervalSeconds
-    }
-
-    private func canAutomaticallyStartRun(
-        for party: PartyRecord,
-        rosterStore: GuildRosterStore
-    ) -> Bool {
-        guard !hasActiveRun(for: party.partyId),
-              !party.memberCharacterIds.isEmpty else {
-            return false
-        }
-
-        return party.memberCharacterIds.allSatisfy { characterId in
-            (rosterStore.charactersById[characterId]?.currentHP ?? 0) > 0
-        }
-    }
-
-    private func configuredLabyrinthId(
-        for party: PartyRecord,
-        masterData: MasterData
-    ) -> Int? {
-        guard let selectedLabyrinthId = party.selectedLabyrinthId,
-              masterData.labyrinths.contains(where: { $0.id == selectedLabyrinthId }) else {
-            return nil
-        }
-
-        return selectedLabyrinthId
-    }
-
-    private func configuredDifficultyTitleId(
-        for party: PartyRecord,
-        masterData: MasterData,
-        rosterStore: GuildRosterStore
-    ) -> Int? {
-        guard let labyrinthId = configuredLabyrinthId(for: party, masterData: masterData) else {
-            return nil
-        }
-
-        let highestUnlockedTitleId = rosterStore.labyrinthProgressByLabyrinthId[labyrinthId]?
-            .highestUnlockedDifficultyTitleId
-        return masterData.resolvedExplorationDifficultyTitleId(
-            requestedTitleId: party.selectedDifficultyTitleId,
-            highestUnlockedTitleId: highestUnlockedTitleId
-        )
+        return nil
     }
 
     private static func errorMessage(for error: Error) -> String {

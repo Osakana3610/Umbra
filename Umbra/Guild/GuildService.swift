@@ -206,11 +206,55 @@ final class GuildService {
         return roster
     }
 
-    func setLastProgressedAt(_ date: Date) throws -> GuildRosterSnapshot {
+    func recordBackgroundedAt(_ date: Date) throws {
         var roster = try coreDataStore.loadRosterSnapshot()
-        roster.playerState.lastProgressedAt = date
+        roster.playerState.lastBackgroundedAt = date
         try coreDataStore.saveRosterSnapshot(roster)
-        return roster
+    }
+
+    func queueAutomaticRunsForResume(
+        reopenedAt: Date,
+        masterData: MasterData
+    ) throws {
+        var roster = try coreDataStore.loadRosterSnapshot()
+        guard let backgroundedAt = roster.playerState.lastBackgroundedAt else {
+            return
+        }
+
+        var parties = try coreDataStore.loadParties()
+        let elapsedSeconds = max(Int(reopenedAt.timeIntervalSince(backgroundedAt)), 0)
+        if elapsedSeconds > 0 {
+            for index in parties.indices {
+                guard let labyrinthId = parties[index].selectedLabyrinthId,
+                      let labyrinth = masterData.labyrinths.first(where: { $0.id == labyrinthId }) else {
+                    continue
+                }
+
+                let totalBattleCount = labyrinth.floors.reduce(into: 0) { partialResult, floor in
+                    partialResult += floor.battleCount
+                }
+                let runDurationSeconds = totalBattleCount * max(labyrinth.progressIntervalSeconds, 1)
+                guard runDurationSeconds > 0 else {
+                    continue
+                }
+
+                parties[index].pendingAutomaticRunCount = min(
+                    parties[index].pendingAutomaticRunCount + (elapsedSeconds / runDurationSeconds),
+                    PartyRecord.maxPendingAutomaticRunCount
+                )
+            }
+        }
+
+        roster.playerState.lastBackgroundedAt = nil
+        try coreDataStore.saveRosterSnapshot(roster)
+        try coreDataStore.saveParties(parties)
+    }
+
+    func consumePendingAutomaticRun(partyId: Int) throws {
+        var parties = try coreDataStore.loadParties()
+        let index = try partyIndex(for: partyId, in: parties)
+        parties[index].pendingAutomaticRunCount = max(parties[index].pendingAutomaticRunCount - 1, 0)
+        try coreDataStore.saveParties(parties)
     }
 
     func unlockParty() throws -> [PartyRecord] {

@@ -56,6 +56,7 @@ extension PartyEntity {
     @NSManaged nonisolated public var memberCharacterIdsRawValue: String?
     @NSManaged nonisolated public var name: String?
     @NSManaged nonisolated public var partyId: Int64
+    @NSManaged nonisolated public var pendingAutomaticRunCount: Int64
     @NSManaged nonisolated public var selectedDifficultyTitleId: Int64
     @NSManaged nonisolated public var selectedLabyrinthId: Int64
 
@@ -73,7 +74,7 @@ extension PlayerStateEntity {
 
     @NSManaged nonisolated public var autoReviveDefeatedCharacters: Bool
     @NSManaged nonisolated public var gold: Int64
-    @NSManaged nonisolated public var lastProgressedAt: Date?
+    @NSManaged nonisolated public var lastBackgroundedAt: Date?
     @NSManaged nonisolated public var nextCharacterId: Int64
 
 }

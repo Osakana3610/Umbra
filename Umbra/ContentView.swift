@@ -51,20 +51,28 @@ struct ContentView: View {
                         return
                     }
 
-                    await resumeIdleProgress(masterData: masterData)
+                    await explorationStore.resumeBackgroundProgress(
+                        reopenedAt: Date(),
+                        partyStore: partyStore,
+                        guildService: guildService,
+                        masterData: masterData
+                    )
                 }
                 .onChange(of: scenePhase) { _, newPhase in
-                    switch newPhase {
-                    case .active:
+                    if newPhase == .background {
+                        explorationStore.recordBackgroundedAt(
+                            Date(),
+                            guildService: guildService
+                        )
+                    } else if newPhase == .active {
                         Task {
-                            await resumeIdleProgress(masterData: masterData)
+                            await explorationStore.resumeBackgroundProgress(
+                                reopenedAt: Date(),
+                                partyStore: partyStore,
+                                guildService: guildService,
+                                masterData: masterData
+                            )
                         }
-                    case .background:
-                        rosterStore.recordLastProgressedAt(Date())
-                    case .inactive:
-                        break
-                    @unknown default:
-                        break
                     }
                 }
             }
@@ -75,26 +83,6 @@ struct ContentView: View {
             partyStore.loadIfNeeded()
             _ = await masterDataLoad
         }
-    }
-
-    private func resumeIdleProgress(masterData: MasterData) async {
-        rosterStore.refreshFromPersistence()
-        partyStore.reload()
-        await explorationStore.reload(masterData: masterData)
-
-        let resumedAt = Date()
-        let checkpointDate = rosterStore.playerState?.lastProgressedAt
-        let didResume = await explorationStore.resumeIdleProgress(
-            since: checkpointDate,
-            currentDate: resumedAt,
-            parties: partyStore.parties,
-            masterData: masterData
-        )
-        guard didResume else {
-            return
-        }
-
-        rosterStore.recordLastProgressedAt(resumedAt)
     }
 }
 

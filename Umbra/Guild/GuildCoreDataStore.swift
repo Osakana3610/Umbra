@@ -71,7 +71,7 @@ final class GuildCoreDataStore {
         playerState.gold = Int64(snapshot.playerState.gold)
         playerState.nextCharacterId = Int64(snapshot.playerState.nextCharacterId)
         playerState.autoReviveDefeatedCharacters = snapshot.playerState.autoReviveDefeatedCharacters
-        playerState.lastProgressedAt = snapshot.playerState.lastProgressedAt
+        playerState.lastBackgroundedAt = snapshot.playerState.lastBackgroundedAt
         try syncCharacters(snapshot.characters, in: context)
         try syncLabyrinthProgressRecords(snapshot.labyrinthProgressRecords, in: context)
         try saveIfNeeded(context)
@@ -205,6 +205,7 @@ final class GuildCoreDataStore {
 
             entity.partyId = Int64(partyRecord.partyId)
             entity.name = partyRecord.name
+            entity.pendingAutomaticRunCount = Int64(partyRecord.pendingAutomaticRunCount)
             entity.selectedLabyrinthId = partyRecord.selectedLabyrinthId.map(Int64.init) ?? 0
             entity.selectedDifficultyTitleId = partyRecord.selectedDifficultyTitleId.map(Int64.init) ?? 0
             setMemberCharacterIds(partyRecord.memberCharacterIds, on: entity)
@@ -303,6 +304,7 @@ final class GuildCoreDataStore {
         playerState.gold = Int64(PlayerState.initial.gold)
         playerState.nextCharacterId = Int64(PlayerState.initial.nextCharacterId)
         playerState.autoReviveDefeatedCharacters = PlayerState.initial.autoReviveDefeatedCharacters
+        playerState.lastBackgroundedAt = PlayerState.initial.lastBackgroundedAt
         return playerState
     }
 
@@ -323,6 +325,7 @@ final class GuildCoreDataStore {
 
         party.partyId = 1
         party.name = PartyRecord.defaultName(for: 1)
+        party.pendingAutomaticRunCount = 0
         party.selectedLabyrinthId = 0
         party.selectedDifficultyTitleId = 0
         setMemberCharacterIds([], on: party)
@@ -386,7 +389,7 @@ final class GuildCoreDataStore {
             gold: Int(entity.gold),
             nextCharacterId: Int(entity.nextCharacterId),
             autoReviveDefeatedCharacters: entity.autoReviveDefeatedCharacters,
-            lastProgressedAt: entity.lastProgressedAt
+            lastBackgroundedAt: entity.lastBackgroundedAt
         )
     }
 
@@ -452,7 +455,8 @@ final class GuildCoreDataStore {
             name: entity.name ?? PartyRecord.defaultName(for: Int(entity.partyId)),
             memberCharacterIds: memberCharacterIds(from: entity),
             selectedLabyrinthId: entity.selectedLabyrinthId == 0 ? nil : Int(entity.selectedLabyrinthId),
-            selectedDifficultyTitleId: entity.selectedDifficultyTitleId == 0 ? nil : Int(entity.selectedDifficultyTitleId)
+            selectedDifficultyTitleId: entity.selectedDifficultyTitleId == 0 ? nil : Int(entity.selectedDifficultyTitleId),
+            pendingAutomaticRunCount: Int(entity.pendingAutomaticRunCount)
         )
     }
 
