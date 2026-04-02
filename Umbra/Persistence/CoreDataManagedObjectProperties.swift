@@ -109,6 +109,7 @@ extension RunSessionBattleActionEntity {
     @NSManaged nonisolated public var actorCombatantIDRawValue: String?
     @NSManaged nonisolated public var hasActionRef: Bool
     @NSManaged nonisolated public var isCritical: Bool
+    @NSManaged nonisolated public var targetCombatantIDsRawValue: String?
     @NSManaged nonisolated public var results: NSSet?
     @NSManaged nonisolated public var turn: RunSessionBattleTurnEntity?
 

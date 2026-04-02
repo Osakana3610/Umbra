@@ -127,6 +127,7 @@
         <attribute name="actorCombatantIDRawValue" optional="NO" attributeType="String"/>
         <attribute name="hasActionRef" optional="NO" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="isCritical" optional="NO" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="targetCombatantIDsRawValue" optional="NO" attributeType="String" defaultValueString=""/>
         <relationship name="results" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="RunSessionBattleResultEntity" inverseName="action" inverseEntity="RunSessionBattleResultEntity"/>
         <relationship name="turn" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="RunSessionBattleTurnEntity" inverseName="actions" inverseEntity="RunSessionBattleTurnEntity"/>
     </entity>

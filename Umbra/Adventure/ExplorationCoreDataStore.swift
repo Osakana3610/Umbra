@@ -174,7 +174,7 @@ actor ExplorationCoreDataStore {
             for update in updates {
                 let currentSession = update.currentSession
                 let resolvedSession = update.resolvedSession
-                let identifier = resolvedSession.id
+                let identifier = resolvedSession.runSessionID
 
                 guard let entity = entitiesByIdentifier[identifier] else {
                     throw ExplorationError.runNotFound(
@@ -803,7 +803,7 @@ nonisolated private enum ExplorationCoreDataBridge {
 
         return ExplorationBattleLog(
             battleRecord: BattleRecord(
-                runId: entity.runSession.map(runIdentifier) ?? "",
+                runId: entity.runSession.map(runIdentifier) ?? RunSessionID(partyId: 0, partyRunId: 0),
                 floorNumber: Int(entity.floorNumber),
                 battleNumber: Int(entity.battleNumber),
                 result: BattleOutcome(rawValue: entity.resultRawValue ?? "") ?? .draw,
@@ -838,7 +838,7 @@ nonisolated private enum ExplorationCoreDataBridge {
             actionKind: BattleLogActionKind(rawValue: entity.actionKindRawValue ?? "") ?? .attack,
             actionRef: entity.hasActionRef ? Int(entity.actionRefValue) : nil,
             actionFlags: entity.isCritical ? [.critical] : [],
-            targetIds: orderedTargetIds(from: results),
+            targetIds: battleTargetIDs(from: entity.targetCombatantIDsRawValue),
             results: results
         )
     }
@@ -864,15 +864,14 @@ nonisolated private enum ExplorationCoreDataBridge {
         )
     }
 
-    static func orderedTargetIds(from results: [BattleTargetResult]) -> [BattleCombatantID] {
-        var seenTargetIds = Set<BattleCombatantID>()
-        var targetIds: [BattleCombatantID] = []
+    static func battleTargetIDs(from rawValue: String?) -> [BattleCombatantID] {
+        (rawValue ?? "")
+            .split(separator: ",")
+            .map { BattleCombatantID(rawValue: String($0)) }
+    }
 
-        for result in results where seenTargetIds.insert(result.targetId).inserted {
-            targetIds.append(result.targetId)
-        }
-
-        return targetIds
+    static func battleTargetIDsRawValue(from targetIds: [BattleCombatantID]) -> String {
+        targetIds.map(\.rawValue).joined(separator: ",")
     }
 
     static func makeExperienceRewards(from entity: RunSessionEntity) -> [ExplorationExperienceReward] {
@@ -1029,6 +1028,7 @@ nonisolated private enum ExplorationCoreDataBridge {
                     actionEntity.hasActionRef = action.actionRef != nil
                     actionEntity.actionRefValue = Int64(action.actionRef ?? 0)
                     actionEntity.isCritical = action.actionFlags.contains(.critical)
+                    actionEntity.targetCombatantIDsRawValue = battleTargetIDsRawValue(from: action.targetIds)
 
                     for (resultIndex, result) in action.results.enumerated() {
                         guard let resultEntity = NSEntityDescription.insertNewObject(
@@ -1246,7 +1246,10 @@ nonisolated private enum ExplorationCoreDataBridge {
         entity.currentHP = Int64(status.maxHP)
     }
 
-    static func runIdentifier(for entity: RunSessionEntity) -> String {
-        "\(Int(entity.partyId)):\(Int(entity.partyRunId))"
+    static func runIdentifier(for entity: RunSessionEntity) -> RunSessionID {
+        RunSessionID(
+            partyId: Int(entity.partyId),
+            partyRunId: Int(entity.partyRunId)
+        )
     }
 }

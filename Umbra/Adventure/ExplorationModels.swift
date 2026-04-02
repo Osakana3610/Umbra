@@ -2,6 +2,15 @@
 
 import Foundation
 
+nonisolated struct RunSessionID: Hashable, Codable, Sendable, CustomStringConvertible {
+    let partyId: Int
+    let partyRunId: Int
+
+    var description: String {
+        "\(partyId):\(partyRunId)"
+    }
+}
+
 nonisolated enum RunCompletionReason: String, Codable, Equatable, Sendable {
     case cleared
     case defeated
@@ -68,8 +77,15 @@ nonisolated struct RunSessionRecord: Equatable, Sendable, Identifiable {
     let dropRewards: [ExplorationDropReward]
     let completion: RunCompletionRecord?
 
-    var id: String {
-        "\(partyId):\(partyRunId)"
+    var runSessionID: RunSessionID {
+        RunSessionID(
+            partyId: partyId,
+            partyRunId: partyRunId
+        )
+    }
+
+    var id: RunSessionID {
+        runSessionID
     }
 
     var isCompleted: Bool {

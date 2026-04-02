@@ -48,7 +48,7 @@ nonisolated enum BattleAilment: Int, Codable, Equatable, Sendable {
 }
 
 nonisolated struct BattleContext: Codable, Equatable, Sendable {
-    let runId: String
+    let runId: RunSessionID
     let rootSeed: UInt64
     let floorNumber: Int
     let battleNumber: Int
@@ -90,7 +90,7 @@ nonisolated struct BattleTurnRecord: Codable, Equatable, Sendable {
 }
 
 nonisolated struct BattleRecord: Codable, Equatable, Sendable {
-    let runId: String
+    let runId: RunSessionID
     let floorNumber: Int
     let battleNumber: Int
     let result: BattleOutcome

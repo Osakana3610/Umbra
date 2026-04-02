@@ -45,7 +45,7 @@ nonisolated enum ExplorationResolver {
         while completedBattleCount < battlePlans.count, completion == nil {
             let battlePlan = battlePlans[completedBattleCount]
             let battleContext = BattleContext(
-                runId: session.id,
+                runId: session.runSessionID,
                 rootSeed: session.rootSeed,
                 floorNumber: battlePlan.floorNumber,
                 battleNumber: battlePlan.battleNumber
