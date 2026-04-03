@@ -54,6 +54,8 @@ struct PartyExplorationHistoryView: View {
             .sorted { lhs, rhs in
                 let lhsDate = lhs.completion?.completedAt ?? lhs.startedAt
                 let rhsDate = rhs.completion?.completedAt ?? rhs.startedAt
+                // History is newest-first, with partyRunId as a stable tie-breaker for runs that
+                // resolve to the same visible timestamp.
                 if lhsDate != rhsDate {
                     return lhsDate > rhsDate
                 }

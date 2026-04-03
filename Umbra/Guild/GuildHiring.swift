@@ -9,6 +9,7 @@ enum GuildHiring {
             return nil
         }
 
+        // Hiring cost is the race base price scaled by the selected starting job.
         return Int((Double(race.baseHirePrice) * job.hirePriceMultiplier).rounded())
     }
 
@@ -30,6 +31,8 @@ enum GuildHiring {
             matching: portraitGender,
             from: masterData.recruitNames
         ) ?? fallbackName(for: portraitGender, nextCharacterId: nextCharacterId)
+        // Starting HP is derived through the same runtime stat calculator used elsewhere so new
+        // recruits enter the roster with a consistent level-1 baseline.
         let currentHP = CharacterDerivedStatsCalculator.maxHP(
             raceId: raceId,
             currentJobId: jobId,
@@ -70,6 +73,7 @@ enum GuildHiring {
         for portraitGender: PortraitGender,
         nextCharacterId: Int
     ) -> String {
+        // Fallback names keep recruit generation working even when the source name list is empty.
         switch portraitGender {
         case .male:
             "男性冒険者\(nextCharacterId)"

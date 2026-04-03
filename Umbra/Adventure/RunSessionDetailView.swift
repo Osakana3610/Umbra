@@ -168,6 +168,8 @@ struct RunSessionDetailView: View {
             return "missing"
         }
 
+        // The detail view reloads only when the public progress summary changes, which is enough
+        // to detect newly revealed logs and completion payloads.
         let completionKey = run.completion?.completedAt.timeIntervalSinceReferenceDate ?? -1
         return "\(run.completedBattleCount)-\(completionKey)"
     }
@@ -193,10 +195,13 @@ struct RunSessionDetailView: View {
     }
 
     private func displayedBattleLogs(from run: RunSessionRecord) -> [ExplorationBattleLog] {
+        // Only battles that have actually been completed are displayed, newest first.
         Array(run.battleLogs.prefix(run.completedBattleCount).reversed())
     }
 
     private func defeatedPartyMemberText(for log: ExplorationBattleLog) -> String? {
+        // A party member is listed once if they were defeated at any point during the battle, even
+        // if later actions in the same log changed HP again.
         let defeatedTargets = Set(
             log.battleRecord.turns
                 .flatMap(\.actions)
@@ -224,6 +229,8 @@ struct RunSessionDetailView: View {
             return "\(labyrinthName)：\(completionSummaryText(for: completion.reason))。"
         }
 
+        // Active runs summarize the next deterministic progress tick rather than wall-clock elapsed
+        // time so the message matches the underlying progression model.
         if let nextProgressDate = nextProgressDate(for: run) {
             return "\(labyrinthName)：探索中です。現在\(run.completedBattleCount)戦完了、次の進行は\(nextProgressDate.formatted(date: .omitted, time: .standard))です。"
         }

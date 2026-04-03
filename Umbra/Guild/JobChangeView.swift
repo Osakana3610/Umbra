@@ -79,6 +79,7 @@ struct JobChangeView: View {
                     isPresented: Binding(
                         get: { pendingJobChangeTarget != nil },
                         set: { isPresented in
+                            // The pending target doubles as the alert presentation source of truth.
                             if !isPresented {
                                 pendingJobChangeTarget = nil
                             }
@@ -124,6 +125,8 @@ struct JobChangeView: View {
     }
 
     private func eligibleJobs(for character: CharacterRecord) -> [MasterData.Job] {
+        // Candidate jobs are filtered only by static requirement checks; one-time change and
+        // exploration-lock rules are handled separately in `unavailableReason`.
         masterData.jobs.filter { job in
             job.id != character.currentJobId
                 && job.canChange(fromCurrentJobId: character.currentJobId, level: character.level)
@@ -135,6 +138,8 @@ struct JobChangeView: View {
     }
 
     private func unavailableReason(for character: CharacterRecord) -> String? {
+        // These checks mirror the service restrictions so disabled UI states line up with the
+        // eventual mutation outcome.
         if character.hasChangedJob {
             return "このキャラクターはすでに転職済みです。"
         }

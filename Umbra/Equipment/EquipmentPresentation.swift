@@ -24,6 +24,8 @@ struct EquipmentDisplayNameResolver {
             return baseName
         }
 
+        // Jewel-enhanced equipment renders as `base[jewel]` so both identities remain visible in
+        // inventory, battle rewards, and notification overlays.
         let jewelName = prefixedName(
             itemName: itemsByID[itemID.jewelItemId]?.name ?? "不明な宝石",
             titleName: titlesByID[itemID.jewelTitleId]?.name,
@@ -48,6 +50,7 @@ struct EquipmentDisplayNameResolver {
 
 extension CharacterRecord {
     var maximumEquippedItemCount: Int {
+        // Equip capacity scales with level in rounded 20-level steps on top of the base 3 slots.
         3 + Int((Double(level) / 20).rounded())
     }
 
@@ -73,6 +76,8 @@ extension MasterData {
             return currentJobName
         }
 
+        // Once a character has changed jobs, the previous job stays visible in parentheses across
+        // guild-facing summaries.
         return "\(currentJobName)（\(jobName(for: character.previousJobId))）"
     }
 

@@ -85,6 +85,8 @@ struct RootTabView: View {
                 tabView
                     .tabViewBottomAccessory {
                         if rosterStore.playerState != nil {
+                            // On iOS 26+, the status bar can live inside the tab accessory chrome
+                            // without reserving extra safe-area space.
                             PlayerStatusView(
                                 catTicketText: "キャット・チケット 0枚",
                                 premiumTimeText: "プレミアム・タイム なし",
@@ -97,6 +99,8 @@ struct RootTabView: View {
                 tabView
                     .safeAreaInset(edge: .bottom, spacing: 0) {
                         if rosterStore.playerState != nil {
+                            // Older systems render the same status view inside a manual bottom
+                            // inset so it stays above the tab bar.
                             PlayerStatusView(
                                 catTicketText: "キャット・チケット 0枚",
                                 premiumTimeText: "プレミアム・タイム なし",
@@ -118,6 +122,8 @@ struct RootTabView: View {
     }
 
     private var notificationBottomPadding: CGFloat {
+        // The notification overlay is offset differently per tab chrome implementation so it does
+        // not collide with either the accessory bar or the legacy safe-area inset.
         if #available(iOS 26.0, *) {
             return 112
         }

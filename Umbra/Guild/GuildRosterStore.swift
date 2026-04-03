@@ -48,6 +48,8 @@ final class GuildRosterStore {
             return
         }
 
+        // A full reload clears derived lookup tables first so partially loaded state never leaks
+        // into the guild UI after a persistence failure.
         phase = .loading
         playerState = nil
         characters = []
@@ -73,6 +75,8 @@ final class GuildRosterStore {
         }
 
         do {
+            // This path bypasses the cached snapshot and forces a fresh Core Data read so adventure
+            // rewards and background updates can be reflected without rebuilding the whole store.
             let snapshot = try coreDataStore.loadFreshRosterSnapshot()
             applySnapshot(snapshot)
             lastOperationError = nil
@@ -250,6 +254,8 @@ final class GuildRosterStore {
     func replaceCharacter(_ character: CharacterRecord) {
         charactersById[character.characterId] = character
 
+        // Keep the array sorted by persistent character ID so list views and dictionary lookups
+        // stay in sync without requiring a full snapshot reload for single-character edits.
         if let index = characters.firstIndex(where: { $0.characterId == character.characterId }) {
             characters[index] = character
         } else if let insertIndex = characters.firstIndex(where: { $0.characterId > character.characterId }) {
@@ -268,6 +274,8 @@ final class GuildRosterStore {
         playerState = snapshot.playerState
         applyCharacters(snapshot.characters)
         labyrinthProgressRecords = snapshot.labyrinthProgressRecords
+        // Difficulty unlock lookups are precomputed because adventure screens resolve them per
+        // party card and during automatic-run resume.
         labyrinthProgressByLabyrinthId = Dictionary(
             uniqueKeysWithValues: snapshot.labyrinthProgressRecords.map { ($0.labyrinthId, $0) }
         )

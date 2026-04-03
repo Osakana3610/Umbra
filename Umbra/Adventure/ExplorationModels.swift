@@ -93,6 +93,8 @@ nonisolated struct RunSessionRecord: Equatable, Sendable, Identifiable {
     }
 
     var summaryRecord: RunSessionRecord {
+        // Summary records intentionally drop heavy payloads so list screens can refresh progress
+        // without carrying every stored battle log and reward row in memory.
         RunSessionRecord(
             partyRunId: partyRunId,
             partyId: partyId,

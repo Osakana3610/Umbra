@@ -92,6 +92,8 @@ struct PartySkillSummaryView: View {
             return []
         }
 
+        // Reward skills are derived from the same fully calculated character status used in battle
+        // so race, job, previous job, and equipment-granted skills all contribute here.
         return party.memberCharacterIds.compactMap { characterId in
             guard let character = rosterStore.charactersById[characterId],
                   let status = CharacterDerivedStatsCalculator.status(
@@ -137,6 +139,8 @@ struct PartySkillSummaryView: View {
     ) -> Double {
         var multiplier = 1.0
 
+        // Member-specific experience multipliers are compounded from every matching reward effect
+        // on that character's active skills.
         for skillId in skillIds {
             guard let skill = skillTable[skillId] else {
                 continue
@@ -234,6 +238,7 @@ private struct PartySkillAggregation {
         memberStatuses: [PartyMemberStatus],
         skillsByID: [Int: MasterData.Skill]
     ) -> Double {
+        // Party-wide reward categories stack multiplicatively across members.
         memberStatuses.reduce(into: 1.0) { partialResult, memberStatus in
             partialResult *= rewardMultiplier(
                 target: target,
@@ -250,6 +255,8 @@ private struct PartySkillAggregation {
     ) -> [PartySkillEntry] {
         var ownerNamesBySkillID: [Int: [String]] = [:]
 
+        // Entries are aggregated by skill ID first so one skill shared by multiple members renders
+        // once with a consolidated owner list.
         for memberStatus in memberStatuses {
             for skillID in memberStatus.status.skillIds {
                 guard let skill = skillsByID[skillID], includeSkill(skill) else {
@@ -280,6 +287,7 @@ private struct PartySkillAggregation {
     ) -> Double {
         var multiplier = 1.0
 
+        // Shared helper for party totals uses the same multiplication rules as the per-member view.
         for skillId in skillIds {
             guard let skill = skillTable[skillId] else {
                 continue

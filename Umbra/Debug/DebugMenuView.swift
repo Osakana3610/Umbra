@@ -110,6 +110,8 @@ struct DebugMenuView: View {
         do {
             let requestedCombinationCount = try resolvedCombinationCount()
             let stackCount = try resolvedStackCount()
+            // Generation walks the predefined rarity buckets in order so smaller requests fill from
+            // simpler combinations before moving on to super-rare and jewel-enhanced variants.
             let batch = generator.generate(
                 requestedCombinationCount: requestedCombinationCount,
                 stackCount: stackCount
@@ -289,6 +291,8 @@ struct DebugItemBatchGenerator: Sendable {
             return inventoryStacks.count == requestedCombinationCount
         }
 
+        // The loops deliberately exhaust lower-complexity combinations first so the generated test
+        // data remains predictable for smaller requested sample sizes.
         for baseItemID in baseItemIDs {
             for titleID in titleIDs {
                 if append(CompositeItemID.baseItem(itemId: baseItemID, titleId: titleID)) {

@@ -209,6 +209,7 @@ struct PartyDetailView: View {
             return titles
         }
 
+        // The picker exposes only the unlocked prefix for the currently selected labyrinth.
         return Array(titles.prefix(unlockedIndex + 1))
     }
 
@@ -223,6 +224,8 @@ struct PartyDetailView: View {
                 }
                 let resolvedDifficultyTitleId: Int?
                 if let selectedLabyrinthId {
+                    // Changing labyrinth re-resolves difficulty immediately so the saved title
+                    // remains valid for the new unlock state.
                     let highestUnlockedTitleId = rosterStore.labyrinthProgressByLabyrinthId[selectedLabyrinthId]?
                         .highestUnlockedDifficultyTitleId
                     resolvedDifficultyTitleId = masterData.resolvedExplorationDifficultyTitleId(
@@ -278,6 +281,8 @@ struct PartyDetailView: View {
             return
         }
 
+        // The field is reset from persisted state after rename so any service-side normalization
+        // is reflected back into the draft text.
         partyStore.renameParty(partyId: party.partyId, name: normalizedName)
         if let refreshedName = partyStore.partiesById[party.partyId]?.name {
             partyNameDraft = refreshedName

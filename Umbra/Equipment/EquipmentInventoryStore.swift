@@ -208,6 +208,8 @@ final class EquipmentInventoryStore {
         inventoryQuantityDelta: Int,
         updatedCharacter: CharacterRecord
     ) {
+        // Only the touched inventory section and the updated character cache are refreshed so the
+        // equipment UI stays responsive without rebuilding every section for every character.
         let affectedSectionKey = updateInventory(itemID: itemID, quantityDelta: inventoryQuantityDelta)
         equippedItemsByCharacterID[updatedCharacter.characterId] = cachedItems(from: updatedCharacter.equippedItemStacks)
         refreshMergedSections(affectedSectionKey: affectedSectionKey)
@@ -246,6 +248,8 @@ final class EquipmentInventoryStore {
         items.remove(at: index)
         sectionKeyByItemID.removeValue(forKey: itemID)
 
+        // Drop the whole section when its last inventory row disappears so empty headers are not
+        // kept alive in the prepared merged-section cache.
         if items.isEmpty {
             inventoryItemsBySection.removeValue(forKey: sectionKey)
             orderedSectionKeys.removeAll { $0 == sectionKey }
@@ -272,6 +276,8 @@ final class EquipmentInventoryStore {
         } else {
             insert(cachedItem(for: itemID, quantity: amount), into: &items)
             sectionKeyByItemID[itemID] = sectionKey
+            // Newly materialized sections are inserted into the global section order once so all
+            // prepared character views reuse the same category and rarity ordering.
             if orderedSectionKeys.contains(sectionKey) == false {
                 orderedSectionKeys.append(sectionKey)
                 orderedSectionKeys.sort(by: EquipmentSectionKey.isOrderedBefore)
@@ -337,6 +343,8 @@ final class EquipmentInventoryStore {
             return
         }
 
+        // Only the changed section is recomputed across prepared characters; untouched sections
+        // keep their cached row arrays.
         for characterID in mergedSectionsByCharacterID.keys {
             refreshMergedSection(for: characterID, sectionKey: affectedSectionKey)
         }
@@ -402,6 +410,8 @@ final class EquipmentInventoryStore {
         var rows: [EquipmentDisplayRow] = []
         rows.reserveCapacity((inventoryItemsBySection[sectionKey]?.count ?? 0) + equippedItems.count)
 
+        // Inventory rows are emitted first, then the equipped twin for the same item directly
+        // after it, so the player can compare stock count and equipped usage in one place.
         for inventoryItem in inventoryItemsBySection[sectionKey] ?? [] {
             rows.append(.inventory(inventoryItem))
             if let equippedItem = equippedItemsByID[inventoryItem.itemID] {
@@ -438,6 +448,7 @@ final class EquipmentInventoryStore {
 
         return switch (lhs, rhs) {
         case (.inventory, .equipped):
+            // For identical item identities, keep the owned-stack row before the equipped row.
             true
         case (.equipped, .inventory):
             false

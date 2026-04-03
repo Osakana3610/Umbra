@@ -45,6 +45,8 @@ struct OtherMenuView: View {
             }
         }
         .onChange(of: explorationLogRetentionCount) { _, _ in
+            // Changing the retention setting triggers an immediate prune pass so the visible run
+            // history reflects the new cap without requiring an app relaunch.
             explorationStore.enforceCompletedRunRetention(masterData: masterData)
         }
     }

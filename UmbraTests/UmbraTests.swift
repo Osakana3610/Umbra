@@ -7,6 +7,8 @@ import Testing
 
 @MainActor
 struct UmbraTests {
+    // MARK: - Master Data and Bootstrap
+
     @Test
     func generatedMasterDataDecodes() throws {
         let masterData = try loadGeneratedMasterData()
@@ -103,6 +105,8 @@ struct UmbraTests {
         #expect(reloadedSnapshot.playerState == result.playerState)
         #expect(reloadedSnapshot.characters == [result.character])
     }
+
+    // MARK: - Character Status and Equipment Aggregation
 
     @Test
     func completeStatusCalculationBuildsBattleStatsAndCapabilities() throws {
@@ -363,6 +367,8 @@ struct UmbraTests {
         #expect(aggregation.hasMeleeWeapon)
         #expect(aggregation.hasRangedWeapon)
     }
+
+    // MARK: - Guild and Party Mutations
 
     @Test
     func unlockPartyConsumesGoldAndCreatesSequentialParty() async throws {
@@ -936,6 +942,8 @@ struct UmbraTests {
         #expect(batch.inventoryStacks.last?.itemID.jewelSuperRareId == 1)
         #expect(batch.inventoryStacks.last?.itemID.jewelTitleId == 1)
     }
+
+    // MARK: - Exploration Session Progression
 
     @Test
     func startingBulkRunsKeepsStartedAtAlignedAcrossParties() async throws {
@@ -1633,6 +1641,8 @@ struct UmbraTests {
         )
         #expect(updatedCharacter.currentHP > 0)
     }
+
+    // MARK: - Battle Resolution: Damage, Ailments, and Targeting
 
     @Test
     func meleeWeaponDamageUsesMeleeDamageMultiplier() throws {
@@ -3671,6 +3681,8 @@ struct UmbraTests {
         }))
     }
 
+    // MARK: - Battle Resolution: Interrupts and Runtime State
+
     @Test
     func rescueWithSingleTargetRecoveryRevivesOnlyOneDefeatedAlly() throws {
         let singleHealSpell = MasterData.Spell(
@@ -5636,6 +5648,8 @@ struct UmbraTests {
         ]))
     }
 
+    // MARK: - Retention and Item Drop Notifications
+
     @Test
     func completedExplorationLogsArePrunedByRetentionCount() async throws {
         let previousValue = UserDefaults.standard.object(forKey: ExplorationLogRetentionLimit.userDefaultsKey)
@@ -5843,6 +5857,8 @@ struct UmbraTests {
     }
 
 }
+
+// MARK: - Test Fixtures and Helpers
 
 @MainActor
 private func matchesRecruitNamePool(character: CharacterRecord, masterData: MasterData) -> Bool {

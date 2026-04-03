@@ -125,6 +125,8 @@ struct GuildHomeView: View {
     }
 
     private func summaryText(for character: CharacterRecord) -> String {
+        // Guild lists show persisted roster HP rather than active-run HP because party and run
+        // screens own the live exploration snapshot presentation.
         "\(masterData.characterSummaryText(for: character)) / HP \(character.currentHP)"
     }
 }

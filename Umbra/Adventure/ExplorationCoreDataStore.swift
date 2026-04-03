@@ -490,6 +490,8 @@ nonisolated private enum ExplorationCoreDataBridge {
             memberEntity.characterId = Int64(characterId)
             memberEntity.currentHP = Int64(session.currentPartyHPs[formationIndex])
             memberEntity.experienceMultiplier = session.memberExperienceMultipliers[formationIndex]
+            // A run keeps its own frozen member snapshot so later guild edits do not rewrite
+            // historical battle logs or invalidate continuation state.
             if session.memberSnapshots.indices.contains(formationIndex) {
                 applyMemberSnapshot(session.memberSnapshots[formationIndex], to: memberEntity)
             }
@@ -542,6 +544,8 @@ nonisolated private enum ExplorationCoreDataBridge {
             uniqueKeysWithValues: completion.experienceRewards.map { ($0.characterId, $0.experience) }
         )
 
+        // Completion rewards are applied against current guild entities instead of the run member
+        // snapshots so the latest roster state remains authoritative after the sortie ends.
         for (formationIndex, characterId) in memberCharacterIds.enumerated() {
             guard let characterEntity = charactersById[characterId] else {
                 throw ExplorationError.invalidRunMember(characterId: characterId)
@@ -563,6 +567,8 @@ nonisolated private enum ExplorationCoreDataBridge {
             let currentHP = currentPartyHPs.indices.contains(formationIndex)
                 ? currentPartyHPs[formationIndex]
                 : 0
+            // Defeated members can auto-revive on return, otherwise the run writes back the
+            // persisted HP exactly as it ended.
             if playerState.autoReviveDefeatedCharacters && currentHP == 0 {
                 try restoreCurrentHPToMax(
                     of: characterEntity,
@@ -577,6 +583,7 @@ nonisolated private enum ExplorationCoreDataBridge {
             completion.dropRewards.map { ($0.itemID, 1) },
             uniquingKeysWith: +
         )
+        // Drop rewards are merged first so inventory persistence remains a single batch update.
         applyInventoryCounts(
             inventoryCounts,
             in: context
@@ -627,6 +634,8 @@ nonisolated private enum ExplorationCoreDataBridge {
             : defaultTitleId
         let currentHighestIndex = titles.firstIndex(where: { $0.id == currentHighestTitleId }) ?? 0
         let nextTitleIndex = titles.firstIndex(where: { $0.id == nextTitleId }) ?? currentHighestIndex
+        // Unlock progress only moves forward; replaying a lower difficulty never overwrites the
+        // highest unlocked tier already recorded for the labyrinth.
         guard nextTitleIndex > currentHighestIndex else {
             return
         }
@@ -642,6 +651,8 @@ nonisolated private enum ExplorationCoreDataBridge {
             return
         }
 
+        // Fetch all touched stacks up front, then upsert in memory so one completion pass does
+        // not issue a per-item fetch for every reward.
         let keys = itemCounts.keys.map(\.rawValue)
         let request = NSFetchRequest<InventoryItemEntity>(entityName: "InventoryItemEntity")
         request.predicate = NSPredicate(format: "stackKeyRawValue IN %@", keys)
@@ -716,6 +727,8 @@ nonisolated private enum ExplorationCoreDataBridge {
     static func makeRunDetailRecord(from entity: RunSessionEntity) -> RunSessionRecord {
         let experienceRewards = makeExperienceRewards(from: entity)
         let dropRewards = makeDropRewards(from: entity)
+        // Rebuild the summary first so detail decoding stays in lockstep with the lightweight
+        // list representation and only layers extra payload on top.
         var summary = makeRunSummaryRecord(from: entity)
         summary = RunSessionRecord(
             partyRunId: summary.partyRunId,
@@ -966,6 +979,8 @@ nonisolated private enum ExplorationCoreDataBridge {
             return
         }
 
+        // Log, turn, action, and result indices are persisted explicitly because Core Data set
+        // ordering is undefined and the renderer must reconstruct the original battle timeline.
         for (logIndex, battleLog) in battleLogs.enumerated() {
             guard let logEntity = NSEntityDescription.insertNewObject(
                 forEntityName: "RunSessionBattleLogEntity",
@@ -1114,6 +1129,8 @@ nonisolated private enum ExplorationCoreDataBridge {
         _ character: CharacterRecord,
         to entity: RunSessionMemberEntity
     ) {
+        // Store the same serialized equipment and auto-battle payload used by the guild roster so
+        // a resumed run can rebuild a battle-ready character without touching live roster rows.
         entity.name = character.name
         entity.raceId = Int64(character.raceId)
         entity.previousJobId = Int64(character.previousJobId)

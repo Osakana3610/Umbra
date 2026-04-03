@@ -59,6 +59,8 @@ nonisolated enum ItemDropNotificationSettings {
             return false
         }
 
+        // Both base and jewel affixes are checked, so disabling any attached title or super-rare
+        // suppresses the combined equipment notification.
         let titleIDs = Set([itemID.baseTitleId, itemID.jewelTitleId].filter { $0 > 0 })
         let superRareIDs = Set([itemID.baseSuperRareId, itemID.jewelSuperRareId].filter { $0 > 0 })
 

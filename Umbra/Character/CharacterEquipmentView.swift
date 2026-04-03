@@ -103,6 +103,8 @@ struct CharacterEquipmentView: View {
                 .task(id: character.id) {
                     do {
                         try equipmentStore.loadIfNeeded(masterData: masterData)
+                        // Preparing merged sections up front avoids rebuilding the inventory/equipped
+                        // interleave every time the view body re-evaluates.
                         equipmentStore.prepareMergedSectionsIfNeeded(for: character, masterData: masterData)
                         loadError = nil
                     } catch {
@@ -137,6 +139,8 @@ struct CharacterEquipmentView: View {
     private func visibleSections(for character: CharacterRecord) -> [EquipmentSectionRows] {
         equipmentStore.mergedSections(for: character.characterId).compactMap { section in
             let rows = visibleRows(in: section.rows)
+            // Section headers stay hidden during search when every row in that section was filtered
+            // out, but untouched sections preserve the cached merged ordering from the store.
             guard !isSearching || !rows.isEmpty else {
                 return nil
             }
@@ -189,6 +193,7 @@ struct CharacterEquipmentView: View {
             return "格闘"
         }
 
+        // The label is derived from the equipped range mix, not from job identity.
         if status.hasMeleeWeapon && status.hasRangedWeapon {
             return "近距離+遠距離"
         }
@@ -273,6 +278,7 @@ private struct EquipmentDisplayRowView: View, Equatable {
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
+            // Inventory rows become non-interactive once the character is at the equip cap.
             .disabled(isAtCapacity)
         case .equipped(let item):
             EquippedItemRow(

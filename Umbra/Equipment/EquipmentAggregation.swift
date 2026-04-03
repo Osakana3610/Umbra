@@ -62,6 +62,8 @@ nonisolated struct EquipmentAggregator {
         var hasRangedWeapon = false
         var totalWeaponAttack = 0
 
+        // Equipment is normalized first so duplicate stack keys are merged before any stat or
+        // skill contribution is counted.
         for stack in equippedItemStacks.normalizedCompositeItemStacks() {
             let baseContribution = try resolveContribution(
                 itemId: stack.itemID.baseItemId,
@@ -82,6 +84,8 @@ nonisolated struct EquipmentAggregator {
             )
 
             if stack.itemID.jewelItemId > 0 {
+                // Jewel affixes reuse the same aggregation pipeline, but they never inherit
+                // super-rare granted skills from the jewel branch.
                 let jewelContribution = try resolveContribution(
                     itemId: stack.itemID.jewelItemId,
                     titleId: stack.itemID.jewelTitleId,
@@ -127,6 +131,8 @@ nonisolated struct EquipmentAggregator {
             throw EquipmentAggregationError.invalidJewelItem(itemId)
         }
 
+        // Titles scale positive and negative stats independently, while super-rares contribute
+        // only extra skills and never alter the numeric stat payload directly.
         let title = titleId > 0 ? titlesByID[titleId] : nil
         let superRare = includeSuperRareSkills && superRareId > 0 ? superRaresByID[superRareId] : nil
 
@@ -149,6 +155,8 @@ nonisolated struct EquipmentAggregator {
         hasRangedWeapon: inout Bool,
         totalWeaponAttack: inout Int
     ) {
+        // Stack count multiplies the full contribution because repeated equipped entries represent
+        // multiple copies of the same composite item.
         baseStats.vitality += contribution.baseStats.vitality * count
         baseStats.strength += contribution.baseStats.strength * count
         baseStats.mind += contribution.baseStats.mind * count
@@ -170,6 +178,8 @@ nonisolated struct EquipmentAggregator {
 
         totalWeaponAttack += contribution.battleStats.physicalAttack * count
 
+        // Skill IDs preserve first-seen order while still removing duplicates across item, title,
+        // and super-rare sources.
         for skillID in contribution.skillIDs where seenSkillIDs.insert(skillID).inserted {
             itemSkillIDs.append(skillID)
         }
@@ -224,6 +234,8 @@ nonisolated struct EquipmentAggregator {
         guard let title else {
             return value
         }
+        // Positive stats use the title's positive multiplier, while penalties use the negative
+        // multiplier so cursed-style downsides can scale independently.
         if value > 0 {
             return Int((Double(value) * title.positiveMultiplier).rounded())
         }
@@ -237,6 +249,8 @@ nonisolated struct EquipmentAggregator {
         hasMeleeWeapon: Bool,
         hasRangedWeapon: Bool
     ) -> ItemRangeClass {
+        // Mixed loadouts resolve to ranged because the battle layer treats any ranged option as
+        // enabling back-row ranged behavior.
         switch (hasMeleeWeapon, hasRangedWeapon) {
         case (true, true):
             .ranged

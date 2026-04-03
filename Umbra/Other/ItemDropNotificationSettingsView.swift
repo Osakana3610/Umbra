@@ -23,6 +23,8 @@ struct ItemDropNotificationSettingsView: View {
                     Toggle(
                         title.name.isEmpty ? "無称号" : title.name,
                         isOn: Binding(
+                            // These toggles talk directly to UserDefaults-backed helpers so the
+                            // overlay filter applies immediately without an intermediate store.
                             get: { ItemDropNotificationSettings.isTitleEnabled(title.id) },
                             set: { ItemDropNotificationSettings.setTitleEnabled($0, titleId: title.id) }
                         )
@@ -35,6 +37,8 @@ struct ItemDropNotificationSettingsView: View {
                     Toggle(
                         superRare.name,
                         isOn: Binding(
+                            // Super-rare filters are independent from title filters; both must
+                            // pass for a notification to be shown.
                             get: { ItemDropNotificationSettings.isSuperRareEnabled(superRare.id) },
                             set: { ItemDropNotificationSettings.setSuperRareEnabled($0, superRareId: superRare.id) }
                         )

@@ -48,6 +48,8 @@ final class MasterDataStore {
             return
         }
 
+        // Master data is replaced atomically at the phase level so dependent views either observe
+        // the previous loaded snapshot or the next one, never a partial decode state.
         phase = .loading
 
         do {

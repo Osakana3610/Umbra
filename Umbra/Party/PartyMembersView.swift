@@ -48,6 +48,7 @@ struct PartyMembersView: View {
             return nil
         }
 
+        // Callers can override roster HP with live run HP while keeping the same member ordering.
         return displayedHPs[index]
     }
 }
@@ -78,6 +79,7 @@ private struct PartyMemberSlotView: View {
 
     @ViewBuilder
     private func slotContent(for character: CharacterRecord) -> some View {
+        // Every slot keeps the same compact layout so six members fit across without nested lists.
         VStack(spacing: 2) {
             Image(character.portraitAssetName)
                 .resizable()

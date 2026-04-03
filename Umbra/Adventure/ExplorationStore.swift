@@ -69,6 +69,8 @@ final class ExplorationStore {
         at currentDate: Date,
         masterData: MasterData
     ) async -> (didApplyRewards: Bool, appliedInventoryCounts: [CompositeItemID: Int]) {
+        // Progress refresh is serialized so one timer tick, foreground refresh, or resume flow
+        // cannot apply the same deterministic rewards twice.
         guard !isMutating,
               !isRefreshingProgress,
               runs.contains(where: { !$0.isCompleted }) else {
@@ -155,6 +157,8 @@ final class ExplorationStore {
         isResumingAutomaticRuns = true
         defer { isResumingAutomaticRuns = false }
 
+        // Resume first synchronizes any in-flight runs, then reconstructs queued automatic runs
+        // from the saved background timestamp before starting them one by one.
         rosterStore?.refreshFromPersistence()
         partyStore.reload()
         await reload(masterData: masterData)
@@ -182,6 +186,8 @@ final class ExplorationStore {
             partyStore: partyStore,
             masterData: masterData
         ) {
+            // Automatic runs are consumed sequentially so each completion can update persisted
+            // HP, rewards, and unlock state before the next queued sortie is started.
             await startRun(
                 partyId: pendingRun.partyId,
                 labyrinthId: pendingRun.labyrinthId,
@@ -263,6 +269,8 @@ final class ExplorationStore {
         defer { isMutating = false }
 
         do {
+            // Mutations always replace the full snapshot returned by the service so the UI does
+            // not mix stale run lists with freshly persisted progress.
             applySnapshot(try await operation(), masterData: masterData)
             rosterStore?.refreshFromPersistence()
         } catch {
@@ -299,6 +307,8 @@ final class ExplorationStore {
                 return
             }
 
+            // The timer re-checks progress against the current wall clock at fire time so resumed
+            // apps do not rely on a stale captured date.
             _ = await self.refreshProgress(
                 at: Date(),
                 masterData: masterData
@@ -314,6 +324,8 @@ final class ExplorationStore {
             }
 
             do {
+                // Retention pruning reloads only when rows were actually deleted, avoiding an
+                // unnecessary full snapshot rebuild on every refresh.
                 guard try await self.coreDataStore.pruneCompletedRunsExceedingRetentionLimit() else {
                     return
                 }
@@ -338,6 +350,8 @@ final class ExplorationStore {
                     return nil
                 }
 
+                // Progress advances once per battle interval, so the next refresh time is derived
+                // from the battle count already completed within the stored run.
                 return run.startedAt.addingTimeInterval(
                     Double(labyrinth.progressIntervalSeconds * (run.completedBattleCount + 1))
                 )
@@ -357,6 +371,8 @@ final class ExplorationStore {
                 continue
             }
 
+            // Automatic runs reuse the resolved highest unlocked difficulty instead of trusting a
+            // stale saved party selection from before the app was backgrounded.
             let highestUnlockedDifficultyTitleId = rosterStore?.labyrinthProgressByLabyrinthId[labyrinthId]?
                 .highestUnlockedDifficultyTitleId
             let selectedDifficultyTitleId = masterData.resolvedExplorationDifficultyTitleId(

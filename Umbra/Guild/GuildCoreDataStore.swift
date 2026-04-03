@@ -154,6 +154,8 @@ final class GuildCoreDataStore {
         _ characters: [CharacterRecord],
         in context: NSManagedObjectContext
     ) throws {
+        // Roster saves are full-snapshot writes: anything missing from the incoming value set is
+        // removed so Core Data cannot retain stale character rows.
         var existingByID = Dictionary(
             uniqueKeysWithValues: try fetchCharacters(in: context).map { (Int($0.characterId), $0) }
         )
@@ -200,6 +202,8 @@ final class GuildCoreDataStore {
         _ parties: [PartyRecord],
         in context: NSManagedObjectContext
     ) throws {
+        // Parties follow the same snapshot-sync rule as characters to keep roster, parties, and
+        // pending automatic-run state aligned after one logical save.
         var existingByID = Dictionary(
             uniqueKeysWithValues: try fetchPartyEntities(in: context).map { (Int($0.partyId), $0) }
         )
@@ -266,6 +270,8 @@ final class GuildCoreDataStore {
         in context: NSManagedObjectContext
     ) throws {
         let normalizedStacks = inventoryStacks.normalizedCompositeItemStacks()
+        // Inventory is normalized before persistence so duplicated stack keys from multiple
+        // upstream mutations collapse into one stored row.
         var existingByKey: [String: InventoryItemEntity] = try Dictionary(
             uniqueKeysWithValues: fetchInventoryItemEntities(in: context).compactMap { entity in
                 guard let rawValue = entity.stackKeyRawValue else {
@@ -417,6 +423,8 @@ final class GuildCoreDataStore {
         let parsedPriority = (entity.actionPriorityRawValue ?? "")
             .split(separator: ",")
             .compactMap { BattleActionKind(rawValue: String($0)) }
+        // If persisted priority data drifts from the current enum set, fall back to the default
+        // shape instead of constructing a partially invalid auto-battle configuration.
         let priority = parsedPriority.count == CharacterAutoBattleSettings.default.priority.count
             ? parsedPriority
             : CharacterAutoBattleSettings.default.priority
@@ -509,6 +517,8 @@ final class GuildCoreDataStore {
     }
 
     private func equippedItemStacks(from entity: CharacterEntity) -> [CompositeItemStack] {
+        // Equipped items are serialized as `itemRawValue#count` components joined by `|` so the
+        // roster store can round-trip value types without extra Core Data child entities.
         (entity.equippedItemStacksRawValue ?? "")
             .split(separator: "|")
             .compactMap { component in

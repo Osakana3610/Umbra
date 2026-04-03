@@ -65,6 +65,8 @@ final class ItemDropNotificationService {
             }
         }
 
+        // Notifications are appended in reveal order and then trimmed to a fixed window so the
+        // overlay remains bounded during long unattended auto-runs.
         guard !notifications.isEmpty else {
             return
         }

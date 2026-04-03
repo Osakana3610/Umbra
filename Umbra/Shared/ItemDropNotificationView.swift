@@ -33,6 +33,7 @@ struct ItemDropNotificationView: View {
 
     private var rowTransition: AnyTransition {
         if accessibilityReduceMotion {
+            // Reduced motion falls back to opacity-only changes to avoid directional movement.
             return .opacity
         }
 
@@ -86,6 +87,7 @@ private struct ItemDropNotificationChrome: ViewModifier {
         } else {
             let shape = RoundedRectangle(cornerRadius: 6, style: .continuous)
 
+            // Earlier systems approximate the same badge treatment with material plus a light tint.
             content
                 .background(.regularMaterial, in: shape)
                 .overlay {

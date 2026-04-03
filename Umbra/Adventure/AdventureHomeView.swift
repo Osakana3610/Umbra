@@ -188,6 +188,8 @@ struct AdventureHomeView: View {
             return nil
         }
 
+        // The displayed sortie target is always clamped to the highest unlocked difficulty so a
+        // stale party selection cannot point at an unavailable title.
         let highestUnlockedTitleId = rosterStore.labyrinthProgressByLabyrinthId[labyrinthId]?
             .highestUnlockedDifficultyTitleId
         return masterData.resolvedExplorationDifficultyTitleId(
@@ -197,6 +199,8 @@ struct AdventureHomeView: View {
     }
 
     private func canStartRun(for party: PartyRecord) -> Bool {
+        // A party can only sortie when configuration, member state, and exploration state all
+        // agree; this keeps the button logic consistent with the underlying service validation.
         guard !explorationStore.isSortieLocked,
               configuredLabyrinthId(for: party) != nil,
               !explorationStore.hasActiveRun(for: party.partyId),
@@ -323,6 +327,8 @@ private struct AdventurePartyPresentation {
     ) {
         let members = party.memberCharacterIds.compactMap { charactersById[$0] }
         let displayedCurrentHPs: [Int]
+        // While a run is active, cards prefer the live run HP snapshot over persisted roster HP so
+        // the overview reflects attrition before rewards are written back on completion.
         if let runHPs = status.activeRun?.currentPartyHPs, runHPs.count == members.count {
             displayedCurrentHPs = runHPs
         } else {
@@ -346,6 +352,8 @@ private struct AdventurePartyPresentation {
                     difficultyTitleId: activeRun.selectedDifficultyTitleId
                 )
             } ?? "不明な迷宮"
+            // The active-run card emphasizes the latest resolved battle, while the header shows the
+            // projected return time computed from the full configured route.
             let latestBattleText = activeRun.latestBattleOutcome.map(Self.battleText(for:)) ?? "探索開始"
             logHeaderText = Self.estimatedReturnText(for: activeRun, masterData: masterData)
             logText = Self.logText(
@@ -424,6 +432,8 @@ private struct AdventurePartyPresentation {
             return "帰還予定時刻 --:--:--"
         }
 
+        // Return time is based on the configured target floor rather than current progress so the
+        // card shows the original planned finish even while the run is still underway.
         let totalBattleCount = labyrinth.floors
             .filter { $0.floorNumber <= run.targetFloorNumber }
             .reduce(into: 0) { partialResult, floor in

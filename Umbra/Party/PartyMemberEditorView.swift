@@ -199,6 +199,8 @@ struct PartyMemberEditorView: View {
                 return nil
             }
 
+            // Members from parties that are currently exploring are excluded entirely so transfer
+            // actions never compete with persisted run membership.
             let members = sourceParty.memberCharacterIds.compactMap { characterId in
                 rosterStore.charactersById[characterId]
             }
@@ -222,6 +224,8 @@ struct PartyMemberEditorView: View {
         Binding(
             get: { transferCandidate != nil },
             set: { isPresented in
+                // Clearing the candidate on dismiss keeps alert presentation state driven by one
+                // source of truth instead of a second boolean flag.
                 if !isPresented {
                     transferCandidate = nil
                 }
@@ -241,6 +245,8 @@ struct PartyMemberEditorView: View {
     private func partyMembersMoveAction(
         for party: PartyRecord
     ) -> ((IndexSet, Int) -> Void)? {
+        // Reordering is exposed only while the local edit mode is active and the party is not in
+        // an active run, matching the rest of the membership mutation rules.
         guard isEditingPartyMembers, canEditMembers else {
             return nil
         }
@@ -265,6 +271,8 @@ struct PartyMemberEditorView: View {
                 .foregroundStyle(canAddMember && canEditMembers ? Color.accentColor : Color.secondary)
         }
         .buttonStyle(.plain)
+        // The add affordance follows the same gate for reserve adds and transfers so the UI does
+        // not invite edits that the store would reject anyway.
         .disabled(!canAddMember || !canEditMembers || partyStore.isMutating)
         .accessibilityLabel(accessibilityLabel)
     }

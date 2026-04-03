@@ -41,6 +41,8 @@ final class PartyStore {
             return
         }
 
+        // Reload resets the lightweight caches first so views never observe a half-rebuilt party
+        // list after a persistence error.
         phase = .loading
         parties = []
         partiesById = [:]
@@ -101,6 +103,8 @@ final class PartyStore {
         }
         updatedParties[targetPartyIndex].memberCharacterIds.append(characterId)
 
+        // Membership edits apply optimistically so drag-and-drop style actions feel immediate,
+        // but the previous snapshot is restored if the async service validation rejects them.
         isMutating = true
         lastOperationError = nil
         applyParties(updatedParties)
@@ -162,6 +166,8 @@ final class PartyStore {
         var updatedParties = parties
         updatedParties[partyIndex].memberCharacterIds.removeAll { $0 == characterId }
 
+        // Removal uses the same optimistic path as insertion so local order and membership update
+        // together, then reconcile against persisted state when the service returns.
         isMutating = true
         lastOperationError = nil
         applyParties(updatedParties)
@@ -221,6 +227,7 @@ final class PartyStore {
 
     private func applyParties(_ parties: [PartyRecord]) {
         self.parties = parties
+        // The ID lookup is rebuilt eagerly because most party-facing screens dereference by ID.
         partiesById = Dictionary(uniqueKeysWithValues: parties.map { ($0.partyId, $0) })
     }
 
@@ -234,6 +241,8 @@ final class PartyStore {
             offsets.contains(index) ? nil : memberId
         }
 
+        // SwiftUI reports the destination in the pre-removal coordinate space, so the insertion
+        // index must be adjusted by the number of moved rows that were originally before it.
         let insertionIndex = min(
             max(destination - offsets.filter { $0 < destination }.count, 0),
             remainingMembers.count

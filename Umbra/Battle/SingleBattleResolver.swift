@@ -157,6 +157,8 @@ nonisolated private struct BattleResolutionEngine {
     mutating func resolve() throws -> SingleBattleResult {
         var outcome = currentOutcomeIfFinished()
 
+        // A battle is resolved turn-by-turn, but interrupts can still prepend extra actions
+        // inside the current turn before the next initiative pass begins.
         while outcome == nil && currentTurn < 20 {
             currentTurn += 1
             resetTurnState()
@@ -175,6 +177,8 @@ nonisolated private struct BattleResolutionEngine {
                 if let actionRecord = resolve(queuedAction) {
                     resolvedActions.append(actionRecord.record)
                     if !actionRecord.generatedInterrupts.isEmpty {
+                        // Interrupts are inserted at the head of the queue so they resolve
+                        // immediately after the triggering action, matching the battle log order.
                         let sortedInterrupts = sortInterrupts(actionRecord.generatedInterrupts)
                         actionQueue.insert(contentsOf: sortedInterrupts, at: 0)
                     }
@@ -187,6 +191,8 @@ nonisolated private struct BattleResolutionEngine {
             }
 
             if outcome == nil {
+                // Damage-over-time and similar ailment ticks only happen if the battle did not
+                // already end from a normal action during this turn.
                 resolveEndOfTurnAilments()
             }
             turns.append(BattleTurnRecord(turnNumber: currentTurn, actions: resolvedActions))
@@ -224,6 +230,8 @@ nonisolated private struct BattleResolutionEngine {
     private mutating func resetTurnState() {
         for index in combatants.indices {
             combatants[index].isDefending = false
+            // Initiative is recomputed every turn from the current runtime state so speed buffs,
+            // ailments, and deaths immediately affect ordering.
             initiativeScores[index] = combatants[index].canAct ? actionOrderScore(for: index) : .leastNonzeroMagnitude
         }
     }
@@ -237,6 +245,8 @@ nonisolated private struct BattleResolutionEngine {
     private mutating func selectNormalAction(for actorIndex: Int) -> QueuedAction {
         let actor = combatants[actorIndex]
 
+        // Priorities are evaluated in order, but each candidate still rolls against the actor's
+        // configured auto-battle rate before it becomes the committed action for the turn.
         for (priorityIndex, actionKind) in actor.actionPriority.enumerated() {
             guard isCandidateExecutable(actionKind, for: actorIndex) else {
                 continue
@@ -389,6 +399,8 @@ nonisolated private struct BattleResolutionEngine {
         var hitMultiplier = 0.0
         var currentTargetAlive = combatants[targetIndex].isAlive
 
+        // Multi-hit attacks decay each additional hit's contribution so extra swings matter,
+        // but the first confirmed hit still carries the largest share of the damage.
         for hitIndex in 0..<attackCount where currentTargetAlive {
             if didHit(attackerIndex: actorIndex, defenderIndex: targetIndex, subactionNumber: hitIndex + 1) {
                 hitMultiplier += pow(0.5, Double(hitIndex))
@@ -431,6 +443,8 @@ nonisolated private struct BattleResolutionEngine {
         let target = combatants[targetIndex]
         let guarded = target.isDefending
         var multiplier = actor.status.battleDerivedStats.physicalDamageMultiplier
+        // Physical damage is assembled from actor-side bonuses first and only then reduced by
+        // target-side resistance and guard state inside `damageValue`.
         multiplier *= formationMultiplier(for: actor)
         multiplier *= weaponDamageMultiplier(for: actor)
         multiplier *= queuedAction.attackPowerMultiplier
@@ -495,6 +509,8 @@ nonisolated private struct BattleResolutionEngine {
         let actorIndex = queuedAction.actorIndex
         let actorId = combatants[actorIndex].id
 
+        // Recovery spells split into HP restoration, full restore, barrier application, and
+        // ailment removal, but all branches still emit the same recovery-spell log shape.
         switch spell.kind {
         case .heal:
             let targetIndices = spell.targetCount == 0
@@ -639,6 +655,8 @@ nonisolated private struct BattleResolutionEngine {
             let results = targetIndices.enumerated().flatMap { offset, targetIndex in
                 let target = combatants[targetIndex]
                 let guarded = target.isDefending
+                // Spell damage is assembled from actor-side bonuses first, then reduced by the
+                // target's spell-specific resistance, active barrier, and guard state.
                 let multiplier = actor.status.battleDerivedStats.magicDamageMultiplier
                     * actor.status.battleDerivedStats.spellDamageMultiplier
                     * actor.status.spellDamageMultiplier(for: spell.id)
@@ -664,6 +682,8 @@ nonisolated private struct BattleResolutionEngine {
                     fallenTargetIndices.append(targetIndex)
                 }
                 var targetResults = [damageResult]
+                // Secondary ailment checks happen after damage so the battle log records the hit
+                // result first and rescue triggers see the post-damage alive state.
                 if let ailmentResult = applySpellAilmentIfNeeded(
                     spell,
                     from: actorIndex,
@@ -744,6 +764,8 @@ nonisolated private struct BattleResolutionEngine {
         }
 
         if spell.kind == .heal && spell.targetCount == 0 {
+            // Party-targeted rescue heals every still-valid defeated ally instead of re-rolling
+            // a single target after the interrupt has already been scheduled.
             let healValue = max(
                 Int(
                     (
@@ -809,6 +831,8 @@ nonisolated private struct BattleResolutionEngine {
         after queuedAction: QueuedAction,
         fallenTargetIndices: [Int]
     ) -> [QueuedAction] {
+        // Rescue is only offered for newly defeated allies that are still valid by the time the
+        // interrupt queue is built, which keeps chained interrupts deterministic.
         let rescueTargets = sanitizedRescueTargetIndices(
             after: queuedAction,
             fallenTargetIndices: fallenTargetIndices
@@ -850,6 +874,7 @@ nonisolated private struct BattleResolutionEngine {
         after queuedAction: QueuedAction,
         fallenTargetIndices: [Int]
     ) -> [Int] {
+        // Enemies can trigger ally rescue; player-side defeats do not create mirror rescue logic.
         guard combatants[queuedAction.actorIndex].side == .enemy else {
             return []
         }
@@ -881,6 +906,8 @@ nonisolated private struct BattleResolutionEngine {
         let actorIndex = queuedAction.actorIndex
         var queuedInterrupts: [QueuedAction] = []
 
+        // Counter and extra-attack are evaluated separately so both can trigger from one hit,
+        // but each follow-up action is marked as non-recursive to prevent infinite chains.
         if combatants[targetIndex].canAct && combatants[targetIndex].status.interruptKinds.contains(.counter) {
             let roll = uniform(
                 turn: currentTurn,
@@ -1072,6 +1099,8 @@ nonisolated private struct BattleResolutionEngine {
             purpose: "evasion.u2.\(attacker.id.rawValue).\(defender.id.rawValue)"
         )
 
+        // Luck biases each side toward the better of two rolls, then the resulting accuracy gap is
+        // clamped so deterministic battles still preserve a minimum miss and hit chance.
         let hitLuckBias = biasedLuck(attacker.status.baseStats.luck)
         let evadeLuckBias = biasedLuck(defender.status.baseStats.luck)
         let hitRoll = (1 - hitLuckBias) * u1 + hitLuckBias * max(u1, u2)

@@ -52,6 +52,8 @@ struct RunSessionBattleLogDetailView: View {
 
         for turn in log.battleRecord.turns {
             let turnStartStates = states
+            // Each turn section shows the HP at the start of that turn, while action rows mutate a
+            // separate running copy to render per-result HP deltas below.
             let displayedStates = turnStartStates.mapValues { state in
                 var copy = state
                 copy.previousTurnStartHP = previousTurnStartStates[state.id]?.currentHP ?? state.currentHP
@@ -96,6 +98,8 @@ struct RunSessionBattleLogDetailView: View {
             ? "対象: \(targetNames.joined(separator: " / "))"
             : nil
 
+        // Result messages are built while mutating the running HP state so later results in the
+        // same turn can render against already-updated values.
         return RunSessionBattleActionPresentation(
             id: id,
             actor: actor,
@@ -199,6 +203,8 @@ struct RunSessionBattleLogDetailView: View {
             return nil
         }
 
+        // The stored logs only need HP transitions for damage and healing, so non-HP effects keep
+        // the current participant state unchanged.
         state.currentHP = afterHP
         states[result.targetId] = state
         return RunSessionBattleHPChange(
@@ -479,6 +485,8 @@ private struct RunSessionBattleHPBarView: View {
             ZStack(alignment: .leading) {
                 Color(.systemGray5)
 
+                // Damage highlights the lost segment in red, healing highlights the gained segment
+                // in green, and the neutral gray bar shows the resulting HP after the change.
                 if isDamage {
                     Rectangle()
                         .fill(Color(.systemRed).opacity(0.70))

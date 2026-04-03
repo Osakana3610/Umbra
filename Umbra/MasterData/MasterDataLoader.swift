@@ -19,6 +19,8 @@ nonisolated struct MasterDataLoader: Sendable {
             )
         }
 
+        // Bundle loading forwards to the file-based loader so tests and tooling can reuse the same
+        // decoding and error-reporting path.
         return try Self.load(fileURL: fileURL)
     }
 
@@ -32,6 +34,7 @@ nonisolated struct MasterDataLoader: Sendable {
 
         let decodedMasterData: MasterData
         do {
+            // Decode the full runtime schema eagerly so format issues fail fast at startup.
             decodedMasterData = try JSONDecoder().decode(MasterData.self, from: data)
         } catch {
             throw MasterDataLoaderError.invalidMasterData(fileURL, underlyingError: error)

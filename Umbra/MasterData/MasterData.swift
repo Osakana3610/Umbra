@@ -310,6 +310,8 @@ nonisolated enum BattleActionKind: String, Decodable, Sendable {
 
 extension MasterData {
     nonisolated var explorationDifficultyTitles: [Title] {
+        // Exploration difficulty is intentionally a small ordered subset of all titles: the
+        // untitled baseline plus the next three stronger positive-multiplier titles.
         let sortedTitles = titles.sorted { lhs, rhs in
             if lhs.positiveMultiplier != rhs.positiveMultiplier {
                 return lhs.positiveMultiplier < rhs.positiveMultiplier
@@ -376,6 +378,8 @@ extension MasterData {
             return requestedTitleId ?? highestUnlockedTitleId ?? 1
         }
 
+        // Requested difficulty is clamped to the caller's unlock progress so stale UI state can
+        // safely round-trip through persistence without bypassing progression.
         let highestUnlockedId = highestUnlockedTitleId ?? defaultTitle.id
         let unlockedIndex = titles.firstIndex(where: { $0.id == highestUnlockedId }) ?? 0
         let requestedIndex = requestedTitleId.flatMap { titleId in

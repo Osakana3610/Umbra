@@ -59,6 +59,8 @@ struct CharacterDetailView: View {
                     }
                 )
                 .task(id: character.characterId) {
+                    // The draft controls mirror persisted values when navigating between
+                    // characters, but local slider edits are preserved while a mutation is in flight.
                     synchronizeDraftValues(with: character)
                 }
                 .onChange(of: character.autoBattleSettings.rates) { _, newValue in
@@ -105,6 +107,8 @@ struct CharacterDetailView: View {
             return "-"
         }
 
+        // The level cap is race-specific, so "next level" becomes a terminal state once the
+        // character reaches the cap even if experience continues to be stored.
         guard character.level < race.levelCap else {
             return "上限到達"
         }
@@ -122,6 +126,8 @@ struct CharacterDetailView: View {
         _ updatedSettings: CharacterAutoBattleSettings,
         current: CharacterAutoBattleSettings
     ) {
+        // Avoid firing store mutations for every local state refresh when the effective payload
+        // has not changed.
         guard updatedSettings != current else {
             return
         }
@@ -293,6 +299,8 @@ private struct CharacterDetailLoadedView: View {
             return
         }
 
+        // Name edits commit only after trimming so both submit and focus-loss paths normalize the
+        // same persisted value.
         draftName = normalizedName
         onNameChange(normalizedName)
     }
@@ -310,6 +318,7 @@ private struct CharacterDetailLoadedView: View {
         fromOffsets: IndexSet,
         toOffset: Int
     ) {
+        // Reordering persists immediately so the battle engine and the visible list cannot drift.
         draftPriority.move(fromOffsets: fromOffsets, toOffset: toOffset)
         persistAutoBattleSettings()
     }
@@ -326,6 +335,8 @@ private struct CharacterDetailLoadedView: View {
         Binding(
             get: { Double(autoBattleRateValue(for: actionKind)) },
             set: { newValue in
+                // The slider works in Double for SwiftUI, but the underlying battle rates are
+                // stored as integer percentages.
                 let roundedValue = Int(newValue.rounded())
                 switch actionKind {
                 case .breath:
@@ -524,6 +535,7 @@ private struct CharacterBasicInfoSectionView: View {
     }
 
     private var previousJob: MasterData.Job? {
+        // `0` is the sentinel for "no previous job" in persisted character records.
         guard character.previousJobId != 0 else {
             return nil
         }
@@ -675,6 +687,8 @@ private struct CharacterStatusSectionsView: View {
     }
 
     private func percentageText(_ value: Double) -> String {
+        // Derived multipliers are rendered as whole percentages to match the way battle-facing
+        // modifiers are described elsewhere in the UI.
         "\(Int((value * 100).rounded()))%"
     }
 }

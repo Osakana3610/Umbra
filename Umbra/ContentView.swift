@@ -1,6 +1,6 @@
-import SwiftUI
-
 // Shows app loading state and routes into the guild dashboard once data is ready.
+
+import SwiftUI
 
 struct ContentView: View {
     @Environment(\.scenePhase) private var scenePhase
@@ -17,6 +17,8 @@ struct ContentView: View {
         Group {
             switch (masterDataStore.phase, rosterStore.phase, partyStore.phase) {
             case (.idle, _, _), (.loading, _, _), (_, .idle, _), (_, .loading, _), (_, _, .idle), (_, _, .loading):
+                // The shell waits for master data, roster, and party state together because all
+                // three are required to construct the tab hierarchy coherently.
                 ProgressView("マスターデータを読み込み中")
             case let (.failed(message), _, _), let (_, .failed(message), _), let (_, _, .failed(message)):
                 VStack(spacing: 16) {
@@ -28,6 +30,8 @@ struct ContentView: View {
 
                     Button("再読み込み") {
                         Task {
+                            // Master data reload is async, while roster and party reload from local
+                            // persistence synchronously on the main actor.
                             async let masterDataReload = masterDataStore.reload()
                             rosterStore.reload()
                             partyStore.reload()
@@ -51,6 +55,8 @@ struct ContentView: View {
                         return
                     }
 
+                    // Foreground entry replays background progress before the user interacts with
+                    // the tab UI so pending rewards and auto-runs are visible immediately.
                     await explorationStore.resumeBackgroundProgress(
                         reopenedAt: Date(),
                         partyStore: partyStore,
@@ -78,6 +84,8 @@ struct ContentView: View {
             }
         }
         .task {
+            // Startup loads master data and local stores in parallel to minimize time spent on the
+            // initial loading screen.
             async let masterDataLoad = masterDataStore.loadIfNeeded()
             rosterStore.loadIfNeeded()
             partyStore.loadIfNeeded()

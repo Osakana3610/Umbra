@@ -40,6 +40,8 @@ final class ExplorationSessionService {
 
         for runStart in runsToStart {
             var cachedStatuses: [Int: ExplorationMemberStatusCacheEntry] = [:]
+            // Status caches are scoped per planned run so repeated character calculations inside
+            // planning do not recompute the same derived stats for one party setup.
             let plannedSession = try ExplorationResolver.plan(
                 session: try await makeInitialSession(
                     runStart: runStart,
@@ -95,6 +97,8 @@ final class ExplorationSessionService {
         for currentSession in progressContexts {
             let session: RunSessionRecord
             if currentSession.completion == nil {
+                // Active runs are revealed up to the requested wall-clock time; completed runs are
+                // passed through unchanged to avoid re-resolving rewards.
                 session = try ExplorationResolver.reveal(
                     session: currentSession,
                     upTo: currentDate,
@@ -157,6 +161,8 @@ final class ExplorationSessionService {
                     guard let value = effect.value else {
                         continue
                     }
+                    // Run-start reward multipliers are baked into the stored session so later
+                    // progress refreshes do not have to recalculate them from mutable roster data.
                     partialResult *= value
                 }
             }
@@ -174,6 +180,8 @@ final class ExplorationSessionService {
         rootSeed ^= UInt64(runStart.partyId) &* 0x9e3779b97f4a7c15
         rootSeed ^= UInt64(startContext.nextPartyRunId) &* 0xbf58476d1ce4e5b9
 
+        // The root seed is derived from time, party, and party-run identity so one party can start
+        // multiple deterministic runs without colliding with earlier sessions.
         return RunSessionRecord(
             partyRunId: startContext.nextPartyRunId,
             partyId: runStart.partyId,
@@ -217,6 +225,7 @@ final class ExplorationSessionService {
             return nil
         }
 
+        // Notifications are limited to newly revealed drop rewards since the previous snapshot.
         let revealedDropRewards = update.resolvedSession.dropRewards.filter { reward in
             reward.sourceBattleNumber > currentBattleCount
                 && reward.sourceBattleNumber <= resolvedBattleCount

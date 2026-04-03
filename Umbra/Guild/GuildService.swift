@@ -172,6 +172,8 @@ final class GuildService {
     func deleteCharacter(
         characterId: Int
     ) async throws {
+        // Guild mutations are blocked while a character participates in an active run so stored
+        // exploration snapshots never point at deleted roster members.
         try await explorationCoreDataStore.validateCharacterMutationIsAllowed(characterId: characterId)
 
         var roster = try coreDataStore.loadRosterSnapshot()
@@ -183,6 +185,7 @@ final class GuildService {
             parties[index].memberCharacterIds.removeAll { $0 == characterId }
         }
 
+        // Any equipped gear returns to shared inventory before the character row disappears.
         let inventoryStacks = (try coreDataStore.loadInventoryStacks() + character.equippedItemStacks)
             .normalizedCompositeItemStacks()
 
@@ -231,6 +234,8 @@ final class GuildService {
         character.previousJobId = character.currentJobId
         character.currentJobId = targetJobId
 
+        // A job change can invalidate max HP and equipment limits, so both are normalized before
+        // the updated character is persisted back to the roster.
         let unequippedStacks = trimEquippedItemsToMaximum(on: &character)
         clampCurrentHP(of: &character, masterData: masterData)
         try coreDataStore.saveCharacter(character)
@@ -269,6 +274,8 @@ final class GuildService {
         var parties = try coreDataStore.loadParties()
         let elapsedSeconds = max(Int(reopenedAt.timeIntervalSince(backgroundedAt)), 0)
         if elapsedSeconds > 0 {
+            // Automatic runs are derived from elapsed background time and each selected
+            // labyrinth's full run duration, capped to the per-party pending queue limit.
             for index in parties.indices {
                 guard let labyrinthId = parties[index].selectedLabyrinthId,
                       let labyrinth = masterData.labyrinths.first(where: { $0.id == labyrinthId }) else {

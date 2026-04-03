@@ -80,6 +80,8 @@ nonisolated enum CharacterDerivedStatsCalculator {
             ? nil
             : masterData.jobs.first(where: { $0.id == previousJobId })
 
+        // Equipment contributes directly to base stats and active skills before job coefficients
+        // are applied, so derived battle values always reflect the fully equipped build.
         let effectiveBaseStats = CharacterBaseStats(
             vitality: race.baseStats.vitality + equipmentAggregation.baseStats.vitality,
             strength: race.baseStats.strength + equipmentAggregation.baseStats.strength,
@@ -325,6 +327,8 @@ nonisolated enum CharacterDerivedStatsCalculator {
         var seenSkillIds = Set<Int>()
         var deduplicatedSkillIds: [Int] = []
 
+        // Keep first-seen ordering stable so downstream UI and battle logic resolve skills in a
+        // deterministic order even when multiple sources grant the same skill.
         for skillId in skillIds {
             guard seenSkillIds.insert(skillId).inserted else {
                 continue
@@ -343,6 +347,8 @@ nonisolated enum CharacterDerivedStatsCalculator {
     ) -> SkillAdjustments {
         var adjustments = SkillAdjustments()
 
+        // Each effect is folded into one accumulator so mixed flat, percent, spell, and
+        // interrupt modifiers can be applied in a single pass over the active skill list.
         for skillId in activeSkillIds {
             guard let skill = skillLookup[skillId] else {
                 continue
@@ -377,6 +383,8 @@ nonisolated enum CharacterDerivedStatsCalculator {
         equipmentFlatBonus: Int,
         skillAdjustments: SkillAdjustments
     ) -> Int {
+        // The formula intentionally applies flat equipment first, then additive skill modifiers,
+        // and finally the global multiplier so each source scales in a predictable order.
         let baseValue = Int(
             (
                 baseInput
@@ -421,6 +429,8 @@ nonisolated enum CharacterDerivedStatsCalculator {
         let multipliers = skillAdjustments.spellSpecificBattleDerivedMultipliers[target, default: [:]]
         let spellIDs = Set(pctAdds.keys).union(multipliers.keys)
 
+        // Spell-specific modifiers are stored separately from generic derived values so only the
+        // listed spells inherit the adjustment while the base multiplier remains unchanged.
         return spellIDs.reduce(into: [:]) { partialResult, spellID in
             let rawValue = (1.0 + pctAdds[spellID, default: 0.0])
                 * multipliers[spellID, default: 1.0]
@@ -471,6 +481,8 @@ nonisolated private struct SkillAdjustments {
             }
 
             if !effect.spellIds.isEmpty {
+                // Some effects only modify a whitelisted spell set, so they bypass the generic
+                // derived-value buckets and accumulate into per-spell tables instead.
                 for spellID in effect.spellIds {
                     switch operation {
                     case "pctAdd":

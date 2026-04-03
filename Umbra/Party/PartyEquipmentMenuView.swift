@@ -56,6 +56,8 @@ struct PartyEquipmentMenuView: View {
     }
 
     private var members: [CharacterRecord] {
+        // Party member order is preserved so the equipment menu matches the formation shown on the
+        // party detail and adventure screens.
         party.memberCharacterIds.compactMap { rosterStore.charactersById[$0] }
     }
 }

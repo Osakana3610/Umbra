@@ -532,6 +532,8 @@ nonisolated private extension ExplorationResolver {
         let titlesByAscendingQuality = masterData.titles.sorted {
             $0.positiveMultiplier < $1.positiveMultiplier
         }
+        // Battle snapshots only know ally formation order, so rewards map surviving allies back
+        // through the original party member list before deciding who receives experience.
         let livingCharacterIds = Set(
             result.combatants
                 .filter { $0.side == .ally && $0.remainingHP > 0 }
@@ -544,6 +546,8 @@ nonisolated private extension ExplorationResolver {
                 }
         )
 
+        // Gold is pooled once per battle, while experience is split evenly first and only then
+        // scaled by each surviving member's multiplier.
         let totalBaseGold = enemySeeds.reduce(into: 0) { partial, enemySeed in
             guard let enemy = enemyTable[enemySeed.enemyId] else {
                 return
@@ -599,6 +603,8 @@ nonisolated private extension ExplorationResolver {
                 * rewardContext.rareDropMultiplier
                 * (1 + 0.1 * (cbrt(Double(enemySeed.level)) - 1))
             for rareDropOffset in enemy.rareDropItemIds.indices {
+                // Rare drops roll independently per configured slot so one enemy can drop
+                // multiple rare candidates when the deterministic rolls line up.
                 let purpose = "drop:rare:\(floorNumber):\(battleNumber):enemy:\(enemyIndex):candidate:\(rareDropOffset)"
                 let roll = ExplorationDeterministicRandom.uniform(
                     rootSeed: rootSeed,
@@ -726,6 +732,8 @@ nonisolated private extension ExplorationResolver {
         rootSeed: UInt64
     ) -> Int? {
         let cbrtLevel = cbrt(Double(enemyLevel))
+        // Higher tiers are checked first with separately clamped probabilities, so stronger
+        // enemies widen the upper-tier window without removing low-tier fallback drops.
         let tierProbabilities: [(tier: Int, probability: Double)] = [
             (8, clamp(0.005 + 0.015 * (cbrtLevel - 1), min: 0.005, max: 0.10)),
             (7, clamp(0.020 + 0.020 * (cbrtLevel - 1), min: 0.020, max: 0.20)),

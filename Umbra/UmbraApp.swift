@@ -44,6 +44,8 @@ struct UmbraApp: App {
                 service: guildService
             )
         )
+        // Exploration and notification services are constructed once at app launch so background
+        // resume and overlay state survive view re-composition.
         _explorationStore = State(
             initialValue: ExplorationStore(
                 coreDataStore: explorationCoreDataStore,
