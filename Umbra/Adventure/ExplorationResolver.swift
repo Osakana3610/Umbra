@@ -241,6 +241,22 @@ nonisolated enum ExplorationResolver {
                 : nil
         )
     }
+
+    static func rebuildPartyMembersAfterBattle(
+        from partyMembers: [CharacterRecord],
+        currentPartyHPs: [Int],
+        masterData: MasterData,
+        cachedStatuses: inout [Int: ExplorationMemberStatusCacheEntry]
+    ) throws -> [PartyBattleMember] {
+        try resolvedPartyMembers(
+            from: updatedPartyMembers(
+                from: partyMembers,
+                currentPartyHPs: currentPartyHPs
+            ),
+            masterData: masterData,
+            cachedStatuses: &cachedStatuses
+        )
+    }
 }
 
 nonisolated private extension ExplorationResolver {

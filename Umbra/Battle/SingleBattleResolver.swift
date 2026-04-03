@@ -24,6 +24,46 @@ nonisolated enum SingleBattleResolver {
     }
 }
 
+nonisolated struct BattleActionOrderPriorityKey: Equatable, Sendable {
+    let initiativeScore: Double
+    let luck: Int
+    let agility: Int
+    let formationIndex: Int
+
+    static func ordersBefore(_ lhs: BattleActionOrderPriorityKey, _ rhs: BattleActionOrderPriorityKey) -> Bool {
+        if lhs.initiativeScore != rhs.initiativeScore {
+            return lhs.initiativeScore > rhs.initiativeScore
+        }
+        if lhs.luck != rhs.luck {
+            return lhs.luck > rhs.luck
+        }
+        if lhs.agility != rhs.agility {
+            return lhs.agility > rhs.agility
+        }
+        return lhs.formationIndex < rhs.formationIndex
+    }
+}
+
+nonisolated enum RescueResolutionValidation {
+    static func survivingDefeatedTargetIndices(
+        from fallenTargetIndices: [Int]?,
+        aliveStates: [Bool],
+        actorCanAct: Bool
+    ) -> [Int]? {
+        guard let fallenTargetIndices else {
+            return nil
+        }
+
+        let stillDefeatedTargets = fallenTargetIndices.filter { targetIndex in
+            aliveStates.indices.contains(targetIndex) && !aliveStates[targetIndex]
+        }
+        guard !stillDefeatedTargets.isEmpty, actorCanAct else {
+            return nil
+        }
+        return stillDefeatedTargets
+    }
+}
+
 nonisolated private struct BattleResolutionEngine {
     private let context: BattleContext
     private let masterData: MasterData
@@ -146,7 +186,9 @@ nonisolated private struct BattleResolutionEngine {
                 }
             }
 
-            resolveEndOfTurnAilments()
+            if outcome == nil {
+                resolveEndOfTurnAilments()
+            }
             turns.append(BattleTurnRecord(turnNumber: currentTurn, actions: resolvedActions))
             outcome = outcome ?? currentOutcomeIfFinished()
         }
@@ -687,12 +729,11 @@ nonisolated private struct BattleResolutionEngine {
     }
 
     private mutating func resolveRescue(_ queuedAction: QueuedAction) -> ResolvedAction? {
-        guard let fallenTargetIndices = queuedAction.fixedTargetIndices else {
-            return nil
-        }
-        let stillDefeatedTargets = fallenTargetIndices.filter { !$0.isOutOfBounds(in: combatants) && !combatants[$0].isAlive }
-        guard !stillDefeatedTargets.isEmpty,
-              combatants[queuedAction.actorIndex].canAct else {
+        guard let stillDefeatedTargets = RescueResolutionValidation.survivingDefeatedTargetIndices(
+            from: queuedAction.fixedTargetIndices,
+            aliveStates: combatants.map(\.isAlive),
+            actorCanAct: combatants[queuedAction.actorIndex].canAct
+        ) else {
             return nil
         }
 
@@ -906,8 +947,7 @@ nonisolated private struct BattleResolutionEngine {
             }
         }
 
-        if let pursuingAllyIndex = highestPriorityPursuer(excluding: actorIndex),
-           combatants[pursuingAllyIndex].canAct {
+        for pursuingAllyIndex in pursuitCandidates(excluding: actorIndex) {
             let roll = uniform(
                 turn: currentTurn,
                 action: currentActionNumber,
@@ -988,21 +1028,7 @@ nonisolated private struct BattleResolutionEngine {
     }
 
     private func compareCombatantPriority(_ lhs: Int, _ rhs: Int) -> Bool {
-        let lhsScore = initiativeScores[lhs]
-        let rhsScore = initiativeScores[rhs]
-        if lhsScore != rhsScore {
-            return lhsScore > rhsScore
-        }
-
-        let lhsCombatant = combatants[lhs]
-        let rhsCombatant = combatants[rhs]
-        if lhsCombatant.status.baseStats.luck != rhsCombatant.status.baseStats.luck {
-            return lhsCombatant.status.baseStats.luck > rhsCombatant.status.baseStats.luck
-        }
-        if lhsCombatant.status.baseStats.agility != rhsCombatant.status.baseStats.agility {
-            return lhsCombatant.status.baseStats.agility > rhsCombatant.status.baseStats.agility
-        }
-        return lhsCombatant.formationIndex < rhsCombatant.formationIndex
+        BattleActionOrderPriorityKey.ordersBefore(priorityKey(for: lhs), priorityKey(for: rhs))
     }
 
     private func sortInterrupts(_ actions: [QueuedAction]) -> [QueuedAction] {
@@ -1515,7 +1541,7 @@ nonisolated private struct BattleResolutionEngine {
         )
     }
 
-    private func highestPriorityPursuer(excluding actorIndex: Int) -> Int? {
+    private func pursuitCandidates(excluding actorIndex: Int) -> [Int] {
         let actorSide = combatants[actorIndex].side
         return combatants.indices
             .filter {
@@ -1525,7 +1551,6 @@ nonisolated private struct BattleResolutionEngine {
                     && combatants[$0].canAct
             }
             .sorted(by: compareCombatantPriority)
-            .first
     }
 
     private func livingIndices() -> [Int] {
@@ -1620,6 +1645,16 @@ nonisolated private struct BattleResolutionEngine {
             values.count - 1
         )
         return values[index]
+    }
+
+    private func priorityKey(for combatantIndex: Int) -> BattleActionOrderPriorityKey {
+        let combatant = combatants[combatantIndex]
+        return BattleActionOrderPriorityKey(
+            initiativeScore: initiativeScores[combatantIndex],
+            luck: combatant.status.baseStats.luck,
+            agility: combatant.status.baseStats.agility,
+            formationIndex: combatant.formationIndex
+        )
     }
 }
 
