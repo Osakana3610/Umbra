@@ -177,7 +177,7 @@ final class ExplorationSessionService {
             return status
         }
         func rewardMultiplier(for skillIds: [Int], target: String) -> Double {
-            skillIds.reduce(into: 1.0) { partialResult, skillId in
+            Set(skillIds).reduce(into: 1.0) { partialResult, skillId in
                 guard let skill = skillTable[skillId] else {
                     return
                 }
@@ -188,11 +188,19 @@ final class ExplorationSessionService {
                     }
                     // Run-start reward multipliers are baked into the stored session so later
                     // progress refreshes do not have to recalculate them from mutable roster data.
-                    partialResult *= value
+                    switch effect.operation {
+                    case "pctAdd":
+                        partialResult *= 1.0 + value
+                    case nil, "mul":
+                        partialResult *= value
+                    default:
+                        continue
+                    }
                 }
             }
         }
 
+        let partyRewardSkillIds = memberStatuses.flatMap(\.skillIds)
         let memberExperienceMultipliers = memberStatuses.map { status in
             let baseMultiplier = rewardMultiplier(for: status.skillIds, target: "experience")
             return appliesCatTicket
@@ -226,15 +234,12 @@ final class ExplorationSessionService {
             progressIntervalMultiplier: appliesCatTicket
                 ? Self.catTicketProgressIntervalMultiplier
                 : 1.0,
-            goldMultiplier: memberStatuses.reduce(into: 1.0) { partialResult, status in
-                partialResult *= rewardMultiplier(for: status.skillIds, target: "gold")
-            } * (appliesCatTicket ? Self.catTicketRewardMultiplier : 1.0),
-            rareDropMultiplier: memberStatuses.reduce(into: 1.0) { partialResult, status in
-                partialResult *= rewardMultiplier(for: status.skillIds, target: "rareDrop")
-            } * (appliesCatTicket ? Self.catTicketRewardMultiplier : 1.0),
-            titleDropMultiplier: memberStatuses.reduce(into: 1.0) { partialResult, status in
-                partialResult *= rewardMultiplier(for: status.skillIds, target: "titleDrop")
-            } * (appliesCatTicket ? Self.catTicketRewardMultiplier : 1.0),
+            goldMultiplier: rewardMultiplier(for: partyRewardSkillIds, target: "gold")
+                * (appliesCatTicket ? Self.catTicketRewardMultiplier : 1.0),
+            rareDropMultiplier: rewardMultiplier(for: partyRewardSkillIds, target: "rareDrop")
+                * (appliesCatTicket ? Self.catTicketRewardMultiplier : 1.0),
+            titleDropMultiplier: rewardMultiplier(for: partyRewardSkillIds, target: "titleDrop")
+                * (appliesCatTicket ? Self.catTicketRewardMultiplier : 1.0),
             partyAverageLuck: partyAverageLuck,
             latestBattleFloorNumber: nil,
             latestBattleNumber: nil,

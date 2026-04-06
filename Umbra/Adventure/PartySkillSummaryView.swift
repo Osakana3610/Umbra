@@ -238,14 +238,11 @@ private struct PartySkillAggregation {
         memberStatuses: [PartyMemberStatus],
         skillsByID: [Int: MasterData.Skill]
     ) -> Double {
-        // Party-wide reward categories stack multiplicatively across members.
-        memberStatuses.reduce(into: 1.0) { partialResult, memberStatus in
-            partialResult *= rewardMultiplier(
-                target: target,
-                skillIds: memberStatus.status.skillIds,
-                skillTable: skillsByID
-            )
-        }
+        rewardMultiplier(
+            target: target,
+            skillIds: memberStatuses.flatMap(\.status.skillIds),
+            skillTable: skillsByID
+        )
     }
 
     private static func aggregateEntries(
@@ -287,8 +284,9 @@ private struct PartySkillAggregation {
     ) -> Double {
         var multiplier = 1.0
 
-        // Shared helper for party totals uses the same multiplication rules as the per-member view.
-        for skillId in skillIds {
+        // Party-wide totals deduplicate shared skills so one passive contributes once even when
+        // multiple members own it.
+        for skillId in Set(skillIds) {
             guard let skill = skillTable[skillId] else {
                 continue
             }

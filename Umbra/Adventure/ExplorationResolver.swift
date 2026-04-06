@@ -261,7 +261,7 @@ nonisolated enum ExplorationResolver {
     }
 }
 
-nonisolated private extension ExplorationResolver {
+nonisolated extension ExplorationResolver {
     struct PlannedBattle {
         let floorNumber: Int
         let battleNumber: Int
@@ -771,21 +771,16 @@ nonisolated private extension ExplorationResolver {
         titles: [MasterData.Title],
         rootSeed: UInt64
     ) -> MasterData.Title {
-        let rollCount = max(Int(rewardContext.enemyTitle.positiveMultiplier.rounded()), 1)
+        let rollCount = max(
+            Int((rewardContext.enemyTitle.positiveMultiplier * rewardContext.titleDropMultiplier).rounded()),
+            1
+        )
         var bestTitle = rewardContext.defaultTitle
         for rollIndex in 0..<rollCount {
-            let qualityBias = max(
-                1.0,
-                (1 + rewardContext.partyAverageLuck / 100.0
-                    + 0.15 * (cbrt(Double(enemyLevel)) - 1))
-                    * rewardContext.titleDropMultiplier
-                    * rewardContext.enemyTitle.positiveMultiplier
-            )
-            let weightedTitles = titles.enumerated().map { index, title in
-                (
-                    title,
-                    Double(title.dropWeight) * pow(qualityBias, Double(index))
-                )
+            // Title selection uses the static master-data weights; better results come from
+            // additional rerolls rather than runtime reshaping of the drop table.
+            let weightedTitles = titles.map { title in
+                (title, Double(title.dropWeight))
             }
             let title = weightedRandomChoice(
                 from: weightedTitles,
