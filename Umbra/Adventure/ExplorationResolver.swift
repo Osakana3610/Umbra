@@ -24,7 +24,7 @@ nonisolated enum ExplorationResolver {
             labyrinth: labyrinth,
             difficultyMultiplier: difficultyMultiplier
         )
-        let interval = max(labyrinth.progressIntervalSeconds, 1)
+        let interval = session.progressIntervalSeconds(baseIntervalSeconds: labyrinth.progressIntervalSeconds)
 
         var currentPartyMembers = try preparedPartyMembers(
             from: session.memberSnapshots,
@@ -149,6 +149,7 @@ nonisolated enum ExplorationResolver {
             completedBattleCount: completedBattleCount,
             currentPartyHPs: currentPartyHPs,
             memberExperienceMultipliers: session.memberExperienceMultipliers,
+            progressIntervalMultiplier: session.progressIntervalMultiplier,
             goldMultiplier: session.goldMultiplier,
             rareDropMultiplier: session.rareDropMultiplier,
             titleDropMultiplier: session.titleDropMultiplier,
@@ -177,9 +178,9 @@ nonisolated enum ExplorationResolver {
             throw ExplorationError.invalidLabyrinth(labyrinthId: session.labyrinthId)
         }
 
-        let interval = max(labyrinth.progressIntervalSeconds, 1)
+        let interval = session.progressIntervalSeconds(baseIntervalSeconds: labyrinth.progressIntervalSeconds)
         let revealedBattleCount = min(
-            max(Int(currentDate.timeIntervalSince(session.startedAt)) / interval, 0),
+            max(Int(currentDate.timeIntervalSince(session.startedAt) / interval), 0),
             session.battleLogs.count
         )
         guard revealedBattleCount > session.completedBattleCount else {
@@ -215,6 +216,7 @@ nonisolated enum ExplorationResolver {
             completedBattleCount: revealedBattleCount,
             currentPartyHPs: latestPartyHPs,
             memberExperienceMultipliers: session.memberExperienceMultipliers,
+            progressIntervalMultiplier: session.progressIntervalMultiplier,
             goldMultiplier: session.goldMultiplier,
             rareDropMultiplier: session.rareDropMultiplier,
             titleDropMultiplier: session.titleDropMultiplier,
@@ -908,10 +910,10 @@ nonisolated private extension ExplorationResolver {
 
     static func completionDate(
         startedAt: Date,
-        interval: Int,
+        interval: Double,
         completedBattleCount: Int
     ) -> Date {
-        startedAt.addingTimeInterval(Double(interval * completedBattleCount))
+        startedAt.addingTimeInterval(interval * Double(completedBattleCount))
     }
 
     static func clamp(

@@ -1,6 +1,7 @@
 // Presents the adventure tab's party cards, sortie actions, and exploration summaries.
 
 import SwiftUI
+import UIKit
 
 struct AdventureHomeView: View {
     let masterData: MasterData
@@ -31,6 +32,18 @@ struct AdventureHomeView: View {
                             presentation: presentation,
                             onStartRun: {
                                 startRun(for: party)
+                            },
+                            onStartRunWithCatTicket: {
+                                startRun(
+                                    for: party,
+                                    catTicketUsage: .required
+                                )
+                            },
+                            onStartRunWithoutCatTicket: {
+                                startRun(
+                                    for: party,
+                                    catTicketUsage: .never
+                                )
                             }
                         )
                         .listRowSeparator(.hidden)
@@ -159,7 +172,8 @@ struct AdventureHomeView: View {
             return ConfiguredRunStart(
                 partyId: party.partyId,
                 labyrinthId: labyrinthId,
-                selectedDifficultyTitleId: selectedDifficultyTitleId
+                selectedDifficultyTitleId: selectedDifficultyTitleId,
+                catTicketUsage: party.automaticallyUsesCatTicket ? .automaticIfAvailable : .never
             )
         }
     }
@@ -213,12 +227,17 @@ struct AdventureHomeView: View {
         }
     }
 
-    private func startRun(for party: PartyRecord) {
+    private func startRun(
+        for party: PartyRecord,
+        catTicketUsage: CatTicketUsage? = nil
+    ) {
         guard let labyrinthId = configuredLabyrinthId(for: party),
               let selectedDifficultyTitleId = configuredDifficultyTitleId(for: party) else {
             return
         }
 
+        let resolvedCatTicketUsage = catTicketUsage
+            ?? (party.automaticallyUsesCatTicket ? .automaticIfAvailable : .never)
         let startedAt = Date()
         Task {
             await explorationStore.startRun(
@@ -226,6 +245,7 @@ struct AdventureHomeView: View {
                 labyrinthId: labyrinthId,
                 selectedDifficultyTitleId: selectedDifficultyTitleId,
                 startedAt: startedAt,
+                catTicketUsage: resolvedCatTicketUsage,
                 masterData: masterData
             )
         }
@@ -247,6 +267,8 @@ private struct AdventurePartyHeaderRow: View {
     let party: PartyRecord
     let presentation: AdventurePartyPresentation
     let onStartRun: () -> Void
+    let onStartRunWithCatTicket: () -> Void
+    let onStartRunWithoutCatTicket: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -272,9 +294,13 @@ private struct AdventurePartyHeaderRow: View {
                 .foregroundStyle(.primary)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
-                Button(presentation.actionTitle, action: onStartRun)
-                    .buttonStyle(.borderedProminent)
-                    .disabled(presentation.actionDisabled)
+                SortieButton(
+                    title: presentation.actionTitle,
+                    isDisabled: presentation.actionDisabled,
+                    onStartRun: onStartRun,
+                    onStartRunWithCatTicket: onStartRunWithCatTicket,
+                    onStartRunWithoutCatTicket: onStartRunWithoutCatTicket
+                )
             }
 
             Text(party.name)
@@ -286,6 +312,59 @@ private struct AdventurePartyHeaderRow: View {
     private func metricText(_ label: String, value: String) -> some View {
         Text("\(label) \(value)")
             .fixedSize(horizontal: true, vertical: true)
+    }
+}
+
+private struct SortieButton: UIViewRepresentable {
+    let title: String
+    let isDisabled: Bool
+    let onStartRun: () -> Void
+    let onStartRunWithCatTicket: () -> Void
+    let onStartRunWithoutCatTicket: () -> Void
+
+    func makeCoordinator() -> Coordinator { Coordinator() }
+
+    func makeUIView(context: Context) -> UIButton {
+        let button = UIButton(configuration: .filled(), primaryAction: UIAction { _ in
+            context.coordinator.onStartRun?()
+        })
+        button.configuration?.cornerStyle = .capsule
+        button.setContentHuggingPriority(.required, for: .horizontal)
+        button.setContentCompressionResistancePriority(.required, for: .horizontal)
+        button.addInteraction(UIContextMenuInteraction(delegate: context.coordinator))
+        return button
+    }
+
+    func updateUIView(_ button: UIButton, context: Context) {
+        context.coordinator.onStartRun = onStartRun
+        context.coordinator.onStartRunWithCatTicket = onStartRunWithCatTicket
+        context.coordinator.onStartRunWithoutCatTicket = onStartRunWithoutCatTicket
+
+        var configuration = button.configuration ?? .filled()
+        configuration.title = title
+        configuration.contentInsets = NSDirectionalEdgeInsets(top: 6, leading: 12, bottom: 6, trailing: 12)
+        configuration.baseBackgroundColor = isDisabled ? .systemGray5 : .systemBlue
+        configuration.baseForegroundColor = isDisabled ? .secondaryLabel : .white
+        button.configuration = configuration
+        button.isEnabled = !isDisabled
+    }
+
+    final class Coordinator: NSObject, UIContextMenuInteractionDelegate {
+        var onStartRun: (() -> Void)?
+        var onStartRunWithCatTicket: (() -> Void)?
+        var onStartRunWithoutCatTicket: (() -> Void)?
+
+        func contextMenuInteraction(
+            _ interaction: UIContextMenuInteraction,
+            configurationForMenuAtLocation location: CGPoint
+        ) -> UIContextMenuConfiguration? {
+            UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ in
+                UIMenu(children: [
+                    UIAction(title: "キャット・チケットを使用して出撃") { _ in self.onStartRunWithCatTicket?() },
+                    UIAction(title: "キャット・チケットを使用せず出撃") { _ in self.onStartRunWithoutCatTicket?() }
+                ])
+            }
+        }
     }
 }
 
@@ -444,7 +523,8 @@ private struct AdventurePartyPresentation {
         }
 
         let returnAt = run.startedAt.addingTimeInterval(
-            Double(totalBattleCount * labyrinth.progressIntervalSeconds)
+            run.progressIntervalSeconds(baseIntervalSeconds: labyrinth.progressIntervalSeconds)
+                * Double(totalBattleCount)
         )
         return "帰還予定時刻 \(returnAt.formatted(Date.FormatStyle(date: .omitted, time: .standard).locale(Locale(identifier: "ja_JP"))))"
     }

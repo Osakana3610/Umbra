@@ -24,11 +24,13 @@
     </entity>
     <entity name="PlayerStateEntity" representedClassName="PlayerStateEntity" syncable="YES">
         <attribute name="autoReviveDefeatedCharacters" optional="NO" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="catTicketCount" optional="NO" attributeType="Integer 64" defaultValueString="10" usesScalarValueType="YES"/>
         <attribute name="gold" optional="NO" attributeType="Integer 64" defaultValueString="1000" usesScalarValueType="YES"/>
         <attribute name="lastBackgroundedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="nextCharacterId" optional="NO" attributeType="Integer 64" defaultValueString="1" usesScalarValueType="YES"/>
     </entity>
     <entity name="PartyEntity" representedClassName="PartyEntity" syncable="YES">
+        <attribute name="automaticallyUsesCatTicket" optional="NO" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="memberCharacterIdsRawValue" optional="NO" attributeType="String" defaultValueString=""/>
         <attribute name="name" optional="NO" attributeType="String" defaultValueString="パーティ1"/>
         <attribute name="partyId" optional="NO" attributeType="Integer 64" usesScalarValueType="YES"/>
@@ -49,6 +51,7 @@
         <attribute name="partyAverageLuck" optional="NO" attributeType="Double" defaultValueString="0"/>
         <attribute name="partyId" optional="NO" attributeType="Integer 64" usesScalarValueType="YES"/>
         <attribute name="partyRunId" optional="NO" attributeType="Integer 64" usesScalarValueType="YES"/>
+        <attribute name="progressIntervalMultiplier" optional="NO" attributeType="Double" defaultValueString="1"/>
         <attribute name="rareDropMultiplier" optional="NO" attributeType="Double" defaultValueString="1"/>
         <attribute name="rewardsApplied" optional="NO" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="rootSeedSigned" optional="NO" attributeType="Integer 64" usesScalarValueType="YES"/>

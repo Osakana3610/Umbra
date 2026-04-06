@@ -155,6 +155,33 @@ final class PartyStore {
         }
     }
 
+    func setAutomaticallyUsesCatTicket(
+        partyId: Int,
+        isEnabled: Bool
+    ) {
+        guard !isMutating, phase == .loaded else {
+            return
+        }
+
+        isMutating = true
+        lastOperationError = nil
+
+        Task {
+            defer { isMutating = false }
+
+            do {
+                applyParties(
+                    try await service.setAutomaticallyUsesCatTicket(
+                        partyId: partyId,
+                        isEnabled: isEnabled
+                    )
+                )
+            } catch {
+                lastOperationError = Self.errorMessage(for: error)
+            }
+        }
+    }
+
     func removeCharacter(characterId: Int, fromParty partyId: Int) {
         guard !isMutating,
               phase == .loaded,

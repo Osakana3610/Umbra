@@ -69,6 +69,7 @@ final class GuildCoreDataStore {
         let context = container.viewContext
         let playerState = try fetchOrCreatePlayerState(in: context)
         playerState.gold = Int64(snapshot.playerState.gold)
+        playerState.catTicketCount = Int64(snapshot.playerState.catTicketCount)
         playerState.nextCharacterId = Int64(snapshot.playerState.nextCharacterId)
         playerState.autoReviveDefeatedCharacters = snapshot.playerState.autoReviveDefeatedCharacters
         playerState.lastBackgroundedAt = snapshot.playerState.lastBackgroundedAt
@@ -97,6 +98,7 @@ final class GuildCoreDataStore {
         let context = container.viewContext
         let playerState = try fetchOrCreatePlayerState(in: context)
         playerState.gold = Int64(snapshot.playerState.gold)
+        playerState.catTicketCount = Int64(snapshot.playerState.catTicketCount)
         playerState.nextCharacterId = Int64(snapshot.playerState.nextCharacterId)
         playerState.autoReviveDefeatedCharacters = snapshot.playerState.autoReviveDefeatedCharacters
         playerState.lastBackgroundedAt = snapshot.playerState.lastBackgroundedAt
@@ -227,6 +229,7 @@ final class GuildCoreDataStore {
 
             entity.partyId = Int64(partyRecord.partyId)
             entity.name = partyRecord.name
+            entity.automaticallyUsesCatTicket = partyRecord.automaticallyUsesCatTicket
             entity.pendingAutomaticRunCount = Int64(partyRecord.pendingAutomaticRunCount)
             entity.pendingAutomaticRunStartedAt = partyRecord.pendingAutomaticRunStartedAt
             entity.selectedLabyrinthId = partyRecord.selectedLabyrinthId.map(Int64.init) ?? 0
@@ -327,6 +330,7 @@ final class GuildCoreDataStore {
             fatalError("PlayerStateEntity の生成に失敗しました。")
         }
         playerState.gold = Int64(PlayerState.initial.gold)
+        playerState.catTicketCount = Int64(PlayerState.initial.catTicketCount)
         playerState.nextCharacterId = Int64(PlayerState.initial.nextCharacterId)
         playerState.autoReviveDefeatedCharacters = PlayerState.initial.autoReviveDefeatedCharacters
         playerState.lastBackgroundedAt = PlayerState.initial.lastBackgroundedAt
@@ -352,6 +356,7 @@ final class GuildCoreDataStore {
         party.name = PartyRecord.defaultName(for: 1)
         party.pendingAutomaticRunCount = 0
         party.pendingAutomaticRunStartedAt = nil
+        party.automaticallyUsesCatTicket = false
         party.selectedLabyrinthId = 0
         party.selectedDifficultyTitleId = 0
         setMemberCharacterIds([], on: party)
@@ -413,6 +418,7 @@ final class GuildCoreDataStore {
     private func makePlayerState(from entity: PlayerStateEntity) -> PlayerState {
         PlayerState(
             gold: Int(entity.gold),
+            catTicketCount: Int(entity.catTicketCount),
             nextCharacterId: Int(entity.nextCharacterId),
             autoReviveDefeatedCharacters: entity.autoReviveDefeatedCharacters,
             lastBackgroundedAt: entity.lastBackgroundedAt
@@ -484,6 +490,7 @@ final class GuildCoreDataStore {
             memberCharacterIds: memberCharacterIds(from: entity),
             selectedLabyrinthId: entity.selectedLabyrinthId == 0 ? nil : Int(entity.selectedLabyrinthId),
             selectedDifficultyTitleId: entity.selectedDifficultyTitleId == 0 ? nil : Int(entity.selectedDifficultyTitleId),
+            automaticallyUsesCatTicket: entity.automaticallyUsesCatTicket,
             pendingAutomaticRunCount: Int(entity.pendingAutomaticRunCount),
             pendingAutomaticRunStartedAt: entity.pendingAutomaticRunStartedAt
         )

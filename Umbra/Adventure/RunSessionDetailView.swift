@@ -190,7 +190,8 @@ struct RunSessionDetailView: View {
         }
 
         return run.startedAt.addingTimeInterval(
-            Double(labyrinth.progressIntervalSeconds * (run.completedBattleCount + 1))
+            run.progressIntervalSeconds(baseIntervalSeconds: labyrinth.progressIntervalSeconds)
+                * Double(run.completedBattleCount + 1)
         )
     }
 

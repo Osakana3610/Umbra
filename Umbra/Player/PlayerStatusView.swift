@@ -3,7 +3,6 @@
 import SwiftUI
 
 struct PlayerStatusView: View {
-    let catTicketText: String
     let premiumTimeText: String
     let rosterStore: GuildRosterStore
     let showsChrome: Bool
@@ -57,5 +56,9 @@ struct PlayerStatusView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
+    }
+
+    private var catTicketText: String {
+        "キャット・チケット \(rosterStore.playerState?.catTicketCount ?? 0)枚"
     }
 }

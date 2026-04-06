@@ -87,7 +87,7 @@ struct PartyDetailView: View {
                     }
 
                     if !masterData.labyrinths.isEmpty {
-                        Section("出撃先迷宮") {
+                        Section("出撃設定") {
                             Picker("迷宮", selection: selectedLabyrinthBinding) {
                                 Text("未設定").tag(Optional<Int>.none)
                                 ForEach(masterData.labyrinths) { labyrinth in
@@ -115,8 +115,14 @@ struct PartyDetailView: View {
                                 .disabled(isRunLocked)
                             }
 
+                            Toggle(
+                                "自動的にキャット・チケットを使用",
+                                isOn: automaticallyUsesCatTicketBinding
+                            )
+                            .disabled(isRunLocked)
+
                             if isRunLocked {
-                                Text("探索中は出撃先と探索難易度を変更できません。")
+                                Text("探索中は出撃設定を変更できません。")
                                     .font(.footnote)
                                     .foregroundStyle(.secondary)
                             }
@@ -265,6 +271,24 @@ struct PartyDetailView: View {
                     partyId: party.partyId,
                     selectedLabyrinthId: party.selectedLabyrinthId,
                     selectedDifficultyTitleId: selectedDifficultyTitleId
+                )
+            }
+        )
+    }
+
+    private var automaticallyUsesCatTicketBinding: Binding<Bool> {
+        Binding(
+            get: {
+                party?.automaticallyUsesCatTicket ?? false
+            },
+            set: { isEnabled in
+                guard let party else {
+                    return
+                }
+
+                partyStore.setAutomaticallyUsesCatTicket(
+                    partyId: party.partyId,
+                    isEnabled: isEnabled
                 )
             }
         )

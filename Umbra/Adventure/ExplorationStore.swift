@@ -3,10 +3,29 @@
 import Foundation
 import Observation
 
+enum CatTicketUsage: Sendable {
+    case never
+    case automaticIfAvailable
+    case required
+}
+
 struct ConfiguredRunStart: Sendable {
     let partyId: Int
     let labyrinthId: Int
     let selectedDifficultyTitleId: Int
+    let catTicketUsage: CatTicketUsage
+
+    init(
+        partyId: Int,
+        labyrinthId: Int,
+        selectedDifficultyTitleId: Int,
+        catTicketUsage: CatTicketUsage = .never
+    ) {
+        self.partyId = partyId
+        self.labyrinthId = labyrinthId
+        self.selectedDifficultyTitleId = selectedDifficultyTitleId
+        self.catTicketUsage = catTicketUsage
+    }
 }
 
 @MainActor
@@ -100,6 +119,7 @@ final class ExplorationStore {
         labyrinthId: Int,
         selectedDifficultyTitleId: Int,
         startedAt: Date,
+        catTicketUsage: CatTicketUsage = .never,
         masterData: MasterData
     ) async {
         await mutate(masterData: masterData) {
@@ -108,6 +128,7 @@ final class ExplorationStore {
                 labyrinthId: labyrinthId,
                 selectedDifficultyTitleId: selectedDifficultyTitleId,
                 startedAt: startedAt,
+                catTicketUsage: catTicketUsage,
                 masterData: masterData
             )
         }
@@ -193,6 +214,7 @@ final class ExplorationStore {
                 labyrinthId: pendingRun.labyrinthId,
                 selectedDifficultyTitleId: pendingRun.selectedDifficultyTitleId,
                 startedAt: pendingRun.startedAt,
+                catTicketUsage: pendingRun.catTicketUsage,
                 masterData: masterData
             )
             guard lastOperationError == nil else {
@@ -353,7 +375,8 @@ final class ExplorationStore {
                 // Progress advances once per battle interval, so the next refresh time is derived
                 // from the battle count already completed within the stored run.
                 return run.startedAt.addingTimeInterval(
-                    Double(labyrinth.progressIntervalSeconds * (run.completedBattleCount + 1))
+                    run.progressIntervalSeconds(baseIntervalSeconds: labyrinth.progressIntervalSeconds)
+                        * Double(run.completedBattleCount + 1)
                 )
             }
             .min()
@@ -362,7 +385,7 @@ final class ExplorationStore {
     private func nextPendingAutomaticRun(
         partyStore: PartyStore,
         masterData: MasterData
-    ) -> (partyId: Int, labyrinthId: Int, selectedDifficultyTitleId: Int, startedAt: Date)? {
+    ) -> (partyId: Int, labyrinthId: Int, selectedDifficultyTitleId: Int, startedAt: Date, catTicketUsage: CatTicketUsage)? {
         for party in partyStore.parties {
             guard party.pendingAutomaticRunCount > 0,
                   status(for: party.partyId).activeRun == nil,
@@ -387,7 +410,8 @@ final class ExplorationStore {
                 partyId: party.partyId,
                 labyrinthId: labyrinthId,
                 selectedDifficultyTitleId: selectedDifficultyTitleId,
-                startedAt: startedAt
+                startedAt: startedAt,
+                catTicketUsage: party.automaticallyUsesCatTicket ? .automaticIfAvailable : .never
             )
         }
 

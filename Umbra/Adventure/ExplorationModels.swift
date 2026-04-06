@@ -64,6 +64,7 @@ nonisolated struct RunSessionRecord: Equatable, Sendable, Identifiable {
     let completedBattleCount: Int
     let currentPartyHPs: [Int]
     let memberExperienceMultipliers: [Double]
+    let progressIntervalMultiplier: Double
     let goldMultiplier: Double
     let rareDropMultiplier: Double
     let titleDropMultiplier: Double
@@ -92,6 +93,12 @@ nonisolated struct RunSessionRecord: Equatable, Sendable, Identifiable {
         completion != nil
     }
 
+    func progressIntervalSeconds(baseIntervalSeconds: Int) -> Double {
+        let clampedBaseIntervalSeconds = max(baseIntervalSeconds, 1)
+        let clampedMultiplier = max(progressIntervalMultiplier, 0.1)
+        return Double(clampedBaseIntervalSeconds) * clampedMultiplier
+    }
+
     var summaryRecord: RunSessionRecord {
         // Summary records intentionally drop heavy payloads so list screens can refresh progress
         // without carrying every stored battle log and reward row in memory.
@@ -108,6 +115,7 @@ nonisolated struct RunSessionRecord: Equatable, Sendable, Identifiable {
             completedBattleCount: completedBattleCount,
             currentPartyHPs: currentPartyHPs,
             memberExperienceMultipliers: memberExperienceMultipliers,
+            progressIntervalMultiplier: progressIntervalMultiplier,
             goldMultiplier: goldMultiplier,
             rareDropMultiplier: rareDropMultiplier,
             titleDropMultiplier: titleDropMultiplier,
@@ -156,6 +164,7 @@ nonisolated enum ExplorationError: LocalizedError {
     case partyHasNoMembers(partyId: Int)
     case partyHasDefeatedMember(partyId: Int)
     case activeRunAlreadyExists(partyId: Int)
+    case insufficientCatTickets
     case partyLockedByActiveRun(partyId: Int)
     case characterLockedByActiveRun(characterId: Int)
     case invalidRunMember(characterId: Int)
@@ -174,6 +183,8 @@ nonisolated enum ExplorationError: LocalizedError {
             "パーティ\(partyId)にHPが0のメンバーがいるため出撃できません。"
         case let .activeRunAlreadyExists(partyId):
             "パーティ\(partyId)はすでに出撃中です。"
+        case .insufficientCatTickets:
+            "キャット・チケットが不足しています。"
         case let .partyLockedByActiveRun(partyId):
             "パーティ\(partyId)は出撃中のため編成変更できません。"
         case let .characterLockedByActiveRun(characterId):

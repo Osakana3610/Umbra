@@ -169,11 +169,11 @@ nonisolated private struct BattleResolutionEngine {
 
             while !actionQueue.isEmpty {
                 let queuedAction = actionQueue.removeFirst()
+                currentActionNumber += 1
                 guard combatants[queuedAction.actorIndex].canAct else {
                     continue
                 }
 
-                currentActionNumber += 1
                 if let actionRecord = resolve(queuedAction) {
                     resolvedActions.append(actionRecord.record)
                     if !actionRecord.generatedInterrupts.isEmpty {
@@ -525,7 +525,6 @@ nonisolated private struct BattleResolutionEngine {
                     (
                         Double(combatants[actorIndex].status.battleStats.healing)
                         * combatants[actorIndex].status.battleDerivedStats.magicDamageMultiplier
-                        * (spell.multiplier ?? 1.0)
                     ).rounded()
                 ),
                 1

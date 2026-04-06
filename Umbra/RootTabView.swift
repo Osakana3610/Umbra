@@ -88,7 +88,6 @@ struct RootTabView: View {
                             // On iOS 26+, the status bar can live inside the tab accessory chrome
                             // without reserving extra safe-area space.
                             PlayerStatusView(
-                                catTicketText: "キャット・チケット 0枚",
                                 premiumTimeText: "プレミアム・タイム なし",
                                 rosterStore: rosterStore,
                                 showsChrome: false
@@ -102,7 +101,6 @@ struct RootTabView: View {
                             // Older systems render the same status view inside a manual bottom
                             // inset so it stays above the tab bar.
                             PlayerStatusView(
-                                catTicketText: "キャット・チケット 0枚",
                                 premiumTimeText: "プレミアム・タイム なし",
                                 rosterStore: rosterStore,
                                 showsChrome: true

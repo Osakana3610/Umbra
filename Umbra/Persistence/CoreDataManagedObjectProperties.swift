@@ -53,6 +53,7 @@ extension PartyEntity {
         return NSFetchRequest<PartyEntity>(entityName: "PartyEntity")
     }
 
+    @NSManaged nonisolated public var automaticallyUsesCatTicket: Bool
     @NSManaged nonisolated public var memberCharacterIdsRawValue: String?
     @NSManaged nonisolated public var name: String?
     @NSManaged nonisolated public var partyId: Int64
@@ -74,6 +75,7 @@ extension PlayerStateEntity {
     }
 
     @NSManaged nonisolated public var autoReviveDefeatedCharacters: Bool
+    @NSManaged nonisolated public var catTicketCount: Int64
     @NSManaged nonisolated public var gold: Int64
     @NSManaged nonisolated public var lastBackgroundedAt: Date?
     @NSManaged nonisolated public var nextCharacterId: Int64
@@ -308,6 +310,7 @@ extension RunSessionEntity {
     @NSManaged nonisolated public var partyAverageLuck: Double
     @NSManaged nonisolated public var partyId: Int64
     @NSManaged nonisolated public var partyRunId: Int64
+    @NSManaged nonisolated public var progressIntervalMultiplier: Double
     @NSManaged nonisolated public var rareDropMultiplier: Double
     @NSManaged nonisolated public var rewardsApplied: Bool
     @NSManaged nonisolated public var rootSeedSigned: Int64

@@ -4,6 +4,8 @@ import Foundation
 
 final class ExplorationSessionService {
     private let coreDataStore: ExplorationCoreDataStore
+    private static let catTicketRewardMultiplier = 2.0
+    private static let catTicketProgressIntervalMultiplier = 0.5
 
     init(coreDataStore: ExplorationCoreDataStore) {
         self.coreDataStore = coreDataStore
@@ -14,6 +16,7 @@ final class ExplorationSessionService {
         labyrinthId: Int,
         selectedDifficultyTitleId: Int,
         startedAt: Date,
+        catTicketUsage: CatTicketUsage = .never,
         masterData: MasterData
     ) async throws -> ExplorationRunSnapshot {
         try await startConfiguredRuns(
@@ -21,7 +24,8 @@ final class ExplorationSessionService {
                 ConfiguredRunStart(
                     partyId: partyId,
                     labyrinthId: labyrinthId,
-                    selectedDifficultyTitleId: selectedDifficultyTitleId
+                    selectedDifficultyTitleId: selectedDifficultyTitleId,
+                    catTicketUsage: catTicketUsage
                 )
             ],
             startedAt: startedAt,
@@ -38,7 +42,21 @@ final class ExplorationSessionService {
             return try await coreDataStore.loadSnapshot()
         }
 
+        var remainingCatTicketCount = try await coreDataStore.loadCatTicketCount()
+
         for runStart in runsToStart {
+            let appliesCatTicket: Bool
+            switch runStart.catTicketUsage {
+            case .never:
+                appliesCatTicket = false
+            case .automaticIfAvailable:
+                appliesCatTicket = remainingCatTicketCount > 0
+            case .required:
+                guard remainingCatTicketCount > 0 else {
+                    throw ExplorationError.insufficientCatTickets
+                }
+                appliesCatTicket = true
+            }
             var cachedStatuses: [Int: ExplorationMemberStatusCacheEntry] = [:]
             // Status caches are scoped per planned run so repeated character calculations inside
             // planning do not recompute the same derived stats for one party setup.
@@ -46,6 +64,7 @@ final class ExplorationSessionService {
                 session: try await makeInitialSession(
                     runStart: runStart,
                     startedAt: startedAt,
+                    appliesCatTicket: appliesCatTicket,
                     masterData: masterData
                 ),
                 masterData: masterData,
@@ -65,6 +84,7 @@ final class ExplorationSessionService {
                     completedBattleCount: 0,
                     currentPartyHPs: plannedSession.memberSnapshots.map(\.currentHP),
                     memberExperienceMultipliers: plannedSession.memberExperienceMultipliers,
+                    progressIntervalMultiplier: plannedSession.progressIntervalMultiplier,
                     goldMultiplier: plannedSession.goldMultiplier,
                     rareDropMultiplier: plannedSession.rareDropMultiplier,
                     titleDropMultiplier: plannedSession.titleDropMultiplier,
@@ -77,8 +97,12 @@ final class ExplorationSessionService {
                     experienceRewards: plannedSession.experienceRewards,
                     dropRewards: plannedSession.dropRewards,
                     completion: nil
-                )
+                ),
+                consumesCatTicket: appliesCatTicket
             )
+            if appliesCatTicket {
+                remainingCatTicketCount -= 1
+            }
         }
 
         return try await coreDataStore.loadSnapshot()
@@ -129,6 +153,7 @@ final class ExplorationSessionService {
     private func makeInitialSession(
         runStart: ConfiguredRunStart,
         startedAt: Date,
+        appliesCatTicket: Bool,
         masterData: MasterData
     ) async throws -> RunSessionRecord {
         guard let labyrinth = masterData.labyrinths.first(where: { $0.id == runStart.labyrinthId }) else {
@@ -169,7 +194,10 @@ final class ExplorationSessionService {
         }
 
         let memberExperienceMultipliers = memberStatuses.map { status in
-            rewardMultiplier(for: status.skillIds, target: "experience")
+            let baseMultiplier = rewardMultiplier(for: status.skillIds, target: "experience")
+            return appliesCatTicket
+                ? baseMultiplier * Self.catTicketRewardMultiplier
+                : baseMultiplier
         }
         let partyAverageLuck = memberStatuses.isEmpty
             ? 0
@@ -195,15 +223,18 @@ final class ExplorationSessionService {
             completedBattleCount: 0,
             currentPartyHPs: startContext.partyMembers.map(\.currentHP),
             memberExperienceMultipliers: memberExperienceMultipliers,
+            progressIntervalMultiplier: appliesCatTicket
+                ? Self.catTicketProgressIntervalMultiplier
+                : 1.0,
             goldMultiplier: memberStatuses.reduce(into: 1.0) { partialResult, status in
                 partialResult *= rewardMultiplier(for: status.skillIds, target: "gold")
-            },
+            } * (appliesCatTicket ? Self.catTicketRewardMultiplier : 1.0),
             rareDropMultiplier: memberStatuses.reduce(into: 1.0) { partialResult, status in
                 partialResult *= rewardMultiplier(for: status.skillIds, target: "rareDrop")
-            },
+            } * (appliesCatTicket ? Self.catTicketRewardMultiplier : 1.0),
             titleDropMultiplier: memberStatuses.reduce(into: 1.0) { partialResult, status in
                 partialResult *= rewardMultiplier(for: status.skillIds, target: "titleDrop")
-            },
+            } * (appliesCatTicket ? Self.catTicketRewardMultiplier : 1.0),
             partyAverageLuck: partyAverageLuck,
             latestBattleFloorNumber: nil,
             latestBattleNumber: nil,

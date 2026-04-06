@@ -114,6 +114,23 @@ actor ExplorationCoreDataStore {
     }
 
     func insertRun(_ session: RunSessionRecord) async throws {
+        try await insertRun(
+            session,
+            consumesCatTicket: false
+        )
+    }
+
+    func loadCatTicketCount() async throws -> Int {
+        try await perform { context in
+            let playerState = try ExplorationCoreDataBridge.fetchOrCreatePlayerState(in: context)
+            return Int(playerState.catTicketCount)
+        }
+    }
+
+    func insertRun(
+        _ session: RunSessionRecord,
+        consumesCatTicket: Bool
+    ) async throws {
         try await perform { context in
             guard try !ExplorationCoreDataBridge.hasActiveRun(
                 partyId: session.partyId,
@@ -121,6 +138,14 @@ actor ExplorationCoreDataStore {
             )
             else {
                 throw ExplorationError.activeRunAlreadyExists(partyId: session.partyId)
+            }
+
+            if consumesCatTicket {
+                let playerState = try ExplorationCoreDataBridge.fetchOrCreatePlayerState(in: context)
+                guard playerState.catTicketCount > 0 else {
+                    throw ExplorationError.insufficientCatTickets
+                }
+                playerState.catTicketCount -= 1
             }
 
             try ExplorationCoreDataBridge.insertRunEntity(
@@ -437,6 +462,7 @@ nonisolated private enum ExplorationCoreDataBridge {
         }
 
         entity.gold = Int64(PlayerState.initial.gold)
+        entity.catTicketCount = Int64(PlayerState.initial.catTicketCount)
         entity.nextCharacterId = Int64(PlayerState.initial.nextCharacterId)
         entity.autoReviveDefeatedCharacters = PlayerState.initial.autoReviveDefeatedCharacters
         return entity
@@ -705,6 +731,7 @@ nonisolated private enum ExplorationCoreDataBridge {
             completedBattleCount: Int(entity.completedBattleCount),
             currentPartyHPs: currentPartyHPs,
             memberExperienceMultipliers: memberExperienceMultipliers,
+            progressIntervalMultiplier: entity.progressIntervalMultiplier,
             goldMultiplier: entity.goldMultiplier,
             rareDropMultiplier: entity.rareDropMultiplier,
             titleDropMultiplier: entity.titleDropMultiplier,
@@ -743,6 +770,7 @@ nonisolated private enum ExplorationCoreDataBridge {
             completedBattleCount: summary.completedBattleCount,
             currentPartyHPs: summary.currentPartyHPs,
             memberExperienceMultipliers: summary.memberExperienceMultipliers,
+            progressIntervalMultiplier: summary.progressIntervalMultiplier,
             goldMultiplier: summary.goldMultiplier,
             rareDropMultiplier: summary.rareDropMultiplier,
             titleDropMultiplier: summary.titleDropMultiplier,
@@ -936,6 +964,7 @@ nonisolated private enum ExplorationCoreDataBridge {
         entity.rootSeedSigned = Int64(bitPattern: session.rootSeed)
         entity.completedBattleCount = Int64(session.completedBattleCount)
         entity.goldBuffer = Int64(session.goldBuffer)
+        entity.progressIntervalMultiplier = session.progressIntervalMultiplier
         entity.goldMultiplier = session.goldMultiplier
         entity.rareDropMultiplier = session.rareDropMultiplier
         entity.titleDropMultiplier = session.titleDropMultiplier

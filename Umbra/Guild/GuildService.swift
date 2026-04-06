@@ -338,7 +338,8 @@ final class GuildService {
                 name: PartyRecord.defaultName(for: nextPartyId),
                 memberCharacterIds: [],
                 selectedLabyrinthId: nil,
-                selectedDifficultyTitleId: nil
+                selectedDifficultyTitleId: nil,
+                automaticallyUsesCatTicket: false
             )
         )
         roster.playerState.gold -= PartyRecord.unlockCost
@@ -370,6 +371,18 @@ final class GuildService {
         let index = try partyIndex(for: partyId, in: parties)
         parties[index].selectedLabyrinthId = selectedLabyrinthId
         parties[index].selectedDifficultyTitleId = selectedDifficultyTitleId
+        try coreDataStore.saveParties(parties)
+        return parties
+    }
+
+    func setAutomaticallyUsesCatTicket(
+        partyId: Int,
+        isEnabled: Bool
+    ) async throws -> [PartyRecord] {
+        try await explorationCoreDataStore.validatePartyMutationIsAllowed(partyId: partyId)
+        var parties = try coreDataStore.loadParties()
+        let index = try partyIndex(for: partyId, in: parties)
+        parties[index].automaticallyUsesCatTicket = isEnabled
         try coreDataStore.saveParties(parties)
         return parties
     }
