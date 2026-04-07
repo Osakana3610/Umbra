@@ -534,6 +534,7 @@ nonisolated extension ExplorationResolver {
         let titlesByAscendingQuality = masterData.titles.sorted {
             $0.positiveMultiplier < $1.positiveMultiplier
         }
+        let superRareRateMultiplier = superRareRateMultiplier(for: result)
         // Battle snapshots only know ally formation order, so rewards map surviving allies back
         // through the original party member list before deciding who receives experience.
         let livingCharacterIds = Set(
@@ -589,6 +590,7 @@ nonisolated extension ExplorationResolver {
 
             if let normalDrop = resolveNormalDrop(
                 enemyLevel: enemySeed.level,
+                superRareRateMultiplier: superRareRateMultiplier,
                 floorNumber: floorNumber,
                 battleNumber: battleNumber,
                 enemyIndex: enemyIndex,
@@ -601,9 +603,10 @@ nonisolated extension ExplorationResolver {
                 dropRewards.append(normalDrop)
             }
 
-            let rareDropRate = 0.001
-                * rewardContext.rareDropMultiplier
-                * (1 + 0.1 * (cbrt(Double(enemySeed.level)) - 1))
+            let rareDropRate = rareDropRate(
+                enemyLevel: enemySeed.level,
+                rewardContext: rewardContext
+            )
             for rareDropOffset in enemy.rareDropItemIds.indices {
                 // Rare drops roll independently per configured slot so one enemy can drop
                 // multiple rare candidates when the deterministic rolls line up.
@@ -622,7 +625,6 @@ nonisolated extension ExplorationResolver {
                 }
 
                 let title = resolveTitle(
-                    enemyLevel: enemySeed.level,
                     floorNumber: floorNumber,
                     battleNumber: battleNumber,
                     enemyIndex: enemyIndex,
@@ -633,6 +635,7 @@ nonisolated extension ExplorationResolver {
                 )
                 let superRareId = resolveSuperRareId(
                     title: title,
+                    superRareRateMultiplier: superRareRateMultiplier,
                     floorNumber: floorNumber,
                     battleNumber: battleNumber,
                     enemyIndex: enemyIndex,
@@ -663,6 +666,7 @@ nonisolated extension ExplorationResolver {
 
     static func resolveNormalDrop(
         enemyLevel: Int,
+        superRareRateMultiplier: Double,
         floorNumber: Int,
         battleNumber: Int,
         enemyIndex: Int,
@@ -696,7 +700,6 @@ nonisolated extension ExplorationResolver {
         )
         let item = candidates[itemRoll]
         let title = resolveTitle(
-            enemyLevel: enemyLevel,
             floorNumber: floorNumber,
             battleNumber: battleNumber,
             enemyIndex: enemyIndex,
@@ -707,6 +710,7 @@ nonisolated extension ExplorationResolver {
         )
         let superRareId = resolveSuperRareId(
             title: title,
+            superRareRateMultiplier: superRareRateMultiplier,
             floorNumber: floorNumber,
             battleNumber: battleNumber,
             enemyIndex: enemyIndex,
@@ -761,8 +765,17 @@ nonisolated extension ExplorationResolver {
         return nil
     }
 
-    static func resolveTitle(
+    static func rareDropRate(
         enemyLevel: Int,
+        rewardContext: RewardContext
+    ) -> Double {
+        let luckBaseRate = 0.001 + cbrt(max(rewardContext.partyAverageLuck, 0)) / 1_000
+        return luckBaseRate
+            * rewardContext.rareDropMultiplier
+            * (1 + 0.1 * (cbrt(Double(enemyLevel)) - 1))
+    }
+
+    static func resolveTitle(
         floorNumber: Int,
         battleNumber: Int,
         enemyIndex: Int,
@@ -771,10 +784,7 @@ nonisolated extension ExplorationResolver {
         titles: [MasterData.Title],
         rootSeed: UInt64
     ) -> MasterData.Title {
-        let rollCount = max(
-            Int((rewardContext.enemyTitle.positiveMultiplier * rewardContext.titleDropMultiplier).rounded()),
-            1
-        )
+        let rollCount = titleRollCount(rewardContext: rewardContext)
         var bestTitle = rewardContext.defaultTitle
         for rollIndex in 0..<rollCount {
             // Title selection uses the static master-data weights; better results come from
@@ -794,8 +804,22 @@ nonisolated extension ExplorationResolver {
         return bestTitle
     }
 
+    static func titleRollCount(
+        rewardContext: RewardContext
+    ) -> Int {
+        max(
+            Int((
+                rewardContext.enemyTitle.positiveMultiplier
+                * rewardContext.titleDropMultiplier
+                + cbrt(max(rewardContext.partyAverageLuck, 0))
+            ).rounded()),
+            1
+        )
+    }
+
     static func resolveSuperRareId(
         title: MasterData.Title,
+        superRareRateMultiplier: Double,
         floorNumber: Int,
         battleNumber: Int,
         enemyIndex: Int,
@@ -813,7 +837,7 @@ nonisolated extension ExplorationResolver {
                 rootSeed: rootSeed,
                 purpose: "drop:superrare:\(floorNumber):\(battleNumber):enemy:\(enemyIndex):drop:\(dropIndex):roll:\(rollIndex)"
             )
-            if roll < 0.000_001 {
+            if roll < 0.000_001 * superRareRateMultiplier {
                 let superRareIndex = ExplorationDeterministicRandom.integer(
                     upperBound: masterData.superRares.count,
                     rootSeed: rootSeed,
@@ -824,6 +848,27 @@ nonisolated extension ExplorationResolver {
         }
 
         return 0
+    }
+
+    static func superRareRateMultiplier(
+        for result: SingleBattleResult
+    ) -> Double {
+        let allyCombatants = result.combatants.filter { $0.side == .ally }
+        guard !allyCombatants.isEmpty else {
+            return 1.0
+        }
+
+        let totalMaxHP = allyCombatants.reduce(0) { $0 + $1.maxHP }
+        guard totalMaxHP > 0 else {
+            return 1.0
+        }
+
+        // Hidden super-rare scaling rewards cleaner, faster wins without changing the
+        // underlying title or drop tables.
+        let totalRemainingHP = allyCombatants.reduce(0) { $0 + max($1.remainingHP, 0) }
+        let hpRatio = Double(totalRemainingHP) / Double(totalMaxHP)
+        let turnCount = max(result.battleRecord.turns.count, 1)
+        return (hpRatio + 0.5) * (10.0 / Double(turnCount))
     }
 
     static func merged(

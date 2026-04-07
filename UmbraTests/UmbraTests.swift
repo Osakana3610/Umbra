@@ -3223,6 +3223,158 @@ struct UmbraTests {
     }
 
     @Test
+    func superRareRateMultiplierRewardsRemainingHPAndFasterBattles() {
+        let runID = RunSessionID(partyId: 1, partyRunId: 1)
+        let result = SingleBattleResult(
+            context: BattleContext(
+                runId: runID,
+                rootSeed: 0,
+                floorNumber: 1,
+                battleNumber: 1
+            ),
+            battleRecord: BattleRecord(
+                runId: runID,
+                floorNumber: 1,
+                battleNumber: 1,
+                result: .victory,
+                turns: [
+                    BattleTurnRecord(turnNumber: 1, actions: []),
+                    BattleTurnRecord(turnNumber: 2, actions: []),
+                    BattleTurnRecord(turnNumber: 3, actions: []),
+                    BattleTurnRecord(turnNumber: 4, actions: []),
+                    BattleTurnRecord(turnNumber: 5, actions: [])
+                ]
+            ),
+            combatants: [
+                BattleCombatantSnapshot(
+                    id: BattleCombatantID(rawValue: "character:1"),
+                    name: "前衛",
+                    side: .ally,
+                    imageAssetID: nil,
+                    level: 1,
+                    initialHP: 100,
+                    maxHP: 100,
+                    remainingHP: 50,
+                    formationIndex: 0
+                ),
+                BattleCombatantSnapshot(
+                    id: BattleCombatantID(rawValue: "character:2"),
+                    name: "後衛",
+                    side: .ally,
+                    imageAssetID: nil,
+                    level: 1,
+                    initialHP: 100,
+                    maxHP: 100,
+                    remainingHP: 25,
+                    formationIndex: 1
+                )
+            ]
+        )
+
+        #expect(ExplorationResolver.superRareRateMultiplier(for: result) == 1.75)
+    }
+
+    @Test
+    func titleRollCountAddsPartyLuckWithoutUsingEnemyLevel() {
+        let rewardContext = ExplorationResolver.RewardContext(
+            memberCharacterIds: [],
+            memberExperienceMultipliers: [],
+            goldMultiplier: 1,
+            rareDropMultiplier: 1,
+            titleDropMultiplier: 1,
+            partyAverageLuck: 25,
+            defaultTitle: MasterData.Title(
+                id: 1,
+                key: "untitled",
+                name: "無名",
+                positiveMultiplier: 1.0,
+                negativeMultiplier: 1.0,
+                dropWeight: 1
+            ),
+            enemyTitle: MasterData.Title(
+                id: 2,
+                key: "eerie",
+                name: "妖しい",
+                positiveMultiplier: 1.5874,
+                negativeMultiplier: 1.0,
+                dropWeight: 1
+            )
+        )
+
+        #expect(ExplorationResolver.titleRollCount(rewardContext: rewardContext) == 5)
+    }
+
+    @Test
+    func rareDropRateIncludesPartyLuckBaseRate() {
+        let rewardContext = ExplorationResolver.RewardContext(
+            memberCharacterIds: [],
+            memberExperienceMultipliers: [],
+            goldMultiplier: 1,
+            rareDropMultiplier: 10,
+            titleDropMultiplier: 1,
+            partyAverageLuck: 25,
+            defaultTitle: MasterData.Title(
+                id: 1,
+                key: "untitled",
+                name: "無名",
+                positiveMultiplier: 1.0,
+                negativeMultiplier: 1.0,
+                dropWeight: 1
+            ),
+            enemyTitle: MasterData.Title(
+                id: 2,
+                key: "untitled",
+                name: "無名",
+                positiveMultiplier: 1.0,
+                negativeMultiplier: 1.0,
+                dropWeight: 1
+            )
+        )
+
+        let expectedRate = (0.001 + cbrt(25.0) / 1_000) * 10 * 1.2
+        let actualRate = ExplorationResolver.rareDropRate(enemyLevel: 27, rewardContext: rewardContext)
+
+        #expect(abs(actualRate - expectedRate) < 0.000_000_001)
+    }
+
+    @Test
+    func superRareResolutionUsesBattlePerformanceMultiplier() {
+        let masterData = debugItemGenerationMasterData()
+        let title = MasterData.Title(
+            id: 1,
+            key: "untitled",
+            name: "無名",
+            positiveMultiplier: 1.0,
+            negativeMultiplier: 1.0,
+            dropWeight: 1
+        )
+
+        let withoutBonus = ExplorationResolver.resolveSuperRareId(
+            title: title,
+            superRareRateMultiplier: 0,
+            floorNumber: 1,
+            battleNumber: 1,
+            enemyIndex: 0,
+            dropIndex: 0,
+            rootSeed: 0,
+            masterData: masterData
+        )
+        let guaranteed = ExplorationResolver.resolveSuperRareId(
+            title: title,
+            superRareRateMultiplier: 1_000_000,
+            floorNumber: 1,
+            battleNumber: 1,
+            enemyIndex: 0,
+            dropIndex: 0,
+            rootSeed: 0,
+            masterData: masterData
+        )
+
+        #expect(withoutBonus == 0)
+        #expect(guaranteed == 1)
+    }
+
+    @Test
     func defendingHalvesPhysicalAttackDamage() throws {
         let masterData = makeBattleTestMasterData(
             enemyBaseStats: battleBaseStats(vitality: 100, agility: 1_000),
