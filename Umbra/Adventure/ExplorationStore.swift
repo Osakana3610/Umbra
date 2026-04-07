@@ -194,6 +194,9 @@ final class ExplorationStore {
         do {
             try guildService.queueAutomaticRunsForResume(
                 reopenedAt: reopenedAt,
+                partyStatusesById: Dictionary(
+                    uniqueKeysWithValues: partyStore.parties.map { ($0.partyId, status(for: $0.partyId)) }
+                ),
                 masterData: masterData
             )
             rosterStore?.refreshFromPersistence()
@@ -203,6 +206,7 @@ final class ExplorationStore {
             return
         }
 
+        var firstResumeError: String?
         while let pendingRun = nextPendingAutomaticRun(
             partyStore: partyStore,
             masterData: masterData
@@ -217,8 +221,17 @@ final class ExplorationStore {
                 catTicketUsage: pendingRun.catTicketUsage,
                 masterData: masterData
             )
-            guard lastOperationError == nil else {
-                return
+            if let error = lastOperationError {
+                firstResumeError = firstResumeError ?? error
+                do {
+                    try guildService.clearPendingAutomaticRuns(partyId: pendingRun.partyId)
+                    partyStore.reload()
+                    lastOperationError = nil
+                    continue
+                } catch {
+                    lastOperationError = Self.errorMessage(for: error)
+                    return
+                }
             }
 
             do {
@@ -236,6 +249,10 @@ final class ExplorationStore {
             guard lastOperationError == nil else {
                 return
             }
+        }
+
+        if let firstResumeError {
+            lastOperationError = firstResumeError
         }
     }
 

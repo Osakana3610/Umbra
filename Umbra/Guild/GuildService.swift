@@ -258,12 +258,15 @@ final class GuildService {
 
     func recordBackgroundedAt(_ date: Date) throws {
         var roster = try coreDataStore.loadRosterSnapshot()
-        roster.playerState.lastBackgroundedAt = date
+        if roster.playerState.lastBackgroundedAt == nil {
+            roster.playerState.lastBackgroundedAt = date
+        }
         try coreDataStore.saveRosterSnapshot(roster)
     }
 
     func queueAutomaticRunsForResume(
         reopenedAt: Date,
+        partyStatusesById: [Int: ExplorationPartyStatus],
         masterData: MasterData
     ) throws {
         var roster = try coreDataStore.loadRosterSnapshot()
@@ -272,37 +275,29 @@ final class GuildService {
         }
 
         var parties = try coreDataStore.loadParties()
-        let elapsedSeconds = max(Int(reopenedAt.timeIntervalSince(backgroundedAt)), 0)
-        if elapsedSeconds > 0 {
-            // Automatic runs are derived from elapsed background time and each selected
-            // labyrinth's full run duration, capped to the per-party pending queue limit.
-            for index in parties.indices {
-                guard let labyrinthId = parties[index].selectedLabyrinthId,
-                      let labyrinth = masterData.labyrinths.first(where: { $0.id == labyrinthId }) else {
-                    continue
-                }
+        let charactersById = Dictionary(
+            uniqueKeysWithValues: roster.characters.map { ($0.characterId, $0) }
+        )
 
-                let totalBattleCount = labyrinth.floors.reduce(into: 0) { partialResult, floor in
-                    partialResult += floor.battleCount
-                }
-                let runDurationSeconds = totalBattleCount * max(labyrinth.progressIntervalSeconds, 1)
-                guard runDurationSeconds > 0 else {
-                    continue
-                }
-
-                let additionalRunCount = elapsedSeconds / runDurationSeconds
-                guard additionalRunCount > 0 else {
-                    continue
-                }
-
-                if parties[index].pendingAutomaticRunCount == 0 {
-                    parties[index].pendingAutomaticRunStartedAt = backgroundedAt
-                }
-                parties[index].pendingAutomaticRunCount = min(
-                    parties[index].pendingAutomaticRunCount + additionalRunCount,
-                    PartyRecord.maxPendingAutomaticRunCount
-                )
+        for index in parties.indices {
+            guard let queuePlan = automaticRunQueuePlan(
+                for: parties[index],
+                status: partyStatusesById[parties[index].partyId],
+                charactersById: charactersById,
+                backgroundedAt: backgroundedAt,
+                reopenedAt: reopenedAt,
+                masterData: masterData
+            ) else {
+                continue
             }
+
+            if parties[index].pendingAutomaticRunCount == 0 {
+                parties[index].pendingAutomaticRunStartedAt = queuePlan.firstStartedAt
+            }
+            parties[index].pendingAutomaticRunCount = min(
+                parties[index].pendingAutomaticRunCount + queuePlan.additionalRunCount,
+                PartyRecord.maxPendingAutomaticRunCount
+            )
         }
 
         roster.playerState.lastBackgroundedAt = nil
@@ -314,6 +309,14 @@ final class GuildService {
         var parties = try coreDataStore.loadParties()
         let index = try partyIndex(for: partyId, in: parties)
         parties[index].pendingAutomaticRunCount = max(parties[index].pendingAutomaticRunCount - 1, 0)
+        parties[index].pendingAutomaticRunStartedAt = nil
+        try coreDataStore.saveParties(parties)
+    }
+
+    func clearPendingAutomaticRuns(partyId: Int) throws {
+        var parties = try coreDataStore.loadParties()
+        let index = try partyIndex(for: partyId, in: parties)
+        parties[index].pendingAutomaticRunCount = 0
         parties[index].pendingAutomaticRunStartedAt = nil
         try coreDataStore.saveParties(parties)
     }
@@ -637,6 +640,65 @@ final class GuildService {
         }
 
         return removedStacks.normalizedCompositeItemStacks()
+    }
+
+    private func automaticRunQueuePlan(
+        for party: PartyRecord,
+        status: ExplorationPartyStatus?,
+        charactersById: [Int: CharacterRecord],
+        backgroundedAt: Date,
+        reopenedAt: Date,
+        masterData: MasterData
+    ) -> (firstStartedAt: Date, additionalRunCount: Int)? {
+        guard let labyrinthId = party.selectedLabyrinthId,
+              let labyrinth = masterData.labyrinths.first(where: { $0.id == labyrinthId }),
+              !party.memberCharacterIds.isEmpty,
+              party.memberCharacterIds.allSatisfy({ characterId in
+                  (charactersById[characterId]?.currentHP ?? 0) > 0
+              }),
+              status?.activeRun == nil else {
+            return nil
+        }
+
+        let totalBattleCount = labyrinth.floors.reduce(into: 0) { partialResult, floor in
+            partialResult += floor.battleCount
+        }
+        let runDurationSeconds = totalBattleCount * max(labyrinth.progressIntervalSeconds, 1)
+        guard runDurationSeconds > 0 else {
+            return nil
+        }
+
+        let firstStartedAt = max(
+            backgroundedAt,
+            status?.latestCompletedRun?.completion?.completedAt ?? backgroundedAt
+        )
+        let additionalRunCount = automaticRunCount(
+            firstStartedAt: firstStartedAt,
+            reopenedAt: reopenedAt,
+            runDurationSeconds: runDurationSeconds
+        )
+        guard additionalRunCount > 0 else {
+            return nil
+        }
+
+        return (
+            firstStartedAt: firstStartedAt,
+            additionalRunCount: additionalRunCount
+        )
+    }
+
+    private func automaticRunCount(
+        firstStartedAt: Date,
+        reopenedAt: Date,
+        runDurationSeconds: Int
+    ) -> Int {
+        let elapsedSeconds = Int(reopenedAt.timeIntervalSince(firstStartedAt))
+        guard elapsedSeconds > 0 else {
+            return 0
+        }
+
+        // Count runs whose start time fits before the reopened wall clock.
+        return ((elapsedSeconds - 1) / runDurationSeconds) + 1
     }
 
     private static func normalizedCharacterName(_ name: String) -> String {

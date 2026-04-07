@@ -65,12 +65,12 @@ struct ContentView: View {
                     )
                 }
                 .onChange(of: scenePhase) { _, newPhase in
-                    if newPhase == .background {
+                    if newPhase != .active {
                         explorationStore.recordBackgroundedAt(
                             Date(),
                             guildService: guildService
                         )
-                    } else if newPhase == .active {
+                    } else {
                         Task {
                             await explorationStore.resumeBackgroundProgress(
                                 reopenedAt: Date(),

@@ -600,12 +600,213 @@ struct UmbraTests {
         try guildService.recordBackgroundedAt(Date(timeIntervalSinceReferenceDate: 100))
         try guildService.queueAutomaticRunsForResume(
             reopenedAt: Date(timeIntervalSinceReferenceDate: 140),
+            partyStatusesById: [:],
             masterData: masterData
         )
 
         let persistedParty = try #require(guildCoreDataStore.loadParties().first)
         #expect(persistedParty.pendingAutomaticRunCount == PartyRecord.maxPendingAutomaticRunCount)
         #expect(persistedParty.pendingAutomaticRunStartedAt == Date(timeIntervalSinceReferenceDate: 100))
+    }
+
+    @Test
+    func resumingBackgroundProgressUsesLatestCompletionTimeAsNextAutomaticRunStart() async throws {
+        let container = PersistenceController(inMemory: true).container
+        let guildCoreDataStore = GuildCoreDataStore(container: container)
+        let explorationCoreDataStore = ExplorationCoreDataStore(container: container)
+        let guildService = GuildService(
+            coreDataStore: guildCoreDataStore,
+            explorationCoreDataStore: explorationCoreDataStore
+        )
+        let masterDataStore = MasterDataStore()
+        let itemDropNotificationService = ItemDropNotificationService(masterDataStore: masterDataStore)
+        let rosterStore = GuildRosterStore(
+            coreDataStore: guildCoreDataStore,
+            service: guildService,
+            phase: .loaded
+        )
+        let partyStore = PartyStore(
+            coreDataStore: guildCoreDataStore,
+            service: guildService,
+            phase: .loaded
+        )
+        let explorationStore = ExplorationStore(
+            coreDataStore: explorationCoreDataStore,
+            itemDropNotificationService: itemDropNotificationService,
+            rosterStore: rosterStore
+        )
+        let masterData = makeExplorationBattleTestMasterData(
+            allyBaseStats: battleBaseStats(vitality: 10),
+            enemyBaseStats: battleBaseStats(vitality: 1),
+            labyrinths: [
+                MasterData.Labyrinth(
+                    id: 1,
+                    name: "経過時間迷宮",
+                    enemyCountCap: 1,
+                    progressIntervalSeconds: 10,
+                    floors: [
+                        MasterData.Floor(
+                            id: 1,
+                            floorNumber: 1,
+                            battleCount: 1,
+                            encounters: [MasterData.Encounter(enemyId: 1, level: 1, weight: 1)],
+                            fixedBattle: nil
+                        )
+                    ]
+                )
+            ]
+        )
+
+        rosterStore.reload()
+        partyStore.reload()
+
+        let character = try guildService.hireCharacter(
+            raceId: 1,
+            jobId: 1,
+            aptitudeId: 1,
+            masterData: masterData
+        ).character
+        _ = try await guildService.addCharacter(characterId: character.characterId, toParty: 1)
+        _ = try await guildService.setSelectedLabyrinth(
+            partyId: 1,
+            selectedLabyrinthId: 1,
+            selectedDifficultyTitleId: 1
+        )
+
+        rosterStore.reload()
+        partyStore.reload()
+
+        await explorationStore.startRun(
+            partyId: 1,
+            labyrinthId: 1,
+            selectedDifficultyTitleId: 1,
+            startedAt: Date(timeIntervalSinceReferenceDate: 100),
+            masterData: masterData
+        )
+
+        try guildService.recordBackgroundedAt(Date(timeIntervalSinceReferenceDate: 105))
+        await explorationStore.resumeBackgroundProgress(
+            reopenedAt: Date(timeIntervalSinceReferenceDate: 129),
+            partyStore: partyStore,
+            guildService: guildService,
+            masterData: masterData
+        )
+
+        let runs = explorationStore.runs
+            .filter { $0.partyId == 1 }
+            .sorted { $0.partyRunId < $1.partyRunId }
+        let activeRun = try #require(runs.first(where: { !$0.isCompleted }))
+
+        #expect(runs.map(\.startedAt) == [
+            Date(timeIntervalSinceReferenceDate: 100),
+            Date(timeIntervalSinceReferenceDate: 110),
+            Date(timeIntervalSinceReferenceDate: 120),
+        ])
+        #expect(runs.compactMap { $0.completion?.completedAt } == [
+            Date(timeIntervalSinceReferenceDate: 110),
+            Date(timeIntervalSinceReferenceDate: 120),
+        ])
+        #expect(activeRun.startedAt == Date(timeIntervalSinceReferenceDate: 120))
+    }
+
+    @Test
+    func resumingBackgroundProgressClearsInvalidPendingPartyAndContinuesOtherParties() async throws {
+        let container = PersistenceController(inMemory: true).container
+        let guildCoreDataStore = GuildCoreDataStore(container: container)
+        let explorationCoreDataStore = ExplorationCoreDataStore(container: container)
+        let guildService = GuildService(
+            coreDataStore: guildCoreDataStore,
+            explorationCoreDataStore: explorationCoreDataStore
+        )
+        let masterDataStore = MasterDataStore()
+        let itemDropNotificationService = ItemDropNotificationService(masterDataStore: masterDataStore)
+        let rosterStore = GuildRosterStore(
+            coreDataStore: guildCoreDataStore,
+            service: guildService,
+            phase: .loaded
+        )
+        let partyStore = PartyStore(
+            coreDataStore: guildCoreDataStore,
+            service: guildService,
+            phase: .loaded
+        )
+        let explorationStore = ExplorationStore(
+            coreDataStore: explorationCoreDataStore,
+            itemDropNotificationService: itemDropNotificationService,
+            rosterStore: rosterStore
+        )
+        let masterData = makeExplorationBattleTestMasterData(
+            allyBaseStats: battleBaseStats(vitality: 10),
+            enemyBaseStats: battleBaseStats(vitality: 1),
+            labyrinths: [
+                MasterData.Labyrinth(
+                    id: 1,
+                    name: "選別迷宮",
+                    enemyCountCap: 1,
+                    progressIntervalSeconds: 1,
+                    floors: [
+                        MasterData.Floor(
+                            id: 1,
+                            floorNumber: 1,
+                            battleCount: 1,
+                            encounters: [MasterData.Encounter(enemyId: 1, level: 1, weight: 1)],
+                            fixedBattle: nil
+                        )
+                    ]
+                )
+            ]
+        )
+
+        _ = try guildService.unlockParty()
+        let character = try guildService.hireCharacter(
+            raceId: 1,
+            jobId: 1,
+            aptitudeId: 1,
+            masterData: masterData
+        ).character
+        _ = try await guildService.addCharacter(characterId: character.characterId, toParty: 2)
+        _ = try await guildService.setSelectedLabyrinth(
+            partyId: 1,
+            selectedLabyrinthId: 1,
+            selectedDifficultyTitleId: 1
+        )
+        _ = try await guildService.setSelectedLabyrinth(
+            partyId: 2,
+            selectedLabyrinthId: 1,
+            selectedDifficultyTitleId: 1
+        )
+
+        rosterStore.reload()
+        partyStore.reload()
+
+        try guildService.recordBackgroundedAt(Date(timeIntervalSinceReferenceDate: 110))
+        await explorationStore.resumeBackgroundProgress(
+            reopenedAt: Date(timeIntervalSinceReferenceDate: 113),
+            partyStore: partyStore,
+            guildService: guildService,
+            masterData: masterData
+        )
+
+        let firstPartyRuns = explorationStore.runs.filter { $0.partyId == 1 }
+        let secondPartyRuns = explorationStore.runs
+            .filter { $0.partyId == 2 }
+            .sorted { $0.partyRunId < $1.partyRunId }
+        let persistedParties = try guildCoreDataStore.loadParties()
+        let firstParty = try #require(persistedParties.first(where: { $0.partyId == 1 }))
+        let secondParty = try #require(persistedParties.first(where: { $0.partyId == 2 }))
+
+        #expect(firstPartyRuns.isEmpty)
+        #expect(secondPartyRuns.count == 3)
+        #expect(secondPartyRuns.allSatisfy { $0.isCompleted })
+        #expect(secondPartyRuns.map(\.startedAt) == [
+            Date(timeIntervalSinceReferenceDate: 110),
+            Date(timeIntervalSinceReferenceDate: 111),
+            Date(timeIntervalSinceReferenceDate: 112),
+        ])
+        #expect(firstParty.pendingAutomaticRunCount == 0)
+        #expect(firstParty.pendingAutomaticRunStartedAt == nil)
+        #expect(secondParty.pendingAutomaticRunCount == 0)
+        #expect(secondParty.pendingAutomaticRunStartedAt == nil)
     }
 
     @Test
