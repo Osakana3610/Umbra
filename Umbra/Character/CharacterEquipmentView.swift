@@ -10,6 +10,7 @@ struct CharacterEquipmentView: View {
 
     @State private var searchText = ""
     @State private var loadError: String?
+    @State private var presentedItemDetail: PresentedItemDetail?
 
     var body: some View {
         Group {
@@ -37,6 +38,9 @@ struct CharacterEquipmentView: View {
                                             masterData: masterData,
                                             rosterStore: rosterStore
                                         )
+                                    },
+                                    onShowDetail: {
+                                        presentedItemDetail = PresentedItemDetail(itemID: item.itemID)
                                     }
                                 )
                                 .equatable()
@@ -81,6 +85,9 @@ struct CharacterEquipmentView: View {
                                             masterData: masterData,
                                             rosterStore: rosterStore
                                         )
+                                    },
+                                    onShowDetail: { itemID in
+                                        presentedItemDetail = PresentedItemDetail(itemID: itemID)
                                     }
                                 )
                             }
@@ -100,6 +107,21 @@ struct CharacterEquipmentView: View {
                 .searchable(text: $searchText, prompt: "所持アイテムを検索")
                 .navigationTitle(character.name)
                 .navigationBarTitleDisplayMode(.inline)
+                .sheet(item: $presentedItemDetail) { presentedItemDetail in
+                    NavigationStack {
+                        ItemDetailView(
+                            itemID: presentedItemDetail.itemID,
+                            masterData: masterData
+                        )
+                        .toolbar {
+                            ToolbarItem(placement: .topBarTrailing) {
+                                Button("閉じる") {
+                                    self.presentedItemDetail = nil
+                                }
+                            }
+                        }
+                    }
+                }
                 .task(id: character.id) {
                     do {
                         try equipmentStore.loadIfNeeded(masterData: masterData)
@@ -229,6 +251,7 @@ private struct EquipmentSectionRowsView: View {
     let isAtCapacity: Bool
     let onEquip: (CompositeItemID) -> Void
     let onUnequip: (CompositeItemID) -> Void
+    let onShowDetail: (CompositeItemID) -> Void
 
     var body: some View {
         ForEach(rows) { row in
@@ -237,7 +260,8 @@ private struct EquipmentSectionRowsView: View {
                 characterPortraitAssetName: characterPortraitAssetName,
                 isAtCapacity: isAtCapacity,
                 onEquip: onEquip,
-                onUnequip: onUnequip
+                onUnequip: onUnequip,
+                onShowDetail: onShowDetail
             )
             .equatable()
             .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
@@ -251,6 +275,7 @@ private struct EquipmentDisplayRowView: View, Equatable {
     let isAtCapacity: Bool
     let onEquip: (CompositeItemID) -> Void
     let onUnequip: (CompositeItemID) -> Void
+    let onShowDetail: (CompositeItemID) -> Void
 
     static func == (lhs: Self, rhs: Self) -> Bool {
         lhs.row == rhs.row
@@ -261,10 +286,76 @@ private struct EquipmentDisplayRowView: View, Equatable {
     var body: some View {
         switch row {
         case .inventory(let item):
-            Button {
-                onEquip(item.itemID)
-            } label: {
+            HStack(spacing: 12) {
+                Button {
+                    onEquip(item.itemID)
+                } label: {
+                    HStack(spacing: 12) {
+                        Text("x\(item.quantity)")
+                            .font(.body.weight(.semibold))
+                            .monospacedDigit()
+
+                        Text(item.displayName)
+                            .font(item.isSuperRare ? .body.weight(.semibold) : .body)
+                            .lineLimit(2)
+
+                        Spacer(minLength: 12)
+                    }
+                    .contentShape(Rectangle())
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .buttonStyle(.plain)
+                // Inventory rows become non-interactive once the character is at the equip cap.
+                .disabled(isAtCapacity)
+
+                detailButton(for: item.itemID)
+            }
+        case .equipped(let item):
+            EquippedItemRow(
+                item: item,
+                characterPortraitAssetName: characterPortraitAssetName,
+                onTap: { onUnequip(item.itemID) },
+                onShowDetail: { onShowDetail(item.itemID) }
+            )
+        }
+    }
+
+    @ViewBuilder
+    private func detailButton(for itemID: CompositeItemID) -> some View {
+        Button {
+            onShowDetail(itemID)
+        } label: {
+            Image(systemName: "info.circle")
+                .font(.body)
+                .foregroundStyle(.tint)
+                .frame(width: 28, height: 28)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("アイテム詳細")
+    }
+}
+
+private struct EquippedItemRow: View, Equatable {
+    let item: EquipmentCachedItem
+    let characterPortraitAssetName: String
+    let onTap: () -> Void
+    let onShowDetail: () -> Void
+
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.item == rhs.item
+            && lhs.characterPortraitAssetName == rhs.characterPortraitAssetName
+    }
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Button(action: onTap) {
                 HStack(spacing: 12) {
+                    Image(characterPortraitAssetName)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 36, height: 36)
+                        .clipShape(.rect(cornerRadius: 10))
+
                     Text("x\(item.quantity)")
                         .font(.body.weight(.semibold))
                         .monospacedDigit()
@@ -276,51 +367,26 @@ private struct EquipmentDisplayRowView: View, Equatable {
                     Spacer(minLength: 12)
                 }
                 .contentShape(Rectangle())
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
             .buttonStyle(.plain)
-            // Inventory rows become non-interactive once the character is at the equip cap.
-            .disabled(isAtCapacity)
-        case .equipped(let item):
-            EquippedItemRow(
-                item: item,
-                characterPortraitAssetName: characterPortraitAssetName,
-                onTap: { onUnequip(item.itemID) }
-            )
+
+            Button(action: onShowDetail) {
+                Image(systemName: "info.circle")
+                    .font(.body)
+                    .foregroundStyle(.tint)
+                    .frame(width: 28, height: 28)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("アイテム詳細")
         }
     }
 }
 
-private struct EquippedItemRow: View, Equatable {
-    let item: EquipmentCachedItem
-    let characterPortraitAssetName: String
-    let onTap: () -> Void
+private struct PresentedItemDetail: Identifiable {
+    let itemID: CompositeItemID
 
-    static func == (lhs: Self, rhs: Self) -> Bool {
-        lhs.item == rhs.item
-            && lhs.characterPortraitAssetName == rhs.characterPortraitAssetName
-    }
-
-    var body: some View {
-        Button(action: onTap) {
-            HStack(spacing: 12) {
-                Image(characterPortraitAssetName)
-                    .resizable()
-                    .scaledToFill()
-                    .frame(width: 36, height: 36)
-                    .clipShape(.rect(cornerRadius: 10))
-
-                Text("x\(item.quantity)")
-                    .font(.body.weight(.semibold))
-                    .monospacedDigit()
-
-                Text(item.displayName)
-                    .font(item.isSuperRare ? .body.weight(.semibold) : .body)
-                    .lineLimit(2)
-
-                Spacer(minLength: 12)
-            }
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
+    var id: String {
+        itemID.stableKey
     }
 }
