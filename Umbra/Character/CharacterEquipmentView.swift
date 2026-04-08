@@ -8,6 +8,7 @@ struct CharacterEquipmentView: View {
     let rosterStore: GuildRosterStore
     let equipmentStore: EquipmentInventoryStore
 
+    @State private var itemFilter = ItemBrowserFilter()
     @State private var searchText = ""
     @State private var loadError: String?
     @State private var presentedItemDetail: PresentedItemDetail?
@@ -15,6 +16,7 @@ struct CharacterEquipmentView: View {
     var body: some View {
         Group {
             if let character {
+                let filterCatalog = filterCatalog(for: character)
                 let visibleSections = visibleSections(for: character)
 
                 List {
@@ -60,7 +62,9 @@ struct CharacterEquipmentView: View {
                         }
                     } else if visibleSections.isEmpty {
                         Section("装備候補") {
-                            Text(isSearching ? "検索条件に一致する所持アイテムはありません。" : "装備可能な所持アイテムはありません。")
+                            Text(hasFilteredInventoryResults(filterCatalog: filterCatalog)
+                                ? "検索条件またはフィルター条件に一致する所持アイテムはありません。"
+                                : "装備可能な所持アイテムはありません。")
                                 .foregroundStyle(.secondary)
                         }
                     } else {
@@ -107,6 +111,16 @@ struct CharacterEquipmentView: View {
                 .searchable(text: $searchText, prompt: "所持アイテムを検索")
                 .navigationTitle(character.name)
                 .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    if filterCatalog.hasOptions {
+                        ToolbarItem(placement: .topBarTrailing) {
+                            ItemBrowserFilterButton(
+                                catalog: filterCatalog,
+                                filter: $itemFilter
+                            )
+                        }
+                    }
+                }
                 .sheet(item: $presentedItemDetail) { presentedItemDetail in
                     NavigationStack {
                         ItemDetailView(
@@ -154,6 +168,12 @@ struct CharacterEquipmentView: View {
         !trimmedSearchText.isEmpty
     }
 
+    private func hasFilteredInventoryResults(
+        filterCatalog: ItemBrowserFilterCatalog
+    ) -> Bool {
+        isSearching || itemFilter.isActive(in: filterCatalog)
+    }
+
     private func equippedItems(for character: CharacterRecord) -> [EquipmentCachedItem] {
         equipmentStore.equippedItems(for: character, masterData: masterData)
     }
@@ -161,9 +181,9 @@ struct CharacterEquipmentView: View {
     private func visibleSections(for character: CharacterRecord) -> [EquipmentSectionRows] {
         equipmentStore.mergedSections(for: character.characterId).compactMap { section in
             let rows = visibleRows(in: section.rows)
-            // Section headers stay hidden during search when every row in that section was filtered
-            // out, but untouched sections preserve the cached merged ordering from the store.
-            guard !isSearching || !rows.isEmpty else {
+            // Section headers disappear once search or filter conditions remove all rows, while the
+            // underlying store still preserves the stable category and rarity ordering.
+            guard !rows.isEmpty else {
                 return nil
             }
             return EquipmentSectionRows(key: section.key, rows: rows)
@@ -171,11 +191,29 @@ struct CharacterEquipmentView: View {
     }
 
     private func visibleRows(in rows: [EquipmentDisplayRow]) -> [EquipmentDisplayRow] {
-        guard !trimmedSearchText.isEmpty else {
-            return rows
+        rows.filter { row in
+            let item = row.cachedItem
+            guard itemFilter.matches(
+                itemID: item.itemID,
+                category: item.category
+            ) else {
+                return false
+            }
+            guard trimmedSearchText.isEmpty || row.displayName.localizedCaseInsensitiveContains(trimmedSearchText) else {
+                return false
+            }
+            return true
         }
+    }
 
-        return rows.filter { $0.displayName.localizedCaseInsensitiveContains(trimmedSearchText) }
+    private func filterCatalog(for character: CharacterRecord) -> ItemBrowserFilterCatalog {
+        let itemIDs = equipmentStore.mergedSections(for: character.characterId)
+            .flatMap(\.rows)
+            .map { $0.cachedItem.itemID }
+        return ItemBrowserFilterCatalog(
+            itemIDs: itemIDs,
+            masterData: masterData
+        )
     }
 
     @ViewBuilder

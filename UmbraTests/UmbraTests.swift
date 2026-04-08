@@ -31,6 +31,83 @@ struct UmbraTests {
     }
 
     @Test
+    func itemBrowserFilterCatalogCollectsVisibleCategoriesAndTitles() throws {
+        let masterData = try loadGeneratedMasterData()
+        let roughTitleID = try #require(masterData.titles.first(where: { $0.key == "rough" })?.id)
+        let untitledTitle = try #require(masterData.titles.first(where: { $0.key == "untitled" }))
+        let swordID = try itemId(for: .sword, in: masterData)
+        let armorID = try itemId(for: .armor, in: masterData)
+        let jewelID = try itemId(for: .jewel, in: masterData)
+        let catalog = ItemBrowserFilterCatalog(
+            itemIDs: [
+                CompositeItemID(
+                    baseSuperRareId: 0,
+                    baseTitleId: 0,
+                    baseItemId: swordID,
+                    jewelSuperRareId: 0,
+                    jewelTitleId: roughTitleID,
+                    jewelItemId: jewelID
+                ),
+                .baseItem(itemId: armorID)
+            ],
+            masterData: masterData
+        )
+
+        #expect(catalog.categories == [.sword, .armor])
+        #expect(catalog.titles.map(\.id) == masterData.titles.map(\.id))
+        #expect(catalog.titles.first(where: { $0.id == untitledTitle.id })?.label == "無称号")
+        #expect(untitledTitle.name.isEmpty)
+        #expect(catalog.titles.map(\.id).contains(roughTitleID))
+    }
+
+    @Test
+    func itemBrowserFilterMatchesCategoryTitleAndSuperRareSelections() throws {
+        let masterData = try loadGeneratedMasterData()
+        let roughTitleID = try #require(masterData.titles.first(where: { $0.key == "rough" })?.id)
+        let untitledTitleID = try #require(masterData.titles.first(where: { $0.key == "untitled" })?.id)
+        let superRareID = try #require(masterData.superRares.first?.id)
+        let swordID = try itemId(for: .sword, in: masterData)
+        let armorID = try itemId(for: .armor, in: masterData)
+        let filter = ItemBrowserFilter(
+            hiddenCategories: [.armor],
+            hiddenTitleIDs: [untitledTitleID],
+            showsOnlySuperRare: true
+        )
+
+        #expect(filter.matches(
+            itemID: .baseItem(
+                itemId: swordID,
+                titleId: roughTitleID,
+                superRareId: superRareID
+            ),
+            category: .sword
+        ))
+        #expect(filter.matches(
+            itemID: .baseItem(
+                itemId: swordID,
+                titleId: untitledTitleID,
+                superRareId: superRareID
+            ),
+            category: .sword
+        ) == false)
+        #expect(filter.matches(
+            itemID: .baseItem(
+                itemId: armorID,
+                titleId: roughTitleID,
+                superRareId: superRareID
+            ),
+            category: .armor
+        ) == false)
+        #expect(filter.matches(
+            itemID: .baseItem(
+                itemId: swordID,
+                titleId: roughTitleID
+            ),
+            category: .sword
+        ) == false)
+    }
+
+    @Test
     func guildCoreDataStoreCreatesInitialPlayerState() async throws {
         let container = PersistenceController(inMemory: true).container
         let guildCoreDataStore = GuildCoreDataStore(container: container)
@@ -6939,6 +7016,11 @@ private func jobId(named name: String, in masterData: MasterData) throws -> Int 
 @MainActor
 private func skillId(named name: String, in masterData: MasterData) throws -> Int {
     try #require(masterData.skills.first(where: { $0.name == name })?.id)
+}
+
+@MainActor
+private func itemId(for category: ItemCategory, in masterData: MasterData) throws -> Int {
+    try #require(masterData.items.first(where: { $0.category == category })?.id)
 }
 
 @MainActor

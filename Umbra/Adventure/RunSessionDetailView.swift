@@ -11,8 +11,10 @@ struct RunSessionDetailView: View {
     let equipmentStore: EquipmentInventoryStore
     let explorationStore: ExplorationStore
 
+    private let itemsByID: [Int: MasterData.Item]
     private let nameResolver: EquipmentDisplayNameResolver
     @State private var runDetail: RunSessionRecord?
+    @State private var itemFilter = ItemBrowserFilter()
 
     init(
         partyId: Int,
@@ -30,12 +32,15 @@ struct RunSessionDetailView: View {
         self.partyStore = partyStore
         self.equipmentStore = equipmentStore
         self.explorationStore = explorationStore
+        itemsByID = Dictionary(uniqueKeysWithValues: masterData.items.map { ($0.id, $0) })
         nameResolver = EquipmentDisplayNameResolver(masterData: masterData)
     }
 
     var body: some View {
         Group {
             if let run {
+                let dropRewardCatalog = dropRewardCatalog(for: detailedRun?.completion)
+
                 List {
                     Section("探索結果") {
                         Text(explorationResultText(for: run))
@@ -96,11 +101,16 @@ struct RunSessionDetailView: View {
                         }
 
                         Section("ドロップアイテム") {
+                            let displayedDropRewards = displayedDropRewards(from: completion)
+
                             if completion.dropRewards.isEmpty {
                                 Text("アイテムなし")
                                     .foregroundStyle(.secondary)
+                            } else if displayedDropRewards.isEmpty {
+                                Text("フィルター条件に一致するアイテムはありません。")
+                                    .foregroundStyle(.secondary)
                             } else {
-                                ForEach(completion.dropRewards) { reward in
+                                ForEach(displayedDropRewards) { reward in
                                     VStack(alignment: .leading, spacing: 4) {
                                         Text(nameResolver.displayName(for: reward.itemID))
                                         Text("\(reward.sourceFloorNumber)F / 戦闘 \(reward.sourceBattleNumber)")
@@ -116,6 +126,16 @@ struct RunSessionDetailView: View {
                 .listStyle(.insetGrouped)
                 .navigationTitle("\(partyName)の探索ログ")
                 .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    if detailedRun?.completion?.dropRewards.isEmpty == false {
+                        ToolbarItem(placement: .topBarTrailing) {
+                            ItemBrowserFilterButton(
+                                catalog: dropRewardCatalog,
+                                filter: $itemFilter
+                            )
+                        }
+                    }
+                }
                 .task {
                     await explorationStore.loadIfNeeded(masterData: masterData)
                     await loadRunDetail()
@@ -198,6 +218,29 @@ struct RunSessionDetailView: View {
     private func displayedBattleLogs(from run: RunSessionRecord) -> [ExplorationBattleLog] {
         // Only battles that have actually been completed are displayed, newest first.
         Array(run.battleLogs.prefix(run.completedBattleCount).reversed())
+    }
+
+    private func displayedDropRewards(
+        from completion: RunCompletionRecord
+    ) -> [ExplorationDropReward] {
+        return completion.dropRewards.filter { reward in
+            guard let category = itemsByID[reward.itemID.baseItemId]?.category else {
+                return false
+            }
+            return itemFilter.matches(
+                itemID: reward.itemID,
+                category: category
+            )
+        }
+    }
+
+    private func dropRewardCatalog(
+        for completion: RunCompletionRecord?
+    ) -> ItemBrowserFilterCatalog {
+        ItemBrowserFilterCatalog(
+            itemIDs: completion?.dropRewards.map(\.itemID) ?? [],
+            masterData: masterData
+        )
     }
 
     private func defeatedPartyMemberText(for log: ExplorationBattleLog) -> String? {
