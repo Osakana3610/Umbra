@@ -10,6 +10,7 @@ struct UmbraApp: App {
     @State private var rosterStore: GuildRosterStore
     @State private var partyStore: PartyStore
     @State private var equipmentStore: EquipmentInventoryStore
+    @State private var shopStore: ShopInventoryStore
     @State private var explorationStore: ExplorationStore
     @State private var itemDropNotificationService: ItemDropNotificationService
 
@@ -44,6 +45,11 @@ struct UmbraApp: App {
                 service: guildService
             )
         )
+        _shopStore = State(
+            initialValue: ShopInventoryStore(
+                service: guildService
+            )
+        )
         // Exploration and notification services are constructed once at app launch so background
         // resume and overlay state survive view re-composition.
         _explorationStore = State(
@@ -63,6 +69,7 @@ struct UmbraApp: App {
                 rosterStore: rosterStore,
                 partyStore: partyStore,
                 equipmentStore: equipmentStore,
+                shopStore: shopStore,
                 explorationStore: explorationStore,
                 itemDropNotificationService: itemDropNotificationService,
                 guildService: guildService

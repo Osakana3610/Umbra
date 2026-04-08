@@ -22,12 +22,17 @@
         <attribute name="count" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="stackKeyRawValue" optional="NO" attributeType="String" defaultValueString="0:0:0:0:0:0"/>
     </entity>
+    <entity name="ShopItemEntity" representedClassName="ShopItemEntity" syncable="YES">
+        <attribute name="count" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="stackKeyRawValue" optional="NO" attributeType="String" defaultValueString="0:0:0:0:0:0"/>
+    </entity>
     <entity name="PlayerStateEntity" representedClassName="PlayerStateEntity" syncable="YES">
         <attribute name="autoReviveDefeatedCharacters" optional="NO" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="catTicketCount" optional="NO" attributeType="Integer 64" defaultValueString="10" usesScalarValueType="YES"/>
         <attribute name="gold" optional="NO" attributeType="Integer 64" defaultValueString="1000" usesScalarValueType="YES"/>
         <attribute name="lastBackgroundedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="nextCharacterId" optional="NO" attributeType="Integer 64" defaultValueString="1" usesScalarValueType="YES"/>
+        <attribute name="shopInventoryInitialized" optional="NO" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
     </entity>
     <entity name="PartyEntity" representedClassName="PartyEntity" syncable="YES">
         <attribute name="automaticallyUsesCatTicket" optional="NO" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
@@ -158,6 +163,7 @@
         <element name="CharacterEntity" positionX="178" positionY="-18" width="128" height="254"/>
         <element name="PartyEntity" positionX="-63" positionY="101" width="128" height="89"/>
         <element name="InventoryItemEntity" positionX="-63" positionY="197" width="128" height="74"/>
+        <element name="ShopItemEntity" positionX="-63" positionY="366" width="128" height="74"/>
         <element name="LabyrinthProgressEntity" positionX="-63" positionY="281" width="128" height="74"/>
         <element name="RunSessionEntity" positionX="178" positionY="281" width="128" height="254"/>
         <element name="RunSessionMemberEntity" positionX="392" positionY="281" width="128" height="284"/>

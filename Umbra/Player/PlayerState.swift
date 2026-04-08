@@ -7,6 +7,7 @@ nonisolated struct PlayerState: Equatable, Sendable {
     var catTicketCount: Int
     var nextCharacterId: Int
     var autoReviveDefeatedCharacters: Bool
+    var shopInventoryInitialized: Bool
     var lastBackgroundedAt: Date? = nil
 
     static let initial = PlayerState(
@@ -14,6 +15,7 @@ nonisolated struct PlayerState: Equatable, Sendable {
         catTicketCount: 10,
         nextCharacterId: 1,
         autoReviveDefeatedCharacters: false,
+        shopInventoryInitialized: false,
         lastBackgroundedAt: nil
     )
 }

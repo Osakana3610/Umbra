@@ -53,6 +53,12 @@ final class GuildCoreDataStore {
             .sorted { $0.itemID.isOrdered(before: $1.itemID) }
     }
 
+    func loadShopInventoryStacks() throws -> [CompositeItemStack] {
+        try fetchShopItemEntities(in: container.viewContext)
+            .compactMap(makeShopInventoryStack)
+            .sorted { $0.itemID.isOrdered(before: $1.itemID) }
+    }
+
     func loadCharacter(characterId: Int) throws -> CharacterRecord? {
         let context = container.viewContext
         return try fetchCharacterEntity(characterId: characterId, in: context)
@@ -65,6 +71,12 @@ final class GuildCoreDataStore {
             .flatMap(makeInventoryStack)
     }
 
+    func loadShopInventoryStack(itemID: CompositeItemID) throws -> CompositeItemStack? {
+        let context = container.viewContext
+        return try fetchShopItemEntity(itemID: itemID, in: context)
+            .flatMap(makeShopInventoryStack)
+    }
+
     func saveRosterSnapshot(_ snapshot: GuildRosterSnapshot) throws {
         let context = container.viewContext
         let playerState = try fetchOrCreatePlayerState(in: context)
@@ -72,6 +84,7 @@ final class GuildCoreDataStore {
         playerState.catTicketCount = Int64(snapshot.playerState.catTicketCount)
         playerState.nextCharacterId = Int64(snapshot.playerState.nextCharacterId)
         playerState.autoReviveDefeatedCharacters = snapshot.playerState.autoReviveDefeatedCharacters
+        playerState.shopInventoryInitialized = snapshot.playerState.shopInventoryInitialized
         playerState.lastBackgroundedAt = snapshot.playerState.lastBackgroundedAt
         try syncCharacters(snapshot.characters, in: context)
         try syncLabyrinthProgressRecords(snapshot.labyrinthProgressRecords, in: context)
@@ -90,6 +103,12 @@ final class GuildCoreDataStore {
         try saveIfNeeded(context)
     }
 
+    func saveShopInventoryStacks(_ inventoryStacks: [CompositeItemStack]) throws {
+        let context = container.viewContext
+        try syncShopInventoryStacks(inventoryStacks, in: context)
+        try saveIfNeeded(context)
+    }
+
     func saveRosterState(
         _ snapshot: GuildRosterSnapshot,
         parties: [PartyRecord],
@@ -101,6 +120,7 @@ final class GuildCoreDataStore {
         playerState.catTicketCount = Int64(snapshot.playerState.catTicketCount)
         playerState.nextCharacterId = Int64(snapshot.playerState.nextCharacterId)
         playerState.autoReviveDefeatedCharacters = snapshot.playerState.autoReviveDefeatedCharacters
+        playerState.shopInventoryInitialized = snapshot.playerState.shopInventoryInitialized
         playerState.lastBackgroundedAt = snapshot.playerState.lastBackgroundedAt
         try syncCharacters(snapshot.characters, in: context)
         try syncParties(parties, in: context)
@@ -149,6 +169,24 @@ final class GuildCoreDataStore {
             context.delete(inventoryEntity)
         }
 
+        try saveIfNeeded(context)
+    }
+
+    func saveTradeState(
+        playerState: PlayerState,
+        inventoryStacks: [CompositeItemStack],
+        shopInventoryStacks: [CompositeItemStack]
+    ) throws {
+        let context = container.viewContext
+        let playerStateEntity = try fetchOrCreatePlayerState(in: context)
+        playerStateEntity.gold = Int64(playerState.gold)
+        playerStateEntity.catTicketCount = Int64(playerState.catTicketCount)
+        playerStateEntity.nextCharacterId = Int64(playerState.nextCharacterId)
+        playerStateEntity.autoReviveDefeatedCharacters = playerState.autoReviveDefeatedCharacters
+        playerStateEntity.shopInventoryInitialized = playerState.shopInventoryInitialized
+        playerStateEntity.lastBackgroundedAt = playerState.lastBackgroundedAt
+        try syncInventoryStacks(inventoryStacks, in: context)
+        try syncShopInventoryStacks(shopInventoryStacks, in: context)
         try saveIfNeeded(context)
     }
 
@@ -307,6 +345,43 @@ final class GuildCoreDataStore {
         }
     }
 
+    private func syncShopInventoryStacks(
+        _ inventoryStacks: [CompositeItemStack],
+        in context: NSManagedObjectContext
+    ) throws {
+        let normalizedStacks = inventoryStacks.normalizedCompositeItemStacks()
+        var existingByKey: [String: ShopItemEntity] = try Dictionary(
+            uniqueKeysWithValues: fetchShopItemEntities(in: context).compactMap { entity in
+                guard let rawValue = entity.stackKeyRawValue else {
+                    return nil
+                }
+                return (rawValue, entity)
+            }
+        )
+        let incomingKeys = Set(normalizedStacks.map(\.itemID.rawValue))
+
+        for (rawValue, entity) in existingByKey where !incomingKeys.contains(rawValue) {
+            context.delete(entity)
+        }
+
+        for stack in normalizedStacks {
+            let rawValue = stack.itemID.rawValue
+            let entity = existingByKey[rawValue] ?? {
+                guard let insertedEntity = NSEntityDescription.insertNewObject(
+                    forEntityName: "ShopItemEntity",
+                    into: context
+                ) as? ShopItemEntity else {
+                    fatalError("ShopItemEntity の生成に失敗しました。")
+                }
+                existingByKey[rawValue] = insertedEntity
+                return insertedEntity
+            }()
+
+            entity.stackKeyRawValue = rawValue
+            entity.count = Int64(stack.count)
+        }
+    }
+
     private func saveIfNeeded(_ context: NSManagedObjectContext) throws {
         if context.hasChanges {
             try context.save()
@@ -333,6 +408,7 @@ final class GuildCoreDataStore {
         playerState.catTicketCount = Int64(PlayerState.initial.catTicketCount)
         playerState.nextCharacterId = Int64(PlayerState.initial.nextCharacterId)
         playerState.autoReviveDefeatedCharacters = PlayerState.initial.autoReviveDefeatedCharacters
+        playerState.shopInventoryInitialized = PlayerState.initial.shopInventoryInitialized
         playerState.lastBackgroundedAt = PlayerState.initial.lastBackgroundedAt
         return playerState
     }
@@ -389,11 +465,29 @@ final class GuildCoreDataStore {
         return try context.fetch(request)
     }
 
+    private func fetchShopItemEntities(
+        in context: NSManagedObjectContext
+    ) throws -> [ShopItemEntity] {
+        let request = NSFetchRequest<ShopItemEntity>(entityName: "ShopItemEntity")
+        request.sortDescriptors = [NSSortDescriptor(key: "stackKeyRawValue", ascending: true)]
+        return try context.fetch(request)
+    }
+
     private func fetchInventoryItemEntity(
         itemID: CompositeItemID,
         in context: NSManagedObjectContext
     ) throws -> InventoryItemEntity? {
         let request = NSFetchRequest<InventoryItemEntity>(entityName: "InventoryItemEntity")
+        request.fetchLimit = 1
+        request.predicate = NSPredicate(format: "stackKeyRawValue == %@", itemID.rawValue)
+        return try context.fetch(request).first
+    }
+
+    private func fetchShopItemEntity(
+        itemID: CompositeItemID,
+        in context: NSManagedObjectContext
+    ) throws -> ShopItemEntity? {
+        let request = NSFetchRequest<ShopItemEntity>(entityName: "ShopItemEntity")
         request.fetchLimit = 1
         request.predicate = NSPredicate(format: "stackKeyRawValue == %@", itemID.rawValue)
         return try context.fetch(request).first
@@ -421,6 +515,7 @@ final class GuildCoreDataStore {
             catTicketCount: Int(entity.catTicketCount),
             nextCharacterId: Int(entity.nextCharacterId),
             autoReviveDefeatedCharacters: entity.autoReviveDefeatedCharacters,
+            shopInventoryInitialized: entity.shopInventoryInitialized,
             lastBackgroundedAt: entity.lastBackgroundedAt
         )
     }
@@ -504,6 +599,16 @@ final class GuildCoreDataStore {
     }
 
     private func makeInventoryStack(from entity: InventoryItemEntity) -> CompositeItemStack? {
+        guard let rawValue = entity.stackKeyRawValue,
+              let itemID = CompositeItemID(rawValue: rawValue),
+              entity.count > 0 else {
+            return nil
+        }
+
+        return CompositeItemStack(itemID: itemID, count: Int(entity.count))
+    }
+
+    private func makeShopInventoryStack(from entity: ShopItemEntity) -> CompositeItemStack? {
         guard let rawValue = entity.stackKeyRawValue,
               let itemID = CompositeItemID(rawValue: rawValue),
               entity.count > 0 else {

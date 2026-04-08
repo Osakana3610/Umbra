@@ -9,6 +9,7 @@ struct RootTabView: View {
     let rosterStore: GuildRosterStore
     let partyStore: PartyStore
     let equipmentStore: EquipmentInventoryStore
+    let shopStore: ShopInventoryStore
     let explorationStore: ExplorationStore
     let itemDropNotificationService: ItemDropNotificationService
     let guildService: GuildService
@@ -55,12 +56,12 @@ struct RootTabView: View {
             }
 
             NavigationStack {
-                PlaceholderRootView(
-                    title: "商店",
-                    systemImage: "bag",
-                    description: "商店はこれから実装します。"
+                ShopHomeView(
+                    masterData: masterData,
+                    rosterStore: rosterStore,
+                    equipmentStore: equipmentStore,
+                    shopStore: shopStore
                 )
-                .navigationTitle("商店")
             }
             .tabItem {
                 Label("商店", systemImage: "bag")

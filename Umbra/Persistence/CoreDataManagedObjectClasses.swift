@@ -13,6 +13,11 @@ public class InventoryItemEntity: NSManagedObject {
 
 }
 
+@objc(ShopItemEntity)
+public class ShopItemEntity: NSManagedObject {
+
+}
+
 @objc(PartyEntity)
 public class PartyEntity: NSManagedObject {
 

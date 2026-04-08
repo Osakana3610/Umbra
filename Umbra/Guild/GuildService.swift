@@ -23,6 +23,7 @@ enum GuildServiceError: LocalizedError {
     case invalidItemStack
     case invalidStackCount
     case inventoryItemUnavailable
+    case shopItemUnavailable
     case equipLimitReached(maximumCount: Int)
     case equippedItemNotFound
     case invalidCharacterName
@@ -59,6 +60,8 @@ enum GuildServiceError: LocalizedError {
             "スタック数は1以上で指定してください。"
         case .inventoryItemUnavailable:
             "対象アイテムを所持していません。"
+        case .shopItemUnavailable:
+            "商店に対象アイテムがありません。"
         case .equipLimitReached(let maximumCount):
             "これ以上装備できません。装備上限は\(maximumCount)件です。"
         case .equippedItemNotFound:
@@ -477,6 +480,98 @@ final class GuildService {
         try coreDataStore.saveInventoryStacks(allInventoryStacks)
     }
 
+    func loadShopInventoryStacks(masterData: MasterData) throws -> [CompositeItemStack] {
+        let roster = try coreDataStore.loadRosterSnapshot()
+        let existingStacks = try coreDataStore.loadShopInventoryStacks()
+        guard roster.playerState.shopInventoryInitialized == false else {
+            return existingStacks
+        }
+
+        let initialInventory = ShopCatalog.initialInventory(masterData: masterData)
+        var updatedRoster = roster
+        updatedRoster.playerState.shopInventoryInitialized = true
+        try coreDataStore.saveTradeState(
+            playerState: updatedRoster.playerState,
+            inventoryStacks: try coreDataStore.loadInventoryStacks(),
+            shopInventoryStacks: initialInventory
+        )
+        return initialInventory
+    }
+
+    func buyShopItem(
+        itemID: CompositeItemID,
+        count: Int,
+        masterData: MasterData
+    ) throws {
+        guard itemID.isValid(in: masterData) else {
+            throw GuildServiceError.invalidItemStack
+        }
+        guard count > 0 else {
+            throw GuildServiceError.invalidStackCount
+        }
+
+        var roster = try coreDataStore.loadRosterSnapshot()
+        var inventoryStacks = try coreDataStore.loadInventoryStacks()
+        var shopInventoryStacks = try loadShopInventoryStacks(masterData: masterData)
+
+        guard let shopStack = shopInventoryStacks.first(where: { $0.itemID == itemID }),
+              shopStack.count >= count else {
+            throw GuildServiceError.shopItemUnavailable
+        }
+
+        let purchasePrice = ShopCatalog.purchasePrice(for: itemID, masterData: masterData)
+        let totalPurchasePrice = purchasePrice * count
+        guard roster.playerState.gold >= totalPurchasePrice else {
+            throw GuildServiceError.insufficientGold(
+                required: totalPurchasePrice,
+                available: roster.playerState.gold
+            )
+        }
+
+        roster.playerState.gold -= totalPurchasePrice
+        decrementStack(itemID: itemID, count: count, in: &shopInventoryStacks)
+        incrementStack(itemID: itemID, count: count, in: &inventoryStacks)
+
+        try coreDataStore.saveTradeState(
+            playerState: roster.playerState,
+            inventoryStacks: inventoryStacks,
+            shopInventoryStacks: shopInventoryStacks
+        )
+    }
+
+    func sellInventoryItem(
+        itemID: CompositeItemID,
+        count: Int,
+        masterData: MasterData
+    ) throws {
+        guard itemID.isValid(in: masterData) else {
+            throw GuildServiceError.invalidItemStack
+        }
+        guard count > 0 else {
+            throw GuildServiceError.invalidStackCount
+        }
+
+        var roster = try coreDataStore.loadRosterSnapshot()
+        var inventoryStacks = try coreDataStore.loadInventoryStacks()
+        _ = try loadShopInventoryStacks(masterData: masterData)
+        var shopInventoryStacks = try coreDataStore.loadShopInventoryStacks()
+
+        guard let ownedStack = inventoryStacks.first(where: { $0.itemID == itemID }),
+              ownedStack.count >= count else {
+            throw GuildServiceError.inventoryItemUnavailable
+        }
+
+        roster.playerState.gold += ShopCatalog.sellPrice(for: itemID, masterData: masterData) * count
+        decrementStack(itemID: itemID, count: count, in: &inventoryStacks)
+        incrementStack(itemID: itemID, count: count, in: &shopInventoryStacks)
+
+        try coreDataStore.saveTradeState(
+            playerState: roster.playerState,
+            inventoryStacks: inventoryStacks,
+            shopInventoryStacks: shopInventoryStacks
+        )
+    }
+
     func equip(
         itemID: CompositeItemID,
         toCharacter characterId: Int,
@@ -703,5 +798,40 @@ final class GuildService {
 
     private static func normalizedCharacterName(_ name: String) -> String {
         name.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private func decrementStack(
+        itemID: CompositeItemID,
+        count: Int = 1,
+        in stacks: inout [CompositeItemStack]
+    ) {
+        guard let index = stacks.firstIndex(where: { $0.itemID == itemID }) else {
+            return
+        }
+
+        let currentCount = stacks[index].count
+        if currentCount <= count {
+            stacks.remove(at: index)
+            return
+        }
+
+        stacks[index] = CompositeItemStack(itemID: itemID, count: currentCount - count)
+    }
+
+    private func incrementStack(
+        itemID: CompositeItemID,
+        count: Int = 1,
+        in stacks: inout [CompositeItemStack]
+    ) {
+        if let index = stacks.firstIndex(where: { $0.itemID == itemID }) {
+            stacks[index] = CompositeItemStack(
+                itemID: itemID,
+                count: stacks[index].count + count
+            )
+            return
+        }
+
+        stacks.append(CompositeItemStack(itemID: itemID, count: count))
+        stacks.sort { $0.itemID.isOrdered(before: $1.itemID) }
     }
 }

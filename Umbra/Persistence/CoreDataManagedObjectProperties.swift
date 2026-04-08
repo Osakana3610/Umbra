@@ -47,6 +47,21 @@ extension InventoryItemEntity : Identifiable {
 
 }
 
+extension ShopItemEntity {
+
+    @nonobjc nonisolated public class func fetchRequest() -> NSFetchRequest<ShopItemEntity> {
+        return NSFetchRequest<ShopItemEntity>(entityName: "ShopItemEntity")
+    }
+
+    @NSManaged nonisolated public var count: Int64
+    @NSManaged nonisolated public var stackKeyRawValue: String?
+
+}
+
+extension ShopItemEntity : Identifiable {
+
+}
+
 extension PartyEntity {
 
     @nonobjc nonisolated public class func fetchRequest() -> NSFetchRequest<PartyEntity> {
@@ -79,6 +94,7 @@ extension PlayerStateEntity {
     @NSManaged nonisolated public var gold: Int64
     @NSManaged nonisolated public var lastBackgroundedAt: Date?
     @NSManaged nonisolated public var nextCharacterId: Int64
+    @NSManaged nonisolated public var shopInventoryInitialized: Bool
 
 }
 
