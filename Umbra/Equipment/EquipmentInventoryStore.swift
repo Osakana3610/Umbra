@@ -194,6 +194,41 @@ final class EquipmentInventoryStore {
         }
     }
 
+    func enhanceWithJewel(
+        baseItemID: CompositeItemID,
+        baseCharacterId: Int?,
+        jewelItemID: CompositeItemID,
+        jewelCharacterId: Int?,
+        masterData: MasterData,
+        rosterStore: GuildRosterStore
+    ) {
+        guard !isMutating else {
+            return
+        }
+
+        isMutating = true
+        lastOperationError = nil
+
+        Task {
+            defer { isMutating = false }
+
+            do {
+                try loadIfNeeded(masterData: masterData)
+                try await service.enhanceWithJewel(
+                    baseItemID: baseItemID,
+                    baseCharacterId: baseCharacterId,
+                    jewelItemID: jewelItemID,
+                    jewelCharacterId: jewelCharacterId,
+                    masterData: masterData
+                )
+                rosterStore.refreshFromPersistence()
+                try reload(masterData: masterData)
+            } catch {
+                lastOperationError = Self.errorMessage(for: error)
+            }
+        }
+    }
+
     private func configure(masterData: MasterData) {
         if itemsByID.isEmpty {
             itemsByID = Dictionary(uniqueKeysWithValues: masterData.items.map { ($0.id, $0) })

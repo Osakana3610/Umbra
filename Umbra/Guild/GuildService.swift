@@ -24,11 +24,13 @@ enum GuildServiceError: LocalizedError {
     case invalidStackCount
     case inventoryItemUnavailable
     case shopItemUnavailable
+    case stockOrganizationUnavailable
     case equipLimitReached(maximumCount: Int)
     case equippedItemNotFound
     case invalidCharacterName
     case characterNotDefeated(characterId: Int)
     case invalidCharacterState(characterId: Int)
+    case invalidJewelEnhancement
 
     var errorDescription: String? {
         switch self {
@@ -62,6 +64,8 @@ enum GuildServiceError: LocalizedError {
             "対象アイテムを所持していません。"
         case .shopItemUnavailable:
             "商店に対象アイテムがありません。"
+        case .stockOrganizationUnavailable:
+            "在庫整理の条件を満たしていません。"
         case .equipLimitReached(let maximumCount):
             "これ以上装備できません。装備上限は\(maximumCount)件です。"
         case .equippedItemNotFound:
@@ -72,6 +76,8 @@ enum GuildServiceError: LocalizedError {
             "キャラクターは戦闘不能ではありません。 characterId=\(characterId)"
         case .invalidCharacterState(let characterId):
             "キャラクター状態が不正です。 characterId=\(characterId)"
+        case .invalidJewelEnhancement:
+            "宝石強化の組み合わせが不正です。"
         }
     }
 }
@@ -257,6 +263,66 @@ final class GuildService {
         roster.playerState.autoReviveDefeatedCharacters = isEnabled
         try coreDataStore.saveRosterSnapshot(roster)
         return roster
+    }
+
+    func setAutoSellEnabled(
+        itemID: CompositeItemID,
+        isEnabled: Bool,
+        masterData: MasterData
+    ) throws -> PlayerState {
+        guard itemID.isValid(in: masterData) else {
+            throw GuildServiceError.invalidItemStack
+        }
+
+        var roster = try coreDataStore.loadRosterSnapshot()
+        if isEnabled {
+            roster.playerState.autoSellItemIDs.insert(itemID)
+        } else {
+            roster.playerState.autoSellItemIDs.remove(itemID)
+        }
+        try coreDataStore.saveRosterSnapshot(roster)
+        return roster.playerState
+    }
+
+    func configureAutoSell(
+        itemIDs: Set<CompositeItemID>,
+        masterData: MasterData
+    ) throws -> PlayerState {
+        let orderedItemIDs = itemIDs.sorted { $0.isOrdered(before: $1) }
+        guard orderedItemIDs.allSatisfy({ $0.isValid(in: masterData) }) else {
+            throw GuildServiceError.invalidItemStack
+        }
+
+        var roster = try coreDataStore.loadRosterSnapshot()
+        guard !orderedItemIDs.isEmpty else {
+            return roster.playerState
+        }
+
+        var inventoryStacks = try coreDataStore.loadInventoryStacks()
+        _ = try loadShopInventoryStacks(masterData: masterData)
+        var shopInventoryStacks = try coreDataStore.loadShopInventoryStacks()
+
+        for itemID in orderedItemIDs {
+            guard let ownedStack = inventoryStacks.first(where: { $0.itemID == itemID }),
+                  ownedStack.count > 0 else {
+                throw GuildServiceError.inventoryItemUnavailable
+            }
+        }
+
+        for itemID in orderedItemIDs {
+            let ownedCount = inventoryStacks.first(where: { $0.itemID == itemID })!.count
+            roster.playerState.autoSellItemIDs.insert(itemID)
+            roster.playerState.gold += ShopCatalog.sellPrice(for: itemID, masterData: masterData) * ownedCount
+            decrementStack(itemID: itemID, count: ownedCount, in: &inventoryStacks)
+            incrementStack(itemID: itemID, count: ownedCount, in: &shopInventoryStacks)
+        }
+
+        try coreDataStore.saveTradeState(
+            playerState: roster.playerState,
+            inventoryStacks: inventoryStacks,
+            shopInventoryStacks: shopInventoryStacks
+        )
+        return roster.playerState
     }
 
     func recordBackgroundedAt(_ date: Date) throws {
@@ -572,6 +638,104 @@ final class GuildService {
         )
     }
 
+    func organizeShopInventoryItem(
+        itemID: CompositeItemID,
+        masterData: MasterData
+    ) throws {
+        guard itemID.isValid(in: masterData) else {
+            throw GuildServiceError.invalidItemStack
+        }
+
+        var roster = try coreDataStore.loadRosterSnapshot()
+        _ = try loadShopInventoryStacks(masterData: masterData)
+        var shopInventoryStacks = try coreDataStore.loadShopInventoryStacks()
+
+        guard let baseItem = masterData.items.first(where: { $0.id == itemID.baseItemId }),
+              baseItem.rarity != .normal,
+              let stack = shopInventoryStacks.first(where: { $0.itemID == itemID }),
+              stack.count >= ShopCatalog.stockOrganizationBundleSize else {
+            throw GuildServiceError.stockOrganizationUnavailable
+        }
+
+        roster.playerState.catTicketCount += ShopCatalog.stockOrganizationTicketCount(
+            for: baseItem.basePrice
+        )
+        decrementStack(
+            itemID: itemID,
+            count: ShopCatalog.stockOrganizationBundleSize,
+            in: &shopInventoryStacks
+        )
+
+        try coreDataStore.saveTradeState(
+            playerState: roster.playerState,
+            inventoryStacks: try coreDataStore.loadInventoryStacks(),
+            shopInventoryStacks: shopInventoryStacks
+        )
+    }
+
+    func enhanceWithJewel(
+        baseItemID: CompositeItemID,
+        baseCharacterId: Int?,
+        jewelItemID: CompositeItemID,
+        jewelCharacterId: Int?,
+        masterData: MasterData
+    ) async throws {
+        guard baseItemID.isValid(in: masterData),
+              jewelItemID.isValid(in: masterData) else {
+            throw GuildServiceError.invalidItemStack
+        }
+        guard baseItemID.jewelItemId == 0,
+              jewelItemID.jewelItemId == 0,
+              let jewelItem = masterData.items.first(where: { $0.id == jewelItemID.baseItemId }),
+              jewelItem.category == .jewel else {
+            throw GuildServiceError.invalidJewelEnhancement
+        }
+
+        for characterId in Set([baseCharacterId, jewelCharacterId].compactMap(\.self)) {
+            try await explorationCoreDataStore.validateCharacterMutationIsAllowed(characterId: characterId)
+        }
+
+        var roster = try coreDataStore.loadRosterSnapshot()
+        var inventoryStacks = try coreDataStore.loadInventoryStacks()
+        try consumeJewelEnhancementInput(
+            itemID: baseItemID,
+            characterId: baseCharacterId,
+            inventoryStacks: &inventoryStacks,
+            roster: &roster
+        )
+        try consumeJewelEnhancementInput(
+            itemID: jewelItemID,
+            characterId: jewelCharacterId,
+            inventoryStacks: &inventoryStacks,
+            roster: &roster
+        )
+
+        let resultItemID = CompositeItemID(
+            baseSuperRareId: baseItemID.baseSuperRareId,
+            baseTitleId: baseItemID.baseTitleId,
+            baseItemId: baseItemID.baseItemId,
+            jewelSuperRareId: jewelItemID.baseSuperRareId,
+            jewelTitleId: jewelItemID.baseTitleId,
+            jewelItemId: jewelItemID.baseItemId
+        )
+
+        if let baseCharacterId {
+            try addJewelEnhancementResult(
+                itemID: resultItemID,
+                toCharacterId: baseCharacterId,
+                roster: &roster
+            )
+        } else {
+            incrementStack(itemID: resultItemID, in: &inventoryStacks)
+        }
+
+        try coreDataStore.saveRosterState(
+            roster,
+            parties: try coreDataStore.loadParties(),
+            inventoryStacks: inventoryStacks
+        )
+    }
+
     func equip(
         itemID: CompositeItemID,
         toCharacter characterId: Int,
@@ -798,6 +962,48 @@ final class GuildService {
 
     private static func normalizedCharacterName(_ name: String) -> String {
         name.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private func consumeJewelEnhancementInput(
+        itemID: CompositeItemID,
+        characterId: Int?,
+        inventoryStacks: inout [CompositeItemStack],
+        roster: inout GuildRosterSnapshot
+    ) throws {
+        if let characterId {
+            guard let characterIndex = roster.characters.firstIndex(where: { $0.characterId == characterId }) else {
+                throw GuildServiceError.characterNotFound(characterId: characterId)
+            }
+            guard roster.characters[characterIndex].equippedItemStacks.contains(where: { $0.itemID == itemID }) else {
+                throw GuildServiceError.equippedItemNotFound
+            }
+
+            decrementStack(itemID: itemID, in: &roster.characters[characterIndex].equippedItemStacks)
+            roster.characters[characterIndex].equippedItemStacks = roster.characters[characterIndex]
+                .equippedItemStacks
+                .normalizedCompositeItemStacks()
+            return
+        }
+
+        guard inventoryStacks.contains(where: { $0.itemID == itemID }) else {
+            throw GuildServiceError.inventoryItemUnavailable
+        }
+
+        decrementStack(itemID: itemID, in: &inventoryStacks)
+    }
+
+    private func addJewelEnhancementResult(
+        itemID: CompositeItemID,
+        toCharacterId characterId: Int,
+        roster: inout GuildRosterSnapshot
+    ) throws {
+        guard let characterIndex = roster.characters.firstIndex(where: { $0.characterId == characterId }) else {
+            throw GuildServiceError.characterNotFound(characterId: characterId)
+        }
+
+        incrementStack(itemID: itemID, in: &roster.characters[characterIndex].equippedItemStacks)
+        roster.characters[characterIndex].equippedItemStacks = roster.characters[characterIndex]
+            .orderedEquippedItemStacks
     }
 
     private func decrementStack(

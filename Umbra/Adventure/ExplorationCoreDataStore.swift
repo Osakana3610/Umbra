@@ -465,6 +465,7 @@ nonisolated private enum ExplorationCoreDataBridge {
         entity.catTicketCount = Int64(PlayerState.initial.catTicketCount)
         entity.nextCharacterId = Int64(PlayerState.initial.nextCharacterId)
         entity.autoReviveDefeatedCharacters = PlayerState.initial.autoReviveDefeatedCharacters
+        entity.autoSellItemIDsRawValue = ""
         return entity
     }
 
@@ -605,15 +606,17 @@ nonisolated private enum ExplorationCoreDataBridge {
             }
         }
 
-        let inventoryCounts = Dictionary(
+        let autoSellItemIDs = decodedAutoSellItemIDs(playerState.autoSellItemIDsRawValue)
+        let dropCounts = Dictionary(
             completion.dropRewards.map { ($0.itemID, 1) },
             uniquingKeysWith: +
         )
-        // Drop rewards are merged first so inventory persistence remains a single batch update.
-        applyInventoryCounts(
-            inventoryCounts,
-            in: context
-        )
+        let inventoryCounts = dropCounts.filter { autoSellItemIDs.contains($0.key) == false }
+        let shopInventoryCounts = dropCounts.filter { autoSellItemIDs.contains($0.key) }
+        // Drop rewards are merged in one pass per destination so reward application keeps one
+        // deterministic result while respecting auto-sell routing by full composite item ID.
+        applyInventoryCounts(inventoryCounts, in: context)
+        applyShopInventoryCounts(shopInventoryCounts, in: context)
 
         try unlockNextDifficultyIfNeeded(
             completion: completion,
@@ -709,6 +712,58 @@ nonisolated private enum ExplorationCoreDataBridge {
 
             entity.count += Int64(count)
         }
+    }
+
+    static func applyShopInventoryCounts(
+        _ itemCounts: [CompositeItemID: Int],
+        in context: NSManagedObjectContext
+    ) {
+        guard !itemCounts.isEmpty else {
+            return
+        }
+
+        let keys = itemCounts.keys.map(\.rawValue)
+        let request = NSFetchRequest<ShopItemEntity>(entityName: "ShopItemEntity")
+        request.predicate = NSPredicate(format: "stackKeyRawValue IN %@", keys)
+        let existingEntities = (try? context.fetch(request)) ?? []
+        var entitiesByKey: [String: ShopItemEntity] = Dictionary(uniqueKeysWithValues: existingEntities.compactMap { entity in
+            guard let key = entity.stackKeyRawValue else {
+                return nil
+            }
+            return (key, entity)
+        })
+
+        for (itemID, count) in itemCounts where count > 0 {
+            let entity: ShopItemEntity
+            if let existingEntity = entitiesByKey[itemID.rawValue] {
+                entity = existingEntity
+            } else {
+                guard let insertedEntity = NSEntityDescription.insertNewObject(
+                    forEntityName: "ShopItemEntity",
+                    into: context
+                ) as? ShopItemEntity else {
+                    fatalError("ShopItemEntity の生成に失敗しました。")
+                }
+                insertedEntity.stackKeyRawValue = itemID.rawValue
+                insertedEntity.count = 0
+                entitiesByKey[itemID.rawValue] = insertedEntity
+                entity = insertedEntity
+            }
+
+            entity.count += Int64(count)
+        }
+    }
+
+    static func decodedAutoSellItemIDs(_ rawValue: String?) -> Set<CompositeItemID> {
+        guard let rawValue, !rawValue.isEmpty else {
+            return []
+        }
+
+        return Set(
+            rawValue
+                .split(separator: ",")
+                .compactMap { CompositeItemID(rawValue: String($0)) }
+        )
     }
 
     static func makeRunSummaryRecord(from entity: RunSessionEntity) -> RunSessionRecord {

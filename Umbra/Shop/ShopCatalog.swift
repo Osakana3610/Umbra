@@ -7,6 +7,7 @@ enum ShopCatalog {
     static let sellbackRate = 0.5
     static let titleValueMultiplier = 1.2
     static let superRareValueMultiplier = 1.5
+    static let stockOrganizationBundleSize = 99
 
     static func initialInventory(masterData: MasterData) -> [CompositeItemStack] {
         masterData.items
@@ -26,6 +27,25 @@ enum ShopCatalog {
         masterData: MasterData
     ) -> Int {
         max(1, Int((Double(purchasePrice(for: itemID, masterData: masterData)) * sellbackRate).rounded()))
+    }
+
+    static func stockOrganizationTicketCount(
+        for basePrice: Int
+    ) -> Int {
+        switch basePrice {
+        case 80_000...319_999:
+            1
+        case 320_000...1_279_999:
+            2
+        case 1_280_000...5_119_999:
+            3
+        case 5_120_000...20_479_999:
+            4
+        case 20_480_000...81_919_999:
+            5
+        default:
+            6
+        }
     }
 
     private static func catalogValue(

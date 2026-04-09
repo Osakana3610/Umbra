@@ -20,8 +20,6 @@ struct ShopHomeView: View {
                 })
             } header: {
                 Text("装備")
-            } footer: {
-                Text("冒険タブと同じ装備編集を商店からも開けます。")
             }
 
             Section {
@@ -36,8 +34,6 @@ struct ShopHomeView: View {
                 })
             } header: {
                 Text("購入")
-            } footer: {
-                Text("商店の初期在庫と、売却されたアイテムを購入できます。")
             }
 
             Section {
@@ -52,8 +48,55 @@ struct ShopHomeView: View {
                 })
             } header: {
                 Text("売却")
-            } footer: {
-                Text("売却したアイテムは商店在庫に加わります。")
+            }
+
+            Section {
+                NavigationLink("通常合成", destination: {
+                    ShopNormalSynthesisView(
+                        masterData: masterData,
+                        rosterStore: rosterStore,
+                        equipmentStore: equipmentStore
+                    )
+                })
+
+                NavigationLink("称号継承", destination: {
+                    ShopTitleInheritanceView(
+                        masterData: masterData,
+                        rosterStore: rosterStore,
+                        equipmentStore: equipmentStore
+                    )
+                })
+
+                NavigationLink("宝石強化", destination: {
+                    ShopJewelEnhancementView(
+                        masterData: masterData,
+                        rosterStore: rosterStore,
+                        equipmentStore: equipmentStore
+                    )
+                })
+            } header: {
+                Text("強化")
+            }
+
+            Section {
+                NavigationLink("自動売却", destination: {
+                    ShopAutoSellView(
+                        masterData: masterData,
+                        rosterStore: rosterStore,
+                        equipmentStore: equipmentStore,
+                        shopStore: shopStore
+                    )
+                })
+
+                NavigationLink("在庫整理", destination: {
+                    ShopStockOrganizationView(
+                        masterData: masterData,
+                        rosterStore: rosterStore,
+                        shopStore: shopStore
+                    )
+                })
+            } header: {
+                Text("管理")
             }
         }
         .listStyle(.insetGrouped)
@@ -65,6 +108,19 @@ private struct ShopEquipmentCharacterListView: View {
     let masterData: MasterData
     let rosterStore: GuildRosterStore
     let equipmentStore: EquipmentInventoryStore
+
+    private let nameResolver: EquipmentDisplayNameResolver
+
+    init(
+        masterData: MasterData,
+        rosterStore: GuildRosterStore,
+        equipmentStore: EquipmentInventoryStore
+    ) {
+        self.masterData = masterData
+        self.rosterStore = rosterStore
+        self.equipmentStore = equipmentStore
+        nameResolver = EquipmentDisplayNameResolver(masterData: masterData)
+    }
 
     var body: some View {
         List {
@@ -83,9 +139,10 @@ private struct ShopEquipmentCharacterListView: View {
                             equipmentStore: equipmentStore
                         )
                     } label: {
-                        ShopEquipmentCharacterRow(
+                        EquipmentCharacterRow(
                             character: character,
-                            masterData: masterData
+                            masterData: masterData,
+                            nameResolver: nameResolver
                         )
                     }
                 }
@@ -94,38 +151,6 @@ private struct ShopEquipmentCharacterListView: View {
         .listStyle(.insetGrouped)
         .navigationTitle("装備")
         .navigationBarTitleDisplayMode(.inline)
-    }
-}
-
-private struct ShopEquipmentCharacterRow: View {
-    let character: CharacterRecord
-    let masterData: MasterData
-
-    var body: some View {
-        HStack(alignment: .top, spacing: 16) {
-            Image(character.portraitAssetName)
-                .resizable()
-                .scaledToFill()
-                .frame(width: 72, height: 72)
-                .clipShape(.rect(cornerRadius: 12))
-
-            VStack(alignment: .leading, spacing: 6) {
-                Text(character.name)
-                    .font(.headline)
-
-                Text(masterData.characterSummaryText(for: character))
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-
-                Text("装備 \(character.equippedItemCount)/\(character.maximumEquippedItemCount)")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-
-            Spacer(minLength: 0)
-        }
-        .padding(.vertical, 4)
-        .accessibilityElement(children: .combine)
     }
 }
 
@@ -469,29 +494,17 @@ private struct ShopTradeItemRow: View {
     }
 
     private var itemSummary: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(item.displayName)
-                .font(item.isSuperRare ? .body.weight(.semibold) : .body)
-                .lineLimit(2)
-
-            Text(detailText)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .monospacedDigit()
-        }
+        ShopItemSummaryContent(
+            item: item,
+            detailText: detailText
+        )
     }
 
     private var detailButton: some View {
-        Button {
-            onShowDetail(item.itemID)
-        } label: {
-            Image(systemName: "info.circle")
-                .font(.body)
-                .foregroundStyle(.tint)
-                .frame(width: 28, height: 28)
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel("アイテム詳細")
+        ShopItemDetailButton(
+            itemID: item.itemID,
+            onShowDetail: onShowDetail
+        )
     }
 
     private var detailText: String {

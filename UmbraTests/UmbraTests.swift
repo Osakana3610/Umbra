@@ -446,6 +446,181 @@ struct UmbraTests {
         #expect(aggregation.hasRangedWeapon)
     }
 
+    @Test
+    func jewelEnhancementConsumesInputsAndAddsHalfJewelStats() async throws {
+        let container = PersistenceController(inMemory: true).container
+        let guildCoreDataStore = GuildCoreDataStore(container: container)
+        let guildService = GuildService(
+            coreDataStore: guildCoreDataStore,
+            explorationCoreDataStore: ExplorationCoreDataStore(container: container)
+        )
+        let masterData = try loadGeneratedMasterData()
+        let baseItem = try #require(masterData.items.first(where: { $0.category != .jewel }))
+        let jewelItem = try #require(masterData.items.first(where: { $0.category == .jewel }))
+        let baseItemID = CompositeItemID.baseItem(itemId: baseItem.id)
+        let jewelItemID = CompositeItemID.baseItem(itemId: jewelItem.id)
+
+        try guildService.addInventoryStacks(
+            [
+                CompositeItemStack(itemID: baseItemID, count: 1),
+                CompositeItemStack(itemID: jewelItemID, count: 1)
+            ],
+            masterData: masterData
+        )
+
+        try await guildService.enhanceWithJewel(
+            baseItemID: baseItemID,
+            baseCharacterId: nil,
+            jewelItemID: jewelItemID,
+            jewelCharacterId: nil,
+            masterData: masterData
+        )
+
+        let resultItemID = CompositeItemID(
+            baseSuperRareId: 0,
+            baseTitleId: 0,
+            baseItemId: baseItem.id,
+            jewelSuperRareId: 0,
+            jewelTitleId: 0,
+            jewelItemId: jewelItem.id
+        )
+        let aggregation = try EquipmentAggregator(masterData: masterData).aggregate(
+            equippedItemStacks: [CompositeItemStack(itemID: resultItemID, count: 1)]
+        )
+
+        #expect(try guildCoreDataStore.loadInventoryStacks() == [
+            CompositeItemStack(itemID: resultItemID, count: 1)
+        ])
+        #expect(aggregation.baseStats == CharacterBaseStats(
+            vitality: baseItem.nativeBaseStats.vitality + (jewelItem.nativeBaseStats.vitality / 2),
+            strength: baseItem.nativeBaseStats.strength + (jewelItem.nativeBaseStats.strength / 2),
+            mind: baseItem.nativeBaseStats.mind + (jewelItem.nativeBaseStats.mind / 2),
+            intelligence: baseItem.nativeBaseStats.intelligence + (jewelItem.nativeBaseStats.intelligence / 2),
+            agility: baseItem.nativeBaseStats.agility + (jewelItem.nativeBaseStats.agility / 2),
+            luck: baseItem.nativeBaseStats.luck + (jewelItem.nativeBaseStats.luck / 2)
+        ))
+        #expect(aggregation.battleStats == CharacterBattleStats(
+            maxHP: baseItem.nativeBattleStats.maxHP + (jewelItem.nativeBattleStats.maxHP / 2),
+            physicalAttack: baseItem.nativeBattleStats.physicalAttack + (jewelItem.nativeBattleStats.physicalAttack / 2),
+            physicalDefense: baseItem.nativeBattleStats.physicalDefense + (jewelItem.nativeBattleStats.physicalDefense / 2),
+            magic: baseItem.nativeBattleStats.magic + (jewelItem.nativeBattleStats.magic / 2),
+            magicDefense: baseItem.nativeBattleStats.magicDefense + (jewelItem.nativeBattleStats.magicDefense / 2),
+            healing: baseItem.nativeBattleStats.healing + (jewelItem.nativeBattleStats.healing / 2),
+            accuracy: baseItem.nativeBattleStats.accuracy + (jewelItem.nativeBattleStats.accuracy / 2),
+            evasion: baseItem.nativeBattleStats.evasion + (jewelItem.nativeBattleStats.evasion / 2),
+            attackCount: baseItem.nativeBattleStats.attackCount + (jewelItem.nativeBattleStats.attackCount / 2),
+            criticalRate: baseItem.nativeBattleStats.criticalRate + (jewelItem.nativeBattleStats.criticalRate / 2),
+            breathPower: baseItem.nativeBattleStats.breathPower + (jewelItem.nativeBattleStats.breathPower / 2)
+        ))
+    }
+
+    @Test
+    func jewelEnhancementDecrementsInventoryBaseAndJewelByOne() async throws {
+        let container = PersistenceController(inMemory: true).container
+        let guildCoreDataStore = GuildCoreDataStore(container: container)
+        let guildService = GuildService(
+            coreDataStore: guildCoreDataStore,
+            explorationCoreDataStore: ExplorationCoreDataStore(container: container)
+        )
+        let masterData = try loadGeneratedMasterData()
+        let baseItemID = CompositeItemID.baseItem(itemId: try itemId(for: .sword, in: masterData))
+        let jewelItemID = CompositeItemID.baseItem(itemId: try itemId(for: .jewel, in: masterData))
+        let resultItemID = CompositeItemID(
+            baseSuperRareId: 0,
+            baseTitleId: 0,
+            baseItemId: baseItemID.baseItemId,
+            jewelSuperRareId: 0,
+            jewelTitleId: 0,
+            jewelItemId: jewelItemID.baseItemId
+        )
+
+        try guildService.addInventoryStacks(
+            [
+                CompositeItemStack(itemID: baseItemID, count: 3),
+                CompositeItemStack(itemID: jewelItemID, count: 2)
+            ],
+            masterData: masterData
+        )
+
+        try await guildService.enhanceWithJewel(
+            baseItemID: baseItemID,
+            baseCharacterId: nil,
+            jewelItemID: jewelItemID,
+            jewelCharacterId: nil,
+            masterData: masterData
+        )
+
+        let inventoryStacks = try guildCoreDataStore.loadInventoryStacks()
+        #expect(inventoryStacks.first(where: { $0.itemID == baseItemID })?.count == 2)
+        #expect(inventoryStacks.first(where: { $0.itemID == jewelItemID })?.count == 1)
+        #expect(inventoryStacks.first(where: { $0.itemID == resultItemID })?.count == 1)
+        #expect(inventoryStacks.reduce(into: 0) { $0 += $1.count } == 4)
+    }
+
+    @Test
+    func jewelEnhancementKeepsEquippedTargetOnCharacterAndOnlyTransformsOneItem() async throws {
+        let container = PersistenceController(inMemory: true).container
+        let guildCoreDataStore = GuildCoreDataStore(container: container)
+        let guildService = GuildService(
+            coreDataStore: guildCoreDataStore,
+            explorationCoreDataStore: ExplorationCoreDataStore(container: container)
+        )
+        let masterData = try loadGeneratedMasterData()
+        let character = try guildService.hireCharacter(
+            raceId: try #require(masterData.races.first?.id),
+            jobId: try #require(masterData.jobs.first?.id),
+            aptitudeId: try #require(masterData.aptitudes.first?.id),
+            masterData: masterData
+        ).character
+        let baseItemID = CompositeItemID.baseItem(itemId: try itemId(for: .sword, in: masterData))
+        let jewelItemID = CompositeItemID.baseItem(itemId: try itemId(for: .jewel, in: masterData))
+        let resultItemID = CompositeItemID(
+            baseSuperRareId: 0,
+            baseTitleId: 0,
+            baseItemId: baseItemID.baseItemId,
+            jewelSuperRareId: 0,
+            jewelTitleId: 0,
+            jewelItemId: jewelItemID.baseItemId
+        )
+
+        try guildService.addInventoryStacks(
+            [
+                CompositeItemStack(itemID: baseItemID, count: 2),
+                CompositeItemStack(itemID: jewelItemID, count: 2)
+            ],
+            masterData: masterData
+        )
+        _ = try await guildService.equip(
+            itemID: baseItemID,
+            toCharacter: character.characterId,
+            masterData: masterData
+        )
+        _ = try await guildService.equip(
+            itemID: baseItemID,
+            toCharacter: character.characterId,
+            masterData: masterData
+        )
+
+        try await guildService.enhanceWithJewel(
+            baseItemID: baseItemID,
+            baseCharacterId: character.characterId,
+            jewelItemID: jewelItemID,
+            jewelCharacterId: nil,
+            masterData: masterData
+        )
+
+        let updatedCharacter = try #require(try guildCoreDataStore.loadCharacter(characterId: character.characterId))
+        let inventoryStacks = try guildCoreDataStore.loadInventoryStacks()
+
+        #expect(updatedCharacter.equippedItemCount == 2)
+        #expect(updatedCharacter.equippedItemStacks.first(where: { $0.itemID == baseItemID })?.count == 1)
+        #expect(updatedCharacter.equippedItemStacks.first(where: { $0.itemID == resultItemID })?.count == 1)
+        #expect(updatedCharacter.equippedItemStacks.reduce(into: 0) { $0 += $1.count } == 2)
+        #expect(inventoryStacks.first(where: { $0.itemID == jewelItemID })?.count == 1)
+        #expect(inventoryStacks.contains(where: { $0.itemID == baseItemID }) == false)
+        #expect(inventoryStacks.contains(where: { $0.itemID == resultItemID }) == false)
+    }
+
     // MARK: - Guild and Party Mutations
 
     @Test
@@ -1202,6 +1377,118 @@ struct UmbraTests {
         )
         #expect(unequippedCharacter.equippedItemStacks.isEmpty)
         #expect(try guildCoreDataStore.loadInventoryStacks() == [CompositeItemStack(itemID: itemID, count: 2)])
+    }
+
+    @Test
+    func autoSellSettingsPersistExactCompositeItemIDs() throws {
+        let container = PersistenceController(inMemory: true).container
+        let guildCoreDataStore = GuildCoreDataStore(container: container)
+        let guildService = GuildService(
+            coreDataStore: guildCoreDataStore,
+            explorationCoreDataStore: ExplorationCoreDataStore(container: container)
+        )
+        let masterData = try loadGeneratedMasterData()
+        let compositeItemID = CompositeItemID(
+            baseSuperRareId: try #require(masterData.superRares.first?.id),
+            baseTitleId: try #require(masterData.titles.first?.id),
+            baseItemId: try itemId(for: .sword, in: masterData),
+            jewelSuperRareId: 0,
+            jewelTitleId: 0,
+            jewelItemId: 0
+        )
+
+        let updatedPlayerState = try guildService.setAutoSellEnabled(
+            itemID: compositeItemID,
+            isEnabled: true,
+            masterData: masterData
+        )
+
+        #expect(updatedPlayerState.autoSellItemIDs == Set([compositeItemID]))
+        #expect(
+            try guildCoreDataStore.loadFreshRosterSnapshot().playerState.autoSellItemIDs
+                == Set([compositeItemID])
+        )
+    }
+
+    @Test
+    func configuringAutoSellSellsSelectedInventoryStacks() throws {
+        let container = PersistenceController(inMemory: true).container
+        let guildCoreDataStore = GuildCoreDataStore(container: container)
+        let guildService = GuildService(
+            coreDataStore: guildCoreDataStore,
+            explorationCoreDataStore: ExplorationCoreDataStore(container: container)
+        )
+        let masterData = try loadGeneratedMasterData()
+        let itemID = CompositeItemID(
+            baseSuperRareId: try #require(masterData.superRares.first?.id),
+            baseTitleId: try #require(masterData.titles.first?.id),
+            baseItemId: try itemId(for: .sword, in: masterData),
+            jewelSuperRareId: 0,
+            jewelTitleId: 0,
+            jewelItemId: 0
+        )
+        var snapshot = try guildCoreDataStore.loadRosterSnapshot()
+        snapshot.playerState.shopInventoryInitialized = true
+        let sellCount = 3
+
+        try guildCoreDataStore.saveTradeState(
+            playerState: snapshot.playerState,
+            inventoryStacks: [CompositeItemStack(itemID: itemID, count: sellCount)],
+            shopInventoryStacks: []
+        )
+
+        let updatedPlayerState = try guildService.configureAutoSell(
+            itemIDs: [itemID],
+            masterData: masterData
+        )
+
+        #expect(updatedPlayerState.autoSellItemIDs == Set([itemID]))
+        #expect(
+            try guildCoreDataStore.loadFreshRosterSnapshot().playerState.gold
+                == PlayerState.initial.gold + ShopCatalog.sellPrice(for: itemID, masterData: masterData) * sellCount
+        )
+        #expect(try guildCoreDataStore.loadInventoryStacks().isEmpty)
+        #expect(
+            try guildCoreDataStore.loadShopInventoryStacks()
+                == [CompositeItemStack(itemID: itemID, count: sellCount)]
+        )
+    }
+
+    @Test
+    func stockOrganizationConsumesExactShopStackAndAddsCatTickets() throws {
+        let container = PersistenceController(inMemory: true).container
+        let guildCoreDataStore = GuildCoreDataStore(container: container)
+        let guildService = GuildService(
+            coreDataStore: guildCoreDataStore,
+            explorationCoreDataStore: ExplorationCoreDataStore(container: container)
+        )
+        let masterData = try loadGeneratedMasterData()
+        let baseItem = try #require(masterData.items.first(where: { $0.rarity != .normal }))
+        let itemID = CompositeItemID.baseItem(itemId: baseItem.id)
+        var snapshot = try guildCoreDataStore.loadRosterSnapshot()
+        snapshot.playerState.shopInventoryInitialized = true
+
+        try guildCoreDataStore.saveTradeState(
+            playerState: snapshot.playerState,
+            inventoryStacks: [],
+            shopInventoryStacks: [
+                CompositeItemStack(
+                    itemID: itemID,
+                    count: ShopCatalog.stockOrganizationBundleSize
+                )
+            ]
+        )
+
+        try guildService.organizeShopInventoryItem(
+            itemID: itemID,
+            masterData: masterData
+        )
+
+        #expect(try guildCoreDataStore.loadShopInventoryStacks().isEmpty)
+        #expect(
+            try guildCoreDataStore.loadFreshRosterSnapshot().playerState.catTicketCount
+                == PlayerState.initial.catTicketCount + ShopCatalog.stockOrganizationTicketCount(for: baseItem.basePrice)
+        )
     }
 
     @Test

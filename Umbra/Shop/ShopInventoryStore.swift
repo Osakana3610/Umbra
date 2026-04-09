@@ -104,6 +104,64 @@ final class ShopInventoryStore {
         }
     }
 
+    func organize(
+        itemID: CompositeItemID,
+        masterData: MasterData,
+        rosterStore: GuildRosterStore
+    ) {
+        guard !isMutating else {
+            return
+        }
+
+        isMutating = true
+        lastOperationError = nil
+
+        Task {
+            defer { isMutating = false }
+
+            do {
+                try service.organizeShopInventoryItem(
+                    itemID: itemID,
+                    masterData: masterData
+                )
+                rosterStore.refreshFromPersistence()
+                try reload(masterData: masterData)
+            } catch {
+                lastOperationError = Self.errorMessage(for: error)
+            }
+        }
+    }
+
+    func configureAutoSell(
+        itemIDs: Set<CompositeItemID>,
+        masterData: MasterData,
+        rosterStore: GuildRosterStore,
+        equipmentStore: EquipmentInventoryStore
+    ) {
+        guard !isMutating, !itemIDs.isEmpty else {
+            return
+        }
+
+        isMutating = true
+        lastOperationError = nil
+
+        Task {
+            defer { isMutating = false }
+
+            do {
+                _ = try service.configureAutoSell(
+                    itemIDs: itemIDs,
+                    masterData: masterData
+                )
+                rosterStore.refreshFromPersistence()
+                try equipmentStore.reload(masterData: masterData)
+                try reload(masterData: masterData)
+            } catch {
+                lastOperationError = Self.errorMessage(for: error)
+            }
+        }
+    }
+
     private func configure(masterData: MasterData) {
         if itemsByID.isEmpty {
             itemsByID = Dictionary(uniqueKeysWithValues: masterData.items.map { ($0.id, $0) })

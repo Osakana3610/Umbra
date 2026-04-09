@@ -8,6 +8,7 @@ nonisolated struct PlayerState: Equatable, Sendable {
     var nextCharacterId: Int
     var autoReviveDefeatedCharacters: Bool
     var shopInventoryInitialized: Bool
+    var autoSellItemIDs: Set<CompositeItemID>
     var lastBackgroundedAt: Date? = nil
 
     static let initial = PlayerState(
@@ -16,6 +17,7 @@ nonisolated struct PlayerState: Equatable, Sendable {
         nextCharacterId: 1,
         autoReviveDefeatedCharacters: false,
         shopInventoryInitialized: false,
+        autoSellItemIDs: [],
         lastBackgroundedAt: nil
     )
 }

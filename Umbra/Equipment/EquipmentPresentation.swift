@@ -147,6 +147,21 @@ extension ItemCategory {
 }
 
 extension ItemRarity {
+    var displayName: String {
+        switch self {
+        case .normal:
+            "ノーマル"
+        case .uncommon:
+            "アンコモン"
+        case .rare:
+            "レア"
+        case .mythic:
+            "ミシック"
+        case .godfiend:
+            "神魔級"
+        }
+    }
+
     var sortOrder: Int {
         switch self {
         case .normal:

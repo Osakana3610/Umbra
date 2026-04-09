@@ -95,6 +95,7 @@ nonisolated struct EquipmentAggregator {
                 apply(
                     contribution: jewelContribution,
                     count: stack.count,
+                    statDivisor: 2,
                     baseStats: &baseStats,
                     battleStats: &battleStats,
                     itemSkillIDs: &itemSkillIDs,
@@ -147,6 +148,7 @@ nonisolated struct EquipmentAggregator {
     private func apply(
         contribution: ResolvedItemContribution,
         count: Int,
+        statDivisor: Int = 1,
         baseStats: inout CharacterBaseStats,
         battleStats: inout CharacterBattleStats,
         itemSkillIDs: inout [Int],
@@ -157,26 +159,26 @@ nonisolated struct EquipmentAggregator {
     ) {
         // Stack count multiplies the full contribution because repeated equipped entries represent
         // multiple copies of the same composite item.
-        baseStats.vitality += contribution.baseStats.vitality * count
-        baseStats.strength += contribution.baseStats.strength * count
-        baseStats.mind += contribution.baseStats.mind * count
-        baseStats.intelligence += contribution.baseStats.intelligence * count
-        baseStats.agility += contribution.baseStats.agility * count
-        baseStats.luck += contribution.baseStats.luck * count
+        baseStats.vitality += (contribution.baseStats.vitality / statDivisor) * count
+        baseStats.strength += (contribution.baseStats.strength / statDivisor) * count
+        baseStats.mind += (contribution.baseStats.mind / statDivisor) * count
+        baseStats.intelligence += (contribution.baseStats.intelligence / statDivisor) * count
+        baseStats.agility += (contribution.baseStats.agility / statDivisor) * count
+        baseStats.luck += (contribution.baseStats.luck / statDivisor) * count
 
-        battleStats.maxHP += contribution.battleStats.maxHP * count
-        battleStats.physicalAttack += contribution.battleStats.physicalAttack * count
-        battleStats.physicalDefense += contribution.battleStats.physicalDefense * count
-        battleStats.magic += contribution.battleStats.magic * count
-        battleStats.magicDefense += contribution.battleStats.magicDefense * count
-        battleStats.healing += contribution.battleStats.healing * count
-        battleStats.accuracy += contribution.battleStats.accuracy * count
-        battleStats.evasion += contribution.battleStats.evasion * count
-        battleStats.attackCount += contribution.battleStats.attackCount * count
-        battleStats.criticalRate += contribution.battleStats.criticalRate * count
-        battleStats.breathPower += contribution.battleStats.breathPower * count
+        battleStats.maxHP += (contribution.battleStats.maxHP / statDivisor) * count
+        battleStats.physicalAttack += (contribution.battleStats.physicalAttack / statDivisor) * count
+        battleStats.physicalDefense += (contribution.battleStats.physicalDefense / statDivisor) * count
+        battleStats.magic += (contribution.battleStats.magic / statDivisor) * count
+        battleStats.magicDefense += (contribution.battleStats.magicDefense / statDivisor) * count
+        battleStats.healing += (contribution.battleStats.healing / statDivisor) * count
+        battleStats.accuracy += (contribution.battleStats.accuracy / statDivisor) * count
+        battleStats.evasion += (contribution.battleStats.evasion / statDivisor) * count
+        battleStats.attackCount += (contribution.battleStats.attackCount / statDivisor) * count
+        battleStats.criticalRate += (contribution.battleStats.criticalRate / statDivisor) * count
+        battleStats.breathPower += (contribution.battleStats.breathPower / statDivisor) * count
 
-        totalWeaponAttack += contribution.battleStats.physicalAttack * count
+        totalWeaponAttack += (contribution.battleStats.physicalAttack / statDivisor) * count
 
         // Skill IDs preserve first-seen order while still removing duplicates across item, title,
         // and super-rare sources.

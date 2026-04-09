@@ -197,6 +197,31 @@ final class GuildRosterStore {
         }
     }
 
+    func setAutoSellEnabled(
+        itemID: CompositeItemID,
+        isEnabled: Bool,
+        masterData: MasterData
+    ) {
+        guard !isMutating, phase == .loaded else {
+            return
+        }
+
+        isMutating = true
+        lastOperationError = nil
+        defer { isMutating = false }
+
+        do {
+            let playerState = try service.setAutoSellEnabled(
+                itemID: itemID,
+                isEnabled: isEnabled,
+                masterData: masterData
+            )
+            self.playerState = playerState
+        } catch {
+            lastOperationError = Self.errorMessage(for: error)
+        }
+    }
+
     func updateAutoBattleSettings(
         characterId: Int,
         autoBattleSettings: CharacterAutoBattleSettings

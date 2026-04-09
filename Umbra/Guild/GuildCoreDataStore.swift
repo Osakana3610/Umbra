@@ -85,6 +85,7 @@ final class GuildCoreDataStore {
         playerState.nextCharacterId = Int64(snapshot.playerState.nextCharacterId)
         playerState.autoReviveDefeatedCharacters = snapshot.playerState.autoReviveDefeatedCharacters
         playerState.shopInventoryInitialized = snapshot.playerState.shopInventoryInitialized
+        playerState.autoSellItemIDsRawValue = encodedAutoSellItemIDs(snapshot.playerState.autoSellItemIDs)
         playerState.lastBackgroundedAt = snapshot.playerState.lastBackgroundedAt
         try syncCharacters(snapshot.characters, in: context)
         try syncLabyrinthProgressRecords(snapshot.labyrinthProgressRecords, in: context)
@@ -121,6 +122,7 @@ final class GuildCoreDataStore {
         playerState.nextCharacterId = Int64(snapshot.playerState.nextCharacterId)
         playerState.autoReviveDefeatedCharacters = snapshot.playerState.autoReviveDefeatedCharacters
         playerState.shopInventoryInitialized = snapshot.playerState.shopInventoryInitialized
+        playerState.autoSellItemIDsRawValue = encodedAutoSellItemIDs(snapshot.playerState.autoSellItemIDs)
         playerState.lastBackgroundedAt = snapshot.playerState.lastBackgroundedAt
         try syncCharacters(snapshot.characters, in: context)
         try syncParties(parties, in: context)
@@ -184,6 +186,7 @@ final class GuildCoreDataStore {
         playerStateEntity.nextCharacterId = Int64(playerState.nextCharacterId)
         playerStateEntity.autoReviveDefeatedCharacters = playerState.autoReviveDefeatedCharacters
         playerStateEntity.shopInventoryInitialized = playerState.shopInventoryInitialized
+        playerStateEntity.autoSellItemIDsRawValue = encodedAutoSellItemIDs(playerState.autoSellItemIDs)
         playerStateEntity.lastBackgroundedAt = playerState.lastBackgroundedAt
         try syncInventoryStacks(inventoryStacks, in: context)
         try syncShopInventoryStacks(shopInventoryStacks, in: context)
@@ -409,6 +412,7 @@ final class GuildCoreDataStore {
         playerState.nextCharacterId = Int64(PlayerState.initial.nextCharacterId)
         playerState.autoReviveDefeatedCharacters = PlayerState.initial.autoReviveDefeatedCharacters
         playerState.shopInventoryInitialized = PlayerState.initial.shopInventoryInitialized
+        playerState.autoSellItemIDsRawValue = encodedAutoSellItemIDs(PlayerState.initial.autoSellItemIDs)
         playerState.lastBackgroundedAt = PlayerState.initial.lastBackgroundedAt
         return playerState
     }
@@ -516,7 +520,27 @@ final class GuildCoreDataStore {
             nextCharacterId: Int(entity.nextCharacterId),
             autoReviveDefeatedCharacters: entity.autoReviveDefeatedCharacters,
             shopInventoryInitialized: entity.shopInventoryInitialized,
+            autoSellItemIDs: decodedAutoSellItemIDs(entity.autoSellItemIDsRawValue),
             lastBackgroundedAt: entity.lastBackgroundedAt
+        )
+    }
+
+    private func encodedAutoSellItemIDs(_ itemIDs: Set<CompositeItemID>) -> String {
+        itemIDs
+            .sorted { $0.isOrdered(before: $1) }
+            .map(\.rawValue)
+            .joined(separator: ",")
+    }
+
+    private func decodedAutoSellItemIDs(_ rawValue: String?) -> Set<CompositeItemID> {
+        guard let rawValue, !rawValue.isEmpty else {
+            return []
+        }
+
+        return Set(
+            rawValue
+                .split(separator: ",")
+                .compactMap { CompositeItemID(rawValue: String($0)) }
         )
     }
 

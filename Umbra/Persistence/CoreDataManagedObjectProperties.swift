@@ -89,6 +89,7 @@ extension PlayerStateEntity {
         return NSFetchRequest<PlayerStateEntity>(entityName: "PlayerStateEntity")
     }
 
+    @NSManaged nonisolated public var autoSellItemIDsRawValue: String?
     @NSManaged nonisolated public var autoReviveDefeatedCharacters: Bool
     @NSManaged nonisolated public var catTicketCount: Int64
     @NSManaged nonisolated public var gold: Int64
