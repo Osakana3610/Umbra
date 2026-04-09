@@ -512,9 +512,9 @@ private struct ShopTradeItemRow: View {
         switch mode {
         case .buy:
             let purchasePrice = ShopCatalog.purchasePrice(for: item.itemID, masterData: masterData)
-            return "在庫 \(item.quantity) / 購入 \(purchasePrice)G / 売却 \(sellPrice)G"
+            return "在庫 \(item.quantity.formatted()) / 購入 \(purchasePrice.formatted())G / 売却 \(sellPrice.formatted())G"
         case .sell:
-            return "所持 \(item.quantity) / 売却 \(sellPrice)G"
+            return "所持 \(item.quantity.formatted()) / 売却 \(sellPrice.formatted())G"
         }
     }
 
@@ -539,16 +539,16 @@ private struct ShopPurchaseSheet: View {
     var body: some View {
         List {
             Section {
-                Text("在庫数 \(item.quantity)")
+                Text("在庫数 \(item.quantity.formatted())")
                     .font(.body)
                     .padding(.vertical, 4)
             }
 
             Section("購入情報") {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("1個あたり \(unitPurchasePrice)G")
-                    Text("全部購入 \(allPurchasePrice)G")
-                    Text("所持金 \(availableGold)G")
+                    Text("1個あたり \(unitPurchasePrice.formatted())G")
+                    Text("全部購入 \(allPurchasePrice.formatted())G")
+                    Text("所持金 \(availableGold.formatted())G")
                 }
                 .font(.body)
                 .padding(.vertical, 4)
@@ -602,15 +602,15 @@ private struct ShopSaleSheet: View {
     var body: some View {
         List {
             Section {
-                Text("所持数 \(item.quantity)")
+                Text("所持数 \(item.quantity.formatted())")
                     .font(.body)
                     .padding(.vertical, 4)
             }
 
             Section("売却情報") {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("1個あたり \(unitSellPrice)G")
-                    Text("全部売却 \(allSellPrice)G")
+                    Text("1個あたり \(unitSellPrice.formatted())G")
+                    Text("全部売却 \(allSellPrice.formatted())G")
                 }
                 .font(.body)
                 .padding(.vertical, 4)

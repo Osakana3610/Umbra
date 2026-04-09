@@ -1492,6 +1492,38 @@ struct UmbraTests {
     }
 
     @Test
+    func shopCatalogEvaluatesBaseAndJewelComponentsSeparately() {
+        let masterData = shopCatalogTestMasterData()
+        let itemID = CompositeItemID(
+            baseSuperRareId: 1,
+            baseTitleId: 1,
+            baseItemId: 1,
+            jewelSuperRareId: 1,
+            jewelTitleId: 1,
+            jewelItemId: 2
+        )
+
+        #expect(ShopCatalog.purchasePrice(for: itemID, masterData: masterData) == 4_200)
+        #expect(ShopCatalog.sellPrice(for: itemID, masterData: masterData) == 420)
+    }
+
+    @Test
+    func shopCatalogKeepsBaseSideModifiersOffTheJewelSide() {
+        let masterData = shopCatalogTestMasterData()
+        let itemID = CompositeItemID(
+            baseSuperRareId: 0,
+            baseTitleId: 1,
+            baseItemId: 1,
+            jewelSuperRareId: 0,
+            jewelTitleId: 0,
+            jewelItemId: 2
+        )
+
+        #expect(ShopCatalog.purchasePrice(for: itemID, masterData: masterData) == 1_900)
+        #expect(ShopCatalog.sellPrice(for: itemID, masterData: masterData) == 190)
+    }
+
+    @Test
     func debugItemBatchGeneratorMovesIntoNextGroupWhenTitleOnlyIsExhausted() {
         let masterData = debugItemGenerationMasterData()
         let generator = DebugItemBatchGenerator(masterData: masterData)
@@ -3666,6 +3698,48 @@ struct UmbraTests {
         )
 
         #expect(ExplorationResolver.titleRollCount(rewardContext: rewardContext) == 5)
+    }
+
+    @Test
+    func resolveTitleCanReturnTitleLowerThanUntitled() {
+        let untitledTitle = MasterData.Title(
+            id: 1,
+            key: "untitled",
+            name: "無名",
+            positiveMultiplier: 1.0,
+            negativeMultiplier: 1.0,
+            dropWeight: 1
+        )
+        let roughTitle = MasterData.Title(
+            id: 2,
+            key: "rough",
+            name: "粗末な",
+            positiveMultiplier: 0.5,
+            negativeMultiplier: 2.0,
+            dropWeight: 1
+        )
+        let rewardContext = ExplorationResolver.RewardContext(
+            memberCharacterIds: [],
+            memberExperienceMultipliers: [],
+            goldMultiplier: 1,
+            rareDropMultiplier: 1,
+            titleDropMultiplier: 1,
+            partyAverageLuck: 0,
+            defaultTitle: untitledTitle,
+            enemyTitle: untitledTitle
+        )
+
+        let title = ExplorationResolver.resolveTitle(
+            floorNumber: 1,
+            battleNumber: 1,
+            enemyIndex: 0,
+            dropIndex: 0,
+            rewardContext: rewardContext,
+            titles: [roughTitle],
+            rootSeed: 0
+        )
+
+        #expect(title.id == roughTitle.id)
     }
 
     @Test
@@ -7308,6 +7382,89 @@ private func skillId(named name: String, in masterData: MasterData) throws -> In
 @MainActor
 private func itemId(for category: ItemCategory, in masterData: MasterData) throws -> Int {
     try #require(masterData.items.first(where: { $0.category == category })?.id)
+}
+
+private func shopCatalogTestMasterData() -> MasterData {
+    let baseStats = MasterData.BaseStats(
+        vitality: 0,
+        strength: 0,
+        mind: 0,
+        intelligence: 0,
+        agility: 0,
+        luck: 0
+    )
+    let battleStats = MasterData.BattleStats(
+        maxHP: 0,
+        physicalAttack: 0,
+        physicalDefense: 0,
+        magic: 0,
+        magicDefense: 0,
+        healing: 0,
+        accuracy: 0,
+        evasion: 0,
+        attackCount: 0,
+        criticalRate: 0,
+        breathPower: 0
+    )
+
+    return MasterData(
+        metadata: MasterData.Metadata(generator: "test"),
+        races: [],
+        jobs: [],
+        aptitudes: [],
+        items: [
+            MasterData.Item(
+                id: 1,
+                name: "テスト剣",
+                category: .sword,
+                rarity: .normal,
+                basePrice: 1_000,
+                nativeBaseStats: baseStats,
+                nativeBattleStats: battleStats,
+                skillIds: [],
+                rangeClass: .melee,
+                normalDropTier: 1
+            ),
+            MasterData.Item(
+                id: 2,
+                name: "テスト宝石",
+                category: .jewel,
+                rarity: .normal,
+                basePrice: 800,
+                nativeBaseStats: baseStats,
+                nativeBattleStats: battleStats,
+                skillIds: [],
+                rangeClass: .none,
+                normalDropTier: 1
+            )
+        ],
+        titles: [
+            MasterData.Title(
+                id: 1,
+                key: "test",
+                name: "テスト",
+                positiveMultiplier: 1.5,
+                negativeMultiplier: 1.0,
+                dropWeight: 1
+            )
+        ],
+        superRares: [
+            MasterData.SuperRare(
+                id: 1,
+                name: "極",
+                skillIds: []
+            )
+        ],
+        skills: [],
+        spells: [],
+        recruitNames: MasterData.RecruitNames(
+            male: [],
+            female: [],
+            unisex: []
+        ),
+        enemies: [],
+        labyrinths: []
+    )
 }
 
 @MainActor

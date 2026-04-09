@@ -3,10 +3,8 @@
 import Foundation
 
 enum ShopCatalog {
-    static let purchasePriceDivisor = 100.0
-    static let sellbackRate = 0.5
-    static let titleValueMultiplier = 1.2
-    static let superRareValueMultiplier = 1.5
+    static let sellbackRate = 0.1
+    static let superRareValueMultiplier = 2.0
     static let stockOrganizationBundleSize = 99
 
     static func initialInventory(masterData: MasterData) -> [CompositeItemStack] {
@@ -19,7 +17,7 @@ enum ShopCatalog {
         for itemID: CompositeItemID,
         masterData: MasterData
     ) -> Int {
-        max(1, Int((catalogValue(for: itemID, masterData: masterData) / purchasePriceDivisor).rounded()))
+        max(1, Int(catalogValue(for: itemID, masterData: masterData).rounded()))
     }
 
     static func sellPrice(
@@ -53,24 +51,38 @@ enum ShopCatalog {
         masterData: MasterData
     ) -> Double {
         let itemsByID = Dictionary(uniqueKeysWithValues: masterData.items.map { ($0.id, $0) })
-        let baseValue = Double(itemsByID[itemID.baseItemId]?.basePrice ?? 0)
-        let jewelValue = Double(itemsByID[itemID.jewelItemId]?.basePrice ?? 0)
-        let titleMultiplier = pow(
-            titleValueMultiplier,
-            Double(nonZeroCount(itemID.baseTitleId, itemID.jewelTitleId))
+        let titlesByID = Dictionary(uniqueKeysWithValues: masterData.titles.map { ($0.id, $0) })
+        return componentValue(
+            itemId: itemID.baseItemId,
+            titleId: itemID.baseTitleId,
+            superRareId: itemID.baseSuperRareId,
+            basePriceScale: 1.0,
+            itemsByID: itemsByID,
+            titlesByID: titlesByID
+        ) + componentValue(
+            itemId: itemID.jewelItemId,
+            titleId: itemID.jewelTitleId,
+            superRareId: itemID.jewelSuperRareId,
+            basePriceScale: 0.5,
+            itemsByID: itemsByID,
+            titlesByID: titlesByID
         )
-        let superRareMultiplier = pow(
-            superRareValueMultiplier,
-            Double(nonZeroCount(itemID.baseSuperRareId, itemID.jewelSuperRareId))
-        )
-        return (baseValue + jewelValue) * titleMultiplier * superRareMultiplier
     }
 
-    private static func nonZeroCount(_ values: Int...) -> Int {
-        values.reduce(into: 0) { partialResult, value in
-            if value > 0 {
-                partialResult += 1
-            }
+    private static func componentValue(
+        itemId: Int,
+        titleId: Int,
+        superRareId: Int,
+        basePriceScale: Double,
+        itemsByID: [Int: MasterData.Item],
+        titlesByID: [Int: MasterData.Title]
+    ) -> Double {
+        guard let item = itemsByID[itemId] else {
+            return 0
         }
+
+        let titleMultiplier = titleId > 0 ? (titlesByID[titleId]?.positiveMultiplier ?? 1.0) : 1.0
+        let superRareMultiplier = superRareId > 0 ? superRareValueMultiplier : 1.0
+        return Double(item.basePrice) * basePriceScale * titleMultiplier * superRareMultiplier
     }
 }

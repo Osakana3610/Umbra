@@ -785,18 +785,25 @@ nonisolated extension ExplorationResolver {
         rootSeed: UInt64
     ) -> MasterData.Title {
         let rollCount = titleRollCount(rewardContext: rewardContext)
-        var bestTitle = rewardContext.defaultTitle
-        for rollIndex in 0..<rollCount {
-            // Title selection uses the static master-data weights; better results come from
-            // additional rerolls rather than runtime reshaping of the drop table.
-            let weightedTitles = titles.map { title in
-                (title, Double(title.dropWeight))
-            }
-            let title = weightedRandomChoice(
+        let weightedTitles = titles.map { title in
+            (title, Double(title.dropWeight))
+        }
+        func chooseTitle(for rollIndex: Int) -> MasterData.Title {
+            guard let title = weightedRandomChoice(
                 from: weightedTitles,
                 rootSeed: rootSeed,
                 purpose: "drop:title:\(floorNumber):\(battleNumber):enemy:\(enemyIndex):drop:\(dropIndex):roll:\(rollIndex)"
-            ) ?? rewardContext.defaultTitle
+            ) else {
+                preconditionFailure("Title drop table must contain at least one positive-weight title.")
+            }
+            return title
+        }
+
+        var bestTitle = chooseTitle(for: 0)
+        for rollIndex in 1..<rollCount {
+            // Title selection uses the static master-data weights; better results come from
+            // additional rerolls rather than runtime reshaping of the drop table.
+            let title = chooseTitle(for: rollIndex)
             if title.positiveMultiplier > bestTitle.positiveMultiplier {
                 bestTitle = title
             }
