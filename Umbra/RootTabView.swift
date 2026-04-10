@@ -6,6 +6,7 @@ struct RootTabView: View {
     private static let statusBarBottomInset: CGFloat = 49
 
     let masterData: MasterData
+    let persistenceController: PersistenceController
     let rosterStore: GuildRosterStore
     let partyStore: PartyStore
     let equipmentStore: EquipmentInventoryStore
@@ -70,6 +71,7 @@ struct RootTabView: View {
             NavigationStack {
                 OtherMenuView(
                     masterData: masterData,
+                    persistentContainer: persistenceController.container,
                     guildService: guildService,
                     equipmentStore: equipmentStore,
                     explorationStore: explorationStore

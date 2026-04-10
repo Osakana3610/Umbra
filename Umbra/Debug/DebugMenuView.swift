@@ -1,9 +1,14 @@
 // Hosts debug-only inventory generation controls for large equipment test datasets.
 
+import CoreData
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct DebugMenuView: View {
+    private static let debugGoldIncrement = 99_999_999
+
     let masterData: MasterData
+    let persistentContainer: NSPersistentContainer
     let guildService: GuildService
     let equipmentStore: EquipmentInventoryStore
 
@@ -12,6 +17,10 @@ struct DebugMenuView: View {
     @State private var stackCountPreset: DebugStackCountPreset = .one
     @State private var customStackCountText = ""
     @State private var isGenerating = false
+    @State private var isPreparingExport = false
+    @State private var isExportingUserData = false
+    @State private var exportDocument: DebugUserDataDocument?
+    @State private var exportFilename = ""
     @State private var resultMessage: String?
     @State private var errorMessage: String?
 
@@ -19,10 +28,57 @@ struct DebugMenuView: View {
         DebugItemBatchGenerator(masterData: masterData)
     }
 
+    private var userDataExporter: DebugUserDataExporter {
+        DebugUserDataExporter(
+            container: persistentContainer,
+            masterData: masterData
+        )
+    }
+
+    private var guildCoreDataStore: GuildCoreDataStore {
+        GuildCoreDataStore(container: persistentContainer)
+    }
+
     var body: some View {
         Form {
+            Section("ユーザーデータ") {
+                Button {
+                    Task {
+                        await exportUserData()
+                    }
+                } label: {
+                    if isPreparingExport {
+                        HStack(spacing: 12) {
+                            ProgressView()
+                            Text("出力を準備中...")
+                        }
+                    } else {
+                        Text("ユーザーデータを書き出し")
+                    }
+                }
+                .disabled(isGenerating || isPreparingExport)
+
+                Text("現在の所持金、キャラクター、編成、装備、探索状態を JSON で出力します。")
+                    .foregroundStyle(.secondary)
+            }
+
+            Section("プレイヤー") {
+                Button {
+                    Task {
+                        await addDebugGold()
+                    }
+                } label: {
+                    Text("\(Self.debugGoldIncrement.formatted())Gを追加")
+                }
+                .disabled(isGenerating || isPreparingExport)
+
+                Text("所持金に \(Self.debugGoldIncrement.formatted())G を加算します。")
+                    .foregroundStyle(.secondary)
+            }
+
             Section("生成対象") {
                 Text("称号のみ → 超レア+称号 → 超レア+称号+宝石強化 の順で生成します。")
+                    .foregroundStyle(.secondary)
                 Text("要求件数に足りない場合は次のグループへ進み、全組み合わせを使い切ったらそこで終了します。")
                     .foregroundStyle(.secondary)
             }
@@ -95,6 +151,19 @@ struct DebugMenuView: View {
                 }
             }
         }
+        .fileExporter(
+            isPresented: $isExportingUserData,
+            document: exportDocument,
+            contentType: .json,
+            defaultFilename: exportFilename
+        ) { result in
+            switch result {
+            case .success:
+                resultMessage = "ユーザーデータを書き出しました。"
+            case .failure(let error):
+                errorMessage = error.localizedDescription
+            }
+        }
     }
 
     private func generateInventory() async {
@@ -144,6 +213,50 @@ struct DebugMenuView: View {
 
     private func resolvedStackCount() throws -> Int {
         try stackCountPreset.resolveValue(customText: customStackCountText)
+    }
+
+    private func exportUserData() async {
+        guard !isPreparingExport else {
+            return
+        }
+
+        isPreparingExport = true
+        resultMessage = nil
+        errorMessage = nil
+        defer { isPreparingExport = false }
+
+        do {
+            // Prepare the payload before presenting the exporter so the sheet always opens with a
+            // concrete document and filename.
+            exportDocument = try await userDataExporter.makeDocument()
+            exportFilename = exportFileName
+            isExportingUserData = true
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    private func addDebugGold() async {
+        resultMessage = nil
+        errorMessage = nil
+
+        do {
+            var snapshot = try guildCoreDataStore.loadRosterSnapshot()
+            snapshot.playerState.gold += Self.debugGoldIncrement
+            try guildCoreDataStore.saveRosterSnapshot(snapshot)
+            resultMessage = "\(Self.debugGoldIncrement.formatted())G を追加しました。現在 \(snapshot.playerState.gold.formatted())G です。"
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    private var exportFileName: String {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withDashSeparatorInDate, .withColonSeparatorInTime]
+        // Keep ISO 8601 ordering while avoiding ":" so the suggested filename stays portable.
+        let timestamp = formatter.string(from: Date())
+            .replacingOccurrences(of: ":", with: "-")
+        return "UmbraUserData-\(timestamp)"
     }
 }
 

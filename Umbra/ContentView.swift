@@ -5,6 +5,7 @@ import SwiftUI
 struct ContentView: View {
     @Environment(\.scenePhase) private var scenePhase
 
+    let persistenceController: PersistenceController
     let masterDataStore: MasterDataStore
     let rosterStore: GuildRosterStore
     let partyStore: PartyStore
@@ -44,6 +45,7 @@ struct ContentView: View {
             case let (.loaded(masterData), .loaded, .loaded):
                 RootTabView(
                     masterData: masterData,
+                    persistenceController: persistenceController,
                     rosterStore: rosterStore,
                     partyStore: partyStore,
                     equipmentStore: equipmentStore,
@@ -107,6 +109,7 @@ struct ContentView: View {
     let itemDropNotificationService = ItemDropNotificationService(masterDataStore: masterDataStore)
     let rosterStore = GuildRosterStore(coreDataStore: guildCoreDataStore, service: guildService, phase: .loading)
     return ContentView(
+        persistenceController: persistenceController,
         masterDataStore: masterDataStore,
         rosterStore: rosterStore,
         partyStore: PartyStore(coreDataStore: guildCoreDataStore, service: guildService, phase: .loading),

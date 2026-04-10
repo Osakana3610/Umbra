@@ -69,6 +69,7 @@ struct UmbraApp: App {
                 rosterStore: rosterStore,
                 partyStore: partyStore,
                 equipmentStore: equipmentStore,
+                persistenceController: persistenceController,
                 shopStore: shopStore,
                 explorationStore: explorationStore,
                 itemDropNotificationService: itemDropNotificationService,

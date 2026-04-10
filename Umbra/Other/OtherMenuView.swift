@@ -1,14 +1,18 @@
 // Hosts user-facing secondary settings and routes to developer-only tools.
 
+import CoreData
 import SwiftUI
 
 struct OtherMenuView: View {
     let masterData: MasterData
+    let persistentContainer: NSPersistentContainer
     let guildService: GuildService
     let equipmentStore: EquipmentInventoryStore
     let explorationStore: ExplorationStore
 
     @AppStorage(ExplorationLogRetentionLimit.userDefaultsKey)
+    // Persist the user's retention choice at the view boundary so the exploration store can stay
+    // focused on pruning logic rather than settings storage.
     private var explorationLogRetentionCount = ExplorationLogRetentionLimit.defaultValue.rawValue
     var body: some View {
         Form {
@@ -44,6 +48,7 @@ struct OtherMenuView: View {
                 NavigationLink("デバッグメニュー") {
                     DebugMenuView(
                         masterData: masterData,
+                        persistentContainer: persistentContainer,
                         guildService: guildService,
                         equipmentStore: equipmentStore
                     )
