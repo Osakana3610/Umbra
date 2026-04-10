@@ -234,11 +234,17 @@ struct AdventureHomeView: View {
 
     private func configuredLabyrinthId(for party: PartyRecord) -> Int? {
         guard let selectedLabyrinthId = party.selectedLabyrinthId,
-              masterData.labyrinths.contains(where: { $0.id == selectedLabyrinthId }) else {
+              masterData.labyrinths.contains(where: { $0.id == selectedLabyrinthId }),
+              isLabyrinthUnlocked(selectedLabyrinthId) else {
             return nil
         }
 
         return selectedLabyrinthId
+    }
+
+    private func isLabyrinthUnlocked(_ labyrinthId: Int) -> Bool {
+        masterData.defaultUnlockedLabyrinthId == labyrinthId
+            || rosterStore.labyrinthProgressByLabyrinthId[labyrinthId] != nil
     }
 
     private func configuredDifficultyTitleId(for party: PartyRecord) -> Int? {

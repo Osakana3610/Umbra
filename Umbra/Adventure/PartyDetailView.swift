@@ -90,7 +90,7 @@ struct PartyDetailView: View {
                         Section("出撃設定") {
                             Picker("迷宮", selection: selectedLabyrinthBinding) {
                                 Text("未設定").tag(Optional<Int>.none)
-                                ForEach(masterData.labyrinths) { labyrinth in
+                                ForEach(availableLabyrinths) { labyrinth in
                                     Text(labyrinth.name)
                                         .tag(Optional(labyrinth.id))
                                 }
@@ -186,12 +186,19 @@ struct PartyDetailView: View {
         activeRun != nil
     }
 
+    private var availableLabyrinths: [MasterData.Labyrinth] {
+        masterData.labyrinths.filter { labyrinth in
+            masterData.defaultUnlockedLabyrinthId == labyrinth.id
+                || rosterStore.labyrinthProgressByLabyrinthId[labyrinth.id] != nil
+        }
+    }
+
     private var selectedLabyrinth: MasterData.Labyrinth? {
-        guard let labyrinthId = party?.selectedLabyrinthId else {
+        guard let labyrinthId = selectedLabyrinthBinding.wrappedValue else {
             return nil
         }
 
-        return masterData.labyrinths.first(where: { $0.id == labyrinthId })
+        return availableLabyrinths.first(where: { $0.id == labyrinthId })
     }
 
     private var highestUnlockedDifficultyTitleId: Int? {
@@ -222,7 +229,12 @@ struct PartyDetailView: View {
     private var selectedLabyrinthBinding: Binding<Int?> {
         Binding(
             get: {
-                party?.selectedLabyrinthId
+                guard let selectedLabyrinthId = party?.selectedLabyrinthId,
+                      availableLabyrinths.contains(where: { $0.id == selectedLabyrinthId }) else {
+                    return nil
+                }
+
+                return selectedLabyrinthId
             },
             set: { selectedLabyrinthId in
                 guard let party else {

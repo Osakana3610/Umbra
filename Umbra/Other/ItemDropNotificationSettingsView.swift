@@ -6,12 +6,15 @@ struct ItemDropNotificationSettingsView: View {
     let masterData: MasterData
 
     @AppStorage("itemDropNotification.showsNormalRarityItems")
+    // Keep the coarse rarity toggle in AppStorage alongside the per-title and per-super-rare
+    // filters so the overlay can read everything directly from UserDefaults-backed settings.
     private var showsNormalRarityItems = true
 
     var body: some View {
         Form {
             Section {
                 Text("画面の左下に表示されるドロップの通知設定です。オフにした通知は表示されません。")
+                    .foregroundStyle(.secondary)
             }
 
             Section("レア度") {

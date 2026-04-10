@@ -35,6 +35,8 @@ final class ExplorationStore {
     private let service: ExplorationSessionService
     private let itemDropNotificationService: ItemDropNotificationService
     private let rosterStore: GuildRosterStore?
+    private let equipmentStore: EquipmentInventoryStore?
+    private let shopStore: ShopInventoryStore?
 
     private(set) var isLoaded = false
     private(set) var isMutating = false
@@ -52,11 +54,15 @@ final class ExplorationStore {
     init(
         coreDataStore: ExplorationCoreDataStore,
         itemDropNotificationService: ItemDropNotificationService,
-        rosterStore: GuildRosterStore? = nil
+        rosterStore: GuildRosterStore? = nil,
+        equipmentStore: EquipmentInventoryStore? = nil,
+        shopStore: ShopInventoryStore? = nil
     ) {
         self.coreDataStore = coreDataStore
         self.itemDropNotificationService = itemDropNotificationService
         self.rosterStore = rosterStore
+        self.equipmentStore = equipmentStore
+        self.shopStore = shopStore
         service = ExplorationSessionService(coreDataStore: coreDataStore)
     }
 
@@ -105,6 +111,12 @@ final class ExplorationStore {
             applySnapshot(snapshot, masterData: masterData)
             if snapshot.didApplyRewards {
                 rosterStore?.refreshFromPersistence()
+                if let equipmentStore, equipmentStore.isLoaded {
+                    try equipmentStore.reload(masterData: masterData)
+                }
+                if let shopStore, shopStore.isLoaded {
+                    try shopStore.reload(masterData: masterData)
+                }
             }
             itemDropNotificationService.publish(batches: snapshot.dropNotificationBatches)
             return (snapshot.didApplyRewards, snapshot.appliedInventoryCounts)
@@ -407,7 +419,9 @@ final class ExplorationStore {
             guard party.pendingAutomaticRunCount > 0,
                   status(for: party.partyId).activeRun == nil,
                   let labyrinthId = party.selectedLabyrinthId,
-                  masterData.labyrinths.contains(where: { $0.id == labyrinthId }) else {
+                  masterData.labyrinths.contains(where: { $0.id == labyrinthId }),
+                  masterData.defaultUnlockedLabyrinthId == labyrinthId
+                    || rosterStore?.labyrinthProgressByLabyrinthId[labyrinthId] != nil else {
                 continue
             }
 

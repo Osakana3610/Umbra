@@ -369,6 +369,22 @@ extension MasterData {
         return "\(title.name)\(labyrinthName)"
     }
 
+    nonisolated var defaultUnlockedLabyrinthId: Int? {
+        // Labyrinth ordering in master data defines progression, so the first entry is the
+        // globally unlocked starting labyrinth.
+        labyrinths.first?.id
+    }
+
+    nonisolated func nextLabyrinthId(after labyrinthId: Int) -> Int? {
+        // Unlock progression advances strictly by master-data order rather than by numeric ID.
+        guard let index = labyrinths.firstIndex(where: { $0.id == labyrinthId }),
+              labyrinths.indices.contains(index + 1) else {
+            return nil
+        }
+
+        return labyrinths[index + 1].id
+    }
+
     nonisolated func resolvedExplorationDifficultyTitleId(
         requestedTitleId: Int?,
         highestUnlockedTitleId: Int?

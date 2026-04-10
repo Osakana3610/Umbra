@@ -15,6 +15,8 @@ struct UmbraApp: App {
     @State private var itemDropNotificationService: ItemDropNotificationService
 
     init() {
+        // Construct the persistence-backed services once here so every tab observes the same
+        // long-lived store graph.
         let persistenceController = PersistenceController.shared
         let guildCoreDataStore = GuildCoreDataStore(container: persistenceController.container)
         let explorationCoreDataStore = ExplorationCoreDataStore(container: persistenceController.container)
@@ -56,7 +58,9 @@ struct UmbraApp: App {
             initialValue: ExplorationStore(
                 coreDataStore: explorationCoreDataStore,
                 itemDropNotificationService: itemDropNotificationService,
-                rosterStore: _rosterStore.wrappedValue
+                rosterStore: _rosterStore.wrappedValue,
+                equipmentStore: _equipmentStore.wrappedValue,
+                shopStore: _shopStore.wrappedValue
             )
         )
         _itemDropNotificationService = State(initialValue: itemDropNotificationService)
@@ -65,11 +69,11 @@ struct UmbraApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView(
+                persistenceController: persistenceController,
                 masterDataStore: masterDataStore,
                 rosterStore: rosterStore,
                 partyStore: partyStore,
                 equipmentStore: equipmentStore,
-                persistenceController: persistenceController,
                 shopStore: shopStore,
                 explorationStore: explorationStore,
                 itemDropNotificationService: itemDropNotificationService,

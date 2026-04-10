@@ -18,6 +18,7 @@ struct CharacterDismissalView: View {
         List {
             Section {
                 Text("一度解雇したキャラクターは帰ってきません。慎重に判断してください。")
+                    .foregroundStyle(.secondary)
             }
 
             Section("雇用中のキャラクター") {
@@ -79,6 +80,8 @@ struct CharacterDismissalView: View {
         Binding(
             get: { pendingDismissalCharacter != nil },
             set: { isPresented in
+                // Clearing the pending ID on dismiss keeps the alert source of truth entirely in
+                // this one optional instead of mirroring it in separate state.
                 if !isPresented {
                     pendingDismissalCharacterId = nil
                 }
@@ -110,6 +113,8 @@ struct CharacterDismissalView: View {
 
             do {
                 try await guildService.deleteCharacter(characterId: character.characterId)
+                // Dismissal can reshape party membership and shared inventory, so refresh all three
+                // views from persistence after the mutation commits.
                 rosterStore.refreshFromPersistence()
                 partyStore.reload()
                 if equipmentStore.isLoaded {

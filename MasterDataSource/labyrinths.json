@@ -7,7 +7,7 @@
         "floors": [
             {
                 "floorNumber": 1,
-                "battleCount": 10,
+                "battleCount": 3,
                 "encounters": [
                     {
                         "enemyKey": "debug_monster",
@@ -32,11 +32,11 @@
         "floors": [
             {
                 "floorNumber": 1,
-                "battleCount": 1,
+                "battleCount": 3,
                 "encounters": [
                     {
                         "enemyKey": "debug_undead",
-                        "level": 4,
+                        "level": 3,
                         "weight": 1
                     }
                 ]
@@ -56,8 +56,1600 @@
                 "fixedBattle": [
                     {
                         "enemyKey": "debug_dragon",
+                        "level": 6
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "debug_sanctum",
+        "name": "デバッグの聖域",
+        "enemyCountCap": 3,
+        "progressIntervalSeconds": 1,
+        "floors": [
+            {
+                "floorNumber": 1,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "debug_pyromancer",
+                        "level": 4
+                    }
+                ]
+            },
+            {
+                "floorNumber": 2,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "debug_stormguard",
+                        "level": 5
+                    }
+                ]
+            },
+            {
+                "floorNumber": 3,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "debug_pyromancer",
+                        "level": 5
+                    }
+                ]
+            },
+            {
+                "floorNumber": 4,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "debug_bastion",
+                        "level": 6
+                    },
+                    {
+                        "enemyKey": "debug_monster",
+                        "level": 4
+                    },
+                    {
+                        "enemyKey": "debug_monster",
+                        "level": 4
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "debug_corridor",
+        "name": "デバッグの回廊",
+        "enemyCountCap": 3,
+        "progressIntervalSeconds": 1,
+        "floors": [
+            {
+                "floorNumber": 1,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "debug_pyromancer",
+                        "level": 5
+                    },
+                    {
+                        "enemyKey": "debug_monster",
+                        "level": 5
+                    }
+                ]
+            },
+            {
+                "floorNumber": 2,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "debug_stormguard",
+                        "level": 5
+                    },
+                    {
+                        "enemyKey": "debug_pyromancer",
+                        "level": 5
+                    }
+                ]
+            },
+            {
+                "floorNumber": 3,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "debug_bastion",
+                        "level": 6
+                    },
+                    {
+                        "enemyKey": "debug_revenger",
+                        "level": 5
+                    }
+                ]
+            },
+            {
+                "floorNumber": 4,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "debug_warmage",
+                        "level": 6
+                    },
+                    {
+                        "enemyKey": "debug_bastion",
+                        "level": 6
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "debug_ward",
+        "name": "デバッグの兵舎",
+        "enemyCountCap": 3,
+        "progressIntervalSeconds": 1,
+        "floors": [
+            {
+                "floorNumber": 1,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "debug_revenger",
+                        "level": 5
+                    },
+                    {
+                        "enemyKey": "debug_stormguard",
+                        "level": 5
+                    }
+                ]
+            },
+            {
+                "floorNumber": 2,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "debug_bastion",
+                        "level": 6
+                    },
+                    {
+                        "enemyKey": "debug_pyromancer",
+                        "level": 5
+                    }
+                ]
+            },
+            {
+                "floorNumber": 3,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "debug_warmage",
+                        "level": 6
+                    },
+                    {
+                        "enemyKey": "debug_revenger",
+                        "level": 6
+                    }
+                ]
+            },
+            {
+                "floorNumber": 4,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "debug_hierophant",
+                        "level": 6
+                    },
+                    {
+                        "enemyKey": "debug_bastion",
+                        "level": 6
+                    },
+                    {
+                        "enemyKey": "debug_revenger",
+                        "level": 5
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "debug_shrine",
+        "name": "デバッグの祭壇",
+        "enemyCountCap": 3,
+        "progressIntervalSeconds": 1,
+        "floors": [
+            {
+                "floorNumber": 1,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "debug_revenger",
+                        "level": 6
+                    },
+                    {
+                        "enemyKey": "debug_pyromancer",
+                        "level": 5
+                    }
+                ]
+            },
+            {
+                "floorNumber": 2,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "debug_warmage",
+                        "level": 6
+                    },
+                    {
+                        "enemyKey": "debug_stormguard",
+                        "level": 6
+                    }
+                ]
+            },
+            {
+                "floorNumber": 3,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "debug_hierophant",
+                        "level": 6
+                    },
+                    {
+                        "enemyKey": "debug_bastion",
+                        "level": 6
+                    },
+                    {
+                        "enemyKey": "debug_pyromancer",
+                        "level": 5
+                    }
+                ]
+            },
+            {
+                "floorNumber": 4,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "debug_revenger",
+                        "level": 6
+                    },
+                    {
+                        "enemyKey": "debug_hierophant",
+                        "level": 6
+                    },
+                    {
+                        "enemyKey": "debug_warmage",
+                        "level": 6
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "debug_sealed_realm",
+        "name": "デバッグの封域",
+        "enemyCountCap": 3,
+        "progressIntervalSeconds": 1,
+        "floors": [
+            {
+                "floorNumber": 1,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "debug_revenger",
+                        "level": 6
+                    },
+                    {
+                        "enemyKey": "debug_pyromancer",
+                        "level": 5
+                    }
+                ]
+            },
+            {
+                "floorNumber": 2,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "debug_warmage",
+                        "level": 6
+                    },
+                    {
+                        "enemyKey": "debug_stormguard",
+                        "level": 6
+                    }
+                ]
+            },
+            {
+                "floorNumber": 3,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "debug_hierophant",
+                        "level": 6
+                    },
+                    {
+                        "enemyKey": "debug_bastion",
+                        "level": 6
+                    },
+                    {
+                        "enemyKey": "debug_pyromancer",
+                        "level": 5
+                    }
+                ]
+            },
+            {
+                "floorNumber": 4,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "debug_overlord",
+                        "level": 7
+                    },
+                    {
+                        "enemyKey": "debug_hierophant",
+                        "level": 6
+                    },
+                    {
+                        "enemyKey": "debug_revenger",
+                        "level": 6
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "debug_abyss",
+        "name": "デバッグの奈落",
+        "enemyCountCap": 4,
+        "progressIntervalSeconds": 1,
+        "floors": [
+            {
+                "floorNumber": 1,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "debug_warmage",
+                        "level": 6
+                    },
+                    {
+                        "enemyKey": "debug_hierophant",
+                        "level": 6
+                    },
+                    {
+                        "enemyKey": "debug_stormguard",
+                        "level": 6
+                    }
+                ]
+            },
+            {
+                "floorNumber": 2,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "debug_bastion",
+                        "level": 7
+                    },
+                    {
+                        "enemyKey": "debug_revenger",
+                        "level": 7
+                    },
+                    {
+                        "enemyKey": "debug_pyromancer",
+                        "level": 6
+                    }
+                ]
+            },
+            {
+                "floorNumber": 3,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "debug_overlord",
+                        "level": 8
+                    },
+                    {
+                        "enemyKey": "debug_hierophant",
+                        "level": 7
+                    },
+                    {
+                        "enemyKey": "debug_warmage",
+                        "level": 7
+                    }
+                ]
+            },
+            {
+                "floorNumber": 4,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "debug_overlord",
+                        "level": 8
+                    },
+                    {
+                        "enemyKey": "debug_bastion",
+                        "level": 7
+                    },
+                    {
+                        "enemyKey": "debug_revenger",
+                        "level": 7
+                    },
+                    {
+                        "enemyKey": "debug_stormguard",
+                        "level": 7
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "debug_bulwark",
+        "name": "デバッグの隔壁",
+        "enemyCountCap": 4,
+        "progressIntervalSeconds": 1,
+        "floors": [
+            {
+                "floorNumber": 1,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "debug_warmage",
+                        "level": 7
+                    },
+                    {
+                        "enemyKey": "debug_hierophant",
+                        "level": 7
+                    },
+                    {
+                        "enemyKey": "debug_ironwarden",
+                        "level": 7
+                    }
+                ]
+            },
+            {
+                "floorNumber": 2,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "debug_revenger",
+                        "level": 7
+                    },
+                    {
+                        "enemyKey": "debug_bastion",
+                        "level": 7
+                    },
+                    {
+                        "enemyKey": "debug_pyromancer",
+                        "level": 7
+                    }
+                ]
+            },
+            {
+                "floorNumber": 3,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "debug_oathkeeper",
+                        "level": 7
+                    },
+                    {
+                        "enemyKey": "debug_bastion",
+                        "level": 8
+                    },
+                    {
+                        "enemyKey": "debug_stormguard",
+                        "level": 7
+                    }
+                ]
+            },
+            {
+                "floorNumber": 4,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "debug_overlord",
+                        "level": 7
+                    },
+                    {
+                        "enemyKey": "debug_hierophant",
+                        "level": 7
+                    },
+                    {
+                        "enemyKey": "debug_ironwarden",
+                        "level": 7
+                    }
+                ]
+            },
+            {
+                "floorNumber": 5,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "debug_dreadnought",
+                        "level": 8
+                    },
+                    {
+                        "enemyKey": "debug_oathkeeper",
+                        "level": 8
+                    },
+                    {
+                        "enemyKey": "debug_revenger",
+                        "level": 8
+                    },
+                    {
+                        "enemyKey": "debug_stormguard",
                         "level": 8
                     }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "debug_nether",
+        "name": "デバッグの冥府",
+        "enemyCountCap": 5,
+        "progressIntervalSeconds": 1,
+        "floors": [
+            {
+                "floorNumber": 1,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "debug_ironwarden",
+                        "level": 7
+                    },
+                    {
+                        "enemyKey": "debug_oathkeeper",
+                        "level": 7
+                    },
+                    {
+                        "enemyKey": "debug_warmage",
+                        "level": 7
+                    }
+                ]
+            },
+            {
+                "floorNumber": 2,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "debug_ironwarden",
+                        "level": 7
+                    },
+                    {
+                        "enemyKey": "debug_pyromancer",
+                        "level": 7
+                    },
+                    {
+                        "enemyKey": "debug_hierophant",
+                        "level": 7
+                    }
+                ]
+            },
+            {
+                "floorNumber": 3,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "debug_overlord",
+                        "level": 8
+                    },
+                    {
+                        "enemyKey": "debug_oathkeeper",
+                        "level": 7
+                    },
+                    {
+                        "enemyKey": "debug_stormguard",
+                        "level": 7
+                    }
+                ]
+            },
+            {
+                "floorNumber": 4,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "debug_dreadnought",
+                        "level": 8
+                    },
+                    {
+                        "enemyKey": "debug_warmage",
+                        "level": 7
+                    },
+                    {
+                        "enemyKey": "debug_hierophant",
+                        "level": 7
+                    }
+                ]
+            },
+            {
+                "floorNumber": 5,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "debug_dreadnought",
+                        "level": 7
+                    },
+                    {
+                        "enemyKey": "debug_oathkeeper",
+                        "level": 7
+                    },
+                    {
+                        "enemyKey": "debug_revenger",
+                        "level": 7
+                    }
+                ]
+            },
+            {
+                "floorNumber": 6,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "debug_dreadnought",
+                        "level": 8
+                    },
+                    {
+                        "enemyKey": "debug_overlord",
+                        "level": 7
+                    },
+                    {
+                        "enemyKey": "debug_stormguard",
+                        "level": 7
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "debug_spellbreak",
+        "name": "デバッグの魔障",
+        "enemyCountCap": 5,
+        "progressIntervalSeconds": 1,
+        "floors": [
+            {
+                "floorNumber": 1,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "debug_ironwarden",
+                        "level": 8
+                    },
+                    {
+                        "enemyKey": "debug_pyromancer",
+                        "level": 8
+                    },
+                    {
+                        "enemyKey": "debug_revenger",
+                        "level": 8
+                    }
+                ]
+            },
+            {
+                "floorNumber": 2,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "debug_bastion",
+                        "level": 8
+                    },
+                    {
+                        "enemyKey": "debug_stormguard",
+                        "level": 8
+                    },
+                    {
+                        "enemyKey": "debug_hierophant",
+                        "level": 8
+                    }
+                ]
+            },
+            {
+                "floorNumber": 3,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "debug_ironwarden",
+                        "level": 8
+                    },
+                    {
+                        "enemyKey": "debug_bastion",
+                        "level": 8
+                    },
+                    {
+                        "enemyKey": "debug_stormguard",
+                        "level": 8
+                    }
+                ]
+            },
+            {
+                "floorNumber": 4,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "debug_oathkeeper",
+                        "level": 9
+                    },
+                    {
+                        "enemyKey": "debug_pyromancer",
+                        "level": 8
+                    },
+                    {
+                        "enemyKey": "debug_revenger",
+                        "level": 8
+                    }
+                ]
+            },
+            {
+                "floorNumber": 5,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "debug_ironwarden",
+                        "level": 9
+                    },
+                    {
+                        "enemyKey": "debug_bastion",
+                        "level": 9
+                    },
+                    {
+                        "enemyKey": "debug_pyromancer",
+                        "level": 9
+                    },
+                    {
+                        "enemyKey": "debug_stormguard",
+                        "level": 9
+                    }
+                ]
+            },
+            {
+                "floorNumber": 6,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "debug_dreadnought",
+                        "level": 9
+                    },
+                    {
+                        "enemyKey": "debug_pyromancer",
+                        "level": 9
+                    },
+                    {
+                        "enemyKey": "debug_stormguard",
+                        "level": 9
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "debug_misery",
+        "name": "デバッグの苦界",
+        "enemyCountCap": 5,
+        "progressIntervalSeconds": 1,
+        "floors": [
+            {
+                "floorNumber": 1,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "debug_ironwarden",
+                        "level": 9
+                    },
+                    {
+                        "enemyKey": "debug_pyromancer",
+                        "level": 9
+                    },
+                    {
+                        "enemyKey": "debug_revenger",
+                        "level": 9
+                    }
+                ]
+            },
+            {
+                "floorNumber": 2,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "debug_bastion",
+                        "level": 9
+                    },
+                    {
+                        "enemyKey": "debug_stormguard",
+                        "level": 9
+                    },
+                    {
+                        "enemyKey": "debug_hierophant",
+                        "level": 9
+                    }
+                ]
+            },
+            {
+                "floorNumber": 3,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "debug_ironwarden",
+                        "level": 9
+                    },
+                    {
+                        "enemyKey": "debug_bastion",
+                        "level": 9
+                    },
+                    {
+                        "enemyKey": "debug_stormguard",
+                        "level": 9
+                    }
+                ]
+            },
+            {
+                "floorNumber": 4,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "debug_oathkeeper",
+                        "level": 9
+                    },
+                    {
+                        "enemyKey": "debug_pyromancer",
+                        "level": 9
+                    },
+                    {
+                        "enemyKey": "debug_revenger",
+                        "level": 9
+                    }
+                ]
+            },
+            {
+                "floorNumber": 5,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "debug_ironwarden",
+                        "level": 10
+                    },
+                    {
+                        "enemyKey": "debug_bastion",
+                        "level": 10
+                    },
+                    {
+                        "enemyKey": "debug_pyromancer",
+                        "level": 10
+                    },
+                    {
+                        "enemyKey": "debug_stormguard",
+                        "level": 10
+                    }
+                ]
+            },
+            {
+                "floorNumber": 6,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "debug_dreadnought",
+                        "level": 10
+                    },
+                    {
+                        "enemyKey": "debug_pyromancer",
+                        "level": 10
+                    },
+                    {
+                        "enemyKey": "debug_stormguard",
+                        "level": 10
+                    }
+                ]
+            },
+            {
+                "floorNumber": 7,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "debug_ironwarden",
+                        "level": 10
+                    },
+                    {
+                        "enemyKey": "debug_bastion",
+                        "level": 10
+                    },
+                    {
+                        "enemyKey": "debug_pyromancer",
+                        "level": 10
+                    },
+                    {
+                        "enemyKey": "debug_stormguard",
+                        "level": 10
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "debug_oblivion",
+        "name": "デバッグの断滅",
+        "enemyCountCap": 5,
+        "progressIntervalSeconds": 1,
+        "floors": [
+            {
+                "floorNumber": 1,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "debug_ironwarden",
+                        "level": 9
+                    },
+                    {
+                        "enemyKey": "debug_bastion",
+                        "level": 9
+                    },
+                    {
+                        "enemyKey": "debug_pyromancer",
+                        "level": 9
+                    }
+                ]
+            },
+            {
+                "floorNumber": 2,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "debug_oathkeeper",
+                        "level": 9
+                    },
+                    {
+                        "enemyKey": "debug_ironwarden",
+                        "level": 9
+                    },
+                    {
+                        "enemyKey": "debug_stormguard",
+                        "level": 9
+                    }
+                ]
+            },
+            {
+                "floorNumber": 3,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "debug_oathkeeper",
+                        "level": 9
+                    },
+                    {
+                        "enemyKey": "debug_pyromancer",
+                        "level": 9
+                    },
+                    {
+                        "enemyKey": "debug_revenger",
+                        "level": 9
+                    }
+                ]
+            },
+            {
+                "floorNumber": 4,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "debug_dreadnought",
+                        "level": 9
+                    },
+                    {
+                        "enemyKey": "debug_ironwarden",
+                        "level": 9
+                    },
+                    {
+                        "enemyKey": "debug_stormguard",
+                        "level": 9
+                    }
+                ]
+            },
+            {
+                "floorNumber": 5,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "debug_dreadnought",
+                        "level": 10
+                    },
+                    {
+                        "enemyKey": "debug_bastion",
+                        "level": 10
+                    },
+                    {
+                        "enemyKey": "debug_pyromancer",
+                        "level": 10
+                    },
+                    {
+                        "enemyKey": "debug_stormguard",
+                        "level": 10
+                    }
+                ]
+            },
+            {
+                "floorNumber": 6,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "debug_overlord",
+                        "level": 10
+                    },
+                    {
+                        "enemyKey": "debug_ironwarden",
+                        "level": 10
+                    },
+                    {
+                        "enemyKey": "debug_stormguard",
+                        "level": 10
+                    }
+                ]
+            },
+            {
+                "floorNumber": 7,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "debug_dreadnought",
+                        "level": 10
+                    },
+                    {
+                        "enemyKey": "debug_bastion",
+                        "level": 10
+                    },
+                    {
+                        "enemyKey": "debug_pyromancer",
+                        "level": 10
+                    },
+                    {
+                        "enemyKey": "debug_stormguard",
+                        "level": 10
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "debug_umbra_gate",
+        "name": "デバッグの幽門",
+        "enemyCountCap": 5,
+        "progressIntervalSeconds": 1,
+        "floors": [
+            {
+                "floorNumber": 1,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    { "enemyKey": "debug_grandbastion", "level": 10 },
+                    { "enemyKey": "debug_veilmage", "level": 10 },
+                    { "enemyKey": "debug_hexhunter", "level": 10 }
+                ]
+            },
+            {
+                "floorNumber": 2,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    { "enemyKey": "debug_ironwarden", "level": 10 },
+                    { "enemyKey": "debug_requiem", "level": 10 },
+                    { "enemyKey": "debug_stormguard", "level": 10 }
+                ]
+            },
+            {
+                "floorNumber": 3,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    { "enemyKey": "debug_grandbastion", "level": 10 },
+                    { "enemyKey": "debug_hexhunter", "level": 10 },
+                    { "enemyKey": "debug_pyromancer", "level": 10 }
+                ]
+            },
+            {
+                "floorNumber": 4,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    { "enemyKey": "debug_requiem", "level": 11 },
+                    { "enemyKey": "debug_bastion", "level": 11 },
+                    { "enemyKey": "debug_hexhunter", "level": 11 }
+                ]
+            },
+            {
+                "floorNumber": 5,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    { "enemyKey": "debug_nullguard", "level": 11 },
+                    { "enemyKey": "debug_veilmage", "level": 11 },
+                    { "enemyKey": "debug_grandbastion", "level": 11 }
+                ]
+            },
+            {
+                "floorNumber": 6,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    { "enemyKey": "debug_overlord", "level": 11 },
+                    { "enemyKey": "debug_requiem", "level": 11 },
+                    { "enemyKey": "debug_stormguard", "level": 11 }
+                ]
+            },
+            {
+                "floorNumber": 7,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    { "enemyKey": "debug_nullguard", "level": 11 },
+                    { "enemyKey": "debug_grandbastion", "level": 11 },
+                    { "enemyKey": "debug_veilmage", "level": 11 },
+                    { "enemyKey": "debug_hexhunter", "level": 11 }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "debug_blackspire",
+        "name": "デバッグの黒塔",
+        "enemyCountCap": 5,
+        "progressIntervalSeconds": 1,
+        "floors": [
+            {
+                "floorNumber": 1,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    { "enemyKey": "debug_grandbastion", "level": 11 },
+                    { "enemyKey": "debug_hexhunter", "level": 11 },
+                    { "enemyKey": "debug_hexhunter", "level": 11 }
+                ]
+            },
+            {
+                "floorNumber": 2,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    { "enemyKey": "debug_requiem", "level": 11 },
+                    { "enemyKey": "debug_veilmage", "level": 11 },
+                    { "enemyKey": "debug_stormguard", "level": 11 }
+                ]
+            },
+            {
+                "floorNumber": 3,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    { "enemyKey": "debug_nullguard", "level": 11 },
+                    { "enemyKey": "debug_grandbastion", "level": 11 },
+                    { "enemyKey": "debug_pyromancer", "level": 11 }
+                ]
+            },
+            {
+                "floorNumber": 4,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    { "enemyKey": "debug_requiem", "level": 12 },
+                    { "enemyKey": "debug_nullguard", "level": 12 },
+                    { "enemyKey": "debug_hexhunter", "level": 12 }
+                ]
+            },
+            {
+                "floorNumber": 5,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    { "enemyKey": "debug_nullguard", "level": 12 },
+                    { "enemyKey": "debug_grandbastion", "level": 12 },
+                    { "enemyKey": "debug_veilmage", "level": 12 },
+                    { "enemyKey": "debug_hexhunter", "level": 12 }
+                ]
+            },
+            {
+                "floorNumber": 6,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    { "enemyKey": "debug_worldender", "level": 12 },
+                    { "enemyKey": "debug_requiem", "level": 12 },
+                    { "enemyKey": "debug_stormguard", "level": 12 }
+                ]
+            },
+            {
+                "floorNumber": 7,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    { "enemyKey": "debug_nullguard", "level": 12 },
+                    { "enemyKey": "debug_grandbastion", "level": 12 },
+                    { "enemyKey": "debug_requiem", "level": 12 },
+                    { "enemyKey": "debug_veilmage", "level": 12 }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "debug_warpfall",
+        "name": "デバッグの禍転",
+        "enemyCountCap": 5,
+        "progressIntervalSeconds": 1,
+        "floors": [
+            {
+                "floorNumber": 1,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    { "enemyKey": "debug_grandbastion", "level": 12 },
+                    { "enemyKey": "debug_veilmage", "level": 12 },
+                    { "enemyKey": "debug_hexhunter", "level": 12 }
+                ]
+            },
+            {
+                "floorNumber": 2,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    { "enemyKey": "debug_requiem", "level": 12 },
+                    { "enemyKey": "debug_requiem", "level": 12 },
+                    { "enemyKey": "debug_stormguard", "level": 12 }
+                ]
+            },
+            {
+                "floorNumber": 3,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    { "enemyKey": "debug_nullguard", "level": 12 },
+                    { "enemyKey": "debug_grandbastion", "level": 12 },
+                    { "enemyKey": "debug_hexhunter", "level": 12 }
+                ]
+            },
+            {
+                "floorNumber": 4,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    { "enemyKey": "debug_veilmage", "level": 13 },
+                    { "enemyKey": "debug_grandbastion", "level": 13 },
+                    { "enemyKey": "debug_hexhunter", "level": 13 },
+                    { "enemyKey": "debug_hexhunter", "level": 13 }
+                ]
+            },
+            {
+                "floorNumber": 5,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    { "enemyKey": "debug_nullguard", "level": 13 },
+                    { "enemyKey": "debug_requiem", "level": 13 },
+                    { "enemyKey": "debug_grandbastion", "level": 13 },
+                    { "enemyKey": "debug_veilmage", "level": 13 }
+                ]
+            },
+            {
+                "floorNumber": 6,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    { "enemyKey": "debug_worldender", "level": 13 },
+                    { "enemyKey": "debug_nullguard", "level": 13 },
+                    { "enemyKey": "debug_requiem", "level": 13 }
+                ]
+            },
+            {
+                "floorNumber": 7,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    { "enemyKey": "debug_nullguard", "level": 13 },
+                    { "enemyKey": "debug_grandbastion", "level": 13 },
+                    { "enemyKey": "debug_requiem", "level": 13 },
+                    { "enemyKey": "debug_veilmage", "level": 13 },
+                    { "enemyKey": "debug_hexhunter", "level": 13 }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "debug_eclipse",
+        "name": "デバッグの蝕界",
+        "enemyCountCap": 5,
+        "progressIntervalSeconds": 1,
+        "floors": [
+            {
+                "floorNumber": 1,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    { "enemyKey": "debug_nullguard", "level": 13 },
+                    { "enemyKey": "debug_grandbastion", "level": 13 },
+                    { "enemyKey": "debug_veilmage", "level": 13 }
+                ]
+            },
+            {
+                "floorNumber": 2,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    { "enemyKey": "debug_requiem", "level": 13 },
+                    { "enemyKey": "debug_requiem", "level": 13 },
+                    { "enemyKey": "debug_hexhunter", "level": 13 },
+                    { "enemyKey": "debug_stormguard", "level": 13 }
+                ]
+            },
+            {
+                "floorNumber": 3,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    { "enemyKey": "debug_worldender", "level": 13 },
+                    { "enemyKey": "debug_grandbastion", "level": 13 },
+                    { "enemyKey": "debug_hexhunter", "level": 13 }
+                ]
+            },
+            {
+                "floorNumber": 4,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    { "enemyKey": "debug_nullguard", "level": 14 },
+                    { "enemyKey": "debug_veilmage", "level": 14 },
+                    { "enemyKey": "debug_veilmage", "level": 14 },
+                    { "enemyKey": "debug_hexhunter", "level": 14 }
+                ]
+            },
+            {
+                "floorNumber": 5,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    { "enemyKey": "debug_worldender", "level": 14 },
+                    { "enemyKey": "debug_requiem", "level": 14 },
+                    { "enemyKey": "debug_grandbastion", "level": 14 },
+                    { "enemyKey": "debug_veilmage", "level": 14 }
+                ]
+            },
+            {
+                "floorNumber": 6,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    { "enemyKey": "debug_worldender", "level": 14 },
+                    { "enemyKey": "debug_nullguard", "level": 14 },
+                    { "enemyKey": "debug_requiem", "level": 14 },
+                    { "enemyKey": "debug_hexhunter", "level": 14 }
+                ]
+            },
+            {
+                "floorNumber": 7,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    { "enemyKey": "debug_worldender", "level": 14 },
+                    { "enemyKey": "debug_nullguard", "level": 14 },
+                    { "enemyKey": "debug_grandbastion", "level": 14 },
+                    { "enemyKey": "debug_requiem", "level": 14 },
+                    { "enemyKey": "debug_veilmage", "level": 14 }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "debug_voidthrone",
+        "name": "デバッグの虚座",
+        "enemyCountCap": 5,
+        "progressIntervalSeconds": 1,
+        "floors": [
+            {
+                "floorNumber": 1,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    { "enemyKey": "debug_worldender", "level": 14 },
+                    { "enemyKey": "debug_grandbastion", "level": 14 },
+                    { "enemyKey": "debug_veilmage", "level": 14 }
+                ]
+            },
+            {
+                "floorNumber": 2,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    { "enemyKey": "debug_requiem", "level": 14 },
+                    { "enemyKey": "debug_nullguard", "level": 14 },
+                    { "enemyKey": "debug_hexhunter", "level": 14 },
+                    { "enemyKey": "debug_hexhunter", "level": 14 }
+                ]
+            },
+            {
+                "floorNumber": 3,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    { "enemyKey": "debug_worldender", "level": 14 },
+                    { "enemyKey": "debug_requiem", "level": 14 },
+                    { "enemyKey": "debug_grandbastion", "level": 14 },
+                    { "enemyKey": "debug_stormguard", "level": 14 }
+                ]
+            },
+            {
+                "floorNumber": 4,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    { "enemyKey": "debug_nullguard", "level": 15 },
+                    { "enemyKey": "debug_grandbastion", "level": 15 },
+                    { "enemyKey": "debug_veilmage", "level": 15 },
+                    { "enemyKey": "debug_hexhunter", "level": 15 }
+                ]
+            },
+            {
+                "floorNumber": 5,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    { "enemyKey": "debug_worldender", "level": 15 },
+                    { "enemyKey": "debug_nullguard", "level": 15 },
+                    { "enemyKey": "debug_requiem", "level": 15 },
+                    { "enemyKey": "debug_veilmage", "level": 15 }
+                ]
+            },
+            {
+                "floorNumber": 6,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    { "enemyKey": "debug_worldender", "level": 15 },
+                    { "enemyKey": "debug_nullguard", "level": 15 },
+                    { "enemyKey": "debug_grandbastion", "level": 15 },
+                    { "enemyKey": "debug_hexhunter", "level": 15 },
+                    { "enemyKey": "debug_requiem", "level": 15 }
+                ]
+            },
+            {
+                "floorNumber": 7,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    { "enemyKey": "debug_worldender", "level": 15 },
+                    { "enemyKey": "debug_nullguard", "level": 15 },
+                    { "enemyKey": "debug_grandbastion", "level": 15 },
+                    { "enemyKey": "debug_requiem", "level": 15 },
+                    { "enemyKey": "debug_veilmage", "level": 15 }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "debug_last_horizon",
+        "name": "デバッグの終極",
+        "enemyCountCap": 5,
+        "progressIntervalSeconds": 1,
+        "floors": [
+            {
+                "floorNumber": 1,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    { "enemyKey": "debug_worldender", "level": 15 },
+                    { "enemyKey": "debug_nullguard", "level": 15 },
+                    { "enemyKey": "debug_grandbastion", "level": 15 },
+                    { "enemyKey": "debug_veilmage", "level": 15 }
+                ]
+            },
+            {
+                "floorNumber": 2,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    { "enemyKey": "debug_worldender", "level": 15 },
+                    { "enemyKey": "debug_requiem", "level": 15 },
+                    { "enemyKey": "debug_requiem", "level": 15 },
+                    { "enemyKey": "debug_hexhunter", "level": 15 }
+                ]
+            },
+            {
+                "floorNumber": 3,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    { "enemyKey": "debug_worldender", "level": 16 },
+                    { "enemyKey": "debug_nullguard", "level": 16 },
+                    { "enemyKey": "debug_grandbastion", "level": 16 },
+                    { "enemyKey": "debug_veilmage", "level": 16 }
+                ]
+            },
+            {
+                "floorNumber": 4,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    { "enemyKey": "debug_worldender", "level": 16 },
+                    { "enemyKey": "debug_nullguard", "level": 16 },
+                    { "enemyKey": "debug_requiem", "level": 16 },
+                    { "enemyKey": "debug_hexhunter", "level": 16 },
+                    { "enemyKey": "debug_hexhunter", "level": 16 }
+                ]
+            },
+            {
+                "floorNumber": 5,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    { "enemyKey": "debug_worldender", "level": 16 },
+                    { "enemyKey": "debug_worldender", "level": 16 },
+                    { "enemyKey": "debug_grandbastion", "level": 16 },
+                    { "enemyKey": "debug_veilmage", "level": 16 }
+                ]
+            },
+            {
+                "floorNumber": 6,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    { "enemyKey": "debug_worldender", "level": 16 },
+                    { "enemyKey": "debug_nullguard", "level": 16 },
+                    { "enemyKey": "debug_requiem", "level": 16 },
+                    { "enemyKey": "debug_grandbastion", "level": 16 },
+                    { "enemyKey": "debug_veilmage", "level": 16 }
+                ]
+            },
+            {
+                "floorNumber": 7,
+                "battleCount": 1,
+                "encounters": [],
+                "fixedBattle": [
+                    { "enemyKey": "debug_worldender", "level": 16 },
+                    { "enemyKey": "debug_nullguard", "level": 16 },
+                    { "enemyKey": "debug_grandbastion", "level": 16 },
+                    { "enemyKey": "debug_requiem", "level": 16 },
+                    { "enemyKey": "debug_veilmage", "level": 16 }
                 ]
             }
         ]

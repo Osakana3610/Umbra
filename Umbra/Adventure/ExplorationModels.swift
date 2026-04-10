@@ -159,6 +159,7 @@ nonisolated struct ExplorationDropNotificationBatch: Equatable, Sendable {
 
 nonisolated enum ExplorationError: LocalizedError {
     case invalidLabyrinth(labyrinthId: Int)
+    case labyrinthLocked(labyrinthId: Int)
     case invalidParty(partyId: Int)
     case runNotFound(partyId: Int, partyRunId: Int)
     case partyHasNoMembers(partyId: Int)
@@ -173,6 +174,8 @@ nonisolated enum ExplorationError: LocalizedError {
         switch self {
         case let .invalidLabyrinth(labyrinthId):
             "迷宮が見つかりません。 labyrinthId=\(labyrinthId)"
+        case let .labyrinthLocked(labyrinthId):
+            "迷宮\(labyrinthId)はまだ解放されていません。"
         case let .invalidParty(partyId):
             "パーティが見つかりません。 partyId=\(partyId)"
         case let .runNotFound(partyId, partyRunId):

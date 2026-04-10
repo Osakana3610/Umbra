@@ -47,6 +47,14 @@ actor ExplorationCoreDataStore {
         masterData: MasterData
     ) async throws -> (nextPartyRunId: Int, partyMembers: [CharacterRecord], selectedDifficultyTitleId: Int) {
         try await perform { context in
+            guard try ExplorationCoreDataBridge.isLabyrinthUnlocked(
+                labyrinthId: labyrinthId,
+                masterData: masterData,
+                in: context
+            ) else {
+                throw ExplorationError.labyrinthLocked(labyrinthId: labyrinthId)
+            }
+
             guard try !ExplorationCoreDataBridge.hasActiveRun(
                 partyId: partyId,
                 in: context
@@ -444,6 +452,23 @@ nonisolated private enum ExplorationCoreDataBridge {
         return storedTitleId > 0 ? storedTitleId : defaultTitleId
     }
 
+    static func isLabyrinthUnlocked(
+        labyrinthId: Int,
+        masterData: MasterData,
+        in context: NSManagedObjectContext
+    ) throws -> Bool {
+        // The first labyrinth is always available; later labyrinths become playable once a
+        // progress row exists for them.
+        if masterData.defaultUnlockedLabyrinthId == labyrinthId {
+            return true
+        }
+
+        return try fetchLabyrinthProgressEntity(
+            labyrinthId: labyrinthId,
+            in: context
+        ) != nil
+    }
+
     static func fetchOrCreatePlayerState(
         in context: NSManagedObjectContext
     ) throws -> PlayerStateEntity {
@@ -625,6 +650,12 @@ nonisolated private enum ExplorationCoreDataBridge {
             in: context,
             masterData: masterData
         )
+        try unlockNextLabyrinthIfNeeded(
+            completion: completion,
+            labyrinthId: labyrinthId,
+            in: context,
+            masterData: masterData
+        )
 
         return inventoryCounts
     }
@@ -670,6 +701,32 @@ nonisolated private enum ExplorationCoreDataBridge {
         }
 
         entity.highestUnlockedDifficultyTitleId = Int64(nextTitleId)
+    }
+
+    static func unlockNextLabyrinthIfNeeded(
+        completion: RunCompletionRecord,
+        labyrinthId: Int,
+        in context: NSManagedObjectContext,
+        masterData: MasterData
+    ) throws {
+        // Clearing a labyrinth materializes the next labyrinth's progress row so UI filtering and
+        // sortie validation can both treat it as unlocked immediately.
+        guard completion.reason == .cleared,
+              let nextLabyrinthId = masterData.nextLabyrinthId(after: labyrinthId),
+              let defaultTitleId = masterData.defaultExplorationDifficultyTitle?.id,
+              try fetchLabyrinthProgressEntity(labyrinthId: nextLabyrinthId, in: context) == nil else {
+            return
+        }
+
+        guard let entity = NSEntityDescription.insertNewObject(
+            forEntityName: "LabyrinthProgressEntity",
+            into: context
+        ) as? LabyrinthProgressEntity else {
+            fatalError("LabyrinthProgressEntity の生成に失敗しました。")
+        }
+
+        entity.labyrinthId = Int64(nextLabyrinthId)
+        entity.highestUnlockedDifficultyTitleId = Int64(defaultTitleId)
     }
 
     static func applyInventoryCounts(

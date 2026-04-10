@@ -118,7 +118,9 @@ struct ContentView: View {
         explorationStore: ExplorationStore(
             coreDataStore: ExplorationCoreDataStore(container: persistenceController.container),
             itemDropNotificationService: itemDropNotificationService,
-            rosterStore: rosterStore
+            rosterStore: rosterStore,
+            equipmentStore: EquipmentInventoryStore(coreDataStore: guildCoreDataStore, service: guildService),
+            shopStore: ShopInventoryStore(service: guildService)
         ),
         itemDropNotificationService: itemDropNotificationService,
         guildService: guildService
