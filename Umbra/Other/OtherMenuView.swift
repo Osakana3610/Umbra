@@ -12,6 +12,13 @@ struct OtherMenuView: View {
     private var explorationLogRetentionCount = ExplorationLogRetentionLimit.defaultValue.rawValue
     var body: some View {
         Form {
+            Section("図鑑") {
+                NavigationLink("モンスター図鑑") {
+                    MonsterBookView(masterData: masterData)
+                        .navigationTitle("モンスター図鑑")
+                }
+            }
+
             Section {
                 NavigationLink("アイテムドロップ通知") {
                     ItemDropNotificationSettingsView(masterData: masterData)
