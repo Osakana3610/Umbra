@@ -4,7 +4,7 @@
         "name": "ショートソード",
         "rarity": "normal",
         "category": "sword",
-        "basePrice": 40000,
+        "basePrice": 4000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 1
@@ -20,7 +20,7 @@
         "name": "ロングソード",
         "rarity": "normal",
         "category": "sword",
-        "basePrice": 80000,
+        "basePrice": 8000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 2,
@@ -37,7 +37,7 @@
         "name": "ブロードソード",
         "rarity": "normal",
         "category": "sword",
-        "basePrice": 160000,
+        "basePrice": 16000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 3,
@@ -54,7 +54,7 @@
         "name": "バスタードソード",
         "rarity": "normal",
         "category": "sword",
-        "basePrice": 320000,
+        "basePrice": 32000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 4,
@@ -72,7 +72,7 @@
         "name": "ファルシオン",
         "rarity": "normal",
         "category": "sword",
-        "basePrice": 640000,
+        "basePrice": 64000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 5,
@@ -90,7 +90,7 @@
         "name": "カッツバルゲル",
         "rarity": "normal",
         "category": "sword",
-        "basePrice": 1280000,
+        "basePrice": 128000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 6,
@@ -108,7 +108,7 @@
         "name": "エストック",
         "rarity": "normal",
         "category": "sword",
-        "basePrice": 2560000,
+        "basePrice": 256000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 7,
@@ -126,7 +126,7 @@
         "name": "クレイモア",
         "rarity": "normal",
         "category": "sword",
-        "basePrice": 5120000,
+        "basePrice": 512000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 8,
@@ -144,7 +144,7 @@
         "name": "シルバーソード",
         "rarity": "uncommon",
         "category": "sword",
-        "basePrice": 80000,
+        "basePrice": 8000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 9,
@@ -162,7 +162,7 @@
         "name": "ミスリルソード",
         "rarity": "uncommon",
         "category": "sword",
-        "basePrice": 160000,
+        "basePrice": 16000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 10,
@@ -180,7 +180,7 @@
         "name": "フレイムソード",
         "rarity": "uncommon",
         "category": "sword",
-        "basePrice": 320000,
+        "basePrice": 32000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 11,
@@ -198,7 +198,7 @@
         "name": "フロストソード",
         "rarity": "uncommon",
         "category": "sword",
-        "basePrice": 640000,
+        "basePrice": 64000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 12,
@@ -216,7 +216,7 @@
         "name": "ルーンブレード",
         "rarity": "rare",
         "category": "sword",
-        "basePrice": 160000,
+        "basePrice": 16000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 13,
@@ -234,7 +234,7 @@
         "name": "サンブレード",
         "rarity": "rare",
         "category": "sword",
-        "basePrice": 320000,
+        "basePrice": 32000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 14,
@@ -252,7 +252,7 @@
         "name": "ムーンブレード",
         "rarity": "rare",
         "category": "sword",
-        "basePrice": 640000,
+        "basePrice": 64000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 15,
@@ -270,7 +270,7 @@
         "name": "ナイトブレード",
         "rarity": "rare",
         "category": "sword",
-        "basePrice": 1280000,
+        "basePrice": 128000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 16,
@@ -288,7 +288,7 @@
         "name": "アークセイバー",
         "rarity": "mythic",
         "category": "sword",
-        "basePrice": 320000,
+        "basePrice": 32000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 17,
@@ -306,7 +306,7 @@
         "name": "ドラゴンスレイヤー",
         "rarity": "mythic",
         "category": "sword",
-        "basePrice": 640000,
+        "basePrice": 64000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 18,
@@ -324,7 +324,7 @@
         "name": "グラム",
         "rarity": "mythic",
         "category": "sword",
-        "basePrice": 1280000,
+        "basePrice": 128000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 19,
@@ -342,7 +342,7 @@
         "name": "ティルフィング",
         "rarity": "mythic",
         "category": "sword",
-        "basePrice": 2560000,
+        "basePrice": 256000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 20,
@@ -360,7 +360,7 @@
         "name": "エクスカリバー",
         "rarity": "godfiend",
         "category": "sword",
-        "basePrice": 640000,
+        "basePrice": 64000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 21,
@@ -378,7 +378,7 @@
         "name": "バルムンク",
         "rarity": "godfiend",
         "category": "sword",
-        "basePrice": 1280000,
+        "basePrice": 128000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 22,
@@ -396,7 +396,7 @@
         "name": "デュランダル",
         "rarity": "godfiend",
         "category": "sword",
-        "basePrice": 2560000,
+        "basePrice": 256000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 23,
@@ -414,7 +414,7 @@
         "name": "レーヴァテイン",
         "rarity": "godfiend",
         "category": "sword",
-        "basePrice": 5120000,
+        "basePrice": 512000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 24,
@@ -432,7 +432,7 @@
         "name": "短刀",
         "rarity": "normal",
         "category": "katana",
-        "basePrice": 40000,
+        "basePrice": 4000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 1
@@ -448,7 +448,7 @@
         "name": "脇差",
         "rarity": "normal",
         "category": "katana",
-        "basePrice": 80000,
+        "basePrice": 8000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 1,
@@ -465,7 +465,7 @@
         "name": "打刀",
         "rarity": "normal",
         "category": "katana",
-        "basePrice": 160000,
+        "basePrice": 16000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 2,
@@ -482,7 +482,7 @@
         "name": "太刀",
         "rarity": "normal",
         "category": "katana",
-        "basePrice": 320000,
+        "basePrice": 32000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 3,
@@ -500,7 +500,7 @@
         "name": "野太刀",
         "rarity": "normal",
         "category": "katana",
-        "basePrice": 640000,
+        "basePrice": 64000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 4,
@@ -518,7 +518,7 @@
         "name": "大太刀",
         "rarity": "normal",
         "category": "katana",
-        "basePrice": 1280000,
+        "basePrice": 128000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 5,
@@ -536,7 +536,7 @@
         "name": "居合刀",
         "rarity": "normal",
         "category": "katana",
-        "basePrice": 2560000,
+        "basePrice": 256000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 6,
@@ -554,7 +554,7 @@
         "name": "反り太刀",
         "rarity": "normal",
         "category": "katana",
-        "basePrice": 5120000,
+        "basePrice": 512000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 7,
@@ -572,7 +572,7 @@
         "name": "備前長船",
         "rarity": "uncommon",
         "category": "katana",
-        "basePrice": 80000,
+        "basePrice": 8000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 8,
@@ -590,7 +590,7 @@
         "name": "菊一文字",
         "rarity": "uncommon",
         "category": "katana",
-        "basePrice": 160000,
+        "basePrice": 16000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 9,
@@ -608,7 +608,7 @@
         "name": "孫六兼元",
         "rarity": "uncommon",
         "category": "katana",
-        "basePrice": 320000,
+        "basePrice": 32000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 10,
@@ -626,7 +626,7 @@
         "name": "長曾祢虎徹",
         "rarity": "uncommon",
         "category": "katana",
-        "basePrice": 640000,
+        "basePrice": 64000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 11,
@@ -644,7 +644,7 @@
         "name": "村正",
         "rarity": "rare",
         "category": "katana",
-        "basePrice": 160000,
+        "basePrice": 16000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 12,
@@ -662,7 +662,7 @@
         "name": "数珠丸恒次",
         "rarity": "rare",
         "category": "katana",
-        "basePrice": 320000,
+        "basePrice": 32000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 13,
@@ -680,7 +680,7 @@
         "name": "鬼丸国綱",
         "rarity": "rare",
         "category": "katana",
-        "basePrice": 640000,
+        "basePrice": 64000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 14,
@@ -698,7 +698,7 @@
         "name": "三日月宗近",
         "rarity": "rare",
         "category": "katana",
-        "basePrice": 1280000,
+        "basePrice": 128000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 15,
@@ -716,7 +716,7 @@
         "name": "童子切安綱",
         "rarity": "mythic",
         "category": "katana",
-        "basePrice": 320000,
+        "basePrice": 32000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 16,
@@ -734,7 +734,7 @@
         "name": "鬼切丸",
         "rarity": "mythic",
         "category": "katana",
-        "basePrice": 640000,
+        "basePrice": 64000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 17,
@@ -752,7 +752,7 @@
         "name": "七星剣",
         "rarity": "mythic",
         "category": "katana",
-        "basePrice": 1280000,
+        "basePrice": 128000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 18,
@@ -770,7 +770,7 @@
         "name": "天叢雲剣",
         "rarity": "mythic",
         "category": "katana",
-        "basePrice": 2560000,
+        "basePrice": 256000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 19,
@@ -788,7 +788,7 @@
         "name": "布都御魂",
         "rarity": "godfiend",
         "category": "katana",
-        "basePrice": 640000,
+        "basePrice": 64000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 20,
@@ -806,7 +806,7 @@
         "name": "草薙剣",
         "rarity": "godfiend",
         "category": "katana",
-        "basePrice": 1280000,
+        "basePrice": 128000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 21,
@@ -824,7 +824,7 @@
         "name": "小狐丸",
         "rarity": "godfiend",
         "category": "katana",
-        "basePrice": 2560000,
+        "basePrice": 256000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 22,
@@ -842,7 +842,7 @@
         "name": "雷切",
         "rarity": "godfiend",
         "category": "katana",
-        "basePrice": 5120000,
+        "basePrice": 512000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 23,
@@ -860,7 +860,7 @@
         "name": "ショートボウ",
         "rarity": "normal",
         "category": "bow",
-        "basePrice": 40000,
+        "basePrice": 4000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 1,
@@ -877,7 +877,7 @@
         "name": "ロングボウ",
         "rarity": "normal",
         "category": "bow",
-        "basePrice": 80000,
+        "basePrice": 8000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 1,
@@ -894,7 +894,7 @@
         "name": "ハンティングボウ",
         "rarity": "normal",
         "category": "bow",
-        "basePrice": 160000,
+        "basePrice": 16000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 2,
@@ -911,7 +911,7 @@
         "name": "リカーブボウ",
         "rarity": "normal",
         "category": "bow",
-        "basePrice": 320000,
+        "basePrice": 32000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 3,
@@ -928,7 +928,7 @@
         "name": "コンポジットボウ",
         "rarity": "normal",
         "category": "bow",
-        "basePrice": 640000,
+        "basePrice": 64000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 4,
@@ -946,7 +946,7 @@
         "name": "ホーンボウ",
         "rarity": "normal",
         "category": "bow",
-        "basePrice": 1280000,
+        "basePrice": 128000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 5,
@@ -964,7 +964,7 @@
         "name": "ラミネートボウ",
         "rarity": "normal",
         "category": "bow",
-        "basePrice": 2560000,
+        "basePrice": 256000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 6,
@@ -982,7 +982,7 @@
         "name": "ウォーボウ",
         "rarity": "normal",
         "category": "bow",
-        "basePrice": 5120000,
+        "basePrice": 512000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 7,
@@ -1000,7 +1000,7 @@
         "name": "エルムボウ",
         "rarity": "uncommon",
         "category": "bow",
-        "basePrice": 80000,
+        "basePrice": 8000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 8,
@@ -1018,7 +1018,7 @@
         "name": "ユーボウ",
         "rarity": "uncommon",
         "category": "bow",
-        "basePrice": 160000,
+        "basePrice": 16000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 9,
@@ -1036,7 +1036,7 @@
         "name": "シルバーボウ",
         "rarity": "uncommon",
         "category": "bow",
-        "basePrice": 320000,
+        "basePrice": 32000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 10,
@@ -1054,7 +1054,7 @@
         "name": "イーグルボウ",
         "rarity": "uncommon",
         "category": "bow",
-        "basePrice": 640000,
+        "basePrice": 64000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 11,
@@ -1072,7 +1072,7 @@
         "name": "ムーンボウ",
         "rarity": "rare",
         "category": "bow",
-        "basePrice": 160000,
+        "basePrice": 16000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 12,
@@ -1090,7 +1090,7 @@
         "name": "サンボウ",
         "rarity": "rare",
         "category": "bow",
-        "basePrice": 320000,
+        "basePrice": 32000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 13,
@@ -1108,7 +1108,7 @@
         "name": "ウィンドボウ",
         "rarity": "rare",
         "category": "bow",
-        "basePrice": 640000,
+        "basePrice": 64000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 14,
@@ -1126,7 +1126,7 @@
         "name": "ストームボウ",
         "rarity": "rare",
         "category": "bow",
-        "basePrice": 1280000,
+        "basePrice": 128000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 15,
@@ -1144,7 +1144,7 @@
         "name": "フェニックスボウ",
         "rarity": "mythic",
         "category": "bow",
-        "basePrice": 320000,
+        "basePrice": 32000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 16,
@@ -1162,7 +1162,7 @@
         "name": "ドラゴンボウ",
         "rarity": "mythic",
         "category": "bow",
-        "basePrice": 640000,
+        "basePrice": 64000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 17,
@@ -1180,7 +1180,7 @@
         "name": "セレスティアルボウ",
         "rarity": "mythic",
         "category": "bow",
-        "basePrice": 1280000,
+        "basePrice": 128000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 18,
@@ -1198,7 +1198,7 @@
         "name": "アルテミスボウ",
         "rarity": "mythic",
         "category": "bow",
-        "basePrice": 2560000,
+        "basePrice": 256000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 19,
@@ -1216,7 +1216,7 @@
         "name": "ガーンディーヴァ",
         "rarity": "godfiend",
         "category": "bow",
-        "basePrice": 640000,
+        "basePrice": 64000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 20,
@@ -1234,7 +1234,7 @@
         "name": "シャラング",
         "rarity": "godfiend",
         "category": "bow",
-        "basePrice": 1280000,
+        "basePrice": 128000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 21,
@@ -1252,7 +1252,7 @@
         "name": "ホルンボーゲ",
         "rarity": "godfiend",
         "category": "bow",
-        "basePrice": 2560000,
+        "basePrice": 256000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 22,
@@ -1270,7 +1270,7 @@
         "name": "アストラルボウ",
         "rarity": "godfiend",
         "category": "bow",
-        "basePrice": 5120000,
+        "basePrice": 512000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "physicalAttack": 23,
@@ -1288,7 +1288,7 @@
         "name": "オークワンド",
         "rarity": "normal",
         "category": "wand",
-        "basePrice": 40000,
+        "basePrice": 4000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 1
@@ -1304,7 +1304,7 @@
         "name": "アッシュワンド",
         "rarity": "normal",
         "category": "wand",
-        "basePrice": 80000,
+        "basePrice": 8000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 2,
@@ -1321,7 +1321,7 @@
         "name": "ボーンワンド",
         "rarity": "normal",
         "category": "wand",
-        "basePrice": 160000,
+        "basePrice": 16000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 3,
@@ -1338,7 +1338,7 @@
         "name": "アイボリーワンド",
         "rarity": "normal",
         "category": "wand",
-        "basePrice": 320000,
+        "basePrice": 32000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 4,
@@ -1355,7 +1355,7 @@
         "name": "ルーンワンド",
         "rarity": "normal",
         "category": "wand",
-        "basePrice": 640000,
+        "basePrice": 64000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 5,
@@ -1372,7 +1372,7 @@
         "name": "セージワンド",
         "rarity": "normal",
         "category": "wand",
-        "basePrice": 1280000,
+        "basePrice": 128000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 6,
@@ -1389,7 +1389,7 @@
         "name": "エルダーワンド",
         "rarity": "normal",
         "category": "wand",
-        "basePrice": 2560000,
+        "basePrice": 256000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 7,
@@ -1406,7 +1406,7 @@
         "name": "クリスタルワンド",
         "rarity": "normal",
         "category": "wand",
-        "basePrice": 5120000,
+        "basePrice": 512000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 8,
@@ -1423,7 +1423,7 @@
         "name": "シルバーワンド",
         "rarity": "uncommon",
         "category": "wand",
-        "basePrice": 80000,
+        "basePrice": 8000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 9,
@@ -1440,7 +1440,7 @@
         "name": "ミスリルワンド",
         "rarity": "uncommon",
         "category": "wand",
-        "basePrice": 160000,
+        "basePrice": 16000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 10,
@@ -1457,7 +1457,7 @@
         "name": "サファイアワンド",
         "rarity": "uncommon",
         "category": "wand",
-        "basePrice": 320000,
+        "basePrice": 32000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 11,
@@ -1474,7 +1474,7 @@
         "name": "エメラルドワンド",
         "rarity": "uncommon",
         "category": "wand",
-        "basePrice": 640000,
+        "basePrice": 64000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 12,
@@ -1491,7 +1491,7 @@
         "name": "スターワンド",
         "rarity": "rare",
         "category": "wand",
-        "basePrice": 160000,
+        "basePrice": 16000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 13,
@@ -1508,7 +1508,7 @@
         "name": "ムーンワンド",
         "rarity": "rare",
         "category": "wand",
-        "basePrice": 320000,
+        "basePrice": 32000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 14,
@@ -1525,7 +1525,7 @@
         "name": "サンワンド",
         "rarity": "rare",
         "category": "wand",
-        "basePrice": 640000,
+        "basePrice": 64000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 15,
@@ -1542,7 +1542,7 @@
         "name": "ドリームワンド",
         "rarity": "rare",
         "category": "wand",
-        "basePrice": 1280000,
+        "basePrice": 128000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 16,
@@ -1559,7 +1559,7 @@
         "name": "フェアリーワンド",
         "rarity": "mythic",
         "category": "wand",
-        "basePrice": 320000,
+        "basePrice": 32000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 17,
@@ -1576,7 +1576,7 @@
         "name": "ドラゴンワンド",
         "rarity": "mythic",
         "category": "wand",
-        "basePrice": 640000,
+        "basePrice": 64000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 18,
@@ -1593,7 +1593,7 @@
         "name": "セラフィムワンド",
         "rarity": "mythic",
         "category": "wand",
-        "basePrice": 1280000,
+        "basePrice": 128000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 19,
@@ -1610,7 +1610,7 @@
         "name": "カオスワンド",
         "rarity": "mythic",
         "category": "wand",
-        "basePrice": 2560000,
+        "basePrice": 256000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 20,
@@ -1627,7 +1627,7 @@
         "name": "ケリュケイオン",
         "rarity": "godfiend",
         "category": "wand",
-        "basePrice": 640000,
+        "basePrice": 64000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 21,
@@ -1644,7 +1644,7 @@
         "name": "ソロモンワンド",
         "rarity": "godfiend",
         "category": "wand",
-        "basePrice": 1280000,
+        "basePrice": 128000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 22,
@@ -1661,7 +1661,7 @@
         "name": "ヘカテーワンド",
         "rarity": "godfiend",
         "category": "wand",
-        "basePrice": 2560000,
+        "basePrice": 256000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 23,
@@ -1678,7 +1678,7 @@
         "name": "ネクロワンド",
         "rarity": "godfiend",
         "category": "wand",
-        "basePrice": 5120000,
+        "basePrice": 512000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 24,
@@ -1695,7 +1695,7 @@
         "name": "ウッドロッド",
         "rarity": "normal",
         "category": "rod",
-        "basePrice": 40000,
+        "basePrice": 4000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 1,
@@ -1712,7 +1712,7 @@
         "name": "オークロッド",
         "rarity": "normal",
         "category": "rod",
-        "basePrice": 80000,
+        "basePrice": 8000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 1,
@@ -1729,7 +1729,7 @@
         "name": "アイアンロッド",
         "rarity": "normal",
         "category": "rod",
-        "basePrice": 160000,
+        "basePrice": 16000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 2,
@@ -1746,7 +1746,7 @@
         "name": "ブロンズロッド",
         "rarity": "normal",
         "category": "rod",
-        "basePrice": 320000,
+        "basePrice": 32000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 2,
@@ -1763,7 +1763,7 @@
         "name": "スチールロッド",
         "rarity": "normal",
         "category": "rod",
-        "basePrice": 640000,
+        "basePrice": 64000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 3,
@@ -1780,7 +1780,7 @@
         "name": "シルバーロッド",
         "rarity": "normal",
         "category": "rod",
-        "basePrice": 1280000,
+        "basePrice": 128000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 3,
@@ -1797,7 +1797,7 @@
         "name": "ミスリルロッド",
         "rarity": "normal",
         "category": "rod",
-        "basePrice": 2560000,
+        "basePrice": 256000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 4,
@@ -1814,7 +1814,7 @@
         "name": "クリスタルロッド",
         "rarity": "normal",
         "category": "rod",
-        "basePrice": 5120000,
+        "basePrice": 512000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 4,
@@ -1831,7 +1831,7 @@
         "name": "ビショップロッド",
         "rarity": "uncommon",
         "category": "rod",
-        "basePrice": 80000,
+        "basePrice": 8000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 5,
@@ -1848,7 +1848,7 @@
         "name": "オラクルロッド",
         "rarity": "uncommon",
         "category": "rod",
-        "basePrice": 160000,
+        "basePrice": 16000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 5,
@@ -1865,7 +1865,7 @@
         "name": "テンプルロッド",
         "rarity": "uncommon",
         "category": "rod",
-        "basePrice": 320000,
+        "basePrice": 32000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 6,
@@ -1882,7 +1882,7 @@
         "name": "リチュアルロッド",
         "rarity": "uncommon",
         "category": "rod",
-        "basePrice": 640000,
+        "basePrice": 64000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 6,
@@ -1899,7 +1899,7 @@
         "name": "サンロッド",
         "rarity": "rare",
         "category": "rod",
-        "basePrice": 160000,
+        "basePrice": 16000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 7,
@@ -1916,7 +1916,7 @@
         "name": "ムーンロッド",
         "rarity": "rare",
         "category": "rod",
-        "basePrice": 320000,
+        "basePrice": 32000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 7,
@@ -1933,7 +1933,7 @@
         "name": "スターロッド",
         "rarity": "rare",
         "category": "rod",
-        "basePrice": 640000,
+        "basePrice": 64000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 8,
@@ -1950,7 +1950,7 @@
         "name": "アークロッド",
         "rarity": "rare",
         "category": "rod",
-        "basePrice": 1280000,
+        "basePrice": 128000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 8,
@@ -1967,7 +1967,7 @@
         "name": "ドラゴンロッド",
         "rarity": "mythic",
         "category": "rod",
-        "basePrice": 320000,
+        "basePrice": 32000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 9,
@@ -1984,7 +1984,7 @@
         "name": "セラフィクロッド",
         "rarity": "mythic",
         "category": "rod",
-        "basePrice": 640000,
+        "basePrice": 64000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 9,
@@ -2001,7 +2001,7 @@
         "name": "インフェルノロッド",
         "rarity": "mythic",
         "category": "rod",
-        "basePrice": 1280000,
+        "basePrice": 128000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 10,
@@ -2018,7 +2018,7 @@
         "name": "ネビュラロッド",
         "rarity": "mythic",
         "category": "rod",
-        "basePrice": 2560000,
+        "basePrice": 256000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 10,
@@ -2035,7 +2035,7 @@
         "name": "アスクレピオス",
         "rarity": "godfiend",
         "category": "rod",
-        "basePrice": 640000,
+        "basePrice": 64000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 11,
@@ -2052,7 +2052,7 @@
         "name": "トリスメギストス",
         "rarity": "godfiend",
         "category": "rod",
-        "basePrice": 1280000,
+        "basePrice": 128000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 11,
@@ -2069,7 +2069,7 @@
         "name": "セフィロトロッド",
         "rarity": "godfiend",
         "category": "rod",
-        "basePrice": 2560000,
+        "basePrice": 256000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 12,
@@ -2086,7 +2086,7 @@
         "name": "パンデモロッド",
         "rarity": "godfiend",
         "category": "rod",
-        "basePrice": 5120000,
+        "basePrice": 512000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 12,
@@ -2103,7 +2103,7 @@
         "name": "レザーアーマー",
         "rarity": "normal",
         "category": "armor",
-        "basePrice": 40000,
+        "basePrice": 4000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "maxHP": 3,
@@ -2120,7 +2120,7 @@
         "name": "ハードレザー",
         "rarity": "normal",
         "category": "armor",
-        "basePrice": 80000,
+        "basePrice": 8000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "maxHP": 6,
@@ -2137,7 +2137,7 @@
         "name": "スタデッドアーマー",
         "rarity": "normal",
         "category": "armor",
-        "basePrice": 160000,
+        "basePrice": 16000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "maxHP": 9,
@@ -2154,7 +2154,7 @@
         "name": "チェインメイル",
         "rarity": "normal",
         "category": "armor",
-        "basePrice": 320000,
+        "basePrice": 32000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "maxHP": 12,
@@ -2171,7 +2171,7 @@
         "name": "スケイルアーマー",
         "rarity": "normal",
         "category": "armor",
-        "basePrice": 640000,
+        "basePrice": 64000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "maxHP": 15,
@@ -2188,7 +2188,7 @@
         "name": "ブリガンダイン",
         "rarity": "normal",
         "category": "armor",
-        "basePrice": 1280000,
+        "basePrice": 128000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "maxHP": 18,
@@ -2205,7 +2205,7 @@
         "name": "ラメラーアーマー",
         "rarity": "normal",
         "category": "armor",
-        "basePrice": 2560000,
+        "basePrice": 256000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "maxHP": 21,
@@ -2222,7 +2222,7 @@
         "name": "プレートアーマー",
         "rarity": "normal",
         "category": "armor",
-        "basePrice": 5120000,
+        "basePrice": 512000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "maxHP": 24,
@@ -2239,7 +2239,7 @@
         "name": "シルバーアーマー",
         "rarity": "uncommon",
         "category": "armor",
-        "basePrice": 80000,
+        "basePrice": 8000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "maxHP": 27,
@@ -2256,7 +2256,7 @@
         "name": "ミスリルアーマー",
         "rarity": "uncommon",
         "category": "armor",
-        "basePrice": 160000,
+        "basePrice": 16000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "maxHP": 30,
@@ -2273,7 +2273,7 @@
         "name": "ドラゴンスケイル",
         "rarity": "uncommon",
         "category": "armor",
-        "basePrice": 320000,
+        "basePrice": 32000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "maxHP": 33,
@@ -2290,7 +2290,7 @@
         "name": "ナイトアーマー",
         "rarity": "uncommon",
         "category": "armor",
-        "basePrice": 640000,
+        "basePrice": 64000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "maxHP": 36,
@@ -2307,7 +2307,7 @@
         "name": "ルーンアーマー",
         "rarity": "rare",
         "category": "armor",
-        "basePrice": 160000,
+        "basePrice": 16000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "maxHP": 39,
@@ -2324,7 +2324,7 @@
         "name": "サンアーマー",
         "rarity": "rare",
         "category": "armor",
-        "basePrice": 320000,
+        "basePrice": 32000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "maxHP": 42,
@@ -2341,7 +2341,7 @@
         "name": "ムーンアーマー",
         "rarity": "rare",
         "category": "armor",
-        "basePrice": 640000,
+        "basePrice": 64000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "maxHP": 45,
@@ -2358,7 +2358,7 @@
         "name": "ストームアーマー",
         "rarity": "rare",
         "category": "armor",
-        "basePrice": 1280000,
+        "basePrice": 128000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "maxHP": 48,
@@ -2375,7 +2375,7 @@
         "name": "セレスティアルアーマー",
         "rarity": "mythic",
         "category": "armor",
-        "basePrice": 320000,
+        "basePrice": 32000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "maxHP": 51,
@@ -2392,7 +2392,7 @@
         "name": "インフェルノアーマー",
         "rarity": "mythic",
         "category": "armor",
-        "basePrice": 640000,
+        "basePrice": 64000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "maxHP": 54,
@@ -2409,7 +2409,7 @@
         "name": "フェニックスアーマー",
         "rarity": "mythic",
         "category": "armor",
-        "basePrice": 1280000,
+        "basePrice": 128000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "maxHP": 57,
@@ -2426,7 +2426,7 @@
         "name": "アークアーマー",
         "rarity": "mythic",
         "category": "armor",
-        "basePrice": 2560000,
+        "basePrice": 256000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "maxHP": 60,
@@ -2443,7 +2443,7 @@
         "name": "エターナルアーマー",
         "rarity": "godfiend",
         "category": "armor",
-        "basePrice": 640000,
+        "basePrice": 64000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "maxHP": 63,
@@ -2460,7 +2460,7 @@
         "name": "パラディンメイル",
         "rarity": "godfiend",
         "category": "armor",
-        "basePrice": 1280000,
+        "basePrice": 128000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "maxHP": 66,
@@ -2477,7 +2477,7 @@
         "name": "バハムートメイル",
         "rarity": "godfiend",
         "category": "armor",
-        "basePrice": 2560000,
+        "basePrice": 256000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "maxHP": 69,
@@ -2494,7 +2494,7 @@
         "name": "アダマンタイトアーマー",
         "rarity": "godfiend",
         "category": "armor",
-        "basePrice": 5120000,
+        "basePrice": 512000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "maxHP": 72,
@@ -2511,7 +2511,7 @@
         "name": "バックラー",
         "rarity": "normal",
         "category": "shield",
-        "basePrice": 40000,
+        "basePrice": 4000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "maxHP": 4
@@ -2527,7 +2527,7 @@
         "name": "スモールシールド",
         "rarity": "normal",
         "category": "shield",
-        "basePrice": 80000,
+        "basePrice": 8000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "maxHP": 8
@@ -2543,7 +2543,7 @@
         "name": "ラウンドシールド",
         "rarity": "normal",
         "category": "shield",
-        "basePrice": 160000,
+        "basePrice": 16000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "maxHP": 12
@@ -2559,7 +2559,7 @@
         "name": "ヒーターシールド",
         "rarity": "normal",
         "category": "shield",
-        "basePrice": 320000,
+        "basePrice": 32000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "maxHP": 16
@@ -2575,7 +2575,7 @@
         "name": "カイトシールド",
         "rarity": "normal",
         "category": "shield",
-        "basePrice": 640000,
+        "basePrice": 64000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "maxHP": 20
@@ -2591,7 +2591,7 @@
         "name": "タージェ",
         "rarity": "normal",
         "category": "shield",
-        "basePrice": 1280000,
+        "basePrice": 128000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "maxHP": 24
@@ -2607,7 +2607,7 @@
         "name": "ホプロン",
         "rarity": "normal",
         "category": "shield",
-        "basePrice": 2560000,
+        "basePrice": 256000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "maxHP": 28
@@ -2623,7 +2623,7 @@
         "name": "タワーシールド",
         "rarity": "normal",
         "category": "shield",
-        "basePrice": 5120000,
+        "basePrice": 512000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "maxHP": 32
@@ -2639,7 +2639,7 @@
         "name": "スパイクシールド",
         "rarity": "uncommon",
         "category": "shield",
-        "basePrice": 80000,
+        "basePrice": 8000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "maxHP": 36
@@ -2655,7 +2655,7 @@
         "name": "ミラーシールド",
         "rarity": "uncommon",
         "category": "shield",
-        "basePrice": 160000,
+        "basePrice": 16000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "maxHP": 40
@@ -2671,7 +2671,7 @@
         "name": "シルバーシールド",
         "rarity": "uncommon",
         "category": "shield",
-        "basePrice": 320000,
+        "basePrice": 32000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "maxHP": 44
@@ -2687,7 +2687,7 @@
         "name": "ミスリルシールド",
         "rarity": "uncommon",
         "category": "shield",
-        "basePrice": 640000,
+        "basePrice": 64000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "maxHP": 48
@@ -2703,7 +2703,7 @@
         "name": "ルーンシールド",
         "rarity": "rare",
         "category": "shield",
-        "basePrice": 160000,
+        "basePrice": 16000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "maxHP": 52
@@ -2719,7 +2719,7 @@
         "name": "サンシールド",
         "rarity": "rare",
         "category": "shield",
-        "basePrice": 320000,
+        "basePrice": 32000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "maxHP": 56
@@ -2735,7 +2735,7 @@
         "name": "ムーンシールド",
         "rarity": "rare",
         "category": "shield",
-        "basePrice": 640000,
+        "basePrice": 64000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "maxHP": 60
@@ -2751,7 +2751,7 @@
         "name": "ストームシールド",
         "rarity": "rare",
         "category": "shield",
-        "basePrice": 1280000,
+        "basePrice": 128000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "maxHP": 64
@@ -2767,7 +2767,7 @@
         "name": "ドラゴンシールド",
         "rarity": "mythic",
         "category": "shield",
-        "basePrice": 320000,
+        "basePrice": 32000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "maxHP": 68
@@ -2783,7 +2783,7 @@
         "name": "アークシールド",
         "rarity": "mythic",
         "category": "shield",
-        "basePrice": 640000,
+        "basePrice": 64000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "maxHP": 72
@@ -2799,7 +2799,7 @@
         "name": "フェニックスシールド",
         "rarity": "mythic",
         "category": "shield",
-        "basePrice": 1280000,
+        "basePrice": 128000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "maxHP": 76
@@ -2815,7 +2815,7 @@
         "name": "セレスティアルシールド",
         "rarity": "mythic",
         "category": "shield",
-        "basePrice": 2560000,
+        "basePrice": 256000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "maxHP": 80
@@ -2831,7 +2831,7 @@
         "name": "アイギス",
         "rarity": "godfiend",
         "category": "shield",
-        "basePrice": 640000,
+        "basePrice": 64000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "maxHP": 84
@@ -2847,7 +2847,7 @@
         "name": "スヴァリン",
         "rarity": "godfiend",
         "category": "shield",
-        "basePrice": 1280000,
+        "basePrice": 128000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "maxHP": 88
@@ -2863,7 +2863,7 @@
         "name": "プリトウェン",
         "rarity": "godfiend",
         "category": "shield",
-        "basePrice": 2560000,
+        "basePrice": 256000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "maxHP": 92
@@ -2879,7 +2879,7 @@
         "name": "アダマスシールド",
         "rarity": "godfiend",
         "category": "shield",
-        "basePrice": 5120000,
+        "basePrice": 512000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "maxHP": 96
@@ -2895,7 +2895,7 @@
         "name": "クロスローブ",
         "rarity": "normal",
         "category": "robe",
-        "basePrice": 40000,
+        "basePrice": 4000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magicDefense": 1
@@ -2911,7 +2911,7 @@
         "name": "リネンローブ",
         "rarity": "normal",
         "category": "robe",
-        "basePrice": 80000,
+        "basePrice": 8000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 1,
@@ -2929,7 +2929,7 @@
         "name": "シルクローブ",
         "rarity": "normal",
         "category": "robe",
-        "basePrice": 160000,
+        "basePrice": 16000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 1,
@@ -2947,7 +2947,7 @@
         "name": "ウールローブ",
         "rarity": "normal",
         "category": "robe",
-        "basePrice": 320000,
+        "basePrice": 32000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 1,
@@ -2965,7 +2965,7 @@
         "name": "ベルベットローブ",
         "rarity": "normal",
         "category": "robe",
-        "basePrice": 640000,
+        "basePrice": 64000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 2,
@@ -2983,7 +2983,7 @@
         "name": "フードローブ",
         "rarity": "normal",
         "category": "robe",
-        "basePrice": 1280000,
+        "basePrice": 128000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 2,
@@ -3001,7 +3001,7 @@
         "name": "セージローブ",
         "rarity": "normal",
         "category": "robe",
-        "basePrice": 2560000,
+        "basePrice": 256000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 2,
@@ -3019,7 +3019,7 @@
         "name": "オラクルローブ",
         "rarity": "normal",
         "category": "robe",
-        "basePrice": 5120000,
+        "basePrice": 512000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 3,
@@ -3037,7 +3037,7 @@
         "name": "シルバーローブ",
         "rarity": "uncommon",
         "category": "robe",
-        "basePrice": 80000,
+        "basePrice": 8000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 3,
@@ -3055,7 +3055,7 @@
         "name": "ミスリルローブ",
         "rarity": "uncommon",
         "category": "robe",
-        "basePrice": 160000,
+        "basePrice": 16000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 3,
@@ -3073,7 +3073,7 @@
         "name": "エルダーローブ",
         "rarity": "uncommon",
         "category": "robe",
-        "basePrice": 320000,
+        "basePrice": 32000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 4,
@@ -3091,7 +3091,7 @@
         "name": "ルーンローブ",
         "rarity": "uncommon",
         "category": "robe",
-        "basePrice": 640000,
+        "basePrice": 64000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 4,
@@ -3109,7 +3109,7 @@
         "name": "サンローブ",
         "rarity": "rare",
         "category": "robe",
-        "basePrice": 160000,
+        "basePrice": 16000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 4,
@@ -3127,7 +3127,7 @@
         "name": "ムーンローブ",
         "rarity": "rare",
         "category": "robe",
-        "basePrice": 320000,
+        "basePrice": 32000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 5,
@@ -3145,7 +3145,7 @@
         "name": "スターローブ",
         "rarity": "rare",
         "category": "robe",
-        "basePrice": 640000,
+        "basePrice": 64000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 5,
@@ -3163,7 +3163,7 @@
         "name": "ドリームローブ",
         "rarity": "rare",
         "category": "robe",
-        "basePrice": 1280000,
+        "basePrice": 128000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 5,
@@ -3181,7 +3181,7 @@
         "name": "セレスティアルローブ",
         "rarity": "mythic",
         "category": "robe",
-        "basePrice": 320000,
+        "basePrice": 32000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 6,
@@ -3199,7 +3199,7 @@
         "name": "フェアリーローブ",
         "rarity": "mythic",
         "category": "robe",
-        "basePrice": 640000,
+        "basePrice": 64000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 6,
@@ -3217,7 +3217,7 @@
         "name": "フェニックスローブ",
         "rarity": "mythic",
         "category": "robe",
-        "basePrice": 1280000,
+        "basePrice": 128000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 6,
@@ -3235,7 +3235,7 @@
         "name": "アークローブ",
         "rarity": "mythic",
         "category": "robe",
-        "basePrice": 2560000,
+        "basePrice": 256000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 7,
@@ -3253,7 +3253,7 @@
         "name": "ソロモンローブ",
         "rarity": "godfiend",
         "category": "robe",
-        "basePrice": 640000,
+        "basePrice": 64000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 7,
@@ -3271,7 +3271,7 @@
         "name": "セフィロトローブ",
         "rarity": "godfiend",
         "category": "robe",
-        "basePrice": 1280000,
+        "basePrice": 128000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 7,
@@ -3289,7 +3289,7 @@
         "name": "ネビュラローブ",
         "rarity": "godfiend",
         "category": "robe",
-        "basePrice": 2560000,
+        "basePrice": 256000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 8,
@@ -3307,7 +3307,7 @@
         "name": "アカシックローブ",
         "rarity": "godfiend",
         "category": "robe",
-        "basePrice": 5120000,
+        "basePrice": 512000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "magic": 8,
@@ -3325,7 +3325,7 @@
         "name": "レザーグローブ",
         "rarity": "normal",
         "category": "gauntlet",
-        "basePrice": 40000,
+        "basePrice": 4000,
         "nativeBaseStats": {},
         "nativeBattleStats": {},
         "skillIds": [
@@ -3339,7 +3339,7 @@
         "name": "ハードグローブ",
         "rarity": "normal",
         "category": "gauntlet",
-        "basePrice": 80000,
+        "basePrice": 8000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "accuracy": 1,
@@ -3356,7 +3356,7 @@
         "name": "ブロンズガントレット",
         "rarity": "normal",
         "category": "gauntlet",
-        "basePrice": 160000,
+        "basePrice": 16000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "accuracy": 1,
@@ -3373,7 +3373,7 @@
         "name": "アイアンガントレット",
         "rarity": "normal",
         "category": "gauntlet",
-        "basePrice": 320000,
+        "basePrice": 32000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "accuracy": 1,
@@ -3390,7 +3390,7 @@
         "name": "スチールガントレット",
         "rarity": "normal",
         "category": "gauntlet",
-        "basePrice": 640000,
+        "basePrice": 64000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "accuracy": 2,
@@ -3407,7 +3407,7 @@
         "name": "ミスリルガントレット",
         "rarity": "normal",
         "category": "gauntlet",
-        "basePrice": 1280000,
+        "basePrice": 128000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "accuracy": 2,
@@ -3424,7 +3424,7 @@
         "name": "クローガントレット",
         "rarity": "normal",
         "category": "gauntlet",
-        "basePrice": 2560000,
+        "basePrice": 256000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "accuracy": 2,
@@ -3441,7 +3441,7 @@
         "name": "バトルグローブ",
         "rarity": "normal",
         "category": "gauntlet",
-        "basePrice": 5120000,
+        "basePrice": 512000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "accuracy": 3,
@@ -3458,7 +3458,7 @@
         "name": "スパイクガントレット",
         "rarity": "uncommon",
         "category": "gauntlet",
-        "basePrice": 80000,
+        "basePrice": 8000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "accuracy": 3,
@@ -3475,7 +3475,7 @@
         "name": "シルバーガントレット",
         "rarity": "uncommon",
         "category": "gauntlet",
-        "basePrice": 160000,
+        "basePrice": 16000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "accuracy": 3,
@@ -3492,7 +3492,7 @@
         "name": "ナイトガントレット",
         "rarity": "uncommon",
         "category": "gauntlet",
-        "basePrice": 320000,
+        "basePrice": 32000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "accuracy": 4,
@@ -3509,7 +3509,7 @@
         "name": "ストライクグローブ",
         "rarity": "uncommon",
         "category": "gauntlet",
-        "basePrice": 640000,
+        "basePrice": 64000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "accuracy": 4,
@@ -3526,7 +3526,7 @@
         "name": "ルーングローブ",
         "rarity": "rare",
         "category": "gauntlet",
-        "basePrice": 160000,
+        "basePrice": 16000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "accuracy": 4,
@@ -3543,7 +3543,7 @@
         "name": "サングローブ",
         "rarity": "rare",
         "category": "gauntlet",
-        "basePrice": 320000,
+        "basePrice": 32000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "accuracy": 5,
@@ -3560,7 +3560,7 @@
         "name": "ムーングローブ",
         "rarity": "rare",
         "category": "gauntlet",
-        "basePrice": 640000,
+        "basePrice": 64000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "accuracy": 5,
@@ -3577,7 +3577,7 @@
         "name": "ストームグローブ",
         "rarity": "rare",
         "category": "gauntlet",
-        "basePrice": 1280000,
+        "basePrice": 128000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "accuracy": 5,
@@ -3594,7 +3594,7 @@
         "name": "ドラゴンクロー",
         "rarity": "mythic",
         "category": "gauntlet",
-        "basePrice": 320000,
+        "basePrice": 32000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "accuracy": 6,
@@ -3612,7 +3612,7 @@
         "name": "フェニックスグローブ",
         "rarity": "mythic",
         "category": "gauntlet",
-        "basePrice": 640000,
+        "basePrice": 64000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "accuracy": 6,
@@ -3630,7 +3630,7 @@
         "name": "アークガントレット",
         "rarity": "mythic",
         "category": "gauntlet",
-        "basePrice": 1280000,
+        "basePrice": 128000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "accuracy": 6,
@@ -3648,7 +3648,7 @@
         "name": "セレスティアルグローブ",
         "rarity": "mythic",
         "category": "gauntlet",
-        "basePrice": 2560000,
+        "basePrice": 256000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "accuracy": 7,
@@ -3666,7 +3666,7 @@
         "name": "ティターングローブ",
         "rarity": "godfiend",
         "category": "gauntlet",
-        "basePrice": 640000,
+        "basePrice": 64000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "accuracy": 7,
@@ -3684,7 +3684,7 @@
         "name": "ベヒモスクロー",
         "rarity": "godfiend",
         "category": "gauntlet",
-        "basePrice": 1280000,
+        "basePrice": 128000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "accuracy": 7,
@@ -3702,7 +3702,7 @@
         "name": "オメガガントレット",
         "rarity": "godfiend",
         "category": "gauntlet",
-        "basePrice": 2560000,
+        "basePrice": 256000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "accuracy": 8,
@@ -3720,7 +3720,7 @@
         "name": "ケルベロスクロー",
         "rarity": "godfiend",
         "category": "gauntlet",
-        "basePrice": 5120000,
+        "basePrice": 512000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "accuracy": 8,
@@ -3738,7 +3738,7 @@
         "name": "アゲート",
         "rarity": "normal",
         "category": "jewel",
-        "basePrice": 160000,
+        "basePrice": 16000,
         "nativeBaseStats": {
             "vitality": 1
         },
@@ -3752,7 +3752,7 @@
         "name": "オニキス",
         "rarity": "normal",
         "category": "jewel",
-        "basePrice": 320000,
+        "basePrice": 32000,
         "nativeBaseStats": {
             "strength": 1
         },
@@ -3766,7 +3766,7 @@
         "name": "ガーネット",
         "rarity": "normal",
         "category": "jewel",
-        "basePrice": 640000,
+        "basePrice": 64000,
         "nativeBaseStats": {
             "mind": 1
         },
@@ -3780,7 +3780,7 @@
         "name": "アメジスト",
         "rarity": "normal",
         "category": "jewel",
-        "basePrice": 1280000,
+        "basePrice": 128000,
         "nativeBaseStats": {
             "intelligence": 1
         },
@@ -3794,7 +3794,7 @@
         "name": "クォーツ",
         "rarity": "normal",
         "category": "jewel",
-        "basePrice": 2560000,
+        "basePrice": 256000,
         "nativeBaseStats": {
             "agility": 2
         },
@@ -3808,7 +3808,7 @@
         "name": "ペリドット",
         "rarity": "normal",
         "category": "jewel",
-        "basePrice": 5120000,
+        "basePrice": 512000,
         "nativeBaseStats": {
             "luck": 2
         },
@@ -3822,7 +3822,7 @@
         "name": "ジェイド",
         "rarity": "normal",
         "category": "jewel",
-        "basePrice": 10240000,
+        "basePrice": 1024000,
         "nativeBaseStats": {
             "vitality": 2
         },
@@ -3836,7 +3836,7 @@
         "name": "トパーズ",
         "rarity": "normal",
         "category": "jewel",
-        "basePrice": 20480000,
+        "basePrice": 2048000,
         "nativeBaseStats": {
             "strength": 2
         },
@@ -3850,7 +3850,7 @@
         "name": "アクアマリン",
         "rarity": "uncommon",
         "category": "jewel",
-        "basePrice": 320000,
+        "basePrice": 32000,
         "nativeBaseStats": {
             "mind": 3
         },
@@ -3864,7 +3864,7 @@
         "name": "トルマリン",
         "rarity": "uncommon",
         "category": "jewel",
-        "basePrice": 640000,
+        "basePrice": 64000,
         "nativeBaseStats": {
             "intelligence": 3
         },
@@ -3878,7 +3878,7 @@
         "name": "サードニクス",
         "rarity": "uncommon",
         "category": "jewel",
-        "basePrice": 1280000,
+        "basePrice": 128000,
         "nativeBaseStats": {
             "agility": 3
         },
@@ -3892,7 +3892,7 @@
         "name": "ムーンストーン",
         "rarity": "uncommon",
         "category": "jewel",
-        "basePrice": 2560000,
+        "basePrice": 256000,
         "nativeBaseStats": {
             "luck": 3
         },
@@ -3906,7 +3906,7 @@
         "name": "パール",
         "rarity": "rare",
         "category": "jewel",
-        "basePrice": 640000,
+        "basePrice": 64000,
         "nativeBaseStats": {
             "vitality": 4
         },
@@ -3920,7 +3920,7 @@
         "name": "オパール",
         "rarity": "rare",
         "category": "jewel",
-        "basePrice": 1280000,
+        "basePrice": 128000,
         "nativeBaseStats": {
             "strength": 4
         },
@@ -3934,7 +3934,7 @@
         "name": "ラピスラズリ",
         "rarity": "rare",
         "category": "jewel",
-        "basePrice": 2560000,
+        "basePrice": 256000,
         "nativeBaseStats": {
             "mind": 4
         },
@@ -3948,7 +3948,7 @@
         "name": "ブラッドストーン",
         "rarity": "rare",
         "category": "jewel",
-        "basePrice": 5120000,
+        "basePrice": 512000,
         "nativeBaseStats": {
             "intelligence": 4
         },
@@ -3962,7 +3962,7 @@
         "name": "ブラックオパール",
         "rarity": "mythic",
         "category": "jewel",
-        "basePrice": 1280000,
+        "basePrice": 128000,
         "nativeBaseStats": {
             "agility": 5
         },
@@ -3976,7 +3976,7 @@
         "name": "アレキサンドライト",
         "rarity": "mythic",
         "category": "jewel",
-        "basePrice": 2560000,
+        "basePrice": 256000,
         "nativeBaseStats": {
             "luck": 5
         },
@@ -3990,7 +3990,7 @@
         "name": "キャッツアイ",
         "rarity": "mythic",
         "category": "jewel",
-        "basePrice": 5120000,
+        "basePrice": 512000,
         "nativeBaseStats": {
             "vitality": 5
         },
@@ -4004,7 +4004,7 @@
         "name": "スターサファイア",
         "rarity": "mythic",
         "category": "jewel",
-        "basePrice": 10240000,
+        "basePrice": 1024000,
         "nativeBaseStats": {
             "strength": 5
         },
@@ -4018,7 +4018,7 @@
         "name": "ダイヤモンド",
         "rarity": "godfiend",
         "category": "jewel",
-        "basePrice": 2560000,
+        "basePrice": 256000,
         "nativeBaseStats": {
             "mind": 6
         },
@@ -4032,7 +4032,7 @@
         "name": "ルビー",
         "rarity": "godfiend",
         "category": "jewel",
-        "basePrice": 5120000,
+        "basePrice": 512000,
         "nativeBaseStats": {
             "intelligence": 6
         },
@@ -4046,7 +4046,7 @@
         "name": "エメラルド",
         "rarity": "godfiend",
         "category": "jewel",
-        "basePrice": 10240000,
+        "basePrice": 1024000,
         "nativeBaseStats": {
             "agility": 6
         },
@@ -4060,7 +4060,7 @@
         "name": "サファイア",
         "rarity": "godfiend",
         "category": "jewel",
-        "basePrice": 20480000,
+        "basePrice": 2048000,
         "nativeBaseStats": {
             "luck": 6
         },
@@ -4074,7 +4074,7 @@
         "name": "護符",
         "rarity": "normal",
         "category": "misc",
-        "basePrice": 40000,
+        "basePrice": 4000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "maxHP": 2
@@ -4090,7 +4090,7 @@
         "name": "腕輪",
         "rarity": "normal",
         "category": "misc",
-        "basePrice": 80000,
+        "basePrice": 8000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "accuracy": 1
@@ -4106,7 +4106,7 @@
         "name": "首飾り",
         "rarity": "normal",
         "category": "misc",
-        "basePrice": 160000,
+        "basePrice": 16000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "evasion": 1
@@ -4122,7 +4122,7 @@
         "name": "指輪",
         "rarity": "normal",
         "category": "misc",
-        "basePrice": 320000,
+        "basePrice": 32000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "maxHP": 8
@@ -4138,7 +4138,7 @@
         "name": "羽飾り",
         "rarity": "normal",
         "category": "misc",
-        "basePrice": 640000,
+        "basePrice": 64000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "accuracy": 2
@@ -4154,7 +4154,7 @@
         "name": "香袋",
         "rarity": "normal",
         "category": "misc",
-        "basePrice": 1280000,
+        "basePrice": 128000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "evasion": 2
@@ -4170,7 +4170,7 @@
         "name": "煙玉",
         "rarity": "normal",
         "category": "misc",
-        "basePrice": 2560000,
+        "basePrice": 256000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "maxHP": 14
@@ -4186,7 +4186,7 @@
         "name": "鈴",
         "rarity": "normal",
         "category": "misc",
-        "basePrice": 5120000,
+        "basePrice": 512000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "accuracy": 3
@@ -4202,7 +4202,7 @@
         "name": "魔除け",
         "rarity": "uncommon",
         "category": "misc",
-        "basePrice": 80000,
+        "basePrice": 8000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "evasion": 3
@@ -4218,7 +4218,7 @@
         "name": "銀時計",
         "rarity": "uncommon",
         "category": "misc",
-        "basePrice": 160000,
+        "basePrice": 16000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "maxHP": 20
@@ -4234,7 +4234,7 @@
         "name": "風切羽",
         "rarity": "uncommon",
         "category": "misc",
-        "basePrice": 320000,
+        "basePrice": 32000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "accuracy": 4
@@ -4250,7 +4250,7 @@
         "name": "旅人の地図",
         "rarity": "uncommon",
         "category": "misc",
-        "basePrice": 640000,
+        "basePrice": 64000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "evasion": 4
@@ -4266,7 +4266,7 @@
         "name": "星見盤",
         "rarity": "rare",
         "category": "misc",
-        "basePrice": 160000,
+        "basePrice": 16000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "maxHP": 26
@@ -4282,7 +4282,7 @@
         "name": "月影札",
         "rarity": "rare",
         "category": "misc",
-        "basePrice": 320000,
+        "basePrice": 32000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "accuracy": 5
@@ -4298,7 +4298,7 @@
         "name": "陽刻印",
         "rarity": "rare",
         "category": "misc",
-        "basePrice": 640000,
+        "basePrice": 64000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "evasion": 5
@@ -4314,7 +4314,7 @@
         "name": "夢見石",
         "rarity": "rare",
         "category": "misc",
-        "basePrice": 1280000,
+        "basePrice": 128000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "maxHP": 32
@@ -4330,7 +4330,7 @@
         "name": "賢者の石板",
         "rarity": "mythic",
         "category": "misc",
-        "basePrice": 320000,
+        "basePrice": 32000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "accuracy": 6
@@ -4346,7 +4346,7 @@
         "name": "竜鱗の護符",
         "rarity": "mythic",
         "category": "misc",
-        "basePrice": 640000,
+        "basePrice": 64000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "evasion": 6
@@ -4362,7 +4362,7 @@
         "name": "不死鳥の羽根",
         "rarity": "mythic",
         "category": "misc",
-        "basePrice": 1280000,
+        "basePrice": 128000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "maxHP": 38
@@ -4378,7 +4378,7 @@
         "name": "天空の羅針盤",
         "rarity": "mythic",
         "category": "misc",
-        "basePrice": 2560000,
+        "basePrice": 256000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "accuracy": 7
@@ -4394,7 +4394,7 @@
         "name": "世界樹の葉",
         "rarity": "godfiend",
         "category": "misc",
-        "basePrice": 640000,
+        "basePrice": 64000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "evasion": 7
@@ -4410,7 +4410,7 @@
         "name": "冥府の鍵",
         "rarity": "godfiend",
         "category": "misc",
-        "basePrice": 1280000,
+        "basePrice": 128000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "maxHP": 44
@@ -4426,7 +4426,7 @@
         "name": "神託の鏡",
         "rarity": "godfiend",
         "category": "misc",
-        "basePrice": 2560000,
+        "basePrice": 256000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "accuracy": 8
@@ -4442,7 +4442,7 @@
         "name": "終焉の灯",
         "rarity": "godfiend",
         "category": "misc",
-        "basePrice": 5120000,
+        "basePrice": 512000,
         "nativeBaseStats": {},
         "nativeBattleStats": {
             "evasion": 8

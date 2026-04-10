@@ -13,6 +13,8 @@ struct HireView: View {
     init(masterData: MasterData, rosterStore: GuildRosterStore) {
         self.masterData = masterData
         self.rosterStore = rosterStore
+        // Seed each picker from the first available master row so the form is immediately usable
+        // even before the user changes any field.
         _selectedRaceId = State(initialValue: masterData.races.first?.id ?? 0)
         _selectedJobId = State(initialValue: masterData.jobs.first?.id ?? 0)
         _selectedAptitudeId = State(initialValue: masterData.aptitudes.first?.id ?? 0)
@@ -23,13 +25,13 @@ struct HireView: View {
             Section("条件") {
                 Picker("種族", selection: $selectedRaceId) {
                     ForEach(masterData.races) { race in
-                        Text(race.name).tag(race.id)
+                        Text("\(race.name) (\(race.baseHirePrice)G)").tag(race.id)
                     }
                 }
 
                 Picker("職業", selection: $selectedJobId) {
                     ForEach(masterData.jobs) { job in
-                        Text(job.name).tag(job.id)
+                        Text("\(job.name) (\(hirePriceMultiplierText(job.hirePriceMultiplier)))").tag(job.id)
                     }
                 }
 
@@ -86,6 +88,8 @@ struct HireView: View {
     }
 
     private var hirePrice: Int? {
+        // The form always reuses GuildHiring so any economy cap or multiplier change is reflected
+        // identically in both UI and mutation logic.
         GuildHiring.price(raceId: selectedRaceId, jobId: selectedJobId, masterData: masterData)
     }
 
@@ -95,5 +99,9 @@ struct HireView: View {
         }
 
         return "\(hirePrice)"
+    }
+
+    private func hirePriceMultiplierText(_ multiplier: Double) -> String {
+        String(format: "%.2f倍", multiplier)
     }
 }

@@ -8,10 +8,24 @@ struct HireCharacterResult: Sendable {
     let hireCost: Int
 }
 
+struct EconomicCapJewelSelection: Identifiable, Equatable, Sendable {
+    let itemID: CompositeItemID
+    let characterId: Int?
+
+    var id: String {
+        if let characterId {
+            return "\(itemID.stableKey)|\(characterId)"
+        }
+        return itemID.stableKey
+    }
+}
+
 enum GuildServiceError: LocalizedError {
     case invalidHireSelection
     case insufficientGold(required: Int, available: Int)
     case maxPartyCountReached
+    case partyUnlockRequiresCapJewel
+    case invalidPartyUnlockJewel
     case invalidParty(partyId: Int)
     case invalidJobChangeTarget(jobId: Int)
     case invalidPartyName
@@ -40,6 +54,10 @@ enum GuildServiceError: LocalizedError {
             "所持金が不足しています。必要=\(required) 現在=\(available)"
         case .maxPartyCountReached:
             "これ以上パーティを解放できません。"
+        case .partyUnlockRequiresCapJewel:
+            "このパーティ枠の解放には99,999,999G相当の宝石が必要です。"
+        case .invalidPartyUnlockJewel:
+            "解放条件を満たす宝石ではありません。"
         case .invalidParty(let partyId):
             "パーティが見つかりません。 partyId=\(partyId)"
         case .invalidJobChangeTarget(let jobId):
@@ -391,15 +409,51 @@ final class GuildService {
     }
 
     func unlockParty() throws -> [PartyRecord] {
+        try unlockParty(consuming: nil, masterData: nil)
+    }
+
+    func unlockParty(
+        consuming requiredJewel: EconomicCapJewelSelection?,
+        masterData: MasterData
+    ) throws -> [PartyRecord] {
+        try unlockParty(consuming: requiredJewel, masterData: Optional(masterData))
+    }
+
+    private func unlockParty(
+        consuming requiredJewel: EconomicCapJewelSelection?,
+        masterData: MasterData?
+    ) throws -> [PartyRecord] {
         var roster = try coreDataStore.loadRosterSnapshot()
         var parties = try coreDataStore.loadParties()
+        var inventoryStacks = try coreDataStore.loadInventoryStacks()
         guard parties.count < PartyRecord.maxPartyCount else {
             throw GuildServiceError.maxPartyCountReached
         }
-        guard roster.playerState.gold >= PartyRecord.unlockCost else {
+        guard let unlockCost = PartyRecord.unlockCost(forExistingPartyCount: parties.count) else {
+            throw GuildServiceError.maxPartyCountReached
+        }
+        guard roster.playerState.gold >= unlockCost else {
             throw GuildServiceError.insufficientGold(
-                required: PartyRecord.unlockCost,
+                required: unlockCost,
                 available: roster.playerState.gold
+            )
+        }
+        // The last slot keeps the gold cost at the shared cap and turns any overflow into a
+        // capped-price jewel requirement.
+        if PartyRecord.unlockRequiresCappedJewel(forExistingPartyCount: parties.count) {
+            guard let requiredJewel else {
+                throw GuildServiceError.partyUnlockRequiresCapJewel
+            }
+            guard let masterData,
+                  isEconomicCapJewel(requiredJewel.itemID, masterData: masterData) else {
+                throw GuildServiceError.invalidPartyUnlockJewel
+            }
+
+            try consumeJewelEnhancementInput(
+                itemID: requiredJewel.itemID,
+                characterId: requiredJewel.characterId,
+                inventoryStacks: &inventoryStacks,
+                roster: &roster
             )
         }
 
@@ -414,9 +468,12 @@ final class GuildService {
                 automaticallyUsesCatTicket: false
             )
         )
-        roster.playerState.gold -= PartyRecord.unlockCost
-        try coreDataStore.saveRosterSnapshot(roster)
-        try coreDataStore.saveParties(parties)
+        roster.playerState.gold -= unlockCost
+        try coreDataStore.saveRosterState(
+            roster,
+            parties: parties,
+            inventoryStacks: inventoryStacks
+        )
         return parties
     }
 
@@ -962,6 +1019,20 @@ final class GuildService {
 
     private static func normalizedCharacterName(_ name: String) -> String {
         name.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private func isEconomicCapJewel(
+        _ itemID: CompositeItemID,
+        masterData: MasterData
+    ) -> Bool {
+        guard let baseItem = masterData.items.first(where: { $0.id == itemID.baseItemId }),
+              baseItem.category == .jewel else {
+            return false
+        }
+
+        // Match the unlock check to the same capped purchase price shown everywhere else in the
+        // economy UI.
+        return ShopCatalog.purchasePrice(for: itemID, masterData: masterData) == EconomyPricing.maximumEconomicPrice
     }
 
     private func consumeJewelEnhancementInput(

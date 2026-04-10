@@ -3,7 +3,7 @@
 import Foundation
 
 enum ShopCatalog {
-    static let sellbackRate = 0.1
+    static let sellbackRate = 0.05
     static let superRareValueMultiplier = 2.0
     static let stockOrganizationBundleSize = 99
 
@@ -17,13 +17,18 @@ enum ShopCatalog {
         for itemID: CompositeItemID,
         masterData: MasterData
     ) -> Int {
-        max(1, Int(catalogValue(for: itemID, masterData: masterData).rounded()))
+        // Catalog values can rise above the economy ceiling once titles, super rares, and jewel
+        // enhancement stack, so clamp before exposing any store-facing price.
+        let rawCatalogPrice = Int(catalogValue(for: itemID, masterData: masterData).rounded())
+        return max(1, min(rawCatalogPrice, EconomyPricing.maximumEconomicPrice))
     }
 
     static func sellPrice(
         for itemID: CompositeItemID,
         masterData: MasterData
     ) -> Int {
+        // Sellback is computed from the already-clamped purchase price so capped items do not pay
+        // out as if their uncapped theoretical value were reachable in gold.
         max(1, Int((Double(purchasePrice(for: itemID, masterData: masterData)) * sellbackRate).rounded()))
     }
 
@@ -81,6 +86,8 @@ enum ShopCatalog {
             return 0
         }
 
+        // Jewel enhancement contributes at half weight while title and super-rare bonuses scale
+        // whichever component they are attached to.
         let titleMultiplier = titleId > 0 ? (titlesByID[titleId]?.positiveMultiplier ?? 1.0) : 1.0
         let superRareMultiplier = superRareId > 0 ? superRareValueMultiplier : 1.0
         return Double(item.basePrice) * basePriceScale * titleMultiplier * superRareMultiplier

@@ -56,7 +56,10 @@ final class PartyStore {
         }
     }
 
-    func unlockParty() {
+    func unlockParty(
+        masterData: MasterData,
+        consuming requiredJewel: EconomicCapJewelSelection? = nil
+    ) {
         guard !isMutating, phase == .loaded else {
             return
         }
@@ -66,7 +69,16 @@ final class PartyStore {
         defer { isMutating = false }
 
         do {
-            applyParties(try service.unlockParty())
+            if let requiredJewel {
+                applyParties(
+                    try service.unlockParty(
+                        consuming: requiredJewel,
+                        masterData: masterData
+                    )
+                )
+            } else {
+                applyParties(try service.unlockParty())
+            }
         } catch {
             lastOperationError = Self.errorMessage(for: error)
         }

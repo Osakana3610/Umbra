@@ -10,7 +10,10 @@ enum GuildHiring {
         }
 
         // Hiring cost is the race base price scaled by the selected starting job.
-        return Int((Double(race.baseHirePrice) * job.hirePriceMultiplier).rounded())
+        let rawHirePrice = Int((Double(race.baseHirePrice) * job.hirePriceMultiplier).rounded())
+        // Hiring shares the same currency ceiling as shop and unlock flows so very expensive
+        // combinations still fit in one gold-based economy.
+        return min(rawHirePrice, EconomyPricing.maximumEconomicPrice)
     }
 
     static func makeCharacterRecord(
@@ -59,6 +62,8 @@ enum GuildHiring {
         matching portraitGender: PortraitGender,
         from recruitNames: MasterData.RecruitNames
     ) -> String? {
+        // Name pools stay segmented by portrait gender so generated recruits feel intentional
+        // before falling back to synthetic labels.
         switch portraitGender {
         case .male:
             recruitNames.male.randomElement()

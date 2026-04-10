@@ -10,6 +10,8 @@ struct AdventureHomeView: View {
     let equipmentStore: EquipmentInventoryStore
     let explorationStore: ExplorationStore
 
+    @State private var showsCappedUnlockJewelPicker = false
+
     var body: some View {
         List {
             if rosterStore.playerState != nil {
@@ -124,8 +126,11 @@ struct AdventureHomeView: View {
 
                 Section {
                     Button {
-                        partyStore.unlockParty()
-                        rosterStore.reload()
+                        if nextPartyUnlockRequiresCapJewel {
+                            showsCappedUnlockJewelPicker = true
+                        } else {
+                            unlockParty()
+                        }
                     } label: {
                         Text("パーティ枠を追加")
                             .monospacedDigit()
@@ -135,7 +140,7 @@ struct AdventureHomeView: View {
                     .buttonStyle(.plain)
                     .disabled(!canUnlockParty)
                 } footer: {
-                    Text("1Gで新しいパーティ枠を追加できます。 \(partyStore.parties.count)/\(PartyRecord.maxPartyCount)")
+                    Text(partyUnlockFooterText)
                 }
 
                 if let error = explorationStore.lastOperationError ?? partyStore.lastOperationError {
@@ -154,6 +159,23 @@ struct AdventureHomeView: View {
                     startAllRuns()
                 }
                 .disabled(bulkStartableRuns.isEmpty || explorationStore.isSortieLocked)
+            }
+        }
+        .sheet(isPresented: $showsCappedUnlockJewelPicker) {
+            NavigationStack {
+                EconomicCapJewelPickerView(
+                    masterData: masterData,
+                    rosterStore: rosterStore,
+                    equipmentStore: equipmentStore,
+                    navigationTitle: "宝石を選ぶ",
+                    descriptionText: "パーティ枠の最終解放では、価格が99,999,999Gの宝石を1個消費します。",
+                    confirmButtonTitle: "解放する",
+                    emptyStateText: "99,999,999Gの宝石を所持していません。",
+                    onConfirm: { selection in
+                        showsCappedUnlockJewelPicker = false
+                        unlockParty(consuming: selection)
+                    }
+                )
             }
         }
         .task {
@@ -179,13 +201,35 @@ struct AdventureHomeView: View {
     }
 
     private var canUnlockParty: Bool {
-        guard let playerState = rosterStore.playerState else {
+        guard let playerState = rosterStore.playerState,
+              let nextPartyUnlockCost else {
             return false
         }
 
         return !partyStore.isMutating
             && partyStore.parties.count < PartyRecord.maxPartyCount
-            && playerState.gold >= PartyRecord.unlockCost
+            && playerState.gold >= nextPartyUnlockCost
+    }
+
+    private var nextPartyUnlockCost: Int? {
+        PartyRecord.unlockCost(forExistingPartyCount: partyStore.parties.count)
+    }
+
+    private var nextPartyUnlockRequiresCapJewel: Bool {
+        PartyRecord.unlockRequiresCappedJewel(forExistingPartyCount: partyStore.parties.count)
+    }
+
+    private var partyUnlockFooterText: String {
+        guard let nextPartyUnlockCost else {
+            return "これ以上パーティ枠を追加できません。 \(partyStore.parties.count)/\(PartyRecord.maxPartyCount)"
+        }
+
+        var text = "\(nextPartyUnlockCost.formatted())Gで新しいパーティ枠を追加できます。"
+        if nextPartyUnlockRequiresCapJewel {
+            text += " さらに\(EconomyPricing.maximumEconomicPrice.formatted())G相当の宝石が1個必要です。"
+        }
+        text += " \(partyStore.parties.count)/\(PartyRecord.maxPartyCount)"
+        return text
     }
 
     private func configuredLabyrinthId(for party: PartyRecord) -> Int? {
@@ -249,6 +293,17 @@ struct AdventureHomeView: View {
                 masterData: masterData
             )
         }
+    }
+
+    private func unlockParty(
+        consuming requiredJewel: EconomicCapJewelSelection? = nil
+    ) {
+        partyStore.unlockParty(
+            masterData: masterData,
+            consuming: requiredJewel
+        )
+        rosterStore.reload()
+        try? equipmentStore.reload(masterData: masterData)
     }
 
     private func startAllRuns() {
