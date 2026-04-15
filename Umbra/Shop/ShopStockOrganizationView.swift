@@ -59,6 +59,7 @@ struct ShopStockOrganizationView: View {
             }
         }
         .listStyle(.insetGrouped)
+        .playerStatusContentInsetAware()
         .navigationTitle("在庫整理")
         .navigationBarTitleDisplayMode(.inline)
         .sheet(item: $presentedItemDetail) { presentedItemDetail in

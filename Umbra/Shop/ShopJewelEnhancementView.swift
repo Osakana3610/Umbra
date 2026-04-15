@@ -46,6 +46,7 @@ struct ShopJewelEnhancementView: View {
             }
         }
         .listStyle(.insetGrouped)
+        .playerStatusContentInsetAware()
         .navigationTitle("宝石強化")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -275,6 +276,7 @@ private struct ShopJewelEnhancementJewelSelectionView: View {
             }
         }
         .listStyle(.insetGrouped)
+        .playerStatusContentInsetAware()
         .navigationTitle("宝石を選ぶ")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {

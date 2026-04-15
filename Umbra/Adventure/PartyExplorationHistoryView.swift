@@ -44,6 +44,7 @@ struct PartyExplorationHistoryView: View {
             }
         }
         .listStyle(.insetGrouped)
+        .playerStatusContentInsetAware()
         .navigationTitle("\(partyName)の過去の探索")
         .navigationBarTitleDisplayMode(.inline)
     }

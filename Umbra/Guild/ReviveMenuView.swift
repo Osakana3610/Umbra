@@ -75,6 +75,7 @@ struct ReviveMenuView: View {
                 }
             }
         }
+        .playerStatusContentInsetAware()
         .navigationTitle("蘇生メニュー")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {

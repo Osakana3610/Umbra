@@ -104,6 +104,7 @@ struct GuildHomeView: View {
                 }
             }
         }
+        .playerStatusContentInsetAware()
         .navigationTitle("ギルド")
         .sheet(item: $presentedCharacter) { character in
             NavigationStack {

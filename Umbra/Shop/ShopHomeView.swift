@@ -100,6 +100,7 @@ struct ShopHomeView: View {
             }
         }
         .listStyle(.insetGrouped)
+        .playerStatusContentInsetAware()
         .navigationTitle("商店")
     }
 }
@@ -149,6 +150,7 @@ private struct ShopEquipmentCharacterListView: View {
             }
         }
         .listStyle(.insetGrouped)
+        .playerStatusContentInsetAware()
         .navigationTitle("装備")
         .navigationBarTitleDisplayMode(.inline)
     }
@@ -296,6 +298,7 @@ private struct ShopTradingView: View {
             }
         }
         .listStyle(.insetGrouped)
+        .playerStatusContentInsetAware()
     }
 
     private var trimmedSearchText: String {

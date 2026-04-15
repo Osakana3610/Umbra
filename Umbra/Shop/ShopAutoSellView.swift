@@ -61,6 +61,7 @@ struct ShopAutoSellView: View {
             }
         }
         .listStyle(.insetGrouped)
+        .playerStatusContentInsetAware()
         .navigationTitle("自動売却")
         .navigationBarTitleDisplayMode(.inline)
         .searchable(text: $searchText, prompt: "アイテム名で検索")

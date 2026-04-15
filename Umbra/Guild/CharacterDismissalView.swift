@@ -51,6 +51,7 @@ struct CharacterDismissalView: View {
                 }
             }
         }
+        .playerStatusContentInsetAware()
         .navigationTitle("解雇")
         .navigationBarTitleDisplayMode(.inline)
         .alert(

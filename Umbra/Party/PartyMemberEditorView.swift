@@ -121,6 +121,7 @@ struct PartyMemberEditorView: View {
                     }
                 }
                 .listStyle(.insetGrouped)
+                .playerStatusContentInsetAware()
                 .navigationTitle("メンバー編集")
                 .navigationBarTitleDisplayMode(.inline)
                 .environment(

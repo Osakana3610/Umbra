@@ -153,6 +153,7 @@ struct AdventureHomeView: View {
             }
         }
         .listStyle(.insetGrouped)
+        .playerStatusContentInsetAware()
         .navigationTitle("冒険")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {

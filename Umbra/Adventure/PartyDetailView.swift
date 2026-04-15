@@ -138,6 +138,7 @@ struct PartyDetailView: View {
                     }
                 }
                 .listStyle(.insetGrouped)
+                .playerStatusContentInsetAware()
                 .navigationTitle("パーティ詳細")
                 .navigationBarTitleDisplayMode(.inline)
                 .sheet(item: $presentedCharacter) { character in

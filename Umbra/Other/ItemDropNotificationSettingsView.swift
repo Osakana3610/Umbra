@@ -51,5 +51,6 @@ struct ItemDropNotificationSettingsView: View {
                 Text("超レア")
             }
         }
+        .playerStatusContentInsetAware()
     }
 }

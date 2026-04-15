@@ -33,6 +33,7 @@ struct RunSessionBattleLogDetailView: View {
             }
         }
         .listStyle(.insetGrouped)
+        .playerStatusContentInsetAware()
         .navigationTitle("\(log.battleRecord.floorNumber)F / 戦闘 \(log.battleRecord.battleNumber)")
         .navigationBarTitleDisplayMode(.inline)
     }

@@ -76,6 +76,7 @@ struct PartySkillSummaryView: View {
 
                 }
                 .listStyle(.insetGrouped)
+                .playerStatusContentInsetAware()
                 .navigationTitle("パーティスキル")
                 .navigationBarTitleDisplayMode(.inline)
             } else {

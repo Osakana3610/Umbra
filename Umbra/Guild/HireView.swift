@@ -93,6 +93,7 @@ struct HireView: View {
             }
         }
         .listStyle(.insetGrouped)
+        .playerStatusContentInsetAware()
         .navigationTitle("雇用")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {

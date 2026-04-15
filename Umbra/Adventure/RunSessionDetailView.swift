@@ -124,6 +124,7 @@ struct RunSessionDetailView: View {
                     }
                 }
                 .listStyle(.insetGrouped)
+                .playerStatusContentInsetAware()
                 .navigationTitle("\(partyName)の探索ログ")
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {

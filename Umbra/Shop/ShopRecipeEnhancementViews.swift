@@ -80,6 +80,7 @@ private struct ShopRecipeEnhancementBrowserView: View {
             }
         }
         .listStyle(.insetGrouped)
+        .playerStatusContentInsetAware()
         .navigationTitle(title)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {

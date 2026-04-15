@@ -51,6 +51,7 @@ struct PartyEquipmentMenuView: View {
             }
         }
         .listStyle(.insetGrouped)
+        .playerStatusContentInsetAware()
         .navigationTitle("装備の変更")
         .navigationBarTitleDisplayMode(.inline)
     }

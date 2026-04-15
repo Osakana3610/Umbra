@@ -22,6 +22,7 @@ struct MonsterBookView: View {
             }
         }
         .listStyle(.insetGrouped)
+        .playerStatusContentInsetAware()
     }
 }
 
@@ -57,6 +58,7 @@ private struct MonsterBookLabyrinthView: View {
             }
         }
         .listStyle(.insetGrouped)
+        .playerStatusContentInsetAware()
         .sheet(item: $selectedAppearance) { appearance in
             NavigationStack {
                 MonsterBookEnemyDetailView(

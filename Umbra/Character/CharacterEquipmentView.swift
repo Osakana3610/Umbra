@@ -110,6 +110,7 @@ struct CharacterEquipmentView: View {
                     }
                 }
                 .listStyle(.insetGrouped)
+                .playerStatusContentInsetAware()
                 .searchable(text: $searchText, prompt: "所持アイテムを検索")
                 .navigationTitle(character.name)
                 .navigationBarTitleDisplayMode(.inline)

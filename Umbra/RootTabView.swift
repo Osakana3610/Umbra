@@ -4,6 +4,7 @@ import SwiftUI
 
 struct RootTabView: View {
     private static let statusBarBottomInset: CGFloat = 49
+    private static let legacyPlayerStatusContentInset: CGFloat = 106
 
     let masterData: MasterData
     let persistenceController: PersistenceController
@@ -111,9 +112,10 @@ struct RootTabView: View {
                             )
                             .padding(.bottom, Self.statusBarBottomInset)
                         }
-                    }
+                }
             }
         }
+        .environment(\.playerStatusContentInset, playerStatusContentInset)
         .overlay(alignment: .bottomLeading) {
             VStack(alignment: .leading, spacing: 8) {
                 ItemDropNotificationView(
@@ -136,5 +138,17 @@ struct RootTabView: View {
         }
 
         return 106
+    }
+
+    private var playerStatusContentInset: CGFloat {
+        guard rosterStore.playerState != nil else {
+            return 0
+        }
+
+        if #available(iOS 26.0, *) {
+            return 0
+        }
+
+        return Self.legacyPlayerStatusContentInset
     }
 }
