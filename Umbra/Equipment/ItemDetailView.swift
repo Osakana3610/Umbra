@@ -201,7 +201,7 @@ private struct ItemDetailSnapshot {
             ("最大HP", stats.maxHP),
             ("物理攻撃", stats.physicalAttack),
             ("物理防御", stats.physicalDefense),
-            ("魔法", stats.magic),
+            ("魔法攻撃", stats.magic),
             ("魔法防御", stats.magicDefense),
             ("回復", stats.healing),
             ("命中", stats.accuracy),

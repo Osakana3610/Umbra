@@ -8,6 +8,7 @@ import Observation
 final class EquipmentInventoryStore {
     private let coreDataStore: GuildCoreDataStore
     private let service: GuildService
+    private let equipmentStatusNotificationService: EquipmentStatusNotificationService
 
     private var itemsByID: [Int: MasterData.Item] = [:]
     private var nameResolver: EquipmentDisplayNameResolver?
@@ -23,10 +24,12 @@ final class EquipmentInventoryStore {
 
     init(
         coreDataStore: GuildCoreDataStore,
-        service: GuildService
+        service: GuildService,
+        equipmentStatusNotificationService: EquipmentStatusNotificationService
     ) {
         self.coreDataStore = coreDataStore
         self.service = service
+        self.equipmentStatusNotificationService = equipmentStatusNotificationService
     }
 
     func loadIfNeeded(masterData: MasterData) throws {
@@ -142,9 +145,17 @@ final class EquipmentInventoryStore {
 
             do {
                 try loadIfNeeded(masterData: masterData)
+                let beforeStatus = CharacterDerivedStatsCalculator.status(
+                    for: character,
+                    masterData: masterData
+                )
                 let updatedCharacter = try await service.equip(
                     itemID: itemID,
                     toCharacter: character.characterId,
+                    masterData: masterData
+                )
+                let afterStatus = CharacterDerivedStatsCalculator.status(
+                    for: updatedCharacter,
                     masterData: masterData
                 )
                 rosterStore.replaceCharacter(updatedCharacter)
@@ -152,6 +163,10 @@ final class EquipmentInventoryStore {
                     itemID: itemID,
                     inventoryQuantityDelta: -1,
                     updatedCharacter: updatedCharacter
+                )
+                equipmentStatusNotificationService.publish(
+                    before: beforeStatus,
+                    after: afterStatus
                 )
             } catch {
                 lastOperationError = Self.errorMessage(for: error)
@@ -177,9 +192,17 @@ final class EquipmentInventoryStore {
 
             do {
                 try loadIfNeeded(masterData: masterData)
+                let beforeStatus = CharacterDerivedStatsCalculator.status(
+                    for: character,
+                    masterData: masterData
+                )
                 let updatedCharacter = try await service.unequip(
                     itemID: itemID,
                     fromCharacter: character.characterId,
+                    masterData: masterData
+                )
+                let afterStatus = CharacterDerivedStatsCalculator.status(
+                    for: updatedCharacter,
                     masterData: masterData
                 )
                 rosterStore.replaceCharacter(updatedCharacter)
@@ -187,6 +210,10 @@ final class EquipmentInventoryStore {
                     itemID: itemID,
                     inventoryQuantityDelta: 1,
                     updatedCharacter: updatedCharacter
+                )
+                equipmentStatusNotificationService.publish(
+                    before: beforeStatus,
+                    after: afterStatus
                 )
             } catch {
                 lastOperationError = Self.errorMessage(for: error)

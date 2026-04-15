@@ -53,7 +53,7 @@ struct JobDetailView: View {
             ("最大HP", job.coefficients.maxHP),
             ("物理攻撃", job.coefficients.physicalAttack),
             ("物理防御", job.coefficients.physicalDefense),
-            ("魔法", job.coefficients.magic),
+            ("魔法攻撃", job.coefficients.magic),
             ("魔法防御", job.coefficients.magicDefense),
             ("回復", job.coefficients.healing),
             ("命中", job.coefficients.accuracy),

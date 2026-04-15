@@ -660,7 +660,7 @@ private struct CharacterStatusSectionsView: View {
             ("最大HP", "\(status.battleStats.maxHP)"),
             ("物理攻撃", "\(status.battleStats.physicalAttack)"),
             ("物理防御", "\(status.battleStats.physicalDefense)"),
-            ("魔法", "\(status.battleStats.magic)"),
+            ("魔法攻撃", "\(status.battleStats.magic)"),
             ("魔法防御", "\(status.battleStats.magicDefense)"),
             ("回復", "\(status.battleStats.healing)"),
             ("命中", "\(status.battleStats.accuracy)"),
@@ -674,15 +674,16 @@ private struct CharacterStatusSectionsView: View {
     private var derivedStatRows: [(title: String, value: String)] {
         [
             ("物理威力倍率", percentageText(status.battleDerivedStats.physicalDamageMultiplier)),
-            ("魔法威力倍率", percentageText(status.battleDerivedStats.magicDamageMultiplier)),
+            ("攻撃魔法威力倍率", percentageText(status.battleDerivedStats.attackMagicMultiplier)),
+            ("回復魔法威力倍率", percentageText(status.battleDerivedStats.healingMultiplier)),
             ("個別魔法威力倍率", percentageText(status.battleDerivedStats.spellDamageMultiplier)),
             ("必殺時威力倍率", percentageText(status.battleDerivedStats.criticalDamageMultiplier)),
             ("近接威力倍率", percentageText(status.battleDerivedStats.meleeDamageMultiplier)),
             ("遠距離威力倍率", percentageText(status.battleDerivedStats.rangedDamageMultiplier)),
             ("行動速度倍率", percentageText(status.battleDerivedStats.actionSpeedMultiplier)),
-            ("物理耐性倍率", percentageText(status.battleDerivedStats.physicalResistanceMultiplier)),
-            ("魔法耐性倍率", percentageText(status.battleDerivedStats.magicResistanceMultiplier)),
-            ("ブレス耐性倍率", percentageText(status.battleDerivedStats.breathResistanceMultiplier))
+            ("物理被ダメージ倍率", percentageText(status.battleDerivedStats.physicalResistanceMultiplier)),
+            ("魔法被ダメージ倍率", percentageText(status.battleDerivedStats.magicResistanceMultiplier)),
+            ("ブレス被ダメージ倍率", percentageText(status.battleDerivedStats.breathResistanceMultiplier))
         ]
     }
 

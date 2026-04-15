@@ -13,6 +13,7 @@ struct ContentView: View {
     let shopStore: ShopInventoryStore
     let explorationStore: ExplorationStore
     let itemDropNotificationService: ItemDropNotificationService
+    let equipmentStatusNotificationService: EquipmentStatusNotificationService
     let guildService: GuildService
 
     var body: some View {
@@ -52,6 +53,7 @@ struct ContentView: View {
                     shopStore: shopStore,
                     explorationStore: explorationStore,
                     itemDropNotificationService: itemDropNotificationService,
+                    equipmentStatusNotificationService: equipmentStatusNotificationService,
                     guildService: guildService
                 )
                 .task {
@@ -107,22 +109,32 @@ struct ContentView: View {
     )
     let masterDataStore = MasterDataStore(phase: .loading)
     let itemDropNotificationService = ItemDropNotificationService(masterDataStore: masterDataStore)
+    let equipmentStatusNotificationService = EquipmentStatusNotificationService()
     let rosterStore = GuildRosterStore(coreDataStore: guildCoreDataStore, service: guildService, phase: .loading)
     return ContentView(
         persistenceController: persistenceController,
         masterDataStore: masterDataStore,
         rosterStore: rosterStore,
         partyStore: PartyStore(coreDataStore: guildCoreDataStore, service: guildService, phase: .loading),
-        equipmentStore: EquipmentInventoryStore(coreDataStore: guildCoreDataStore, service: guildService),
+        equipmentStore: EquipmentInventoryStore(
+            coreDataStore: guildCoreDataStore,
+            service: guildService,
+            equipmentStatusNotificationService: equipmentStatusNotificationService
+        ),
         shopStore: ShopInventoryStore(service: guildService),
         explorationStore: ExplorationStore(
             coreDataStore: ExplorationCoreDataStore(container: persistenceController.container),
             itemDropNotificationService: itemDropNotificationService,
             rosterStore: rosterStore,
-            equipmentStore: EquipmentInventoryStore(coreDataStore: guildCoreDataStore, service: guildService),
+            equipmentStore: EquipmentInventoryStore(
+                coreDataStore: guildCoreDataStore,
+                service: guildService,
+                equipmentStatusNotificationService: equipmentStatusNotificationService
+            ),
             shopStore: ShopInventoryStore(service: guildService)
         ),
         itemDropNotificationService: itemDropNotificationService,
+        equipmentStatusNotificationService: equipmentStatusNotificationService,
         guildService: guildService
     )
 }

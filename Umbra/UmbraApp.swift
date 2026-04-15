@@ -13,6 +13,7 @@ struct UmbraApp: App {
     @State private var shopStore: ShopInventoryStore
     @State private var explorationStore: ExplorationStore
     @State private var itemDropNotificationService: ItemDropNotificationService
+    @State private var equipmentStatusNotificationService: EquipmentStatusNotificationService
 
     init() {
         // Construct the persistence-backed services once here so every tab observes the same
@@ -22,6 +23,7 @@ struct UmbraApp: App {
         let explorationCoreDataStore = ExplorationCoreDataStore(container: persistenceController.container)
         let masterDataStore = MasterDataStore()
         let itemDropNotificationService = ItemDropNotificationService(masterDataStore: masterDataStore)
+        let equipmentStatusNotificationService = EquipmentStatusNotificationService()
         let guildService = GuildService(
             coreDataStore: guildCoreDataStore,
             explorationCoreDataStore: explorationCoreDataStore
@@ -44,7 +46,8 @@ struct UmbraApp: App {
         _equipmentStore = State(
             initialValue: EquipmentInventoryStore(
                 coreDataStore: guildCoreDataStore,
-                service: guildService
+                service: guildService,
+                equipmentStatusNotificationService: equipmentStatusNotificationService
             )
         )
         _shopStore = State(
@@ -64,6 +67,7 @@ struct UmbraApp: App {
             )
         )
         _itemDropNotificationService = State(initialValue: itemDropNotificationService)
+        _equipmentStatusNotificationService = State(initialValue: equipmentStatusNotificationService)
     }
 
     var body: some Scene {
@@ -77,6 +81,7 @@ struct UmbraApp: App {
                 shopStore: shopStore,
                 explorationStore: explorationStore,
                 itemDropNotificationService: itemDropNotificationService,
+                equipmentStatusNotificationService: equipmentStatusNotificationService,
                 guildService: guildService
             )
         }

@@ -561,7 +561,7 @@ nonisolated private struct BattleResolutionEngine {
                 Int(
                     (
                         Double(combatants[actorIndex].status.battleStats.healing)
-                        * combatants[actorIndex].status.battleDerivedStats.magicDamageMultiplier
+                        * combatants[actorIndex].status.battleDerivedStats.healingMultiplier
                     ).rounded()
                 ),
                 1
@@ -693,7 +693,7 @@ nonisolated private struct BattleResolutionEngine {
                 let guarded = target.isDefending
                 // Spell damage is assembled from actor-side bonuses first, then reduced by the
                 // target's spell-specific resistance, active barrier, and guard state.
-                let multiplier = actor.status.battleDerivedStats.magicDamageMultiplier
+                let multiplier = actor.status.battleDerivedStats.attackMagicMultiplier
                     * actor.status.battleDerivedStats.spellDamageMultiplier
                     * actor.status.spellDamageMultiplier(for: spell.id)
                     * (actor.magicBuffActive ? 1.5 : 1.0)
@@ -806,7 +806,7 @@ nonisolated private struct BattleResolutionEngine {
                 Int(
                     (
                         Double(combatants[queuedAction.actorIndex].status.battleStats.healing)
-                        * combatants[queuedAction.actorIndex].status.battleDerivedStats.magicDamageMultiplier
+                        * combatants[queuedAction.actorIndex].status.battleDerivedStats.healingMultiplier
                     ).rounded()
                 ),
                 1
@@ -844,7 +844,7 @@ nonisolated private struct BattleResolutionEngine {
                 Int(
                     (
                         Double(combatants[queuedAction.actorIndex].status.battleStats.healing)
-                        * combatants[queuedAction.actorIndex].status.battleDerivedStats.magicDamageMultiplier
+                        * combatants[queuedAction.actorIndex].status.battleDerivedStats.healingMultiplier
                     ).rounded()
                 ),
                 1

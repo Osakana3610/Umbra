@@ -282,7 +282,8 @@ struct UmbraTests {
         #expect(breathStatus.battleStats.breathPower == 59)
         #expect(breathStatus.battleDerivedStats == CharacterBattleDerivedStats(
             physicalDamageMultiplier: 1.0,
-            magicDamageMultiplier: 1.0,
+            attackMagicMultiplier: 1.0,
+            healingMultiplier: 1.0,
             spellDamageMultiplier: 1.0,
             criticalDamageMultiplier: 1.0,
             meleeDamageMultiplier: 1.0,
@@ -2780,7 +2781,7 @@ struct UmbraTests {
 
         let damage = try #require(firstDamageValue(in: result, actionKind: .attackSpell))
         let basePower = Double(max(allyStatus.battleStats.magic - enemyStatus.battleStats.magicDefense, 0))
-        let damageMultiplier = allyStatus.battleDerivedStats.magicDamageMultiplier
+        let damageMultiplier = allyStatus.battleDerivedStats.attackMagicMultiplier
             * allyStatus.battleDerivedStats.spellDamageMultiplier
             * allyStatus.spellDamageMultiplier(for: fireSpell.id)
             * (fireSpell.multiplier ?? 1.0)
@@ -7607,7 +7608,8 @@ private func battleCharacterBaseStats(
 
 private func makeBattleDerivedStats(
     physicalDamageMultiplier: Double = 1.0,
-    magicDamageMultiplier: Double = 1.0,
+    attackMagicMultiplier: Double = 1.0,
+    healingMultiplier: Double = 1.0,
     spellDamageMultiplier: Double = 1.0,
     criticalDamageMultiplier: Double = 1.0,
     meleeDamageMultiplier: Double = 1.0,
@@ -7619,7 +7621,8 @@ private func makeBattleDerivedStats(
 ) -> CharacterBattleDerivedStats {
     CharacterBattleDerivedStats(
         physicalDamageMultiplier: physicalDamageMultiplier,
-        magicDamageMultiplier: magicDamageMultiplier,
+        attackMagicMultiplier: attackMagicMultiplier,
+        healingMultiplier: healingMultiplier,
         spellDamageMultiplier: spellDamageMultiplier,
         criticalDamageMultiplier: criticalDamageMultiplier,
         meleeDamageMultiplier: meleeDamageMultiplier,

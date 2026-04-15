@@ -13,6 +13,7 @@ struct RootTabView: View {
     let shopStore: ShopInventoryStore
     let explorationStore: ExplorationStore
     let itemDropNotificationService: ItemDropNotificationService
+    let equipmentStatusNotificationService: EquipmentStatusNotificationService
     let guildService: GuildService
 
     var body: some View {
@@ -114,9 +115,14 @@ struct RootTabView: View {
             }
         }
         .overlay(alignment: .bottomLeading) {
-            ItemDropNotificationView(
-                itemDropNotificationService: itemDropNotificationService
-            )
+            VStack(alignment: .leading, spacing: 8) {
+                ItemDropNotificationView(
+                    itemDropNotificationService: itemDropNotificationService
+                )
+                EquipmentStatusNotificationView(
+                    equipmentStatusNotificationService: equipmentStatusNotificationService
+                )
+            }
             .padding(.leading, 20)
             .padding(.bottom, notificationBottomPadding)
         }
