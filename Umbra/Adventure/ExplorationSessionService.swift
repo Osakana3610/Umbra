@@ -145,6 +145,7 @@ final class ExplorationSessionService {
             runs: runs,
             didApplyRewards: rewardApplication.didApplyRewards,
             appliedInventoryCounts: rewardApplication.appliedInventoryCounts,
+            appliedShopInventoryCounts: rewardApplication.appliedShopInventoryCounts,
             dropNotificationBatches: resolvedUpdates.compactMap(Self.dropNotificationBatch(from:))
         )
     }

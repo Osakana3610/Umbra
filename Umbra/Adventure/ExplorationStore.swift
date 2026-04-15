@@ -112,10 +112,16 @@ final class ExplorationStore {
             if snapshot.didApplyRewards {
                 rosterStore?.refreshFromPersistence()
                 if let equipmentStore, equipmentStore.isLoaded {
-                    try equipmentStore.reload(masterData: masterData)
+                    equipmentStore.applyInventoryChanges(
+                        snapshot.appliedInventoryCounts,
+                        masterData: masterData
+                    )
                 }
                 if let shopStore, shopStore.isLoaded {
-                    try shopStore.reload(masterData: masterData)
+                    shopStore.applyInventoryChanges(
+                        snapshot.appliedShopInventoryCounts,
+                        masterData: masterData
+                    )
                 }
             }
             itemDropNotificationService.publish(batches: snapshot.dropNotificationBatches)

@@ -120,7 +120,14 @@ struct CharacterDismissalView: View {
                 rosterStore.refreshFromPersistence()
                 partyStore.reload()
                 if equipmentStore.isLoaded {
-                    try equipmentStore.reload(masterData: masterData)
+                    equipmentStore.applyInventoryChanges(
+                        Dictionary(
+                            character.equippedItemStacks.map { ($0.itemID, $0.count) },
+                            uniquingKeysWith: +
+                        ),
+                        masterData: masterData
+                    )
+                    equipmentStore.removeCharacter(characterId: character.characterId)
                 }
             } catch {
                 errorMessage = error.localizedDescription

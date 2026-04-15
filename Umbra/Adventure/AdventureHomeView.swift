@@ -311,7 +311,20 @@ struct AdventureHomeView: View {
             consuming: requiredJewel
         )
         rosterStore.reload()
-        try? equipmentStore.reload(masterData: masterData)
+        guard equipmentStore.isLoaded,
+              let requiredJewel else {
+            return
+        }
+
+        if let characterId = requiredJewel.characterId,
+           let updatedCharacter = rosterStore.charactersById[characterId] {
+            equipmentStore.synchronizeCharacter(updatedCharacter, masterData: masterData)
+        } else {
+            equipmentStore.applyInventoryChanges(
+                [requiredJewel.itemID: -1],
+                masterData: masterData
+            )
+        }
     }
 
     private func startAllRuns() {

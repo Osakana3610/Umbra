@@ -18,6 +18,7 @@ actor ExplorationCoreDataStore {
                 runs: runs,
                 didApplyRewards: false,
                 appliedInventoryCounts: [:],
+                appliedShopInventoryCounts: [:],
                 dropNotificationBatches: []
             )
         }
@@ -185,12 +186,17 @@ actor ExplorationCoreDataStore {
     func commitProgressUpdates(
         _ updates: [(currentSession: RunSessionRecord, resolvedSession: RunSessionRecord)],
         masterData: MasterData
-    ) async throws -> (didApplyRewards: Bool, appliedInventoryCounts: [CompositeItemID: Int]) {
+    ) async throws -> (
+        didApplyRewards: Bool,
+        appliedInventoryCounts: [CompositeItemID: Int],
+        appliedShopInventoryCounts: [CompositeItemID: Int]
+    ) {
         try await perform { context in
             guard !updates.isEmpty else {
                 return (
                     didApplyRewards: false,
-                    appliedInventoryCounts: [:]
+                    appliedInventoryCounts: [:],
+                    appliedShopInventoryCounts: [:]
                 )
             }
 
@@ -203,6 +209,7 @@ actor ExplorationCoreDataStore {
 
             var didApplyRewards = false
             var appliedInventoryCounts: [CompositeItemID: Int] = [:]
+            var appliedShopInventoryCounts: [CompositeItemID: Int] = [:]
 
             for update in updates {
                 let currentSession = update.currentSession
@@ -229,7 +236,7 @@ actor ExplorationCoreDataStore {
                     continue
                 }
 
-                let inventoryCounts = try ExplorationCoreDataBridge.applyCompletionRewards(
+                let rewardCounts = try ExplorationCoreDataBridge.applyCompletionRewards(
                     completion: completion,
                     labyrinthId: resolvedSession.labyrinthId,
                     selectedDifficultyTitleId: resolvedSession.selectedDifficultyTitleId,
@@ -240,14 +247,18 @@ actor ExplorationCoreDataStore {
                 )
                 entity.rewardsApplied = true
                 didApplyRewards = true
-                for (itemID, count) in inventoryCounts {
+                for (itemID, count) in rewardCounts.inventoryCounts {
                     appliedInventoryCounts[itemID, default: 0] += count
+                }
+                for (itemID, count) in rewardCounts.shopInventoryCounts {
+                    appliedShopInventoryCounts[itemID, default: 0] += count
                 }
             }
 
             return (
                 didApplyRewards: didApplyRewards,
-                appliedInventoryCounts: appliedInventoryCounts
+                appliedInventoryCounts: appliedInventoryCounts,
+                appliedShopInventoryCounts: appliedShopInventoryCounts
             )
         }
     }
@@ -582,7 +593,10 @@ nonisolated private enum ExplorationCoreDataBridge {
         memberCharacterIds: [Int],
         in context: NSManagedObjectContext,
         masterData: MasterData
-    ) throws -> [CompositeItemID: Int] {
+    ) throws -> (
+        inventoryCounts: [CompositeItemID: Int],
+        shopInventoryCounts: [CompositeItemID: Int]
+    ) {
         let playerState = try fetchOrCreatePlayerState(in: context)
         playerState.gold += Int64(completion.gold)
 
@@ -657,7 +671,10 @@ nonisolated private enum ExplorationCoreDataBridge {
             masterData: masterData
         )
 
-        return inventoryCounts
+        return (
+            inventoryCounts: inventoryCounts,
+            shopInventoryCounts: shopInventoryCounts
+        )
     }
 
     static func unlockNextDifficultyIfNeeded(

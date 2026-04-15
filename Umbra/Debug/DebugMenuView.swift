@@ -235,7 +235,13 @@ struct DebugMenuView: View {
 
             try guildService.addInventoryStacks(batch.inventoryStacks, masterData: masterData)
             if equipmentStore.isLoaded {
-                try equipmentStore.reload(masterData: masterData)
+                equipmentStore.applyInventoryChanges(
+                    Dictionary(
+                        batch.inventoryStacks.map { ($0.itemID, $0.count) },
+                        uniquingKeysWith: +
+                    ),
+                    masterData: masterData
+                )
             }
 
             let generatedItemCount = batch.generatedCombinationCount * stackCount

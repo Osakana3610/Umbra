@@ -146,6 +146,7 @@ nonisolated struct ExplorationRunSnapshot: Equatable, Sendable {
     let runs: [RunSessionRecord]
     let didApplyRewards: Bool
     let appliedInventoryCounts: [CompositeItemID: Int]
+    let appliedShopInventoryCounts: [CompositeItemID: Int]
     let dropNotificationBatches: [ExplorationDropNotificationBatch]
 }
 

@@ -68,7 +68,7 @@ final class EquipmentInventoryStore {
         isLoaded = true
     }
 
-    func applyInventoryGains(
+    func applyInventoryChanges(
         _ itemCounts: [CompositeItemID: Int],
         masterData: MasterData
     ) {
@@ -79,8 +79,8 @@ final class EquipmentInventoryStore {
         configure(masterData: masterData)
 
         var affectedSectionKeys: Set<EquipmentSectionKey> = []
-        for (itemID, count) in itemCounts where count > 0 {
-            if let sectionKey = incrementInventory(itemID: itemID, by: count) {
+        for (itemID, count) in itemCounts where count != 0 {
+            if let sectionKey = updateInventory(itemID: itemID, quantityDelta: count) {
                 affectedSectionKeys.insert(sectionKey)
             }
         }
@@ -88,6 +88,42 @@ final class EquipmentInventoryStore {
         for sectionKey in affectedSectionKeys {
             refreshMergedSections(affectedSectionKey: sectionKey)
         }
+    }
+
+    func inventoryQuantity(for itemID: CompositeItemID) -> Int {
+        guard let sectionKey = sectionKeyByItemID[itemID],
+              let item = inventoryItemsBySection[sectionKey]?.first(where: { $0.itemID == itemID }) else {
+            return 0
+        }
+
+        return item.quantity
+    }
+
+    func synchronizeCharacter(
+        _ character: CharacterRecord,
+        masterData: MasterData
+    ) {
+        guard isLoaded else {
+            return
+        }
+
+        configure(masterData: masterData)
+        equippedItemsByCharacterID[character.characterId] = cachedItems(from: character.equippedItemStacks)
+
+        guard mergedSectionsByCharacterID[character.characterId] != nil else {
+            return
+        }
+
+        mergedSectionsByCharacterID[character.characterId] = buildMergedSections(for: character.characterId)
+    }
+
+    func removeCharacter(characterId: Int) {
+        guard isLoaded else {
+            return
+        }
+
+        equippedItemsByCharacterID.removeValue(forKey: characterId)
+        mergedSectionsByCharacterID.removeValue(forKey: characterId)
     }
 
     func equippedItems(
@@ -249,7 +285,27 @@ final class EquipmentInventoryStore {
                     masterData: masterData
                 )
                 rosterStore.refreshFromPersistence()
-                try reload(masterData: masterData)
+                applyInventoryChanges(
+                    [
+                        baseItemID: baseCharacterId == nil ? -1 : 0,
+                        jewelItemID: jewelCharacterId == nil ? -1 : 0,
+                        CompositeItemID(
+                            baseSuperRareId: baseItemID.baseSuperRareId,
+                            baseTitleId: baseItemID.baseTitleId,
+                            baseItemId: baseItemID.baseItemId,
+                            jewelSuperRareId: jewelItemID.baseSuperRareId,
+                            jewelTitleId: jewelItemID.baseTitleId,
+                            jewelItemId: jewelItemID.baseItemId
+                        ): baseCharacterId == nil ? 1 : 0
+                    ],
+                    masterData: masterData
+                )
+                for characterId in Set([baseCharacterId, jewelCharacterId].compactMap(\.self)) {
+                    guard let updatedCharacter = rosterStore.charactersById[characterId] else {
+                        continue
+                    }
+                    synchronizeCharacter(updatedCharacter, masterData: masterData)
+                }
             } catch {
                 lastOperationError = Self.errorMessage(for: error)
             }

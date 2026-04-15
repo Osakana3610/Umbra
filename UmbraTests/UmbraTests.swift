@@ -3098,6 +3098,80 @@ struct UmbraTests {
     }
 
     @Test
+    func refreshingCompletedRunReportsInventoryAndShopRewardCountsSeparately() async throws {
+        let container = PersistenceController(inMemory: true).container
+        let guildCoreDataStore = GuildCoreDataStore(container: container)
+        let explorationCoreDataStore = ExplorationCoreDataStore(container: container)
+        let masterData = try loadGeneratedMasterData()
+        let inventoryItemID = CompositeItemID.baseItem(itemId: try itemId(for: .sword, in: masterData))
+        let autoSellItemID = CompositeItemID.baseItem(itemId: try itemId(for: .armor, in: masterData))
+        var rosterSnapshot = try guildCoreDataStore.loadRosterSnapshot()
+        rosterSnapshot.playerState.autoSellItemIDs = [autoSellItemID]
+        try guildCoreDataStore.saveRosterSnapshot(rosterSnapshot)
+
+        let completion = RunCompletionRecord(
+            completedAt: Date(timeIntervalSinceReferenceDate: 305_010),
+            reason: .cleared,
+            gold: 0,
+            experienceRewards: [],
+            dropRewards: [
+                ExplorationDropReward(itemID: inventoryItemID, sourceFloorNumber: 1, sourceBattleNumber: 1),
+                ExplorationDropReward(itemID: inventoryItemID, sourceFloorNumber: 1, sourceBattleNumber: 1),
+                ExplorationDropReward(itemID: autoSellItemID, sourceFloorNumber: 1, sourceBattleNumber: 1)
+            ]
+        )
+
+        try await explorationCoreDataStore.insertRun(
+            RunSessionRecord(
+                partyRunId: 1,
+                partyId: 1,
+                labyrinthId: try #require(masterData.labyrinths.first?.id),
+                selectedDifficultyTitleId: try #require(masterData.defaultExplorationDifficultyTitle?.id),
+                targetFloorNumber: 1,
+                startedAt: Date(timeIntervalSinceReferenceDate: 305_000),
+                rootSeed: 1,
+                memberSnapshots: [],
+                memberCharacterIds: [],
+                completedBattleCount: 1,
+                currentPartyHPs: [],
+                memberExperienceMultipliers: [],
+                progressIntervalMultiplier: 1,
+                goldMultiplier: 1,
+                rareDropMultiplier: 1,
+                partyAverageLuck: 0,
+                latestBattleFloorNumber: 1,
+                latestBattleNumber: 1,
+                latestBattleOutcome: .victory,
+                battleLogs: [],
+                goldBuffer: 0,
+                experienceRewards: [],
+                dropRewards: completion.dropRewards,
+                completion: completion
+            )
+        )
+        let completedRun = try #require(
+            await explorationCoreDataStore.loadRunDetail(partyId: 1, partyRunId: 1)
+        )
+
+        let rewardApplication = try await explorationCoreDataStore.commitProgressUpdates(
+            [(currentSession: completedRun, resolvedSession: completedRun)],
+            masterData: masterData
+        )
+
+        #expect(rewardApplication.didApplyRewards)
+        #expect(rewardApplication.appliedInventoryCounts == [inventoryItemID: 2])
+        #expect(rewardApplication.appliedShopInventoryCounts == [autoSellItemID: 1])
+        #expect(
+            try guildCoreDataStore.loadInventoryStacks()
+                == [CompositeItemStack(itemID: inventoryItemID, count: 2)]
+        )
+        #expect(
+            try guildCoreDataStore.loadShopInventoryStacks()
+                == [CompositeItemStack(itemID: autoSellItemID, count: 1)]
+        )
+    }
+
+    @Test
     func clearingRunUnlocksNextExplorationDifficulty() async throws {
         let container = PersistenceController(inMemory: true).container
         let guildCoreDataStore = GuildCoreDataStore(container: container)
