@@ -109,10 +109,14 @@ final class GuildRosterStore {
             )
             playerState = result.playerState
             replaceCharacter(result.character)
-            lastHireMessage = "\(result.character.name)を雇用しました。"
+            lastHireMessage = "\(result.character.name)を雇用しました！"
         } catch {
             lastOperationError = Self.errorMessage(for: error)
         }
+    }
+
+    func dismissHireMessage() {
+        lastHireMessage = nil
     }
 
     func reviveCharacter(
