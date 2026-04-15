@@ -121,17 +121,8 @@ struct MonsterBookEnemyDetailView: View {
         }
 
         return CharacterDerivedStatsCalculator.status(
-            baseStats: CharacterBaseStats(
-                vitality: enemy.baseStats.vitality,
-                strength: enemy.baseStats.strength,
-                mind: enemy.baseStats.mind,
-                intelligence: enemy.baseStats.intelligence,
-                agility: enemy.baseStats.agility,
-                luck: enemy.baseStats.luck
-            ),
-            jobId: enemy.jobId,
+            for: enemy,
             level: selectedLevel,
-            skillIds: enemy.skillIds,
             masterData: masterData
         )
     }
@@ -251,7 +242,7 @@ private struct MonsterEnemyStatusSectionsView: View {
             }
         }
 
-        Section("戦闘派生") {
+        Section("戦闘中補正") {
             ForEach(derivedStatRows, id: \.title) { row in
                 MonsterEnemyStatRowView(title: row.title, value: row.value)
             }

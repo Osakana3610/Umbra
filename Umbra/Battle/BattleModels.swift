@@ -16,6 +16,7 @@ nonisolated enum BattleSide: String, Codable, Equatable, Sendable {
 nonisolated enum BattleLogActionKind: String, Codable, Equatable, Sendable {
     case breath
     case attack
+    case unarmedRepeat
     case recoverySpell
     case attackSpell
     case defend
@@ -45,6 +46,9 @@ nonisolated enum BattleTargetResultFlag: String, Codable, Equatable, Sendable {
 
 nonisolated enum BattleAilment: Int, Codable, Equatable, Sendable {
     case sleep = 1
+    case curse = 2
+    case paralysis = 3
+    case petrify = 4
 }
 
 nonisolated struct BattleContext: Codable, Equatable, Sendable {
@@ -119,6 +123,8 @@ nonisolated struct SingleBattleResult: Equatable, Sendable {
     }
 
     var partyRemainingHPs: [Int] {
+        // Ally snapshots are stored in a flat combatant list, so restore formation order before
+        // upper layers reuse the remaining HPs as a party-shaped array.
         combatants
             .filter { $0.side == .ally }
             .sorted { $0.formationIndex < $1.formationIndex }

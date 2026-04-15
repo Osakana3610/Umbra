@@ -127,6 +127,8 @@ struct RunSessionBattleLogDetailView: View {
             "ブレス"
         case .attack:
             "攻撃"
+        case .unarmedRepeat:
+            "格闘再攻撃"
         case .recoverySpell:
             spellName(for: action.actionRef, fallback: "回復魔法")
         case .attackSpell:
@@ -233,6 +235,12 @@ struct RunSessionBattleLogDetailView: View {
         switch statusID {
         case BattleAilment.sleep.rawValue:
             "眠り"
+        case BattleAilment.curse.rawValue:
+            "呪い"
+        case BattleAilment.paralysis.rawValue:
+            "麻痺"
+        case BattleAilment.petrify.rawValue:
+            "石化"
         case nil:
             nil
         case .some:

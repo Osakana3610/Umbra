@@ -68,6 +68,7 @@ nonisolated private struct BattleResolutionEngine {
     private let context: BattleContext
     private let masterData: MasterData
     private let spellLookup: [Int: MasterData.Spell]
+    private let skillLookup: [Int: MasterData.Skill]
     private var combatants: [RuntimeCombatant]
     private var turns: [BattleTurnRecord] = []
     private var currentTurn = 0
@@ -87,6 +88,7 @@ nonisolated private struct BattleResolutionEngine {
         self.context = context
         self.masterData = masterData
         self.spellLookup = Dictionary(uniqueKeysWithValues: masterData.spells.map { ($0.id, $0) })
+        self.skillLookup = Dictionary(uniqueKeysWithValues: masterData.skills.map { ($0.id, $0) })
         self.combatants = []
         self.initiativeScores = []
         let enemyDisplayNames = Self.makeEnemyDisplayNames(enemies: enemies, masterData: masterData)
@@ -97,7 +99,7 @@ nonisolated private struct BattleResolutionEngine {
                     id: BattleCombatantID(rawValue: "character:\(character.character.characterId)"),
                     name: character.character.name,
                     side: .ally,
-                    imageAssetID: character.character.portraitAssetName,
+                    imageAssetID: masterData.portraitAssetName(for: character.character),
                     level: character.character.level,
                     formationIndex: formationIndex,
                     currentHP: min(max(character.character.currentHP, 0), character.status.maxHP),
@@ -113,19 +115,9 @@ nonisolated private struct BattleResolutionEngine {
                 throw SingleBattleError.invalidEnemy(enemySeed.enemyId)
             }
 
-            let baseStats = CharacterBaseStats(
-                vitality: enemy.baseStats.vitality,
-                strength: enemy.baseStats.strength,
-                mind: enemy.baseStats.mind,
-                intelligence: enemy.baseStats.intelligence,
-                agility: enemy.baseStats.agility,
-                luck: enemy.baseStats.luck
-            )
             guard let status = CharacterDerivedStatsCalculator.status(
-                baseStats: baseStats,
-                jobId: enemy.jobId,
+                for: enemy,
                 level: enemySeed.level,
-                skillIds: enemy.skillIds,
                 masterData: masterData
             ) else {
                 throw SingleBattleError.invalidEnemy(enemy.id)
@@ -199,6 +191,12 @@ nonisolated private struct BattleResolutionEngine {
         while outcome == nil && currentTurn < 20 {
             currentTurn += 1
             resetTurnState()
+            applyStartOfTurnEffects()
+            outcome = currentOutcomeIfFinished()
+            guard outcome == nil else {
+                turns.append(BattleTurnRecord(turnNumber: currentTurn, actions: []))
+                break
+            }
 
             let turnActions = buildTurnActions()
             var actionQueue = turnActions
@@ -213,6 +211,16 @@ nonisolated private struct BattleResolutionEngine {
 
                 if let actionRecord = resolve(queuedAction) {
                     resolvedActions.append(actionRecord.record)
+                    if queuedAction.countsAsNormalTurnAction,
+                       currentTurn == 1,
+                       combatants[queuedAction.actorIndex].canAct,
+                       !combatants[queuedAction.actorIndex].hasUsedTurnOneExtraAction,
+                       combatants[queuedAction.actorIndex].status.actionRuleMaxValue(
+                        for: "extraTurnAfterNormalActionOnTurnOne"
+                       ) != nil {
+                        combatants[queuedAction.actorIndex].hasUsedTurnOneExtraAction = true
+                        actionQueue.insert(selectNormalAction(for: queuedAction.actorIndex), at: 0)
+                    }
                     if !actionRecord.generatedInterrupts.isEmpty {
                         // Interrupts are inserted at the head of the queue so they resolve
                         // immediately after the triggering action, matching the battle log order.
@@ -237,6 +245,13 @@ nonisolated private struct BattleResolutionEngine {
         }
 
         let finalOutcome = outcome ?? .draw
+        if finalOutcome == .victory {
+            for index in combatants.indices
+            where combatants[index].isAlive
+                && combatants[index].status.recoveryRuleMaxValue(for: "healToFullAfterBattle") != nil {
+                combatants[index].currentHP = combatants[index].status.maxHP
+            }
+        }
         let battleRecord = BattleRecord(
             runId: context.runId,
             floorNumber: context.floorNumber,
@@ -273,6 +288,22 @@ nonisolated private struct BattleResolutionEngine {
         }
     }
 
+    private mutating func applyStartOfTurnEffects() {
+        for index in combatants.indices where combatants[index].isAlive {
+            guard let lossRatio = combatants[index].status.combatRuleMaxValue(for: "startTurnSelfCurrentHPLossPct"),
+                  lossRatio > 0 else {
+                continue
+            }
+            let damage = max(Int(ceil(Double(combatants[index].currentHP) * lossRatio)), 1)
+            _ = applyDamage(
+                damage,
+                to: index,
+                guarded: false,
+                purposeSubaction: 0
+            )
+        }
+    }
+
     private mutating func buildTurnActions() -> [QueuedAction] {
         let actingIndices = combatants.indices.filter { combatants[$0].canAct }
         let orderedIndices = actingIndices.sorted(by: compareCombatantPriority)
@@ -303,9 +334,9 @@ nonisolated private struct BattleResolutionEngine {
 
             switch actionKind {
             case .breath:
-                return QueuedAction(actorIndex: actorIndex, recordKind: .breath)
+                return QueuedAction(actorIndex: actorIndex, recordKind: .breath, countsAsNormalTurnAction: true)
             case .attack:
-                return QueuedAction(actorIndex: actorIndex, recordKind: .attack)
+                return QueuedAction(actorIndex: actorIndex, recordKind: .attack, countsAsNormalTurnAction: true)
             case .recoverySpell:
                 if let spellId = selectSpell(
                     for: actorIndex,
@@ -315,7 +346,8 @@ nonisolated private struct BattleResolutionEngine {
                     return QueuedAction(
                         actorIndex: actorIndex,
                         recordKind: .recoverySpell,
-                        spellId: spellId
+                        spellId: spellId,
+                        countsAsNormalTurnAction: true
                     )
                 }
             case .attackSpell:
@@ -327,33 +359,102 @@ nonisolated private struct BattleResolutionEngine {
                     return QueuedAction(
                         actorIndex: actorIndex,
                         recordKind: .attackSpell,
-                        spellId: spellId
+                        spellId: spellId,
+                        countsAsNormalTurnAction: true
                     )
                 }
             }
         }
 
-        return QueuedAction(actorIndex: actorIndex, recordKind: .defend)
+        return QueuedAction(actorIndex: actorIndex, recordKind: .defend, countsAsNormalTurnAction: true)
     }
 
     private mutating func resolve(_ queuedAction: QueuedAction) -> ResolvedAction? {
         switch queuedAction.recordKind {
         case .defend:
             combatants[queuedAction.actorIndex].isDefending = true
+            let actorIndex = queuedAction.actorIndex
+            var results: [BattleTargetResult] = []
+            if let healMultiplier = combatants[actorIndex].status.recoveryRuleMaxValue(for: "defendPartyHealMultiplier") {
+                let healAmount = max(
+                    Int(
+                        (
+                            Double(combatants[actorIndex].status.battleStats.healing)
+                            * combatants[actorIndex].status.battleDerivedStats.healingMultiplier
+                            * actionMultiplier(for: actorIndex, actionKind: .recoverySpell)
+                            * livePartyModifier(
+                                for: combatants[actorIndex].side,
+                                target: "allyHealingMultiplier"
+                            )
+                            * healMultiplier
+                        ).rounded()
+                    ),
+                    1
+                )
+                for targetIndex in livingIndices(on: combatants[actorIndex].side) {
+                    results.append(applyHeal(healAmount, to: targetIndex))
+                }
+            }
+            if let cleanseCount = combatants[actorIndex].status.recoveryRuleMaxValue(for: "defendPartyCleanseCount") {
+                for targetIndex in livingIndices(on: combatants[actorIndex].side) {
+                    var remaining = Int(cleanseCount.rounded())
+                    while remaining > 0, let ailment = removeAilment(from: targetIndex, actionNumber: currentActionNumber) {
+                        results.append(
+                            BattleTargetResult(
+                                targetId: combatants[targetIndex].id,
+                                resultKind: .ailmentRemoved,
+                                value: nil,
+                                statusId: ailment.rawValue,
+                                flags: []
+                            )
+                        )
+                        remaining -= 1
+                    }
+                }
+            }
+            if combatants[actorIndex].status.reviveRuleMaxValue(for: "defendReviveOneAlly") != nil {
+                let fallenAllies = combatants.indices.filter {
+                    combatants[$0].side == combatants[actorIndex].side && !combatants[$0].isAlive
+                }
+                if let reviveTargetIndex = randomChoice(
+                    from: fallenAllies,
+                    turn: currentTurn,
+                    action: currentActionNumber,
+                    subaction: 1,
+                    purpose: "defend.revive.\(combatants[actorIndex].id.rawValue)"
+                ) {
+                    let recoveredHP = max(
+                        Int(
+                            (
+                                Double(combatants[actorIndex].status.battleStats.healing)
+                                * combatants[actorIndex].status.battleDerivedStats.healingMultiplier
+                                * livePartyModifier(
+                                    for: combatants[actorIndex].side,
+                                    target: "allyHealingMultiplier"
+                                )
+                            ).rounded()
+                        ),
+                        1
+                    )
+                    results.append(reviveTarget(reviveTargetIndex, recoveredHP: recoveredHP, fullRestore: false))
+                }
+            }
             return ResolvedAction(
                 record: BattleActionRecord(
-                    actorId: combatants[queuedAction.actorIndex].id,
+                    actorId: combatants[actorIndex].id,
                     actionKind: .defend,
                     actionRef: nil,
                     actionFlags: [],
-                    targetIds: [],
-                    results: []
+                    targetIds: results.map(\.targetId),
+                    results: results
                 ),
                 generatedInterrupts: []
             )
         case .breath:
             return resolveBreath(queuedAction)
         case .attack:
+            return resolveAttack(queuedAction)
+        case .unarmedRepeat:
             return resolveAttack(queuedAction)
         case .recoverySpell:
             return resolveRecoverySpell(queuedAction)
@@ -371,6 +472,13 @@ nonisolated private struct BattleResolutionEngine {
         guard !targetIndices.isEmpty else {
             return nil
         }
+        // Breath is a once-per-battle action even if later action selection would otherwise pick
+        // it again.
+        guard combatants[queuedAction.actorIndex].breathUsesRemaining > 0 else {
+            return nil
+        }
+
+        combatants[queuedAction.actorIndex].breathUsesRemaining -= 1
 
         let actor = combatants[queuedAction.actorIndex]
         var results: [BattleTargetResult] = []
@@ -378,6 +486,7 @@ nonisolated private struct BattleResolutionEngine {
         for (subactionNumber, targetIndex) in targetIndices.enumerated() {
             let guarded = combatants[targetIndex].isDefending
             let damage = damageValue(
+                actorIndex: queuedAction.actorIndex,
                 basePower: Double(
                     max(
                         actor.status.battleStats.breathPower
@@ -388,7 +497,9 @@ nonisolated private struct BattleResolutionEngine {
                 multiplier: 1.0,
                 resistance: combatants[targetIndex].status.battleDerivedStats.breathResistanceMultiplier,
                 barrierMultiplier: 1.0,
-                guarded: guarded
+                guarded: guarded,
+                subactionNumber: subactionNumber + 1,
+                allowsHitSpecialRules: false
             )
             let targetResult = applyDamage(
                 damage,
@@ -402,6 +513,15 @@ nonisolated private struct BattleResolutionEngine {
             }
         }
 
+        var generatedInterrupts = rescueInterruptActions(
+            after: queuedAction,
+            fallenTargetIndices: fallenTargetIndices
+        )
+        if combatants[queuedAction.actorIndex].status.actionRuleMaxValue(for: "normalAttackAfterBreath") != nil,
+           let followUp = makeFollowUpAttack(actorIndex: queuedAction.actorIndex) {
+            generatedInterrupts.append(followUp)
+        }
+
         return ResolvedAction(
             record: BattleActionRecord(
                 actorId: actor.id,
@@ -411,36 +531,402 @@ nonisolated private struct BattleResolutionEngine {
                 targetIds: targetIndices.map { combatants[$0].id },
                 results: results
             ),
-            generatedInterrupts: rescueInterruptActions(
-                after: queuedAction,
-                fallenTargetIndices: fallenTargetIndices
-            )
+            generatedInterrupts: generatedInterrupts
         )
     }
 
     private mutating func resolveAttack(_ queuedAction: QueuedAction) -> ResolvedAction? {
-        guard let targetIndex = selectPhysicalTarget(
-            for: combatants[queuedAction.actorIndex].side,
-            purpose: "attackTarget.\(combatants[queuedAction.actorIndex].id.rawValue).\(queuedAction.recordKind.rawValue)",
-            actionNumber: currentActionNumber
-        ) else {
-            return nil
-        }
-
         let actorIndex = queuedAction.actorIndex
         let actor = combatants[actorIndex]
         let actionKind = queuedAction.recordKind
+        let isNormalAttack = isNormalAttackAction(actionKind)
+        let selectedTargetIndices = attackTargetIndices(for: queuedAction)
+        guard !selectedTargetIndices.isEmpty else {
+            return nil
+        }
+
+        let primaryTargetIndex = selectedTargetIndices[0]
         let attackCount = adjustedAttackCount(for: actorIndex, multiplier: queuedAction.attackCountMultiplier)
         let allowsCritical = queuedAction.criticalAllowed
-        let criticalTriggered = allowsCritical ? criticalDidTrigger(for: actorIndex) : false
+        let isFirstNormalAttack = isNormalAttack && !combatants[actorIndex].hasUsedFirstNormalAttack
+        let firstAttackAccuracyPctAdd = isFirstNormalAttack
+            ? (combatants[actorIndex].status.actionRuleMaxValue(for: "firstNormalAttackAccuracyPctAdd") ?? 0.0)
+            : 0.0
+        let criticalRateBonus = max(
+            (isNormalAttack ? (combatants[actorIndex].status.actionRuleMaxValue(for: "normalAttackCriticalRateAdd") ?? 0.0) : 0.0)
+                +
+            (attackCount == 1 ? (combatants[actorIndex].status.actionRuleMaxValue(for: "attackCountOneCriticalRateAdd") ?? 0.0) : 0.0)
+                + (isLowHP(combatants[actorIndex]) ? (combatants[actorIndex].status.combatRuleMaxValue(for: "lowHPCriticalRateAdd") ?? 0.0) : 0.0)
+                + (isLowHP(combatants[primaryTargetIndex]) ? (combatants[actorIndex].status.combatRuleMaxValue(for: "criticalRateAgainstLowHPTargetAdd") ?? 0.0) : 0.0),
+            0.0
+        )
+        let criticalTriggered = allowsCritical
+            ? criticalDidTrigger(for: actorIndex, criticalRateBonus: criticalRateBonus)
+            : false
+        let usesCarryOver = isNormalAttack
+            && combatants[actorIndex].status.actionRuleMaxValue(for: "carryOverRemainingHitsOnKill") != nil
+        let sharesAttackCountAcrossTargets = usesCarryOver
+
+        if selectedTargetIndices.count > 1 || usesCarryOver {
+            var pendingTargetIndices = selectedTargetIndices
+            var processedTargetIndices = Set(selectedTargetIndices)
+            var remainingHitIndices = Array(0..<attackCount)
+            var results: [BattleTargetResult] = []
+            var targetIds: [BattleCombatantID] = []
+            var fallenTargetIndices: [Int] = []
+            var generatedInterrupts: [QueuedAction] = []
+            var landedAnyHit = false
+
+            while !pendingTargetIndices.isEmpty
+                && (sharesAttackCountAcrossTargets ? !remainingHitIndices.isEmpty : true) {
+                let originalTargetIndex = pendingTargetIndices.removeFirst()
+                guard combatants.indices.contains(originalTargetIndex),
+                      combatants[originalTargetIndex].isAlive else {
+                    continue
+                }
+
+                let guardedTarget = redirectedPhysicalTarget(
+                    originalTargetIndex: originalTargetIndex,
+                    attackerIndex: actorIndex
+                )
+                let targetIndex = guardedTarget.targetIndex
+                let targetId = combatants[targetIndex].id
+                let targetWasLowHP = isLowHP(combatants[targetIndex])
+                let guarded = combatants[targetIndex].isDefending
+                var totalDamage = 0
+                var combinedFlags: Set<BattleTargetResultFlag> = []
+                var landedHitOnTarget = false
+                let isPrimaryTarget = originalTargetIndex == primaryTargetIndex
+                var hitIndices = sharesAttackCountAcrossTargets
+                    ? remainingHitIndices
+                    : Array(0..<attackCount)
+
+                while !hitIndices.isEmpty && combatants[targetIndex].isAlive {
+                    let hitIndex = hitIndices.removeFirst()
+                    guard didHit(
+                        attackerIndex: actorIndex,
+                        defenderIndex: targetIndex,
+                        subactionNumber: hitIndex + 1,
+                        isNormalAttack: isNormalAttack,
+                        accuracyPctAdd: firstAttackAccuracyPctAdd
+                    ) else {
+                        continue
+                    }
+
+                    landedHitOnTarget = true
+                    landedAnyHit = true
+                    var multiplier = actor.status.battleDerivedStats.physicalDamageMultiplier
+                    multiplier *= formationMultiplier(for: actor)
+                    multiplier *= weaponDamageMultiplier(for: actor)
+                    multiplier *= queuedAction.attackPowerMultiplier
+                    multiplier *= livePartyModifier(
+                        for: actor.side,
+                        target: "allyPhysicalDamageMultiplier"
+                    )
+                    if actor.attackBuffActive {
+                        multiplier *= 1.5
+                    }
+                    if criticalTriggered {
+                        multiplier *= actor.status.battleDerivedStats.criticalDamageMultiplier
+                        if isNormalAttack, formationRank(for: actor.formationIndex) == .back {
+                            multiplier *= combatants[actorIndex].status.actionRuleMaxValue(
+                                for: "backRowNormalAttackCriticalDamageMultiplier"
+                            ) ?? 1.0
+                        }
+                    }
+                    if isNormalAttack {
+                        multiplier *= combatants[actorIndex].status.actionRuleMaxValue(for: "normalAttackBaseDamageMultiplier") ?? 1.0
+                        if combatants[actorIndex].status.hasMeleeWeapon || combatants[actorIndex].status.isUnarmed {
+                            multiplier *= combatants[actorIndex].status.actionRuleMaxValue(for: "normalAttackMeleeDamageMultiplier") ?? 1.0
+                        }
+                        if combatants[actorIndex].status.hasRangedWeapon {
+                            multiplier *= combatants[actorIndex].status.actionRuleMaxValue(for: "normalAttackRangedDamageMultiplier") ?? 1.0
+                        }
+                        if isFirstNormalAttack {
+                            multiplier *= combatants[actorIndex].status.actionRuleMaxValue(
+                                for: "firstNormalAttackPhysicalDamageMultiplier"
+                            ) ?? 1.0
+                        }
+                        multiplier *= combatants[actorIndex].nextNormalAttackPhysicalDamageMultiplier
+                    }
+                    if attackCount == 1 {
+                        multiplier *= combatants[actorIndex].status.actionRuleMaxValue(for: "attackCountOneMeleeDamageMultiplier") ?? 1.0
+                        if criticalTriggered {
+                            multiplier *= combatants[actorIndex].status.actionRuleMaxValue(
+                                for: "attackCountOneCriticalDamageMultiplier"
+                            ) ?? 1.0
+                        }
+                    }
+                    if isLowHP(combatants[actorIndex]) {
+                        multiplier *= combatants[actorIndex].status.combatRuleMaxValue(for: "lowHPPhysicalDamageMultiplier") ?? 1.0
+                        multiplier *= combatants[actorIndex].status.combatRuleMaxValue(for: "lowHPMeleeDamageMultiplier") ?? 1.0
+                    }
+                    if isLowHP(combatants[targetIndex]) {
+                        multiplier *= combatants[actorIndex].status.combatRuleMaxValue(
+                            for: "criticalDamageMultiplierAgainstLowHPTarget"
+                        ) ?? 1.0
+                        multiplier *= combatants[actorIndex].status.combatRuleMaxValue(
+                            for: "lowHPTargetRangedDamageMultiplier"
+                        ) ?? 1.0
+                    }
+                    if !combatants[targetIndex].ailments.isEmpty {
+                        multiplier *= combatants[actorIndex].status.combatRuleMaxValue(
+                            for: "damageMultiplierAgainstAilingTarget"
+                        ) ?? 1.0
+                    }
+                    if combatants[targetIndex].ailments.contains(.petrify) {
+                        multiplier *= combatants[actorIndex].status.combatRuleMaxValue(
+                            for: "damageMultiplierAgainstPetrifiedTarget"
+                        ) ?? 1.0
+                    }
+                    multiplier *= 1.0 + max(combatants[actorIndex].physicalDamagePctAddFromDamageTaken, 0.0)
+                    let lostHPTens = max(actor.status.maxHP - combatants[actorIndex].currentHP, 0) / max(actor.status.maxHP / 10, 1)
+                    let lostHPPctAdd = Double(lostHPTens) * (combatants[actorIndex].status.combatRuleMaxValue(
+                        for: "lostHP10PctToMeleeDamagePctAdd"
+                    ) ?? 0.0)
+                    multiplier *= 1.0 + lostHPPctAdd
+                    let elapsedTurnPctAdd = Double(max(currentTurn - 1, 0)) * (combatants[actorIndex].status.combatRuleMaxValue(
+                        for: "elapsedTurnToPhysicalAttackPctAdd"
+                    ) ?? 0.0)
+                    multiplier *= 1.0 + elapsedTurnPctAdd
+                    multiplier *= actionMultiplier(for: actorIndex, actionKind: actionKind)
+                    if isNormalAttack {
+                        multiplier *= normalAttackAdditionalTargetDamageMultiplier(
+                            for: actorIndex,
+                            isPrimaryTarget: isPrimaryTarget
+                        )
+                    }
+
+                    breakPhysicalBarrierOnNormalHitIfNeeded(
+                        attackerIndex: actorIndex,
+                        targetIndex: targetIndex,
+                        isNormalAttack: isNormalAttack
+                    )
+                    let barrierMultiplier = combatants[targetIndex].physicalBarrierActive ? 0.5 : 1.0
+                    let defendDamageTakenMultiplier = guarded
+                        ? combatants[targetIndex].status.defenseRuleProduct(for: "defendDamageTakenMultiplier")
+                        : 1.0
+                    let guardedDamageTakenMultiplier = guardedTarget.didRedirect
+                        ? combatants[targetIndex].status.defenseRuleProduct(for: "guardedDamageTakenMultiplier")
+                        : 1.0
+                    let partyDamageTakenMultiplier = livePartyModifier(
+                        for: combatants[targetIndex].side,
+                        target: "allyPhysicalDamageTakenMultiplier"
+                    )
+                    let basePower = physicalBasePower(
+                        attackerIndex: actorIndex,
+                        targetIndex: targetIndex,
+                        hitMultiplier: hitContribution(
+                            for: hitIndex,
+                            attackerIndex: actorIndex,
+                            isNormalAttack: isNormalAttack
+                        ),
+                        isNormalAttack: isNormalAttack
+                    )
+                    let damage = damageValue(
+                        actorIndex: actorIndex,
+                        basePower: basePower,
+                        multiplier: multiplier,
+                        resistance: combatants[targetIndex].status.battleDerivedStats.physicalResistanceMultiplier
+                            * (isLowHP(combatants[targetIndex])
+                                ? (combatants[targetIndex].status.combatRuleMaxValue(for: "lowHPPhysicalResistanceMultiplier") ?? 1.0)
+                                : 1.0)
+                            * partyDamageTakenMultiplier
+                            * guardedDamageTakenMultiplier
+                            * defendDamageTakenMultiplier,
+                        barrierMultiplier: barrierMultiplier,
+                        guarded: guarded,
+                        subactionNumber: hitIndex + 1,
+                        allowsHitSpecialRules: actionKind == .attack
+                    )
+                    let damageResult = applyDamage(
+                        damage,
+                        to: targetIndex,
+                        guarded: guarded,
+                        purposeSubaction: hitIndex + 1
+                    )
+                    totalDamage += damageResult.value ?? 0
+                    combinedFlags.formUnion(damageResult.flags)
+                }
+                if sharesAttackCountAcrossTargets {
+                    remainingHitIndices = hitIndices
+                }
+
+                targetIds.append(targetId)
+
+                if !landedHitOnTarget {
+                    results.append(
+                        BattleTargetResult(
+                            targetId: targetId,
+                            resultKind: .miss,
+                            value: nil,
+                            statusId: nil,
+                            flags: []
+                        )
+                    )
+                    if queuedAction.canTriggerInterrupts {
+                        generatedInterrupts += interruptActions(
+                            after: queuedAction,
+                            targetIndex: targetIndex,
+                            targetWasDefeated: false
+                        )
+                    }
+                    continue
+                }
+
+                let targetResult = BattleTargetResult(
+                    targetId: targetId,
+                    resultKind: .damage,
+                    value: totalDamage,
+                    statusId: nil,
+                    flags: combinedFlags.sorted(by: { $0.rawValue < $1.rawValue })
+                )
+                results.append(targetResult)
+                if isNormalAttack {
+                    combatants[actorIndex].hasUsedFirstNormalAttack = true
+                    combatants[actorIndex].nextNormalAttackPhysicalDamageMultiplier = 1.0
+                }
+                if let lifestealMultiplier = combatants[actorIndex].status.recoveryRuleMaxValue(for: "lifestealMultiplier"),
+                   totalDamage > 0 {
+                    results.append(
+                        applyHeal(
+                            max(Int((Double(totalDamage) * lifestealMultiplier).rounded()), 1),
+                            to: actorIndex
+                        )
+                    )
+                }
+                results.append(contentsOf: applyOnHitAilments(
+                    from: actorIndex,
+                    to: targetIndex,
+                    subactionNumber: 1,
+                    includesAttackSpellTriggers: false,
+                    includesNormalAttackTriggers: isNormalAttack
+                ))
+                if isNormalAttack,
+                   combatants[actorIndex].status.actionRuleMaxValue(for: "restoreRandomAttackSpellUsageOnNormalHit") != nil {
+                    restoreOneAttackSpellCharge(for: actorIndex)
+                }
+                if targetResult.flags.contains(.defeated) {
+                    fallenTargetIndices.append(targetIndex)
+                    if targetWasLowHP {
+                        if let healRatio = combatants[actorIndex].status.recoveryRuleMaxValue(for: "healOnLowHPKillHPRatio") {
+                            results.append(
+                                applyHeal(
+                                    max(Int((Double(combatants[actorIndex].status.maxHP) * healRatio).rounded()), 1),
+                                    to: actorIndex
+                                )
+                            )
+                        }
+                        if queuedAction.allowsActionRuleFollowUps, isNormalAttack {
+                            if combatants[actorIndex].status.actionRuleMaxValue(for: "extraActionOnLowHPKill") != nil,
+                               combatants[actorIndex].canAct {
+                                generatedInterrupts.append(selectNormalAction(for: actorIndex).asFollowUp())
+                            }
+                            if combatants[actorIndex].status.actionRuleMaxValue(for: "chainNormalAttackOnLowHPKill") != nil,
+                               let nextTargetIndex = selectLowHPTarget(
+                                for: combatants[actorIndex].side,
+                                excluding: [targetIndex]
+                               ),
+                               let followUp = makeFollowUpAttack(actorIndex: actorIndex, targetIndex: nextTargetIndex) {
+                                generatedInterrupts.append(followUp)
+                            }
+                        }
+                    }
+                    if usesCarryOver && remainingHitIndices.isEmpty == false && pendingTargetIndices.isEmpty {
+                        let nextTargetIndex = selectPhysicalTarget(
+                            for: actor.side,
+                            purpose: "attackTarget.carryOver.\(actor.id.rawValue).\(actionKind.rawValue)",
+                            actionNumber: currentActionNumber,
+                            excluding: processedTargetIndices
+                        )
+                        if let nextTargetIndex {
+                            pendingTargetIndices.append(nextTargetIndex)
+                            processedTargetIndices.insert(nextTargetIndex)
+                        }
+                    }
+                }
+                if queuedAction.canTriggerInterrupts {
+                    generatedInterrupts += interruptActions(
+                        after: queuedAction,
+                        targetIndex: targetIndex,
+                        targetWasDefeated: targetResult.flags.contains(.defeated)
+                    )
+                }
+            }
+
+            if queuedAction.allowsActionRuleFollowUps,
+               isNormalAttack,
+               !landedAnyHit {
+                if combatants[actorIndex].status.actionRuleMaxValue(for: "repeatNormalAttackOnEvade") != nil,
+                   let followUp = makeFollowUpAttack(actorIndex: actorIndex, targetIndex: primaryTargetIndex) {
+                    generatedInterrupts.append(followUp)
+                } else if let chance = combatants[actorIndex].status.actionRuleMaxValue(for: "normalAttackOnEvadeChance") {
+                    let roll = uniform(
+                        turn: currentTurn,
+                        action: currentActionNumber,
+                        subaction: 97,
+                        roll: actorIndex + 1,
+                        purpose: "followup.evade.\(combatants[actorIndex].id.rawValue)"
+                    )
+                    if roll < chance,
+                       let followUp = makeFollowUpAttack(actorIndex: actorIndex, targetIndex: primaryTargetIndex) {
+                        generatedInterrupts.append(followUp)
+                    }
+                }
+            }
+            if queuedAction.allowsActionRuleFollowUps,
+               isNormalAttack,
+               criticalTriggered {
+                let followUpTargetIndex = combatants.indices.contains(primaryTargetIndex) && combatants[primaryTargetIndex].isAlive
+                    ? primaryTargetIndex
+                    : nil
+                if combatants[actorIndex].status.actionRuleMaxValue(for: "repeatNormalAttackOnCritical") != nil,
+                   let followUp = makeFollowUpAttack(actorIndex: actorIndex, targetIndex: followUpTargetIndex) {
+                    generatedInterrupts.append(followUp)
+                }
+            }
+
+            generatedInterrupts = rescueInterruptActions(
+                after: queuedAction,
+                fallenTargetIndices: fallenTargetIndices
+            ) + generatedInterrupts
+
+            return ResolvedAction(
+                record: BattleActionRecord(
+                    actorId: actor.id,
+                    actionKind: actionKind,
+                    actionRef: nil,
+                    actionFlags: criticalTriggered ? [BattleActionFlag.critical] : [],
+                    targetIds: targetIds,
+                    results: results
+                ),
+                generatedInterrupts: generatedInterrupts
+            )
+        }
+
+        let guardedTarget = redirectedPhysicalTarget(
+            originalTargetIndex: primaryTargetIndex,
+            attackerIndex: actorIndex
+        )
+        let targetIndex = guardedTarget.targetIndex
         var hitMultiplier = 0.0
         var currentTargetAlive = combatants[targetIndex].isAlive
 
         // Multi-hit attacks decay each additional hit's contribution so extra swings matter,
         // but the first confirmed hit still carries the largest share of the damage.
         for hitIndex in 0..<attackCount where currentTargetAlive {
-            if didHit(attackerIndex: actorIndex, defenderIndex: targetIndex, subactionNumber: hitIndex + 1) {
-                hitMultiplier += pow(0.5, Double(hitIndex))
+            if didHit(
+                attackerIndex: actorIndex,
+                defenderIndex: targetIndex,
+                subactionNumber: hitIndex + 1,
+                isNormalAttack: isNormalAttack,
+                accuracyPctAdd: firstAttackAccuracyPctAdd
+            ) {
+                hitMultiplier += hitContribution(
+                    for: hitIndex,
+                    attackerIndex: actorIndex,
+                    isNormalAttack: isNormalAttack
+                )
             }
             currentTargetAlive = combatants[targetIndex].isAlive
         }
@@ -478,6 +964,7 @@ nonisolated private struct BattleResolutionEngine {
         }
 
         let target = combatants[targetIndex]
+        let targetWasLowHP = isLowHP(target)
         let guarded = target.isDefending
         var multiplier = actor.status.battleDerivedStats.physicalDamageMultiplier
         // Physical damage is assembled from actor-side bonuses first and only then reduced by
@@ -485,21 +972,115 @@ nonisolated private struct BattleResolutionEngine {
         multiplier *= formationMultiplier(for: actor)
         multiplier *= weaponDamageMultiplier(for: actor)
         multiplier *= queuedAction.attackPowerMultiplier
+        multiplier *= livePartyModifier(
+            for: actor.side,
+            target: "allyPhysicalDamageMultiplier"
+        )
         if actor.attackBuffActive {
             multiplier *= 1.5
         }
         if criticalTriggered {
             multiplier *= actor.status.battleDerivedStats.criticalDamageMultiplier
+            if isNormalAttack, formationRank(for: actor.formationIndex) == .back {
+                multiplier *= combatants[actorIndex].status.actionRuleMaxValue(
+                    for: "backRowNormalAttackCriticalDamageMultiplier"
+                ) ?? 1.0
+            }
         }
+        if isNormalAttack {
+            multiplier *= combatants[actorIndex].status.actionRuleMaxValue(for: "normalAttackBaseDamageMultiplier") ?? 1.0
+            if combatants[actorIndex].status.hasMeleeWeapon || combatants[actorIndex].status.isUnarmed {
+                multiplier *= combatants[actorIndex].status.actionRuleMaxValue(for: "normalAttackMeleeDamageMultiplier") ?? 1.0
+            }
+            if combatants[actorIndex].status.hasRangedWeapon {
+                multiplier *= combatants[actorIndex].status.actionRuleMaxValue(for: "normalAttackRangedDamageMultiplier") ?? 1.0
+            }
+            if isFirstNormalAttack {
+                multiplier *= combatants[actorIndex].status.actionRuleMaxValue(
+                    for: "firstNormalAttackPhysicalDamageMultiplier"
+                ) ?? 1.0
+            }
+            multiplier *= combatants[actorIndex].nextNormalAttackPhysicalDamageMultiplier
+        }
+        if attackCount == 1 {
+            multiplier *= combatants[actorIndex].status.actionRuleMaxValue(for: "attackCountOneMeleeDamageMultiplier") ?? 1.0
+            if criticalTriggered {
+                multiplier *= combatants[actorIndex].status.actionRuleMaxValue(
+                    for: "attackCountOneCriticalDamageMultiplier"
+                ) ?? 1.0
+            }
+        }
+        if isLowHP(combatants[actorIndex]) {
+            multiplier *= combatants[actorIndex].status.combatRuleMaxValue(for: "lowHPPhysicalDamageMultiplier") ?? 1.0
+            multiplier *= combatants[actorIndex].status.combatRuleMaxValue(for: "lowHPMeleeDamageMultiplier") ?? 1.0
+        }
+        if isLowHP(target) {
+            multiplier *= combatants[actorIndex].status.combatRuleMaxValue(
+                for: "criticalDamageMultiplierAgainstLowHPTarget"
+            ) ?? 1.0
+            multiplier *= combatants[actorIndex].status.combatRuleMaxValue(
+                for: "lowHPTargetRangedDamageMultiplier"
+            ) ?? 1.0
+        }
+        if !target.ailments.isEmpty {
+            multiplier *= combatants[actorIndex].status.combatRuleMaxValue(
+                for: "damageMultiplierAgainstAilingTarget"
+            ) ?? 1.0
+        }
+        if target.ailments.contains(.petrify) {
+            multiplier *= combatants[actorIndex].status.combatRuleMaxValue(
+                for: "damageMultiplierAgainstPetrifiedTarget"
+            ) ?? 1.0
+        }
+        multiplier *= 1.0 + max(combatants[actorIndex].physicalDamagePctAddFromDamageTaken, 0.0)
+        let lostHPTens = max(actor.status.maxHP - combatants[actorIndex].currentHP, 0) / max(actor.status.maxHP / 10, 1)
+        let lostHPPctAdd = Double(lostHPTens) * (combatants[actorIndex].status.combatRuleMaxValue(
+            for: "lostHP10PctToMeleeDamagePctAdd"
+        ) ?? 0.0)
+        multiplier *= 1.0 + lostHPPctAdd
+        let elapsedTurnPctAdd = Double(max(currentTurn - 1, 0)) * (combatants[actorIndex].status.combatRuleMaxValue(
+            for: "elapsedTurnToPhysicalAttackPctAdd"
+        ) ?? 0.0)
+        multiplier *= 1.0 + elapsedTurnPctAdd
+        multiplier *= actionMultiplier(for: actorIndex, actionKind: actionKind)
 
-        let basePower = Double(max(actor.status.battleStats.physicalAttack - target.status.battleStats.physicalDefense, 0))
-            * hitMultiplier
+        breakPhysicalBarrierOnNormalHitIfNeeded(
+            attackerIndex: actorIndex,
+            targetIndex: targetIndex,
+            isNormalAttack: isNormalAttack
+        )
+        let barrierMultiplier = combatants[targetIndex].physicalBarrierActive ? 0.5 : 1.0
+        let defendDamageTakenMultiplier = guarded
+            ? target.status.defenseRuleProduct(for: "defendDamageTakenMultiplier")
+            : 1.0
+        let guardedDamageTakenMultiplier = guardedTarget.didRedirect
+            ? target.status.defenseRuleProduct(for: "guardedDamageTakenMultiplier")
+            : 1.0
+        let partyDamageTakenMultiplier = livePartyModifier(
+            for: target.side,
+            target: "allyPhysicalDamageTakenMultiplier"
+        )
+        let basePower = physicalBasePower(
+            attackerIndex: actorIndex,
+            targetIndex: targetIndex,
+            hitMultiplier: hitMultiplier,
+            isNormalAttack: isNormalAttack
+        )
         let damage = damageValue(
+            actorIndex: actorIndex,
             basePower: basePower,
             multiplier: multiplier,
-            resistance: target.status.battleDerivedStats.physicalResistanceMultiplier,
-            barrierMultiplier: target.physicalBarrierActive ? 0.5 : 1.0,
-            guarded: guarded
+            resistance: target.status.battleDerivedStats.physicalResistanceMultiplier
+                * (isLowHP(target)
+                    ? (target.status.combatRuleMaxValue(for: "lowHPPhysicalResistanceMultiplier") ?? 1.0)
+                    : 1.0)
+                * partyDamageTakenMultiplier
+                * guardedDamageTakenMultiplier
+                * defendDamageTakenMultiplier,
+            barrierMultiplier: barrierMultiplier,
+            guarded: guarded,
+            subactionNumber: 1,
+            allowsHitSpecialRules: actionKind == .attack
         )
         let targetResult = applyDamage(
             damage,
@@ -507,6 +1088,10 @@ nonisolated private struct BattleResolutionEngine {
             guarded: guarded,
             purposeSubaction: 1
         )
+        if isNormalAttack {
+            combatants[actorIndex].hasUsedFirstNormalAttack = true
+            combatants[actorIndex].nextNormalAttackPhysicalDamageMultiplier = 1.0
+        }
 
         var generatedInterrupts: [QueuedAction] = []
         generatedInterrupts = rescueInterruptActions(
@@ -520,6 +1105,81 @@ nonisolated private struct BattleResolutionEngine {
                 targetWasDefeated: targetResult.flags.contains(.defeated)
             )
         }
+        if queuedAction.allowsActionRuleFollowUps,
+           isNormalAttack,
+           hitMultiplier == 0 {
+            if combatants[actorIndex].status.actionRuleMaxValue(for: "repeatNormalAttackOnEvade") != nil,
+               let followUp = makeFollowUpAttack(actorIndex: actorIndex, targetIndex: targetIndex) {
+                generatedInterrupts.append(followUp)
+            } else if let chance = combatants[actorIndex].status.actionRuleMaxValue(for: "normalAttackOnEvadeChance") {
+                let roll = uniform(
+                    turn: currentTurn,
+                    action: currentActionNumber,
+                    subaction: 97,
+                    roll: actorIndex + 1,
+                    purpose: "followup.evade.\(combatants[actorIndex].id.rawValue)"
+                )
+                if roll < chance,
+                   let followUp = makeFollowUpAttack(actorIndex: actorIndex, targetIndex: targetIndex) {
+                    generatedInterrupts.append(followUp)
+                }
+            }
+        }
+
+        var results = [targetResult]
+        if targetResult.resultKind == .damage {
+            if let lifestealMultiplier = combatants[actorIndex].status.recoveryRuleMaxValue(for: "lifestealMultiplier"),
+               targetResult.value ?? 0 > 0 {
+                results.append(
+                    applyHeal(
+                        max(Int((Double(targetResult.value ?? 0) * lifestealMultiplier).rounded()), 1),
+                        to: actorIndex
+                    )
+                )
+            }
+            results.append(contentsOf: applyOnHitAilments(
+                from: actorIndex,
+                to: targetIndex,
+                subactionNumber: 1,
+                includesAttackSpellTriggers: false,
+                includesNormalAttackTriggers: isNormalAttack
+            ))
+            if isNormalAttack,
+               combatants[actorIndex].status.actionRuleMaxValue(for: "restoreRandomAttackSpellUsageOnNormalHit") != nil {
+                restoreOneAttackSpellCharge(for: actorIndex)
+            }
+            if targetResult.flags.contains(.defeated), targetWasLowHP {
+                if let healRatio = combatants[actorIndex].status.recoveryRuleMaxValue(for: "healOnLowHPKillHPRatio") {
+                    results.append(
+                        applyHeal(
+                            max(Int((Double(combatants[actorIndex].status.maxHP) * healRatio).rounded()), 1),
+                            to: actorIndex
+                        )
+                    )
+                }
+                if queuedAction.allowsActionRuleFollowUps, isNormalAttack {
+                    if combatants[actorIndex].status.actionRuleMaxValue(for: "extraActionOnLowHPKill") != nil,
+                       combatants[actorIndex].canAct {
+                        generatedInterrupts.append(selectNormalAction(for: actorIndex).asFollowUp())
+                    }
+                    if combatants[actorIndex].status.actionRuleMaxValue(for: "chainNormalAttackOnLowHPKill") != nil,
+                       let nextTargetIndex = selectLowHPTarget(
+                        for: combatants[actorIndex].side,
+                        excluding: [targetIndex]
+                       ),
+                       let followUp = makeFollowUpAttack(actorIndex: actorIndex, targetIndex: nextTargetIndex) {
+                        generatedInterrupts.append(followUp)
+                    }
+                }
+            }
+            if queuedAction.allowsActionRuleFollowUps,
+               isNormalAttack,
+               criticalTriggered,
+               combatants[actorIndex].status.actionRuleMaxValue(for: "repeatNormalAttackOnCritical") != nil,
+               let followUp = makeFollowUpAttack(actorIndex: actorIndex, targetIndex: targetIndex) {
+                generatedInterrupts.append(followUp)
+            }
+        }
 
         return ResolvedAction(
             record: BattleActionRecord(
@@ -528,7 +1188,7 @@ nonisolated private struct BattleResolutionEngine {
                 actionRef: nil,
                 actionFlags: actionFlags,
                 targetIds: [targetId],
-                results: [targetResult]
+                results: results
             ),
             generatedInterrupts: generatedInterrupts
         )
@@ -562,12 +1222,60 @@ nonisolated private struct BattleResolutionEngine {
                     (
                         Double(combatants[actorIndex].status.battleStats.healing)
                         * combatants[actorIndex].status.battleDerivedStats.healingMultiplier
+                        * actionMultiplier(for: actorIndex, actionKind: .recoverySpell)
+                        * livePartyModifier(
+                            for: combatants[actorIndex].side,
+                            target: "allyHealingMultiplier"
+                        )
                     ).rounded()
                 ),
                 1
             )
-            let results = targetIndices.map { targetIndex in
-                applyHeal(healValue, to: targetIndex)
+            var results: [BattleTargetResult] = []
+            for targetIndex in targetIndices {
+                let missingHP = max(combatants[targetIndex].status.maxHP - combatants[targetIndex].currentHP, 0)
+                let healResult = applyHeal(healValue, to: targetIndex)
+                results.append(healResult)
+                if let barrierRatio = combatants[actorIndex].status.recoveryRuleMaxValue(
+                    for: "recoverySpellBarrierByMaxHPRatio"
+                ) {
+                    let barrierAmount = max(
+                        Int((Double(combatants[targetIndex].status.maxHP) * barrierRatio).rounded()),
+                        1
+                    )
+                    combatants[targetIndex].extraHPBarrier += barrierAmount
+                    results.append(
+                        BattleTargetResult(
+                            targetId: combatants[targetIndex].id,
+                            resultKind: .modifierApplied,
+                            value: barrierAmount,
+                            statusId: nil,
+                            flags: []
+                        )
+                    )
+                }
+                if let overhealMultiplier = combatants[actorIndex].status.recoveryRuleMaxValue(
+                    for: "overhealToBarrierMultiplier"
+                ) {
+                    let scaledHeal = max(
+                        Int((Double(healValue) * currentRecoveryMultiplier(for: targetIndex)).rounded()),
+                        1
+                    )
+                    let overheal = max(scaledHeal - missingHP, 0)
+                    if overheal > 0 {
+                        let barrierAmount = max(Int((Double(overheal) * overhealMultiplier).rounded()), 1)
+                        combatants[targetIndex].extraHPBarrier += barrierAmount
+                        results.append(
+                            BattleTargetResult(
+                                targetId: combatants[targetIndex].id,
+                                resultKind: .modifierApplied,
+                                value: barrierAmount,
+                                statusId: nil,
+                                flags: []
+                            )
+                        )
+                    }
+                }
             }
 
             return ResolvedAction(
@@ -639,6 +1347,34 @@ nonisolated private struct BattleResolutionEngine {
             guard let removedAilment = removeAilment(from: targetIndex, actionNumber: currentActionNumber) else {
                 return nil
             }
+            var results = [
+                BattleTargetResult(
+                    targetId: combatants[targetIndex].id,
+                    resultKind: .ailmentRemoved,
+                    value: nil,
+                    statusId: removedAilment.rawValue,
+                    flags: []
+                )
+            ]
+            if let extraHealMultiplier = combatants[actorIndex].status.recoveryRuleMaxValue(
+                for: "cleanseExtraHealMultiplier"
+            ) {
+                let extraHeal = max(
+                    Int(
+                        (
+                            Double(combatants[actorIndex].status.battleStats.healing)
+                            * combatants[actorIndex].status.battleDerivedStats.healingMultiplier
+                            * extraHealMultiplier
+                            * livePartyModifier(
+                                for: combatants[actorIndex].side,
+                                target: "allyHealingMultiplier"
+                            )
+                        ).rounded()
+                    ),
+                    1
+                )
+                results.append(applyHeal(extraHeal, to: targetIndex))
+            }
             return ResolvedAction(
                 record: BattleActionRecord(
                     actorId: actorId,
@@ -646,15 +1382,7 @@ nonisolated private struct BattleResolutionEngine {
                     actionRef: spellId,
                     actionFlags: [],
                     targetIds: [combatants[targetIndex].id],
-                    results: [
-                        BattleTargetResult(
-                            targetId: combatants[targetIndex].id,
-                            resultKind: .ailmentRemoved,
-                            value: nil,
-                            statusId: removedAilment.rawValue,
-                            flags: []
-                        )
-                    ]
+                    results: results
                 ),
                 generatedInterrupts: []
             )
@@ -668,7 +1396,7 @@ nonisolated private struct BattleResolutionEngine {
               let spell = spellLookup[spellId] else {
             return nil
         }
-        guard consumeSpell(spellId, for: queuedAction.actorIndex) else {
+        guard !queuedAction.consumesSpellCharge || consumeSpell(spellId, for: queuedAction.actorIndex) else {
             return nil
         }
 
@@ -680,13 +1408,18 @@ nonisolated private struct BattleResolutionEngine {
             let targetIndices = attackSpellTargets(
                 for: spell,
                 actorIndex: actorIndex,
-                actionNumber: currentActionNumber
+                actionNumber: currentActionNumber,
+                fixedTargetIndices: queuedAction.fixedTargetIndices
             )
             guard !targetIndices.isEmpty else {
                 return nil
             }
 
             let actor = combatants[actorIndex]
+            let targetedAilingEnemy = targetIndices.contains { !combatants[$0].ailments.isEmpty }
+            let spellCriticalTriggered = actor.status.actionRuleMaxValue(for: "attackSpellCanCritical") != nil
+                ? criticalDidTrigger(for: actorIndex)
+                : false
             var fallenTargetIndices: [Int] = []
             let results = targetIndices.enumerated().flatMap { offset, targetIndex in
                 let target = combatants[targetIndex]
@@ -696,17 +1429,42 @@ nonisolated private struct BattleResolutionEngine {
                 let multiplier = actor.status.battleDerivedStats.attackMagicMultiplier
                     * actor.status.battleDerivedStats.spellDamageMultiplier
                     * actor.status.spellDamageMultiplier(for: spell.id)
+                    * (1.0 + Double(actor.attackSpellHitCount) * (actor.status.combatRuleMaxValue(
+                        for: "attackSpellDamagePctAddPerHit"
+                    ) ?? 0.0))
+                    * livePartyModifier(
+                        for: actor.side,
+                        target: "allyMagicDamageMultiplier"
+                    )
                     * (actor.magicBuffActive ? 1.5 : 1.0)
                     * (spell.multiplier ?? 1.0)
+                    * actionMultiplier(for: actorIndex, actionKind: .attackSpell)
+                    * (!target.ailments.isEmpty
+                        ? (actor.status.combatRuleMaxValue(for: "damageMultiplierAgainstAilingTarget") ?? 1.0)
+                        : 1.0)
+                    * (target.ailments.contains(.petrify)
+                        ? (actor.status.combatRuleMaxValue(for: "damageMultiplierAgainstPetrifiedTarget") ?? 1.0)
+                        : 1.0)
+                    * (spellCriticalTriggered ? actor.status.battleDerivedStats.criticalDamageMultiplier : 1.0)
+                let barrierMultiplier = target.magicBarrierActive
+                    ? (target.status.defenseRuleMaxValue(for: "magicBarrierDamageTakenMultiplier") ?? 0.5)
+                    : 1.0
                 let damage = damageValue(
+                    actorIndex: actorIndex,
                     basePower: Double(
                         max(actor.status.battleStats.magic - target.status.battleStats.magicDefense, 0)
                     ),
                     multiplier: multiplier,
                     resistance: target.status.battleDerivedStats.magicResistanceMultiplier
                         * target.status.magicResistanceMultiplier(for: spell.id),
-                    barrierMultiplier: target.magicBarrierActive ? 0.5 : 1.0,
-                    guarded: guarded
+                    barrierMultiplier: barrierMultiplier
+                        * livePartyModifier(
+                            for: target.side,
+                            target: "allyMagicDamageTakenMultiplier"
+                        ),
+                    guarded: guarded,
+                    subactionNumber: offset + 1,
+                    allowsHitSpecialRules: true
                 )
                 let damageResult = applyDamage(
                     damage,
@@ -714,6 +1472,9 @@ nonisolated private struct BattleResolutionEngine {
                     guarded: guarded,
                     purposeSubaction: offset + 1
                 )
+                if damageResult.resultKind == .damage, (damageResult.value ?? 0) > 0 {
+                    combatants[actorIndex].attackSpellHitCount += 1
+                }
                 if damageResult.flags.contains(.defeated) {
                     fallenTargetIndices.append(targetIndex)
                 }
@@ -728,7 +1489,51 @@ nonisolated private struct BattleResolutionEngine {
                 ) {
                     targetResults.append(ailmentResult)
                 }
+                targetResults.append(contentsOf: applyOnHitAilments(
+                    from: actorIndex,
+                    to: targetIndex,
+                    subactionNumber: offset + 1,
+                    includesAttackSpellTriggers: true,
+                    includesNormalAttackTriggers: false
+                ))
                 return targetResults
+            }
+
+            var generatedInterrupts = rescueInterruptActions(
+                after: queuedAction,
+                fallenTargetIndices: fallenTargetIndices
+            )
+            if queuedAction.allowsActionRuleFollowUps {
+                if spellCriticalTriggered,
+                   actor.status.actionRuleMaxValue(for: "repeatAttackSpellOnCritical") != nil {
+                    generatedInterrupts.append(
+                        QueuedAction(
+                            actorIndex: actorIndex,
+                            recordKind: .attackSpell,
+                            spellId: spellId,
+                            fixedTargetIndices: targetIndices,
+                            canTriggerInterrupts: false,
+                            countsAsNormalTurnAction: false,
+                            consumesSpellCharge: false,
+                            allowsActionRuleFollowUps: false
+                        )
+                    )
+                }
+                if targetedAilingEnemy,
+                   actor.status.actionRuleMaxValue(for: "repeatAttackSpellOnAilingTarget") != nil {
+                    generatedInterrupts.append(
+                        QueuedAction(
+                            actorIndex: actorIndex,
+                            recordKind: .attackSpell,
+                            spellId: spellId,
+                            fixedTargetIndices: targetIndices,
+                            canTriggerInterrupts: false,
+                            countsAsNormalTurnAction: false,
+                            consumesSpellCharge: false,
+                            allowsActionRuleFollowUps: false
+                        )
+                    )
+                }
             }
 
             return ResolvedAction(
@@ -740,10 +1545,7 @@ nonisolated private struct BattleResolutionEngine {
                     targetIds: targetIndices.map { combatants[$0].id },
                     results: results
                 ),
-                generatedInterrupts: rescueInterruptActions(
-                    after: queuedAction,
-                    fallenTargetIndices: fallenTargetIndices
-                )
+                generatedInterrupts: generatedInterrupts
             )
         case .buff:
             let targetIndices = livingIndices(on: combatants[actorIndex].side)
@@ -807,6 +1609,10 @@ nonisolated private struct BattleResolutionEngine {
                     (
                         Double(combatants[queuedAction.actorIndex].status.battleStats.healing)
                         * combatants[queuedAction.actorIndex].status.battleDerivedStats.healingMultiplier
+                        * livePartyModifier(
+                            for: combatants[queuedAction.actorIndex].side,
+                            target: "allyHealingMultiplier"
+                        )
                     ).rounded()
                 ),
                 1
@@ -845,6 +1651,10 @@ nonisolated private struct BattleResolutionEngine {
                     (
                         Double(combatants[queuedAction.actorIndex].status.battleStats.healing)
                         * combatants[queuedAction.actorIndex].status.battleDerivedStats.healingMultiplier
+                        * livePartyModifier(
+                            for: combatants[queuedAction.actorIndex].side,
+                            target: "allyHealingMultiplier"
+                        )
                     ).rounded()
                 ),
                 1
@@ -916,7 +1726,7 @@ nonisolated private struct BattleResolutionEngine {
         }
 
         switch queuedAction.recordKind {
-        case .attack, .counter, .extraAttack, .pursuit, .breath, .attackSpell:
+        case .attack, .unarmedRepeat, .counter, .extraAttack, .pursuit, .breath, .attackSpell:
             break
         case .recoverySpell, .defend, .rescue:
             return []
@@ -967,6 +1777,10 @@ nonisolated private struct BattleResolutionEngine {
         }
 
         if combatants[actorIndex].canAct && combatants[actorIndex].status.interruptKinds.contains(.extraAttack) {
+            let chance = combatants[actorIndex].status.actionRuleMaxValue(for: "extraAttackChance") ?? 0.3
+            let damageMultiplier = combatants[actorIndex].status.actionRuleMaxValue(
+                for: "extraAttackDamageMultiplier"
+            ) ?? 0.5
             let roll = uniform(
                 turn: currentTurn,
                 action: currentActionNumber,
@@ -974,13 +1788,13 @@ nonisolated private struct BattleResolutionEngine {
                 roll: actorIndex + 1,
                 purpose: "interrupt.extraAttack.\(combatants[actorIndex].id.rawValue)"
             )
-            if roll < 0.3 {
+            if roll < chance {
                 queuedInterrupts.append(
                     QueuedAction(
                         actorIndex: actorIndex,
                         recordKind: .extraAttack,
-                        attackPowerMultiplier: 0.5,
-                        attackCountMultiplier: 0.3,
+                        attackPowerMultiplier: damageMultiplier,
+                        attackCountMultiplier: damageMultiplier,
                         criticalAllowed: false,
                         canTriggerInterrupts: false
                     )
@@ -1002,7 +1816,7 @@ nonisolated private struct BattleResolutionEngine {
                 queuedInterrupts.append(
                     QueuedAction(
                         actorIndex: actorIndex,
-                        recordKind: .attack,
+                        recordKind: .unarmedRepeat,
                         criticalAllowed: true,
                         canTriggerInterrupts: false
                     )
@@ -1011,6 +1825,17 @@ nonisolated private struct BattleResolutionEngine {
         }
 
         for pursuingAllyIndex in pursuitCandidates(excluding: actorIndex) {
+            let chance = max(
+                combatants[pursuingAllyIndex].status.actionRuleMaxValue(for: "pursuitChance") ?? 0.3,
+                isLowHP(combatants[targetIndex])
+                    ? (combatants[pursuingAllyIndex].status.actionRuleMaxValue(
+                        for: "pursuitAgainstLowHPTargetChance"
+                    ) ?? 0.0)
+                    : 0.0
+            )
+            let damageMultiplier = combatants[pursuingAllyIndex].status.actionRuleMaxValue(
+                for: "pursuitDamageMultiplier"
+            ) ?? 0.5
             let roll = uniform(
                 turn: currentTurn,
                 action: currentActionNumber,
@@ -1018,13 +1843,13 @@ nonisolated private struct BattleResolutionEngine {
                 roll: pursuingAllyIndex + 1,
                 purpose: "interrupt.pursuit.\(combatants[pursuingAllyIndex].id.rawValue)"
             )
-            if roll < 0.3 {
+            if roll < chance {
                 queuedInterrupts.append(
                     QueuedAction(
                         actorIndex: pursuingAllyIndex,
                         recordKind: .pursuit,
-                        attackPowerMultiplier: 0.5,
-                        attackCountMultiplier: 0.3,
+                        attackPowerMultiplier: damageMultiplier,
+                        attackCountMultiplier: damageMultiplier,
                         criticalAllowed: false,
                         canTriggerInterrupts: false
                     )
@@ -1048,6 +1873,27 @@ nonisolated private struct BattleResolutionEngine {
                 combatants[index].ailments.remove(.sleep)
             }
         }
+
+        for index in combatants.indices where !combatants[index].isAlive {
+            guard let reviveChance = combatants[index].status.reviveRuleMaxValue(for: "endTurnReviveChance"),
+                  let reviveHPRatio = combatants[index].status.reviveRuleMaxValue(for: "endTurnReviveHPRatio") else {
+                continue
+            }
+            let roll = uniform(
+                turn: currentTurn,
+                action: 100,
+                subaction: 1,
+                roll: index + 1,
+                purpose: "revive.endTurn.\(combatants[index].id.rawValue)"
+            )
+            guard roll < reviveChance else {
+                continue
+            }
+            combatants[index].currentHP = max(
+                1,
+                Int((Double(combatants[index].status.maxHP) * reviveHPRatio).rounded())
+            )
+        }
     }
 
     private func currentOutcomeIfFinished() -> BattleOutcome? {
@@ -1067,6 +1913,15 @@ nonisolated private struct BattleResolutionEngine {
     }
 
     private func actionOrderScore(for combatantIndex: Int) -> Double {
+        if usesRandomizedNormalActionOrder() {
+            return uniform(
+                turn: currentTurn,
+                action: 0,
+                subaction: 0,
+                roll: combatantIndex + 1,
+                purpose: "initiative.random.\(combatants[combatantIndex].id.rawValue)"
+            )
+        }
         let actor = combatants[combatantIndex]
         let u1 = uniform(
             turn: currentTurn,
@@ -1085,9 +1940,49 @@ nonisolated private struct BattleResolutionEngine {
         let luckBias = biasedLuck(actor.status.baseStats.luck)
         let biasedRoll = (1 - luckBias) * u1 + luckBias * max(u1, u2)
         let randomAdjustment = (biasedRoll - 0.5) * 14
-        let actionSpeed = Double(actor.status.baseStats.agility)
+        var actionSpeed = Double(actor.status.baseStats.agility)
             * actor.status.battleDerivedStats.actionSpeedMultiplier
+        if currentTurn == 1 {
+            actionSpeed *= actor.status.combatRuleMaxValue(for: "turnOneActionSpeedMultiplier") ?? 1.0
+        }
         return actionSpeed + randomAdjustment
+    }
+
+    private func isLowHP(_ combatant: RuntimeCombatant) -> Bool {
+        combatant.currentHP * 2 < combatant.status.maxHP
+    }
+
+    private func currentRecoveryMultiplier(for targetIndex: Int) -> Double {
+        let target = combatants[targetIndex]
+        var multiplier = target.status.recoveryRuleProduct(for: "receivedHealingMultiplier")
+        if isLowHP(target) {
+            multiplier *= target.status.recoveryRuleProduct(for: "lowHPReceivedHealingMultiplier")
+        }
+        return multiplier
+    }
+
+    private func actionMultiplier(for actorIndex: Int, actionKind: BattleLogActionKind) -> Double {
+        let actor = combatants[actorIndex]
+        let adaptationMultiplier = actor.status.combatRuleMaxValue(for: "highestOffenseActionMultiplier") ?? 1.0
+        let physicalValue = actor.status.battleStats.physicalAttack
+        let magicalValue = actor.status.battleStats.magic
+        let healingValue = actor.status.battleStats.healing
+        switch actionKind {
+        case .attack, .unarmedRepeat, .counter, .extraAttack, .pursuit:
+            return physicalValue >= magicalValue && physicalValue >= healingValue
+                ? adaptationMultiplier
+                : 1.0
+        case .attackSpell:
+            return magicalValue >= physicalValue && magicalValue >= healingValue
+                ? adaptationMultiplier
+                : 1.0
+        case .recoverySpell, .rescue:
+            return healingValue >= physicalValue && healingValue >= magicalValue
+                ? adaptationMultiplier
+                : 1.0
+        case .breath, .defend:
+            return 1.0
+        }
     }
 
     private func compareCombatantPriority(_ lhs: Int, _ rhs: Int) -> Bool {
@@ -1103,7 +1998,227 @@ nonisolated private struct BattleResolutionEngine {
         }
     }
 
-    private func didHit(attackerIndex: Int, defenderIndex: Int, subactionNumber: Int) -> Bool {
+    private func isNormalAttackAction(_ actionKind: BattleLogActionKind) -> Bool {
+        actionKind == .attack
+    }
+
+    private func hitContribution(
+        for hitIndex: Int,
+        attackerIndex: Int,
+        isNormalAttack: Bool
+    ) -> Double {
+        guard hitIndex > 0 else {
+            return 1.0
+        }
+        guard isNormalAttack else {
+            return pow(0.5, Double(hitIndex))
+        }
+
+        let falloffBase = combatants[attackerIndex].status.multiHitFalloffModifier
+        guard falloffBase > 0 else {
+            return 1.0
+        }
+        return pow(falloffBase, Double(hitIndex))
+    }
+
+    private func livePartyModifier(
+        for side: BattleSide,
+        target: String
+    ) -> Double {
+        let activeSkillIds = Set(
+            combatants
+                .filter { $0.side == side && $0.isAlive }
+                .flatMap(\.status.skillIds)
+        )
+        var pctAdd = 0.0
+        var multiplier = 1.0
+
+        for skillId in activeSkillIds {
+            guard let skill = skillLookup[skillId] else {
+                continue
+            }
+
+            for effect in skill.effects where effect.kind == .partyModifier && effect.target == target {
+                guard let value = effect.value else {
+                    continue
+                }
+
+                switch effect.operation {
+                case "pctAdd":
+                    pctAdd += value
+                case "mul", nil:
+                    multiplier *= value
+                default:
+                    continue
+                }
+            }
+        }
+
+        return max((1.0 + pctAdd) * multiplier, 0.0)
+    }
+
+    private func redirectedPhysicalTarget(
+        originalTargetIndex: Int,
+        attackerIndex: Int
+    ) -> (targetIndex: Int, didRedirect: Bool) {
+        let originalTarget = combatants[originalTargetIndex]
+        let guardians = combatants.indices
+            .filter {
+                $0 != originalTargetIndex
+                    && combatants[$0].side == originalTarget.side
+                    && combatants[$0].isAlive
+                    && combatants[$0].status.actionRuleMaxValue(for: "guardPhysicalActionChance") != nil
+            }
+            .sorted(by: compareCombatantPriority)
+
+        for guardianIndex in guardians {
+            let chance = combatants[guardianIndex].status.actionRuleMaxValue(
+                for: "guardPhysicalActionChance"
+            ) ?? 0.0
+            guard chance > 0 else {
+                continue
+            }
+
+            let roll = uniform(
+                turn: currentTurn,
+                action: currentActionNumber,
+                subaction: 1,
+                roll: guardianIndex + 1,
+                purpose: "guard.redirect.\(combatants[attackerIndex].id.rawValue).\(combatants[guardianIndex].id.rawValue)"
+            )
+            if roll < chance {
+                return (guardianIndex, true)
+            }
+        }
+
+        return (originalTargetIndex, false)
+    }
+
+    private mutating func applyOnHitAilments(
+        from actorIndex: Int,
+        to targetIndex: Int,
+        subactionNumber: Int,
+        includesAttackSpellTriggers: Bool,
+        includesNormalAttackTriggers: Bool
+    ) -> [BattleTargetResult] {
+        var results: [BattleTargetResult] = []
+        let inflictionMultiplier = combatants[actorIndex].status.combatRuleProduct(
+            for: "ailmentInflictionChanceMultiplier"
+        )
+        let statusIds = combatants[actorIndex].status.onHitAilmentChanceByStatusID.keys.sorted()
+
+        for statusId in statusIds {
+            let baseChance = combatants[actorIndex].status.onHitAilmentChanceByStatusID[statusId, default: 0.0]
+            if let result = applyAilmentIfNeeded(
+                statusId: statusId,
+                chance: min(baseChance * inflictionMultiplier, 1.0),
+                from: actorIndex,
+                to: targetIndex,
+                subactionNumber: subactionNumber,
+                purposeKey: "skill.\(statusId)"
+            ) {
+                results.append(result)
+            }
+        }
+
+        if includesNormalAttackTriggers,
+           let chance = combatants[actorIndex].status.contactAilmentChanceByStatusID[BattleAilment.sleep.rawValue],
+           let result = applyAilmentIfNeeded(
+               statusId: BattleAilment.sleep.rawValue,
+               chance: min(chance * inflictionMultiplier, 1.0),
+               from: actorIndex,
+               to: targetIndex,
+               subactionNumber: subactionNumber,
+               purposeKey: "special.sleep"
+           ) {
+            results.append(result)
+        }
+
+        if includesAttackSpellTriggers,
+           let chance = combatants[actorIndex].status.contactAilmentChanceByStatusID[BattleAilment.sleep.rawValue],
+           let result = applyAilmentIfNeeded(
+               statusId: BattleAilment.sleep.rawValue,
+               chance: min(chance * inflictionMultiplier, 1.0),
+               from: actorIndex,
+               to: targetIndex,
+               subactionNumber: subactionNumber,
+               purposeKey: "special.sleep"
+           ) {
+            results.append(result)
+        }
+
+        if includesNormalAttackTriggers,
+           let chance = combatants[actorIndex].status.contactAilmentChanceByStatusID[BattleAilment.petrify.rawValue],
+           let result = applyAilmentIfNeeded(
+               statusId: BattleAilment.petrify.rawValue,
+               chance: min(chance * inflictionMultiplier, 1.0),
+               from: actorIndex,
+               to: targetIndex,
+               subactionNumber: subactionNumber,
+               purposeKey: "special.petrify"
+           ) {
+            results.append(result)
+        }
+
+        if includesAttackSpellTriggers,
+           let chance = combatants[actorIndex].status.contactAilmentChanceByStatusID[BattleAilment.petrify.rawValue],
+           let result = applyAilmentIfNeeded(
+               statusId: BattleAilment.petrify.rawValue,
+               chance: min(chance * inflictionMultiplier, 1.0),
+               from: actorIndex,
+               to: targetIndex,
+               subactionNumber: subactionNumber,
+               purposeKey: "special.petrify"
+           ) {
+            results.append(result)
+        }
+
+        return results
+    }
+
+    private mutating func applyAilmentIfNeeded(
+        statusId: Int,
+        chance: Double,
+        from actorIndex: Int,
+        to targetIndex: Int,
+        subactionNumber: Int,
+        purposeKey: String
+    ) -> BattleTargetResult? {
+        guard chance > 0,
+              let ailment = BattleAilment(rawValue: statusId),
+              combatants[targetIndex].isAlive,
+              !combatants[targetIndex].ailments.contains(ailment) else {
+            return nil
+        }
+
+        let roll = uniform(
+            turn: currentTurn,
+            action: currentActionNumber,
+            subaction: subactionNumber,
+            roll: 7 + statusId,
+            purpose: "status.apply.\(purposeKey).\(combatants[actorIndex].id.rawValue).\(combatants[targetIndex].id.rawValue)"
+        )
+        guard roll < chance else {
+            return nil
+        }
+
+        combatants[targetIndex].ailments.insert(ailment)
+        return BattleTargetResult(
+            targetId: combatants[targetIndex].id,
+            resultKind: .modifierApplied,
+            value: nil,
+            statusId: ailment.rawValue,
+            flags: []
+        )
+    }
+
+    private func didHit(
+        attackerIndex: Int,
+        defenderIndex: Int,
+        subactionNumber: Int,
+        isNormalAttack: Bool,
+        accuracyPctAdd: Double = 0.0
+    ) -> Bool {
         let attacker = combatants[attackerIndex]
         let defender = combatants[defenderIndex]
         let u1 = uniform(
@@ -1141,12 +2256,19 @@ nonisolated private struct BattleResolutionEngine {
         let evadeLuckBias = biasedLuck(defender.status.baseStats.luck)
         let hitRoll = (1 - hitLuckBias) * u1 + hitLuckBias * max(u1, u2)
         let evadeRoll = (1 - evadeLuckBias) * u3 + evadeLuckBias * max(u3, u4)
-        let finalAccuracy = Double(attacker.status.battleStats.accuracy) + (hitRoll - 0.5) * 14
-        let finalEvasion = Double(defender.status.battleStats.evasion) + (evadeRoll - 0.5) * 14
-        let delta = finalAccuracy - finalEvasion
-        let curveWidth = 0.8 * pow(Double(max(attacker.level, 1)), 1)
-        let rawHitRate = 0.5 + delta / (2 * curveWidth)
-        let hitRate = min(max(rawHitRate, 0.10), 0.90)
+        // Luck only nudges each side by a bounded percentage; the final hit rate still comes from
+        // the relative weight between accuracy and evasion rather than a flat additive gap.
+        let volatility = 0.2
+        let rolledAccuracy = Double(attacker.status.battleStats.accuracy)
+            * (1.0 + accuracyPctAdd)
+            * (1 + volatility * (hitRoll - 0.5))
+        let rolledEvasion = Double(defender.status.battleStats.evasion)
+            * (1 + volatility * (evadeRoll - 0.5))
+        let rawHitRate = rolledAccuracy / max(rolledAccuracy + rolledEvasion, 0.0001)
+        let hitFloor = isNormalAttack
+            ? combatants[attackerIndex].status.hitRateFloor
+            : 0.10
+        let hitRate = min(max(rawHitRate, hitFloor), 0.90)
         return uniform(
             turn: currentTurn,
             action: currentActionNumber,
@@ -1156,12 +2278,12 @@ nonisolated private struct BattleResolutionEngine {
         ) < hitRate
     }
 
-    private func criticalDidTrigger(for attackerIndex: Int) -> Bool {
+    private func criticalDidTrigger(for attackerIndex: Int, criticalRateBonus: Double = 0.0) -> Bool {
         let attacker = combatants[attackerIndex]
         let rawRate = attacker.status.isUnarmed
             ? Double(attacker.status.battleStats.criticalRate) * 1.5
             : Double(attacker.status.battleStats.criticalRate)
-        let criticalRate = min(rawRate, 75) / 100
+        let criticalRate = min(rawRate + criticalRateBonus, 75) / 100
         return uniform(
             turn: currentTurn,
             action: currentActionNumber,
@@ -1171,19 +2293,181 @@ nonisolated private struct BattleResolutionEngine {
         ) < criticalRate
     }
 
+    private mutating func restoreOneAttackSpellCharge(for actorIndex: Int) {
+        let candidates = combatants[actorIndex].status.spellIds
+            .compactMap { spellLookup[$0] }
+            .filter { $0.category == .attack }
+            .map(\.id)
+            .sorted(by: >)
+        guard let spellId = randomChoice(
+            from: candidates,
+            turn: currentTurn,
+            action: currentActionNumber,
+            subaction: 98,
+            purpose: "spell.restore.\(combatants[actorIndex].id.rawValue)"
+        ) else {
+            return
+        }
+        combatants[actorIndex].spellCharges[spellId, default: 0] += 1
+    }
+
     private func damageValue(
+        actorIndex: Int,
         basePower: Double,
         multiplier: Double,
         resistance: Double,
         barrierMultiplier: Double,
-        guarded: Bool
+        guarded: Bool,
+        subactionNumber: Int,
+        allowsHitSpecialRules: Bool
     ) -> Int {
         let guardedMultiplier = guarded ? 0.5 : 1.0
-        let value = Int(
+        var value = Int(
             (basePower * multiplier * resistance * barrierMultiplier * guardedMultiplier)
                 .rounded()
         )
-        return max(value, 1)
+        value = max(value, 1)
+
+        if let varianceMultiplier = damageVarianceMultiplier(
+            for: actorIndex,
+            subactionNumber: subactionNumber
+        ) {
+            value = max(Int((Double(value) * varianceMultiplier).rounded()), 1)
+        }
+
+        guard allowsHitSpecialRules else {
+            return value
+        }
+
+        if damageLuckyDidTrigger(for: actorIndex, subactionNumber: subactionNumber) {
+            value = max(
+                Int(
+                    (
+                        Double(value)
+                        * (combatants[actorIndex].status.specialRuleMaxValue(for: "hitDamageLuckyMultiplier") ?? 1.0)
+                    ).rounded()
+                ),
+                1
+            )
+        }
+        if damageUnluckyDidTrigger(for: actorIndex, subactionNumber: subactionNumber) {
+            value = max(
+                Int(
+                    (
+                        Double(value)
+                        * (combatants[actorIndex].status.specialRuleMaxValue(for: "hitDamageUnluckyMultiplier") ?? 1.0)
+                    ).rounded()
+                ),
+                1
+            )
+        }
+        return value
+    }
+
+    private func damageVarianceMultiplier(
+        for actorIndex: Int,
+        subactionNumber: Int
+    ) -> Double? {
+        guard let widthScale = combatants[actorIndex].status.specialRuleMaxValue(
+            for: "damageVarianceWidthMultiplier"
+        ) else {
+            return nil
+        }
+        let halfWidth = max(widthScale, 1.0) * 0.1
+        let roll = uniform(
+            turn: currentTurn,
+            action: currentActionNumber,
+            subaction: subactionNumber,
+            roll: 81,
+            purpose: "damage.variance.\(combatants[actorIndex].id.rawValue)"
+        )
+        return 1.0 + ((roll * 2.0) - 1.0) * halfWidth
+    }
+
+    private func damageLuckyDidTrigger(
+        for actorIndex: Int,
+        subactionNumber: Int
+    ) -> Bool {
+        guard let chance = combatants[actorIndex].status.specialRuleMaxValue(for: "hitDamageLuckyChance"),
+              chance > 0 else {
+            return false
+        }
+        return uniform(
+            turn: currentTurn,
+            action: currentActionNumber,
+            subaction: subactionNumber,
+            roll: 82,
+            purpose: "damage.lucky.\(combatants[actorIndex].id.rawValue)"
+        ) < chance
+    }
+
+    private func damageUnluckyDidTrigger(
+        for actorIndex: Int,
+        subactionNumber: Int
+    ) -> Bool {
+        guard let chance = combatants[actorIndex].status.specialRuleMaxValue(for: "hitDamageUnluckyChance"),
+              chance > 0 else {
+            return false
+        }
+        return uniform(
+            turn: currentTurn,
+            action: currentActionNumber,
+            subaction: subactionNumber,
+            roll: 83,
+            purpose: "damage.unlucky.\(combatants[actorIndex].id.rawValue)"
+        ) < chance
+    }
+
+    private func normalAttackIgnorePhysicalDefensePct(for actorIndex: Int) -> Double {
+        min(
+            max(
+                combatants[actorIndex].status.actionRuleMaxValue(for: "normalAttackIgnorePhysicalDefensePct") ?? 0.0,
+                0.0
+            ),
+            1.0
+        )
+    }
+
+    private func normalAttackAdditionalTargetDamageMultiplier(
+        for actorIndex: Int,
+        isPrimaryTarget: Bool
+    ) -> Double {
+        guard !isPrimaryTarget else {
+            return 1.0
+        }
+        return combatants[actorIndex].status.actionRuleMaxValue(
+            for: "normalAttackAdditionalTargetDamageMultiplier"
+        ) ?? 1.0
+    }
+
+    private func physicalBasePower(
+        attackerIndex: Int,
+        targetIndex: Int,
+        hitMultiplier: Double,
+        isNormalAttack: Bool
+    ) -> Double {
+        let ignoredPhysicalDefensePct = isNormalAttack
+            ? normalAttackIgnorePhysicalDefensePct(for: attackerIndex)
+            : 0.0
+        let effectivePhysicalDefense = Double(combatants[targetIndex].status.battleStats.physicalDefense)
+            * (1.0 - ignoredPhysicalDefensePct)
+        return max(
+            Double(combatants[attackerIndex].status.battleStats.physicalAttack) - effectivePhysicalDefense,
+            0
+        ) * hitMultiplier
+    }
+
+    private mutating func breakPhysicalBarrierOnNormalHitIfNeeded(
+        attackerIndex: Int,
+        targetIndex: Int,
+        isNormalAttack: Bool
+    ) {
+        guard isNormalAttack,
+              combatants[attackerIndex].status.actionRuleMaxValue(for: "normalAttackBreakPhysicalBarrierOnHit") != nil,
+              combatants[targetIndex].physicalBarrierActive else {
+            return
+        }
+        combatants[targetIndex].physicalBarrierActive = false
     }
 
     private mutating func applyDamage(
@@ -1193,10 +2477,44 @@ nonisolated private struct BattleResolutionEngine {
         purposeSubaction: Int
     ) -> BattleTargetResult {
         let wasAlive = combatants[targetIndex].isAlive
-        combatants[targetIndex].currentHP = max(combatants[targetIndex].currentHP - value, 0)
+        var remainingDamage = value
+        if combatants[targetIndex].extraHPBarrier > 0 {
+            let absorbed = min(combatants[targetIndex].extraHPBarrier, remainingDamage)
+            combatants[targetIndex].extraHPBarrier -= absorbed
+            remainingDamage -= absorbed
+        }
+        combatants[targetIndex].currentHP = max(combatants[targetIndex].currentHP - remainingDamage, 0)
+        if wasAlive && remainingDamage > 0 {
+            combatants[targetIndex].physicalDamagePctAddFromDamageTaken += combatants[targetIndex].status.combatRuleProduct(
+                for: "physicalDamagePctAddOnDamageTaken"
+            ) - 1.0
+            let nextAttackMultiplier = combatants[targetIndex].status.combatRuleMaxValue(
+                for: "nextNormalAttackPhysicalDamageMultiplierAfterTakingDamage"
+            ) ?? 1.0
+            combatants[targetIndex].nextNormalAttackPhysicalDamageMultiplier = max(
+                combatants[targetIndex].nextNormalAttackPhysicalDamageMultiplier,
+                nextAttackMultiplier
+            )
+        }
         var flags: [BattleTargetResultFlag] = guarded ? [.guarded] : []
         if wasAlive && !combatants[targetIndex].isAlive {
-            flags.append(.defeated)
+            if !combatants[targetIndex].hasUsedSurviveFirstDefeat,
+               combatants[targetIndex].status.reviveRuleMaxValue(for: "surviveFirstDefeatAtHP1") != nil {
+                combatants[targetIndex].currentHP = 1
+                combatants[targetIndex].hasUsedSurviveFirstDefeat = true
+            } else if !combatants[targetIndex].hasUsedReviveOnceOnFirstDefeat,
+                      let ratio = combatants[targetIndex].status.reviveRuleMaxValue(
+                        for: "reviveOnceOnFirstDefeatHPRatio"
+                      ) {
+                combatants[targetIndex].currentHP = max(
+                    1,
+                    Int((Double(combatants[targetIndex].status.maxHP) * ratio).rounded())
+                )
+                combatants[targetIndex].hasUsedReviveOnceOnFirstDefeat = true
+                flags.append(.revived)
+            } else {
+                flags.append(.defeated)
+            }
         }
 
         return BattleTargetResult(
@@ -1214,9 +2532,13 @@ nonisolated private struct BattleResolutionEngine {
         fullRestore: Bool = false
     ) -> BattleTargetResult {
         let originalHP = combatants[targetIndex].currentHP
+        let scaledValue = max(
+            Int((Double(value) * currentRecoveryMultiplier(for: targetIndex)).rounded()),
+            1
+        )
         let restoredHP = fullRestore
             ? combatants[targetIndex].status.maxHP
-            : min(combatants[targetIndex].currentHP + value, combatants[targetIndex].status.maxHP)
+            : min(combatants[targetIndex].currentHP + scaledValue, combatants[targetIndex].status.maxHP)
         combatants[targetIndex].currentHP = restoredHP
         return BattleTargetResult(
             targetId: combatants[targetIndex].id,
@@ -1266,7 +2588,13 @@ nonisolated private struct BattleResolutionEngine {
             roll: 6,
             purpose: "status.apply.\(combatants[actorIndex].id.rawValue).spell.\(spell.id).\(combatants[targetIndex].id.rawValue)"
         )
-        guard roll < statusChance else {
+        let chance = min(
+            statusChance * combatants[actorIndex].status.combatRuleProduct(
+                for: "ailmentInflictionChanceMultiplier"
+            ),
+            1.0
+        )
+        guard roll < chance else {
             return nil
         }
 
@@ -1368,6 +2696,7 @@ nonisolated private struct BattleResolutionEngine {
         switch actionKind {
         case .breath:
             combatants[actorIndex].status.canUseBreath
+                && combatants[actorIndex].breathUsesRemaining > 0
                 && !livingIndices(on: opposingSide(of: combatants[actorIndex].side)).isEmpty
         case .attack:
             !livingIndices(on: opposingSide(of: combatants[actorIndex].side)).isEmpty
@@ -1535,8 +2864,12 @@ nonisolated private struct BattleResolutionEngine {
     private mutating func attackSpellTargets(
         for spell: MasterData.Spell,
         actorIndex: Int,
-        actionNumber: Int
+        actionNumber: Int,
+        fixedTargetIndices: [Int]? = nil
     ) -> [Int] {
+        if let fixedTargetIndices {
+            return fixedTargetIndices.filter { combatants.indices.contains($0) && combatants[$0].isAlive }
+        }
         switch spell.targetSide {
         case .both:
             return livingIndices()
@@ -1567,16 +2900,19 @@ nonisolated private struct BattleResolutionEngine {
         }
     }
 
-    private func selectPhysicalTarget(
+    private func selectPhysicalTargetGroup(
         for actingSide: BattleSide,
         purpose: String,
-        actionNumber: Int
-    ) -> Int? {
+        actionNumber: Int,
+        excluding excludedIndices: Set<Int> = []
+    ) -> [Int]? {
         let candidateGroups = [
             livingIndices(on: opposingSide(of: actingSide), rank: .front),
             livingIndices(on: opposingSide(of: actingSide), rank: .middle),
             livingIndices(on: opposingSide(of: actingSide), rank: .back)
-        ]
+        ].map { group in
+            group.filter { !excludedIndices.contains($0) }
+        }
         let groups = candidateGroups.filter { !$0.isEmpty }
         guard !groups.isEmpty else {
             return nil
@@ -1593,17 +2929,145 @@ nonisolated private struct BattleResolutionEngine {
                 purpose: "\(purpose).group.\(groupIndex + 1)"
             )
             if roll < group.count {
-                return group[roll]
+                return group
             }
         }
 
+        return groups.last
+    }
+
+    private func selectPhysicalTarget(
+        for actingSide: BattleSide,
+        purpose: String,
+        actionNumber: Int,
+        excluding excludedIndices: Set<Int> = []
+    ) -> Int? {
+        guard let group = selectPhysicalTargetGroup(
+            for: actingSide,
+            purpose: purpose,
+            actionNumber: actionNumber,
+            excluding: excludedIndices
+        ) else {
+            return nil
+        }
+
         return randomChoice(
-            from: groups.last ?? [],
+            from: group,
             turn: currentTurn,
             action: actionNumber,
-            subaction: groups.count,
+            subaction: group.count,
             purpose: "\(purpose).fallback"
         )
+    }
+
+    private func adjacentPhysicalTarget(
+        to targetIndex: Int,
+        excluding excludedIndices: Set<Int> = [],
+        purpose: String,
+        actionNumber: Int
+    ) -> Int? {
+        let target = combatants[targetIndex]
+        let candidates = combatants.indices
+            .filter {
+                $0 != targetIndex
+                    && !excludedIndices.contains($0)
+                    && combatants[$0].side == target.side
+                    && combatants[$0].isAlive
+                    && abs(combatants[$0].formationIndex - target.formationIndex) == 1
+            }
+            .sorted { combatants[$0].formationIndex < combatants[$1].formationIndex }
+        return randomChoice(
+            from: candidates,
+            turn: currentTurn,
+            action: actionNumber,
+            subaction: 95,
+            purpose: purpose
+        )
+    }
+
+    private func randomAdditionalPhysicalTarget(
+        to targetIndex: Int,
+        excluding excludedIndices: Set<Int> = [],
+        purpose: String,
+        actionNumber: Int
+    ) -> Int? {
+        let target = combatants[targetIndex]
+        let candidates = combatants.indices.filter {
+            $0 != targetIndex
+                && !excludedIndices.contains($0)
+                && combatants[$0].side == target.side
+                && combatants[$0].isAlive
+        }
+        return randomChoice(
+            from: candidates,
+            turn: currentTurn,
+            action: actionNumber,
+            subaction: 94,
+            purpose: purpose
+        )
+    }
+
+    private func attackTargetIndices(for queuedAction: QueuedAction) -> [Int] {
+        if let fixedTargetIndices = queuedAction.fixedTargetIndices {
+            return fixedTargetIndices.filter { combatants.indices.contains($0) && combatants[$0].isAlive }
+        }
+
+        let actor = combatants[queuedAction.actorIndex]
+        let isNormalAttack = isNormalAttackAction(queuedAction.recordKind)
+        let purpose = "attackTarget.\(actor.id.rawValue).\(queuedAction.recordKind.rawValue)"
+        if isNormalAttack,
+           let chance = actor.status.actionRuleMaxValue(for: "normalAttackTargetingAllEnemiesChance"),
+           uniform(
+            turn: currentTurn,
+            action: currentActionNumber,
+            subaction: 94,
+            roll: queuedAction.actorIndex + 1,
+            purpose: "\(purpose).allEnemiesChance"
+           ) < chance {
+            return livingIndices(on: opposingSide(of: actor.side))
+        }
+        if actor.status.actionRuleMaxValue(for: "normalAttackTargetingAllEnemies") != nil {
+            return livingIndices(on: opposingSide(of: actor.side))
+        }
+        if actor.status.actionRuleMaxValue(for: "normalAttackTargetingFrontRowAll") != nil {
+            let targetSide = opposingSide(of: actor.side)
+            let frontRow = livingIndices(on: targetSide, rank: .front)
+            if !frontRow.isEmpty {
+                return frontRow
+            }
+            let middleRow = livingIndices(on: targetSide, rank: .middle)
+            if !middleRow.isEmpty {
+                return middleRow
+            }
+            return livingIndices(on: targetSide, rank: .back)
+        }
+        guard let primaryTargetIndex = selectPhysicalTarget(
+            for: actor.side,
+            purpose: purpose,
+            actionNumber: currentActionNumber
+        ) else {
+            return []
+        }
+        var targetIndices = [primaryTargetIndex]
+        if isNormalAttack,
+           actor.status.actionRuleMaxValue(for: "normalAttackHitsRandomAdditionalTarget") != nil,
+           let additionalTargetIndex = randomAdditionalPhysicalTarget(
+            to: primaryTargetIndex,
+            excluding: [primaryTargetIndex],
+            purpose: "\(purpose).additional",
+            actionNumber: currentActionNumber
+           ) {
+            targetIndices.append(additionalTargetIndex)
+        } else if actor.status.actionRuleMaxValue(for: "normalAttackHitsAdjacentTarget") != nil,
+           let adjacentTargetIndex = adjacentPhysicalTarget(
+            to: primaryTargetIndex,
+            excluding: [primaryTargetIndex],
+            purpose: "\(purpose).adjacent",
+            actionNumber: currentActionNumber
+           ) {
+            targetIndices.append(adjacentTargetIndex)
+        }
+        return targetIndices
     }
 
     private func pursuitCandidates(excluding actorIndex: Int) -> [Int] {
@@ -1616,6 +3080,46 @@ nonisolated private struct BattleResolutionEngine {
                     && combatants[$0].canAct
             }
             .sorted(by: compareCombatantPriority)
+    }
+
+    private func selectLowHPTarget(
+        for actingSide: BattleSide,
+        excluding excludedIndices: Set<Int> = []
+    ) -> Int? {
+        let candidates = livingIndices(on: opposingSide(of: actingSide))
+            .filter { !excludedIndices.contains($0) && isLowHP(combatants[$0]) }
+        return randomChoice(
+            from: candidates,
+            turn: currentTurn,
+            action: currentActionNumber,
+            subaction: 96,
+            purpose: "attackTarget.lowHP.\(actingSide.rawValue)"
+        )
+    }
+
+    private func makeFollowUpAttack(
+        actorIndex: Int,
+        targetIndex: Int? = nil
+    ) -> QueuedAction? {
+        if let targetIndex,
+           !(combatants.indices.contains(targetIndex) && combatants[targetIndex].isAlive) {
+            return nil
+        }
+        return QueuedAction(
+            actorIndex: actorIndex,
+            recordKind: .attack,
+            fixedTargetIndices: targetIndex.map { [$0] },
+            countsAsNormalTurnAction: false,
+            consumesSpellCharge: true,
+            allowsActionRuleFollowUps: false
+        )
+    }
+
+    private func usesRandomizedNormalActionOrder() -> Bool {
+        combatants.indices.contains {
+            combatants[$0].isAlive
+                && combatants[$0].status.actionRuleMaxValue(for: "randomizeNormalActionOrder") != nil
+        }
     }
 
     private func livingIndices() -> [Int] {
@@ -1742,6 +3246,15 @@ nonisolated private struct RuntimeCombatant {
     var magicBuffActive = false
     var physicalBarrierActive = false
     var magicBarrierActive = false
+    var extraHPBarrier = 0
+    var breathUsesRemaining: Int
+    var attackSpellHitCount = 0
+    var physicalDamagePctAddFromDamageTaken = 0.0
+    var nextNormalAttackPhysicalDamageMultiplier = 1.0
+    var hasUsedFirstNormalAttack = false
+    var hasUsedReviveOnceOnFirstDefeat = false
+    var hasUsedSurviveFirstDefeat = false
+    var hasUsedTurnOneExtraAction = false
 
     init(
         id: BattleCombatantID,
@@ -1767,6 +3280,10 @@ nonisolated private struct RuntimeCombatant {
         self.actionRates = actionRates
         self.actionPriority = actionPriority
         self.spellCharges = Dictionary(uniqueKeysWithValues: status.spellIds.map { ($0, 1) })
+        self.breathUsesRemaining = max(
+            Int(status.actionRuleMaxValue(for: "breathRepeatCount") ?? 1),
+            1
+        )
     }
 
     var isAlive: Bool {
@@ -1787,6 +3304,9 @@ nonisolated private struct QueuedAction {
     var attackCountMultiplier = 1.0
     var criticalAllowed = true
     var canTriggerInterrupts = true
+    var countsAsNormalTurnAction = false
+    var consumesSpellCharge = true
+    var allowsActionRuleFollowUps = true
 
     var interruptPriority: Int {
         switch recordKind {
@@ -1794,13 +3314,20 @@ nonisolated private struct QueuedAction {
             0
         case .counter:
             1
-        case .extraAttack, .attack:
+        case .extraAttack, .attack, .unarmedRepeat:
             2
         case .pursuit:
             3
         case .breath, .recoverySpell, .attackSpell, .defend:
             99
         }
+    }
+
+    func asFollowUp() -> QueuedAction {
+        var action = self
+        action.countsAsNormalTurnAction = false
+        action.allowsActionRuleFollowUps = false
+        return action
     }
 }
 
