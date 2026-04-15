@@ -19,6 +19,8 @@ struct DebugMenuView: View {
     @State private var isGenerating = false
     @State private var isPreparingExport = false
     @State private var isExportingUserData = false
+    @State private var isDeletingAllData = false
+    @State private var isDeleteAllDataConfirmationPresented = false
     @State private var exportDocument: DebugUserDataDocument?
     @State private var exportFilename = ""
     @State private var resultMessage: String?
@@ -39,6 +41,10 @@ struct DebugMenuView: View {
         GuildCoreDataStore(container: persistentContainer)
     }
 
+    private var isBusy: Bool {
+        isGenerating || isPreparingExport || isDeletingAllData
+    }
+
     var body: some View {
         Form {
             Section("ユーザーデータ") {
@@ -56,7 +62,7 @@ struct DebugMenuView: View {
                         Text("ユーザーデータを書き出し")
                     }
                 }
-                .disabled(isGenerating || isPreparingExport)
+                .disabled(isBusy)
 
                 Text("現在の所持金、キャラクター、編成、装備、探索状態を JSON で出力します。")
                     .foregroundStyle(.secondary)
@@ -70,7 +76,7 @@ struct DebugMenuView: View {
                 } label: {
                     Text("\(Self.debugGoldIncrement.formatted())Gを追加")
                 }
-                .disabled(isGenerating || isPreparingExport)
+                .disabled(isBusy)
 
                 Text("所持金に \(Self.debugGoldIncrement.formatted())G を加算します。")
                     .foregroundStyle(.secondary)
@@ -134,7 +140,7 @@ struct DebugMenuView: View {
                         Text("デバッグ用アイテムを生成")
                     }
                 }
-                .disabled(isGenerating)
+                .disabled(isBusy)
             }
 
             if let resultMessage {
@@ -150,6 +156,24 @@ struct DebugMenuView: View {
                         .foregroundStyle(.red)
                 }
             }
+
+            Section {
+                Button(role: .destructive) {
+                    isDeleteAllDataConfirmationPresented = true
+                } label: {
+                    if isDeletingAllData {
+                        HStack(spacing: 12) {
+                            ProgressView()
+                            Text("全てのデータを削除中...")
+                        }
+                    } else {
+                        Text("全てのデータを削除")
+                    }
+                }
+                .disabled(isBusy)
+            } footer: {
+                Text("Core Data ストアを削除したあと、アプリを終了します。")
+            }
         }
         .fileExporter(
             isPresented: $isExportingUserData,
@@ -163,6 +187,17 @@ struct DebugMenuView: View {
             case .failure(let error):
                 errorMessage = error.localizedDescription
             }
+        }
+        .alert("全てのデータを削除しますか？", isPresented: $isDeleteAllDataConfirmationPresented) {
+            Button("削除して終了", role: .destructive) {
+                Task {
+                    await deleteAllDataAndExit()
+                }
+            }
+            Button("キャンセル", role: .cancel) {
+            }
+        } message: {
+            Text("所持金、キャラクター、編成、装備、探索ログを含む保存データを削除し、アプリを終了します。")
         }
     }
 
@@ -247,6 +282,44 @@ struct DebugMenuView: View {
             resultMessage = "\(Self.debugGoldIncrement.formatted())G を追加しました。現在 \(snapshot.playerState.gold.formatted())G です。"
         } catch {
             errorMessage = error.localizedDescription
+        }
+    }
+
+    private func deleteAllDataAndExit() async {
+        guard !isDeletingAllData else {
+            return
+        }
+
+        isDeletingAllData = true
+        resultMessage = nil
+        errorMessage = nil
+
+        do {
+            try deletePersistentStores()
+            exit(0)
+        } catch {
+            isDeletingAllData = false
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    private func deletePersistentStores() throws {
+        let viewContext = persistentContainer.viewContext
+        viewContext.performAndWait {
+            viewContext.reset()
+        }
+
+        let coordinator = persistentContainer.persistentStoreCoordinator
+        for store in Array(coordinator.persistentStores) {
+            guard let storeURL = store.url else {
+                continue
+            }
+
+            try coordinator.destroyPersistentStore(
+                at: storeURL,
+                type: NSPersistentStore.StoreType(rawValue: store.type),
+                options: nil
+            )
         }
     }
 

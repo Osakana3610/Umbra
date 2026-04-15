@@ -89,6 +89,7 @@ nonisolated private struct BattleResolutionEngine {
         self.spellLookup = Dictionary(uniqueKeysWithValues: masterData.spells.map { ($0.id, $0) })
         self.combatants = []
         self.initiativeScores = []
+        let enemyDisplayNames = Self.makeEnemyDisplayNames(enemies: enemies, masterData: masterData)
 
         for (formationIndex, character) in partyMembers.enumerated() {
             combatants.append(
@@ -107,7 +108,7 @@ nonisolated private struct BattleResolutionEngine {
             )
         }
 
-        for (formationIndex, enemySeed) in enemies.enumerated() {
+        for ((formationIndex, enemySeed), enemyDisplayName) in zip(enemies.enumerated(), enemyDisplayNames) {
             guard let enemy = masterData.enemies.first(where: { $0.id == enemySeed.enemyId }) else {
                 throw SingleBattleError.invalidEnemy(enemySeed.enemyId)
             }
@@ -133,7 +134,7 @@ nonisolated private struct BattleResolutionEngine {
             combatants.append(
                 RuntimeCombatant(
                     id: BattleCombatantID(rawValue: "enemy:\(enemy.id):\(formationIndex + 1)"),
-                    name: enemy.name,
+                    name: enemyDisplayName,
                     side: .enemy,
                     imageAssetID: nil,
                     level: enemySeed.level,
@@ -152,6 +153,42 @@ nonisolated private struct BattleResolutionEngine {
         }
 
         self.initiativeScores = Array(repeating: 0, count: combatants.count)
+    }
+
+    private static func makeEnemyDisplayNames(
+        enemies: [BattleEnemySeed],
+        masterData: MasterData
+    ) -> [String] {
+        let names = enemies.map { enemySeed in
+            masterData.enemies.first(where: { $0.id == enemySeed.enemyId })?.name ?? ""
+        }
+        let totalCounts = names.reduce(into: [:]) { counts, name in
+            counts[name, default: 0] += 1
+        }
+        var seenCounts: [String: Int] = [:]
+
+        return names.map { name in
+            guard totalCounts[name, default: 0] > 1 else {
+                return name
+            }
+
+            let nextCount = seenCounts[name, default: 0] + 1
+            seenCounts[name] = nextCount
+            return "\(name)\(alphabeticSuffix(for: nextCount))"
+        }
+    }
+
+    private static func alphabeticSuffix(for index: Int) -> String {
+        precondition(index > 0)
+
+        var value = index
+        var suffix = ""
+        while value > 0 {
+            let remainder = (value - 1) % 26
+            suffix = "\(Character(UnicodeScalar(65 + remainder)!))" + suffix
+            value = (value - 1) / 26
+        }
+        return suffix
     }
 
     mutating func resolve() throws -> SingleBattleResult {

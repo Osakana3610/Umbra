@@ -28,7 +28,7 @@
     </entity>
     <entity name="PlayerStateEntity" representedClassName="PlayerStateEntity" syncable="YES">
         <attribute name="autoSellItemIDsRawValue" optional="NO" attributeType="String" defaultValueString=""/>
-        <attribute name="autoReviveDefeatedCharacters" optional="NO" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="autoReviveDefeatedCharacters" optional="NO" attributeType="Boolean" defaultValueString="YES" usesScalarValueType="YES"/>
         <attribute name="catTicketCount" optional="NO" attributeType="Integer 64" defaultValueString="10" usesScalarValueType="YES"/>
         <attribute name="gold" optional="NO" attributeType="Integer 64" defaultValueString="1000" usesScalarValueType="YES"/>
         <attribute name="lastBackgroundedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>

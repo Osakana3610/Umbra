@@ -4327,6 +4327,101 @@ struct UmbraTests {
     }
 
     @Test
+    func duplicateEnemyNamesReceiveAlphabeticSuffixes() throws {
+        let baseMasterData = makeBattleTestMasterData(
+            enemyBaseStats: battleBaseStats(vitality: 20)
+        )
+        let templateEnemy = try #require(baseMasterData.enemies.first)
+        let masterData = MasterData(
+            metadata: baseMasterData.metadata,
+            races: baseMasterData.races,
+            jobs: baseMasterData.jobs,
+            aptitudes: baseMasterData.aptitudes,
+            items: baseMasterData.items,
+            titles: baseMasterData.titles,
+            superRares: baseMasterData.superRares,
+            skills: baseMasterData.skills,
+            spells: baseMasterData.spells,
+            recruitNames: baseMasterData.recruitNames,
+            enemies: [
+                MasterData.Enemy(
+                    id: 1,
+                    name: "ウルフ",
+                    enemyRace: templateEnemy.enemyRace,
+                    jobId: templateEnemy.jobId,
+                    baseStats: templateEnemy.baseStats,
+                    goldBaseValue: templateEnemy.goldBaseValue,
+                    experienceBaseValue: templateEnemy.experienceBaseValue,
+                    skillIds: templateEnemy.skillIds,
+                    rareDropItemIds: templateEnemy.rareDropItemIds,
+                    actionRates: templateEnemy.actionRates,
+                    actionPriority: templateEnemy.actionPriority
+                ),
+                MasterData.Enemy(
+                    id: 2,
+                    name: "ウルフ",
+                    enemyRace: templateEnemy.enemyRace,
+                    jobId: templateEnemy.jobId,
+                    baseStats: templateEnemy.baseStats,
+                    goldBaseValue: templateEnemy.goldBaseValue,
+                    experienceBaseValue: templateEnemy.experienceBaseValue,
+                    skillIds: templateEnemy.skillIds,
+                    rareDropItemIds: templateEnemy.rareDropItemIds,
+                    actionRates: templateEnemy.actionRates,
+                    actionPriority: templateEnemy.actionPriority
+                ),
+                MasterData.Enemy(
+                    id: 3,
+                    name: "スライム",
+                    enemyRace: templateEnemy.enemyRace,
+                    jobId: templateEnemy.jobId,
+                    baseStats: templateEnemy.baseStats,
+                    goldBaseValue: templateEnemy.goldBaseValue,
+                    experienceBaseValue: templateEnemy.experienceBaseValue,
+                    skillIds: templateEnemy.skillIds,
+                    rareDropItemIds: templateEnemy.rareDropItemIds,
+                    actionRates: templateEnemy.actionRates,
+                    actionPriority: templateEnemy.actionPriority
+                )
+            ],
+            labyrinths: baseMasterData.labyrinths
+        )
+        let allyStatus = makeBattleTestStatus(
+            battleStats: CharacterBattleStats(
+                maxHP: 100,
+                physicalAttack: 20,
+                physicalDefense: 0,
+                magic: 0,
+                magicDefense: 0,
+                healing: 0,
+                accuracy: 1_000,
+                evasion: 0,
+                attackCount: 1,
+                criticalRate: 0,
+                breathPower: 0
+            )
+        )
+
+        let result = try SingleBattleResolver.resolve(
+            context: BattleContext(
+                runId: RunSessionID(partyId: 1, partyRunId: 1),
+                rootSeed: 0,
+                floorNumber: 1,
+                battleNumber: 1
+            ),
+            partyMembers: [makePartyBattleMember(id: 1, name: "剣士", status: allyStatus)],
+            enemies: [
+                BattleEnemySeed(enemyId: 1, level: 1),
+                BattleEnemySeed(enemyId: 2, level: 1),
+                BattleEnemySeed(enemyId: 3, level: 1)
+            ],
+            masterData: masterData
+        )
+
+        #expect(result.combatants.filter { $0.side == .enemy }.map(\.name) == ["ウルフA", "ウルフB", "スライム"])
+    }
+
+    @Test
     func skippedQueuedActionStillAdvancesActionNumberForLaterRandoms() throws {
         let sleepSpell = MasterData.Spell(
             id: 1,

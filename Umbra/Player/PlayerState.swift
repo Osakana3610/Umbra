@@ -23,7 +23,7 @@ nonisolated struct PlayerState: Equatable, Sendable {
         gold: 10000,
         catTicketCount: 10,
         nextCharacterId: 1,
-        autoReviveDefeatedCharacters: false,
+        autoReviveDefeatedCharacters: true,
         shopInventoryInitialized: false,
         autoSellItemIDs: [],
         lastBackgroundedAt: nil
