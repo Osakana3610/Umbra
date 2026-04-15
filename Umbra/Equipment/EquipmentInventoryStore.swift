@@ -604,7 +604,16 @@ struct EquipmentSectionKey: Hashable, Identifiable, Sendable {
     }
 
     var title: String {
-        "\(category.displayName) / R\(rarity.sortOrder)"
+        "\(category.displayName)（\(rarity.displayName)）"
+    }
+
+    var indexLabel: String {
+        switch category {
+        case .misc:
+            "他"
+        default:
+            String(category.displayName.prefix(1))
+        }
     }
 
     static func isOrderedBefore(

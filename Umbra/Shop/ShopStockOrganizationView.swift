@@ -48,10 +48,20 @@ struct ShopStockOrganizationView: View {
                     }
                 } else {
                     ForEach(sections) { section in
-                        Section(section.key.title) {
-                            ForEach(section.rows) { row in
-                                stockOrganizationRow(for: row)
-                                    .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+                        if #available(iOS 26.0, *) {
+                            Section(section.key.title) {
+                                ForEach(section.rows) { row in
+                                    stockOrganizationRow(for: row)
+                                        .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+                                }
+                            }
+                            .sectionIndexLabel(equipmentSectionIndexLabel(for: section, in: sections))
+                        } else {
+                            Section(section.key.title) {
+                                ForEach(section.rows) { row in
+                                    stockOrganizationRow(for: row)
+                                        .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+                                }
                             }
                         }
                     }
@@ -59,6 +69,7 @@ struct ShopStockOrganizationView: View {
             }
         }
         .listStyle(.insetGrouped)
+        .equipmentSectionIndexVisibility()
         .playerStatusContentInsetAware()
         .navigationTitle("在庫整理")
         .navigationBarTitleDisplayMode(.inline)
@@ -187,6 +198,8 @@ private struct StockOrganizationSection: Identifiable {
         key
     }
 }
+
+extension StockOrganizationSection: EquipmentSectionIndexable {}
 
 private struct StockOrganizationPresentedItemDetail: Identifiable {
     let itemID: CompositeItemID

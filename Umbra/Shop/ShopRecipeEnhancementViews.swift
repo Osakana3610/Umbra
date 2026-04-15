@@ -70,16 +70,27 @@ private struct ShopRecipeEnhancementBrowserView: View {
                 }
             } else {
                 ForEach(sections) { section in
-                    Section(section.key.title) {
-                        ForEach(section.rows) { row in
-                            itemRow(for: row)
-                                .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+                    if #available(iOS 26.0, *) {
+                        Section(section.key.title) {
+                            ForEach(section.rows) { row in
+                                itemRow(for: row)
+                                    .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+                            }
+                        }
+                        .sectionIndexLabel(equipmentSectionIndexLabel(for: section, in: sections))
+                    } else {
+                        Section(section.key.title) {
+                            ForEach(section.rows) { row in
+                                itemRow(for: row)
+                                    .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+                            }
                         }
                     }
                 }
             }
         }
         .listStyle(.insetGrouped)
+        .equipmentSectionIndexVisibility()
         .playerStatusContentInsetAware()
         .navigationTitle(title)
         .navigationBarTitleDisplayMode(.inline)

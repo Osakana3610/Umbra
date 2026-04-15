@@ -152,7 +152,7 @@ extension ItemCategory {
         case .robe:
             "ローブ"
         case .gauntlet:
-            "籠手"
+            "小手"
         case .jewel:
             "宝石"
         case .misc:
@@ -173,7 +173,7 @@ extension ItemRarity {
         case .mythic:
             "ミシック"
         case .godfiend:
-            "神魔級"
+            "神魔"
         }
     }
 

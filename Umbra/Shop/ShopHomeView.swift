@@ -262,7 +262,23 @@ private struct ShopTradingView: View {
     private var tradeList: some View {
         let sections = visibleSections
 
-        return List {
+        return Group {
+            if #available(iOS 26.0, *) {
+                tradeListView(sections: sections, showsSectionIndex: true)
+            } else {
+                tradeListView(sections: sections, showsSectionIndex: false)
+            }
+        }
+        .listStyle(.insetGrouped)
+        .equipmentSectionIndexVisibility()
+        .playerStatusContentInsetAware()
+    }
+
+    private func tradeListView(
+        sections: [TradeSection],
+        showsSectionIndex: Bool
+    ) -> some View {
+        List {
             if let loadError {
                 Section(mode.rawValue) {
                     Text(loadError)
@@ -279,12 +295,7 @@ private struct ShopTradingView: View {
                 }
             } else {
                 ForEach(sections) { section in
-                    Section(section.key.title) {
-                        ForEach(section.rows) { item in
-                            tradeRow(for: item)
-                            .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
-                        }
-                    }
+                    tradeSection(section, in: sections, showsSectionIndex: showsSectionIndex)
                 }
             }
 
@@ -297,8 +308,6 @@ private struct ShopTradingView: View {
                 }
             }
         }
-        .listStyle(.insetGrouped)
-        .playerStatusContentInsetAware()
     }
 
     private var trimmedSearchText: String {
@@ -382,6 +391,33 @@ private struct ShopTradingView: View {
         return mode == .buy
             ? "商店在庫はありません。"
             : "売却できる所持アイテムはありません。"
+    }
+
+    @ViewBuilder
+    private func tradeSection(
+        _ section: TradeSection,
+        in sections: [TradeSection],
+        showsSectionIndex: Bool
+    ) -> some View {
+        if showsSectionIndex {
+            if #available(iOS 26.0, *) {
+                Section(section.key.title) {
+                    tradeRows(for: section)
+                }
+                .sectionIndexLabel(equipmentSectionIndexLabel(for: section, in: sections))
+            }
+        } else {
+            Section(section.key.title) {
+                tradeRows(for: section)
+            }
+        }
+    }
+
+    private func tradeRows(for section: TradeSection) -> some View {
+        ForEach(section.rows) { item in
+            tradeRow(for: item)
+                .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+        }
     }
 
     private func canAffordPurchase(_ item: EquipmentCachedItem) -> Bool {
@@ -676,6 +712,8 @@ private struct TradeSection: Identifiable {
         key
     }
 }
+
+extension TradeSection: EquipmentSectionIndexable {}
 
 private struct TradePresentedItemDetail: Identifiable {
     let itemID: CompositeItemID

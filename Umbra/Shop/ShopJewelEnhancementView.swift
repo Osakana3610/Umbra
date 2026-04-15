@@ -36,16 +36,27 @@ struct ShopJewelEnhancementView: View {
                 }
             } else {
                 ForEach(baseSections) { section in
-                    Section(section.key.title) {
-                        ForEach(section.rows) { row in
-                            baseRow(for: row)
-                                .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+                    if #available(iOS 26.0, *) {
+                        Section(section.key.title) {
+                            ForEach(section.rows) { row in
+                                baseRow(for: row)
+                                    .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+                            }
+                        }
+                        .sectionIndexLabel(equipmentSectionIndexLabel(for: section, in: baseSections))
+                    } else {
+                        Section(section.key.title) {
+                            ForEach(section.rows) { row in
+                                baseRow(for: row)
+                                    .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+                            }
                         }
                     }
                 }
             }
         }
         .listStyle(.insetGrouped)
+        .equipmentSectionIndexVisibility()
         .playerStatusContentInsetAware()
         .navigationTitle("宝石強化")
         .navigationBarTitleDisplayMode(.inline)
@@ -266,16 +277,27 @@ private struct ShopJewelEnhancementJewelSelectionView: View {
                 }
             } else {
                 ForEach(jewelSections) { section in
-                    Section(section.key.title) {
-                        ForEach(section.rows) { row in
-                            jewelRow(for: row)
-                                .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+                    if #available(iOS 26.0, *) {
+                        Section(section.key.title) {
+                            ForEach(section.rows) { row in
+                                jewelRow(for: row)
+                                    .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+                            }
+                        }
+                        .sectionIndexLabel(equipmentSectionIndexLabel(for: section, in: jewelSections))
+                    } else {
+                        Section(section.key.title) {
+                            ForEach(section.rows) { row in
+                                jewelRow(for: row)
+                                    .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+                            }
                         }
                     }
                 }
             }
         }
         .listStyle(.insetGrouped)
+        .equipmentSectionIndexVisibility()
         .playerStatusContentInsetAware()
         .navigationTitle("宝石を選ぶ")
         .navigationBarTitleDisplayMode(.inline)

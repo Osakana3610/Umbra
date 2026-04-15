@@ -70,32 +70,63 @@ struct CharacterEquipmentView: View {
                         }
                     } else {
                         ForEach(visibleSections) { section in
-                            Section(section.key.title) {
-                                EquipmentSectionRowsView(
-                                    rows: section.rows,
-                                    masterData: masterData,
-                                    characterPortraitAssetName: masterData.portraitAssetName(for: character),
-                                    isAtCapacity: character.equippedItemCount >= maximumEquippedItemCount,
-                                    onEquip: { itemID in
-                                        equipmentStore.equip(
-                                            itemID: itemID,
-                                            to: character,
-                                            masterData: masterData,
-                                            rosterStore: rosterStore
-                                        )
-                                    },
-                                    onUnequip: { itemID in
-                                        equipmentStore.unequip(
-                                            itemID: itemID,
-                                            from: character,
-                                            masterData: masterData,
-                                            rosterStore: rosterStore
-                                        )
-                                    },
-                                    onShowDetail: { itemID in
-                                        presentedItemDetail = PresentedItemDetail(itemID: itemID)
-                                    }
-                                )
+                            if #available(iOS 26.0, *) {
+                                Section(section.key.title) {
+                                    EquipmentSectionRowsView(
+                                        rows: section.rows,
+                                        masterData: masterData,
+                                        characterPortraitAssetName: masterData.portraitAssetName(for: character),
+                                        isAtCapacity: character.equippedItemCount >= maximumEquippedItemCount,
+                                        onEquip: { itemID in
+                                            equipmentStore.equip(
+                                                itemID: itemID,
+                                                to: character,
+                                                masterData: masterData,
+                                                rosterStore: rosterStore
+                                            )
+                                        },
+                                        onUnequip: { itemID in
+                                            equipmentStore.unequip(
+                                                itemID: itemID,
+                                                from: character,
+                                                masterData: masterData,
+                                                rosterStore: rosterStore
+                                            )
+                                        },
+                                        onShowDetail: { itemID in
+                                            presentedItemDetail = PresentedItemDetail(itemID: itemID)
+                                        }
+                                    )
+                                }
+                                .sectionIndexLabel(equipmentSectionIndexLabel(for: section, in: visibleSections))
+                            } else {
+                                Section(section.key.title) {
+                                    EquipmentSectionRowsView(
+                                        rows: section.rows,
+                                        masterData: masterData,
+                                        characterPortraitAssetName: masterData.portraitAssetName(for: character),
+                                        isAtCapacity: character.equippedItemCount >= maximumEquippedItemCount,
+                                        onEquip: { itemID in
+                                            equipmentStore.equip(
+                                                itemID: itemID,
+                                                to: character,
+                                                masterData: masterData,
+                                                rosterStore: rosterStore
+                                            )
+                                        },
+                                        onUnequip: { itemID in
+                                            equipmentStore.unequip(
+                                                itemID: itemID,
+                                                from: character,
+                                                masterData: masterData,
+                                                rosterStore: rosterStore
+                                            )
+                                        },
+                                        onShowDetail: { itemID in
+                                            presentedItemDetail = PresentedItemDetail(itemID: itemID)
+                                        }
+                                    )
+                                }
                             }
                         }
                     }
@@ -110,6 +141,7 @@ struct CharacterEquipmentView: View {
                     }
                 }
                 .listStyle(.insetGrouped)
+                .equipmentSectionIndexVisibility()
                 .playerStatusContentInsetAware()
                 .searchable(text: $searchText, prompt: "所持アイテムを検索")
                 .navigationTitle(character.name)

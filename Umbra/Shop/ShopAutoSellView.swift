@@ -50,10 +50,20 @@ struct ShopAutoSellView: View {
                     }
                 } else {
                     ForEach(visibleSections) { section in
-                        Section(section.key.title) {
-                            ForEach(section.rows) { candidate in
-                                autoSellRow(for: candidate)
-                                    .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+                        if #available(iOS 26.0, *) {
+                            Section(section.key.title) {
+                                ForEach(section.rows) { candidate in
+                                    autoSellRow(for: candidate)
+                                        .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+                                }
+                            }
+                            .sectionIndexLabel(equipmentSectionIndexLabel(for: section, in: visibleSections))
+                        } else {
+                            Section(section.key.title) {
+                                ForEach(section.rows) { candidate in
+                                    autoSellRow(for: candidate)
+                                        .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+                                }
                             }
                         }
                     }
@@ -61,6 +71,7 @@ struct ShopAutoSellView: View {
             }
         }
         .listStyle(.insetGrouped)
+        .equipmentSectionIndexVisibility()
         .playerStatusContentInsetAware()
         .navigationTitle("自動売却")
         .navigationBarTitleDisplayMode(.inline)
@@ -286,16 +297,27 @@ private struct ShopAutoSellInventoryPickerView: View {
                 }
             } else {
                 ForEach(visibleSections) { section in
-                    Section(section.key.title) {
-                        ForEach(section.rows) { candidate in
-                            pickerRow(for: candidate)
-                                .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+                    if #available(iOS 26.0, *) {
+                        Section(section.key.title) {
+                            ForEach(section.rows) { candidate in
+                                pickerRow(for: candidate)
+                                    .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+                            }
+                        }
+                        .sectionIndexLabel(equipmentSectionIndexLabel(for: section, in: visibleSections))
+                    } else {
+                        Section(section.key.title) {
+                            ForEach(section.rows) { candidate in
+                                pickerRow(for: candidate)
+                                    .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+                            }
                         }
                     }
                 }
             }
         }
         .listStyle(.insetGrouped)
+        .equipmentSectionIndexVisibility()
         .navigationTitle("自動売却に追加")
         .navigationBarTitleDisplayMode(.inline)
         .searchable(text: $searchText, prompt: "所持アイテムを検索")
@@ -465,6 +487,8 @@ private struct AutoSellSection: Identifiable {
         key
     }
 }
+
+extension AutoSellSection: EquipmentSectionIndexable {}
 
 private struct AutoSellPresentedItemDetail: Identifiable {
     let itemID: CompositeItemID
