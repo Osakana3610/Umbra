@@ -81,7 +81,7 @@ enum ShopEnhancementRow: Identifiable {
                     item: item,
                     characterId: character.characterId,
                     characterName: character.name,
-                    portraitAssetName: character.portraitAssetName
+                    portraitAssetName: masterData.portraitAssetName(for: character)
                 )
             }
         }

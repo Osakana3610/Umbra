@@ -2,8 +2,8 @@
     {
         "id": "human",
         "name": "人間",
-        "levelCap": 150,
-        "baseHirePrice": 1,
+        "levelCap": 200,
+        "baseHirePrice": 500,
         "baseStats": {
             "vitality": 7,
             "strength": 7,
@@ -12,136 +12,392 @@
             "agility": 7,
             "luck": 7
         },
-        "skillIds": [
-            "accuracy_plus_10pct",
-            "evasion_plus_10pct"
-        ]
-    },
-    {
-        "id": "vampire",
-        "name": "吸血鬼",
-        "levelCap": 140,
-        "baseHirePrice": 1,
-        "baseStats": {
-            "vitality": 5,
-            "strength": 10,
-            "mind": 8,
-            "intelligence": 5,
-            "agility": 10,
-            "luck": 4
-        },
-        "skillIds": [
-            "physicalDamageMultiplier_plus_10pct",
-            "pursuit"
+        "passiveSkillIds": [
+            "maxHP_plus_10pct",
+            "physicalDefense_plus_10pct",
+            "magicDefense_plus_10pct",
+            "healing_plus_5pct",
+            "accuracy_plus_10pct"
+        ],
+        "levelSkillIds": [
+            "race_human_adaptation",
+            "race_human_hero"
         ]
     },
     {
         "id": "dwarf",
         "name": "ドワーフ",
         "levelCap": 130,
-        "baseHirePrice": 1,
+        "baseHirePrice": 1200,
         "baseStats": {
-            "vitality": 12,
-            "strength": 8,
+            "vitality": 13,
+            "strength": 9,
             "mind": 7,
-            "intelligence": 4,
-            "agility": 4,
+            "intelligence": 3,
+            "agility": 3,
             "luck": 7
         },
-        "skillIds": [
+        "passiveSkillIds": [
             "maxHP_plus_10pct",
-            "physical_resistance_4_5"
+            "physicalDefense_plus_10pct",
+            "physical_resistance_4_5",
+            "breath_resistance_4_5",
+            "counter"
+        ],
+        "levelSkillIds": [
+            "race_dwarf_grit",
+            "race_dwarf_last_stand"
         ]
     },
     {
         "id": "elf",
         "name": "エルフ",
-        "levelCap": 200,
-        "baseHirePrice": 1,
+        "levelCap": 150,
+        "baseHirePrice": 1400,
         "baseStats": {
-            "vitality": 5,
-            "strength": 4,
-            "mind": 12,
-            "intelligence": 8,
+            "vitality": 4,
+            "strength": 3,
+            "mind": 11,
+            "intelligence": 12,
             "agility": 8,
+            "luck": 4
+        },
+        "passiveSkillIds": [
+            "magic_plus_3pct",
+            "healing_plus_5pct",
+            "magicDefense_plus_10pct",
+            "evasion_plus_10pct",
+            "accuracy_plus_10pct"
+        ],
+        "levelSkillIds": [
+            "race_elf_spirit_chant",
+            "race_elf_forest_blessing"
+        ]
+    },
+    {
+        "id": "dragonewt",
+        "name": "ドラゴニュート",
+        "levelCap": 145,
+        "baseHirePrice": 1800,
+        "baseStats": {
+            "vitality": 11,
+            "strength": 9,
+            "mind": 9,
+            "intelligence": 4,
+            "agility": 5,
+            "luck": 6
+        },
+        "passiveSkillIds": [
+            "breath_access",
+            "maxHP_plus_10pct",
+            "physicalAttack_plus_10pct",
+            "breath_resistance_4_5",
+            "physical_resistance_4_5",
+            "counter"
+        ],
+        "levelSkillIds": [
+            "race_dragonewt_dragon_breath_chain",
+            "race_dragonewt_dragon_king_breath"
+        ]
+    },
+    {
+        "id": "amazoness",
+        "name": "アマゾネス",
+        "levelCap": 140,
+        "baseHirePrice": 1900,
+        "baseStats": {
+            "vitality": 6,
+            "strength": 9,
+            "mind": 5,
+            "intelligence": 4,
+            "agility": 13,
+            "luck": 6
+        },
+        "passiveSkillIds": [
+            "accuracy_plus_10pct",
+            "criticalRate_plus_10",
+            "actionSpeedMultiplier_plus_10pct",
+            "physicalDamageMultiplier_plus_10pct",
+            "pursuit"
+        ],
+        "levelSkillIds": [
+            "race_amazoness_war_dance",
+            "race_amazoness_queen_hunt"
+        ]
+    },
+    {
+        "id": "halfling",
+        "name": "ハーフリング",
+        "levelCap": 145,
+        "baseHirePrice": 1900,
+        "baseStats": {
+            "vitality": 3,
+            "strength": 2,
+            "mind": 5,
+            "intelligence": 4,
+            "agility": 15,
+            "luck": 15
+        },
+        "passiveSkillIds": [
+            "evasion_plus_20pct",
+            "accuracy_plus_10pct",
+            "criticalRate_plus_15",
+            "actionSpeedMultiplier_plus_10pct",
+            "attackCount_plus_1"
+        ],
+        "levelSkillIds": [
+            "race_halfling_slip_through",
+            "race_halfling_lucky_shot"
+        ]
+    },
+    {
+        "id": "zombie",
+        "name": "ゾンビ",
+        "levelCap": 130,
+        "baseHirePrice": 2200,
+        "baseStats": {
+            "vitality": 11,
+            "strength": 7,
+            "mind": 10,
+            "intelligence": 2,
+            "agility": 3,
+            "luck": 9
+        },
+        "passiveSkillIds": [
+            "maxHP_plus_10pct",
+            "physical_resistance_4_5",
+            "physicalDefense_plus_10pct",
+            "healing_plus_5pct",
+            "counter"
+        ],
+        "levelSkillIds": [
+            "race_zombie_corpse_drive",
+            "race_zombie_immortal"
+        ]
+    },
+    {
+        "id": "beastkin",
+        "name": "獣人",
+        "levelCap": 150,
+        "baseHirePrice": 2400,
+        "baseStats": {
+            "vitality": 7,
+            "strength": 10,
+            "mind": 5,
+            "intelligence": 4,
+            "agility": 10,
+            "luck": 8
+        },
+        "passiveSkillIds": [
+            "physicalAttack_plus_10pct",
+            "accuracy_plus_10pct",
+            "evasion_plus_10pct",
+            "criticalRate_plus_10",
+            "pursuit"
+        ],
+        "levelSkillIds": [
+            "race_beastkin_wild_release",
+            "race_beastkin_beast_king"
+        ]
+    },
+    {
+        "id": "vampire",
+        "name": "吸血鬼",
+        "levelCap": 135,
+        "baseHirePrice": 2600,
+        "baseStats": {
+            "vitality": 7,
+            "strength": 11,
+            "mind": 8,
+            "intelligence": 5,
+            "agility": 10,
             "luck": 5
         },
-        "skillIds": [
-            "magicDamageMultiplier_plus_10pct",
+        "passiveSkillIds": [
+            "physicalDamageMultiplier_plus_10pct",
+            "pursuit",
+            "maxHP_plus_10pct",
+            "healing_plus_5pct",
             "evasion_plus_10pct"
+        ],
+        "levelSkillIds": [
+            "race_vampire_blood_feast",
+            "race_vampire_undead_hunt"
+        ]
+    },
+    {
+        "id": "tengu",
+        "name": "天狗",
+        "levelCap": 140,
+        "baseHirePrice": 2800,
+        "baseStats": {
+            "vitality": 5,
+            "strength": 7,
+            "mind": 8,
+            "intelligence": 7,
+            "agility": 13,
+            "luck": 6
+        },
+        "passiveSkillIds": [
+            "actionSpeedMultiplier_plus_10pct",
+            "accuracy_plus_10pct",
+            "evasion_plus_10pct",
+            "criticalRate_plus_15",
+            "attackCount_plus_1"
+        ],
+        "levelSkillIds": [
+            "race_tengu_gale",
+            "race_tengu_sky_rend"
+        ]
+    },
+    {
+        "id": "darkelf",
+        "name": "ダークエルフ",
+        "levelCap": 145,
+        "baseHirePrice": 2800,
+        "baseStats": {
+            "vitality": 4,
+            "strength": 5,
+            "mind": 9,
+            "intelligence": 12,
+            "agility": 10,
+            "luck": 6
+        },
+        "passiveSkillIds": [
+            "magic_plus_3pct",
+            "magicDamageMultiplier_plus_3pct",
+            "accuracy_plus_10pct",
+            "evasion_plus_10pct",
+            "actionSpeedMultiplier_plus_10pct"
+        ],
+        "levelSkillIds": [
+            "race_dark_elf_evil_eye",
+            "race_dark_elf_abyss"
+        ]
+    },
+    {
+        "id": "medusa",
+        "name": "メデューサ",
+        "levelCap": 135,
+        "baseHirePrice": 3200,
+        "baseStats": {
+            "vitality": 7,
+            "strength": 6,
+            "mind": 11,
+            "intelligence": 11,
+            "agility": 5,
+            "luck": 8
+        },
+        "passiveSkillIds": [
+            "magicDefense_plus_10pct",
+            "healing_plus_5pct",
+            "accuracy_plus_10pct",
+            "physical_resistance_4_5",
+            "magic_plus_3pct"
+        ],
+        "levelSkillIds": [
+            "race_medusa_stone_gaze",
+            "race_medusa_serpent_god"
         ]
     },
     {
         "id": "psychic",
         "name": "サイキック",
         "levelCap": 120,
-        "baseHirePrice": 1,
+        "baseHirePrice": 3200,
         "baseStats": {
             "vitality": 4,
             "strength": 3,
-            "mind": 8,
+            "mind": 10,
             "intelligence": 15,
-            "agility": 6,
-            "luck": 6
+            "agility": 7,
+            "luck": 9
         },
-        "skillIds": [
-            "magic_plus_10pct",
-            "nuclear_access"
-        ]
-    },
-    {
-        "id": "dragonewt",
-        "name": "ドラゴニュート",
-        "levelCap": 160,
-        "baseHirePrice": 1,
-        "baseStats": {
-            "vitality": 10,
-            "strength": 9,
-            "mind": 8,
-            "intelligence": 4,
-            "agility": 5,
-            "luck": 6
-        },
-        "skillIds": [
-            "breath_access",
-            "breathPower_plus_10pct",
-            "breath_resistance_4_5"
-        ]
-    },
-    {
-        "id": "amazoness",
-        "name": "アマゾネス",
-        "levelCap": 130,
-        "baseHirePrice": 1,
-        "baseStats": {
-            "vitality": 7,
-            "strength": 9,
-            "mind": 6,
-            "intelligence": 5,
-            "agility": 10,
-            "luck": 5
-        },
-        "skillIds": [
+        "passiveSkillIds": [
+            "magic_plus_5pct",
+            "magicDamageMultiplier_plus_5pct",
             "accuracy_plus_10pct",
-            "criticalRate_plus_10pct"
+            "criticalRate_plus_10",
+            "actionSpeedMultiplier_plus_10pct"
+        ],
+        "levelSkillIds": [
+            "race_psychic_psy_strike",
+            "race_psychic_foresight"
+        ]
+    },
+    {
+        "id": "minotaur",
+        "name": "ミノタウロス",
+        "levelCap": 125,
+        "baseHirePrice": 3200,
+        "baseStats": {
+            "vitality": 14,
+            "strength": 13,
+            "mind": 5,
+            "intelligence": 2,
+            "agility": 8,
+            "luck": 8
+        },
+        "passiveSkillIds": [
+            "maxHP_plus_10pct",
+            "physicalAttack_plus_10pct",
+            "physicalDefense_plus_10pct",
+            "physicalDamageMultiplier_plus_10pct",
+            "counter"
+        ],
+        "levelSkillIds": [
+            "race_minotaur_charge",
+            "race_minotaur_tyrant"
+        ]
+    },
+    {
+        "id": "giant",
+        "name": "巨人",
+        "levelCap": 120,
+        "baseHirePrice": 5000,
+        "baseStats": {
+            "vitality": 12,
+            "strength": 12,
+            "mind": 8,
+            "intelligence": 10,
+            "agility": 7,
+            "luck": 4
+        },
+        "passiveSkillIds": [
+            "maxHP_plus_10pct",
+            "physicalAttack_plus_10pct",
+            "physicalDefense_plus_10pct",
+            "magicDefense_plus_10pct",
+            "physical_resistance_4_5"
+        ],
+        "levelSkillIds": [
+            "race_giant_mighty_arms",
+            "race_giant_taizan"
         ]
     },
     {
         "id": "oni",
         "name": "鬼",
-        "levelCap": 180,
-        "baseHirePrice": 1,
+        "levelCap": 150,
+        "baseHirePrice": 4200,
         "baseStats": {
-            "vitality": 9,
+            "vitality": 10,
             "strength": 15,
-            "mind": 4,
+            "mind": 5,
             "intelligence": 3,
-            "agility": 6,
-            "luck": 5
+            "agility": 7,
+            "luck": 8
         },
-        "skillIds": [
+        "passiveSkillIds": [
             "physicalAttack_plus_10pct",
-            "meleeDamageMultiplier_plus_10pct"
+            "meleeDamageMultiplier_plus_10pct",
+            "maxHP_plus_10pct",
+            "criticalRate_plus_10",
+            "counter"
+        ],
+        "levelSkillIds": [
+            "race_oni_asura_path",
+            "race_oni_blood_festival"
         ]
     }
 ]

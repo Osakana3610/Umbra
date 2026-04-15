@@ -167,6 +167,7 @@ private struct CharacterDetailLoadedView: View {
             Section {
                 CharacterDetailHeaderView(
                     character: character,
+                    portraitAssetName: masterData.portraitAssetName(for: character),
                     summaryText: summaryText,
                     hpText: hpText,
                     draftName: $draftName,
@@ -219,6 +220,7 @@ private struct CharacterDetailLoadedView: View {
 
             CharacterEquipmentSectionView(
                 character: character,
+                masterData: masterData,
                 nameResolver: nameResolver
             )
 
@@ -406,6 +408,7 @@ private struct CharacterDetailLoadedView: View {
 
 private struct CharacterDetailHeaderView: View {
     let character: CharacterRecord
+    let portraitAssetName: String
     let summaryText: String
     let hpText: String
     @Binding var draftName: String
@@ -415,7 +418,7 @@ private struct CharacterDetailHeaderView: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 16) {
-            Image(character.portraitAssetName)
+            Image(portraitAssetName)
                 .resizable()
                 .scaledToFill()
                 .frame(width: 96, height: 96)
@@ -612,7 +615,7 @@ private struct CharacterStatusSectionsView: View {
             }
         }
 
-        Section("戦闘派生") {
+        Section("戦闘中補正") {
             ForEach(derivedStatRows, id: \.title) { row in
                 CharacterStatRowView(title: row.title, value: row.value)
             }
@@ -696,6 +699,7 @@ private struct CharacterStatusSectionsView: View {
 
 private struct CharacterEquipmentSectionView: View {
     let character: CharacterRecord
+    let masterData: MasterData
     let nameResolver: EquipmentDisplayNameResolver
 
     var body: some View {
@@ -712,7 +716,7 @@ private struct CharacterEquipmentSectionView: View {
                 }
             }
         } header: {
-            Text("装備（\(character.equippedItemCount)/\(character.maximumEquippedItemCount)）")
+            Text("装備（\(character.equippedItemCount)/\(character.maximumEquippedItemCount(masterData: masterData))）")
         }
     }
 }

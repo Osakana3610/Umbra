@@ -260,10 +260,11 @@ final class GuildService {
 
         character.previousJobId = character.currentJobId
         character.currentJobId = targetJobId
+        character.portraitAssetID = targetJob.portraitAssetName(for: character.portraitGender)
 
         // A job change can invalidate max HP and equipment limits, so both are normalized before
         // the updated character is persisted back to the roster.
-        let unequippedStacks = trimEquippedItemsToMaximum(on: &character)
+        let unequippedStacks = trimEquippedItemsToMaximum(on: &character, masterData: masterData)
         clampCurrentHP(of: &character, masterData: masterData)
         try coreDataStore.saveCharacter(character)
 
@@ -815,7 +816,7 @@ final class GuildService {
         }
 
         let equippedCount = character.equippedItemStacks.reduce(into: 0) { $0 += $1.count }
-        let maximumCount = 3 + Int((Double(character.level) / 20).rounded())
+        let maximumCount = character.maximumEquippedItemCount(masterData: masterData)
         guard equippedCount < maximumCount else {
             throw GuildServiceError.equipLimitReached(maximumCount: maximumCount)
         }
@@ -924,12 +925,13 @@ final class GuildService {
     }
 
     private func trimEquippedItemsToMaximum(
-        on character: inout CharacterRecord
+        on character: inout CharacterRecord,
+        masterData: MasterData
     ) -> [CompositeItemStack] {
         character.equippedItemStacks = character.orderedEquippedItemStacks
 
         var removedStacks: [CompositeItemStack] = []
-        var overflowCount = character.equippedItemCount - character.maximumEquippedItemCount
+        var overflowCount = character.equippedItemCount - character.maximumEquippedItemCount(masterData: masterData)
 
         while overflowCount > 0,
               let lastIndex = character.equippedItemStacks.indices.last {
@@ -1013,8 +1015,8 @@ final class GuildService {
             return 0
         }
 
-        // Count runs whose start time fits before the reopened wall clock.
-        return ((elapsedSeconds - 1) / runDurationSeconds) + 1
+        // Only queue runs that fully finished while the app was backgrounded.
+        return elapsedSeconds / runDurationSeconds
     }
 
     private static func normalizedCharacterName(_ name: String) -> String {

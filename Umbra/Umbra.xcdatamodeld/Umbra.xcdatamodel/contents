@@ -13,6 +13,7 @@
         <attribute name="experience" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="level" optional="NO" attributeType="Integer 64" defaultValueString="1" usesScalarValueType="YES"/>
         <attribute name="name" optional="NO" attributeType="String"/>
+        <attribute name="portraitAssetID" optional="NO" attributeType="String" defaultValueString=""/>
         <attribute name="portraitVariant" optional="NO" attributeType="Integer 64" defaultValueString="3" usesScalarValueType="YES"/>
         <attribute name="previousJobId" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="raceId" optional="NO" attributeType="Integer 64" usesScalarValueType="YES"/>
@@ -62,7 +63,6 @@
         <attribute name="rewardsApplied" optional="NO" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="rootSeedSigned" optional="NO" attributeType="Integer 64" usesScalarValueType="YES"/>
         <attribute name="selectedDifficultyTitleId" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
-        <attribute name="titleDropMultiplier" optional="NO" attributeType="Double" defaultValueString="1"/>
         <attribute name="startedAt" optional="NO" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="targetFloorNumber" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="goldMultiplier" optional="NO" attributeType="Double" defaultValueString="1"/>
@@ -86,6 +86,7 @@
         <attribute name="formationIndex" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="level" optional="NO" attributeType="Integer 64" defaultValueString="1" usesScalarValueType="YES"/>
         <attribute name="name" optional="NO" attributeType="String" defaultValueString=""/>
+        <attribute name="portraitAssetID" optional="NO" attributeType="String" defaultValueString=""/>
         <attribute name="portraitVariant" optional="NO" attributeType="Integer 64" defaultValueString="3" usesScalarValueType="YES"/>
         <attribute name="previousJobId" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="raceId" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>

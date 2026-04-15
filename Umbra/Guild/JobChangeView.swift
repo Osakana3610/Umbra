@@ -199,7 +199,7 @@ private struct CharacterJobChangeSummaryView: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 16) {
-            Image(character.portraitAssetName)
+            Image(masterData.portraitAssetName(for: character))
                 .resizable()
                 .scaledToFill()
                 .frame(width: 88, height: 88)

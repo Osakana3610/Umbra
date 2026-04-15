@@ -32,8 +32,14 @@ struct RaceDetailView: View {
             }
 
             MasterDataSkillSectionView(
-                title: "種族スキル",
-                skillIDs: race.skillIds,
+                title: "パッシブスキル",
+                skillIDs: race.passiveSkillIds,
+                resolver: resolver
+            )
+
+            MasterDataSkillSectionView(
+                title: "レベルスキル",
+                skillIDs: race.levelSkillIds,
                 resolver: resolver
             )
         }

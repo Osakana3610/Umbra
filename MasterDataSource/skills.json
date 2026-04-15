@@ -4829,6 +4829,48 @@
         ]
     },
     {
+        "id": "unarmed_physical_attack_minus_30pct",
+        "name": "格闘物理攻撃-30%",
+        "description": "格闘時、物理攻撃の基本値が30%減少する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "physicalAttack",
+                "operation": "pctAdd",
+                "value": -0.3,
+                "condition": "unarmed"
+            }
+        ]
+    },
+    {
+        "id": "unarmed_physical_attack_minus_20pct",
+        "name": "格闘物理攻撃-20%",
+        "description": "格闘時、物理攻撃の基本値が20%減少する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "physicalAttack",
+                "operation": "pctAdd",
+                "value": -0.2,
+                "condition": "unarmed"
+            }
+        ]
+    },
+    {
+        "id": "unarmed_physical_attack_minus_10pct",
+        "name": "格闘物理攻撃-10%",
+        "description": "格闘時、物理攻撃の基本値が10%減少する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "physicalAttack",
+                "operation": "pctAdd",
+                "value": -0.1,
+                "condition": "unarmed"
+            }
+        ]
+    },
+    {
         "id": "unarmed_physical_attack_plus_10pct",
         "name": "格闘物理攻撃+10%",
         "description": "格闘時、物理攻撃の基本値が10%増加する。固定値加算の後で計算される。",
@@ -5983,15 +6025,15 @@
         ]
     },
     {
-        "id": "fire_power_plus_1pct",
-        "name": "炎威力+1%",
-        "description": "炎の威力が1%上昇する。",
+        "id": "fire_power_minus_30pct",
+        "name": "炎威力-30%",
+        "description": "炎の威力が30%減少する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "spellDamageMultiplier",
                 "operation": "pctAdd",
-                "value": 0.01,
+                "value": -0.3,
                 "spellIds": [
                     "fire"
                 ]
@@ -5999,15 +6041,15 @@
         ]
     },
     {
-        "id": "fire_power_plus_2pct",
-        "name": "炎威力+2%",
-        "description": "炎の威力が2%上昇する。",
+        "id": "fire_power_minus_20pct",
+        "name": "炎威力-20%",
+        "description": "炎の威力が20%減少する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "spellDamageMultiplier",
                 "operation": "pctAdd",
-                "value": 0.02,
+                "value": -0.2,
                 "spellIds": [
                     "fire"
                 ]
@@ -6015,111 +6057,15 @@
         ]
     },
     {
-        "id": "fire_power_plus_3pct",
-        "name": "炎威力+3%",
-        "description": "炎の威力が3%上昇する。",
+        "id": "fire_power_minus_10pct",
+        "name": "炎威力-10%",
+        "description": "炎の威力が10%減少する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "spellDamageMultiplier",
                 "operation": "pctAdd",
-                "value": 0.03,
-                "spellIds": [
-                    "fire"
-                ]
-            }
-        ]
-    },
-    {
-        "id": "fire_power_plus_4pct",
-        "name": "炎威力+4%",
-        "description": "炎の威力が4%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "spellDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.04,
-                "spellIds": [
-                    "fire"
-                ]
-            }
-        ]
-    },
-    {
-        "id": "fire_power_plus_5pct",
-        "name": "炎威力+5%",
-        "description": "炎の威力が5%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "spellDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.05,
-                "spellIds": [
-                    "fire"
-                ]
-            }
-        ]
-    },
-    {
-        "id": "fire_power_plus_6pct",
-        "name": "炎威力+6%",
-        "description": "炎の威力が6%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "spellDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.06,
-                "spellIds": [
-                    "fire"
-                ]
-            }
-        ]
-    },
-    {
-        "id": "fire_power_plus_7pct",
-        "name": "炎威力+7%",
-        "description": "炎の威力が7%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "spellDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.07,
-                "spellIds": [
-                    "fire"
-                ]
-            }
-        ]
-    },
-    {
-        "id": "fire_power_plus_8pct",
-        "name": "炎威力+8%",
-        "description": "炎の威力が8%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "spellDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.08,
-                "spellIds": [
-                    "fire"
-                ]
-            }
-        ]
-    },
-    {
-        "id": "fire_power_plus_9pct",
-        "name": "炎威力+9%",
-        "description": "炎の威力が9%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "spellDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.09,
+                "value": -0.1,
                 "spellIds": [
                     "fire"
                 ]
@@ -6143,15 +6089,15 @@
         ]
     },
     {
-        "id": "fire_power_plus_11pct",
-        "name": "炎威力+11%",
-        "description": "炎の威力が11%上昇する。",
+        "id": "fire_power_plus_20pct",
+        "name": "炎威力+20%",
+        "description": "炎の威力が20%上昇する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "spellDamageMultiplier",
                 "operation": "pctAdd",
-                "value": 0.11,
+                "value": 0.2,
                 "spellIds": [
                     "fire"
                 ]
@@ -6159,15 +6105,15 @@
         ]
     },
     {
-        "id": "fire_power_plus_12pct",
-        "name": "炎威力+12%",
-        "description": "炎の威力が12%上昇する。",
+        "id": "fire_power_plus_30pct",
+        "name": "炎威力+30%",
+        "description": "炎の威力が30%上昇する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "spellDamageMultiplier",
                 "operation": "pctAdd",
-                "value": 0.12,
+                "value": 0.3,
                 "spellIds": [
                     "fire"
                 ]
@@ -6175,15 +6121,15 @@
         ]
     },
     {
-        "id": "fire_power_plus_13pct",
-        "name": "炎威力+13%",
-        "description": "炎の威力が13%上昇する。",
+        "id": "fire_power_plus_40pct",
+        "name": "炎威力+40%",
+        "description": "炎の威力が40%上昇する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "spellDamageMultiplier",
                 "operation": "pctAdd",
-                "value": 0.13,
+                "value": 0.4,
                 "spellIds": [
                     "fire"
                 ]
@@ -6191,15 +6137,111 @@
         ]
     },
     {
-        "id": "ice_power_plus_1pct",
-        "name": "氷威力+1%",
-        "description": "氷の威力が1%上昇する。",
+        "id": "fire_power_plus_50pct",
+        "name": "炎威力+50%",
+        "description": "炎の威力が50%上昇する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "spellDamageMultiplier",
                 "operation": "pctAdd",
-                "value": 0.01,
+                "value": 0.5,
+                "spellIds": [
+                    "fire"
+                ]
+            }
+        ]
+    },
+    {
+        "id": "fire_power_plus_60pct",
+        "name": "炎威力+60%",
+        "description": "炎の威力が60%上昇する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "spellDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.6,
+                "spellIds": [
+                    "fire"
+                ]
+            }
+        ]
+    },
+    {
+        "id": "fire_power_plus_70pct",
+        "name": "炎威力+70%",
+        "description": "炎の威力が70%上昇する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "spellDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.7,
+                "spellIds": [
+                    "fire"
+                ]
+            }
+        ]
+    },
+    {
+        "id": "fire_power_plus_80pct",
+        "name": "炎威力+80%",
+        "description": "炎の威力が80%上昇する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "spellDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.8,
+                "spellIds": [
+                    "fire"
+                ]
+            }
+        ]
+    },
+    {
+        "id": "fire_power_plus_90pct",
+        "name": "炎威力+90%",
+        "description": "炎の威力が90%上昇する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "spellDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.9,
+                "spellIds": [
+                    "fire"
+                ]
+            }
+        ]
+    },
+    {
+        "id": "fire_power_plus_100pct",
+        "name": "炎威力+100%",
+        "description": "炎の威力が100%上昇する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "spellDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 1.0,
+                "spellIds": [
+                    "fire"
+                ]
+            }
+        ]
+    },
+    {
+        "id": "ice_power_minus_30pct",
+        "name": "氷威力-30%",
+        "description": "氷の威力が30%減少する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "spellDamageMultiplier",
+                "operation": "pctAdd",
+                "value": -0.3,
                 "spellIds": [
                     "ice"
                 ]
@@ -6207,15 +6249,15 @@
         ]
     },
     {
-        "id": "ice_power_plus_2pct",
-        "name": "氷威力+2%",
-        "description": "氷の威力が2%上昇する。",
+        "id": "ice_power_minus_20pct",
+        "name": "氷威力-20%",
+        "description": "氷の威力が20%減少する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "spellDamageMultiplier",
                 "operation": "pctAdd",
-                "value": 0.02,
+                "value": -0.2,
                 "spellIds": [
                     "ice"
                 ]
@@ -6223,111 +6265,15 @@
         ]
     },
     {
-        "id": "ice_power_plus_3pct",
-        "name": "氷威力+3%",
-        "description": "氷の威力が3%上昇する。",
+        "id": "ice_power_minus_10pct",
+        "name": "氷威力-10%",
+        "description": "氷の威力が10%減少する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "spellDamageMultiplier",
                 "operation": "pctAdd",
-                "value": 0.03,
-                "spellIds": [
-                    "ice"
-                ]
-            }
-        ]
-    },
-    {
-        "id": "ice_power_plus_4pct",
-        "name": "氷威力+4%",
-        "description": "氷の威力が4%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "spellDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.04,
-                "spellIds": [
-                    "ice"
-                ]
-            }
-        ]
-    },
-    {
-        "id": "ice_power_plus_5pct",
-        "name": "氷威力+5%",
-        "description": "氷の威力が5%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "spellDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.05,
-                "spellIds": [
-                    "ice"
-                ]
-            }
-        ]
-    },
-    {
-        "id": "ice_power_plus_6pct",
-        "name": "氷威力+6%",
-        "description": "氷の威力が6%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "spellDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.06,
-                "spellIds": [
-                    "ice"
-                ]
-            }
-        ]
-    },
-    {
-        "id": "ice_power_plus_7pct",
-        "name": "氷威力+7%",
-        "description": "氷の威力が7%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "spellDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.07,
-                "spellIds": [
-                    "ice"
-                ]
-            }
-        ]
-    },
-    {
-        "id": "ice_power_plus_8pct",
-        "name": "氷威力+8%",
-        "description": "氷の威力が8%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "spellDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.08,
-                "spellIds": [
-                    "ice"
-                ]
-            }
-        ]
-    },
-    {
-        "id": "ice_power_plus_9pct",
-        "name": "氷威力+9%",
-        "description": "氷の威力が9%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "spellDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.09,
+                "value": -0.1,
                 "spellIds": [
                     "ice"
                 ]
@@ -6351,15 +6297,15 @@
         ]
     },
     {
-        "id": "ice_power_plus_11pct",
-        "name": "氷威力+11%",
-        "description": "氷の威力が11%上昇する。",
+        "id": "ice_power_plus_20pct",
+        "name": "氷威力+20%",
+        "description": "氷の威力が20%上昇する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "spellDamageMultiplier",
                 "operation": "pctAdd",
-                "value": 0.11,
+                "value": 0.2,
                 "spellIds": [
                     "ice"
                 ]
@@ -6367,15 +6313,15 @@
         ]
     },
     {
-        "id": "ice_power_plus_12pct",
-        "name": "氷威力+12%",
-        "description": "氷の威力が12%上昇する。",
+        "id": "ice_power_plus_30pct",
+        "name": "氷威力+30%",
+        "description": "氷の威力が30%上昇する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "spellDamageMultiplier",
                 "operation": "pctAdd",
-                "value": 0.12,
+                "value": 0.3,
                 "spellIds": [
                     "ice"
                 ]
@@ -6383,15 +6329,15 @@
         ]
     },
     {
-        "id": "ice_power_plus_13pct",
-        "name": "氷威力+13%",
-        "description": "氷の威力が13%上昇する。",
+        "id": "ice_power_plus_40pct",
+        "name": "氷威力+40%",
+        "description": "氷の威力が40%上昇する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "spellDamageMultiplier",
                 "operation": "pctAdd",
-                "value": 0.13,
+                "value": 0.4,
                 "spellIds": [
                     "ice"
                 ]
@@ -6399,15 +6345,111 @@
         ]
     },
     {
-        "id": "lightning_power_plus_1pct",
-        "name": "電撃威力+1%",
-        "description": "電撃の威力が1%上昇する。",
+        "id": "ice_power_plus_50pct",
+        "name": "氷威力+50%",
+        "description": "氷の威力が50%上昇する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "spellDamageMultiplier",
                 "operation": "pctAdd",
-                "value": 0.01,
+                "value": 0.5,
+                "spellIds": [
+                    "ice"
+                ]
+            }
+        ]
+    },
+    {
+        "id": "ice_power_plus_60pct",
+        "name": "氷威力+60%",
+        "description": "氷の威力が60%上昇する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "spellDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.6,
+                "spellIds": [
+                    "ice"
+                ]
+            }
+        ]
+    },
+    {
+        "id": "ice_power_plus_70pct",
+        "name": "氷威力+70%",
+        "description": "氷の威力が70%上昇する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "spellDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.7,
+                "spellIds": [
+                    "ice"
+                ]
+            }
+        ]
+    },
+    {
+        "id": "ice_power_plus_80pct",
+        "name": "氷威力+80%",
+        "description": "氷の威力が80%上昇する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "spellDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.8,
+                "spellIds": [
+                    "ice"
+                ]
+            }
+        ]
+    },
+    {
+        "id": "ice_power_plus_90pct",
+        "name": "氷威力+90%",
+        "description": "氷の威力が90%上昇する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "spellDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.9,
+                "spellIds": [
+                    "ice"
+                ]
+            }
+        ]
+    },
+    {
+        "id": "ice_power_plus_100pct",
+        "name": "氷威力+100%",
+        "description": "氷の威力が100%上昇する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "spellDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 1.0,
+                "spellIds": [
+                    "ice"
+                ]
+            }
+        ]
+    },
+    {
+        "id": "lightning_power_minus_30pct",
+        "name": "電撃威力-30%",
+        "description": "電撃の威力が30%減少する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "spellDamageMultiplier",
+                "operation": "pctAdd",
+                "value": -0.3,
                 "spellIds": [
                     "lightning"
                 ]
@@ -6415,15 +6457,15 @@
         ]
     },
     {
-        "id": "lightning_power_plus_2pct",
-        "name": "電撃威力+2%",
-        "description": "電撃の威力が2%上昇する。",
+        "id": "lightning_power_minus_20pct",
+        "name": "電撃威力-20%",
+        "description": "電撃の威力が20%減少する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "spellDamageMultiplier",
                 "operation": "pctAdd",
-                "value": 0.02,
+                "value": -0.2,
                 "spellIds": [
                     "lightning"
                 ]
@@ -6431,111 +6473,15 @@
         ]
     },
     {
-        "id": "lightning_power_plus_3pct",
-        "name": "電撃威力+3%",
-        "description": "電撃の威力が3%上昇する。",
+        "id": "lightning_power_minus_10pct",
+        "name": "電撃威力-10%",
+        "description": "電撃の威力が10%減少する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "spellDamageMultiplier",
                 "operation": "pctAdd",
-                "value": 0.03,
-                "spellIds": [
-                    "lightning"
-                ]
-            }
-        ]
-    },
-    {
-        "id": "lightning_power_plus_4pct",
-        "name": "電撃威力+4%",
-        "description": "電撃の威力が4%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "spellDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.04,
-                "spellIds": [
-                    "lightning"
-                ]
-            }
-        ]
-    },
-    {
-        "id": "lightning_power_plus_5pct",
-        "name": "電撃威力+5%",
-        "description": "電撃の威力が5%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "spellDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.05,
-                "spellIds": [
-                    "lightning"
-                ]
-            }
-        ]
-    },
-    {
-        "id": "lightning_power_plus_6pct",
-        "name": "電撃威力+6%",
-        "description": "電撃の威力が6%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "spellDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.06,
-                "spellIds": [
-                    "lightning"
-                ]
-            }
-        ]
-    },
-    {
-        "id": "lightning_power_plus_7pct",
-        "name": "電撃威力+7%",
-        "description": "電撃の威力が7%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "spellDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.07,
-                "spellIds": [
-                    "lightning"
-                ]
-            }
-        ]
-    },
-    {
-        "id": "lightning_power_plus_8pct",
-        "name": "電撃威力+8%",
-        "description": "電撃の威力が8%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "spellDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.08,
-                "spellIds": [
-                    "lightning"
-                ]
-            }
-        ]
-    },
-    {
-        "id": "lightning_power_plus_9pct",
-        "name": "電撃威力+9%",
-        "description": "電撃の威力が9%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "spellDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.09,
+                "value": -0.1,
                 "spellIds": [
                     "lightning"
                 ]
@@ -6559,15 +6505,15 @@
         ]
     },
     {
-        "id": "lightning_power_plus_11pct",
-        "name": "電撃威力+11%",
-        "description": "電撃の威力が11%上昇する。",
+        "id": "lightning_power_plus_20pct",
+        "name": "電撃威力+20%",
+        "description": "電撃の威力が20%上昇する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "spellDamageMultiplier",
                 "operation": "pctAdd",
-                "value": 0.11,
+                "value": 0.2,
                 "spellIds": [
                     "lightning"
                 ]
@@ -6575,15 +6521,15 @@
         ]
     },
     {
-        "id": "lightning_power_plus_12pct",
-        "name": "電撃威力+12%",
-        "description": "電撃の威力が12%上昇する。",
+        "id": "lightning_power_plus_30pct",
+        "name": "電撃威力+30%",
+        "description": "電撃の威力が30%上昇する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "spellDamageMultiplier",
                 "operation": "pctAdd",
-                "value": 0.12,
+                "value": 0.3,
                 "spellIds": [
                     "lightning"
                 ]
@@ -6591,15 +6537,15 @@
         ]
     },
     {
-        "id": "lightning_power_plus_13pct",
-        "name": "電撃威力+13%",
-        "description": "電撃の威力が13%上昇する。",
+        "id": "lightning_power_plus_40pct",
+        "name": "電撃威力+40%",
+        "description": "電撃の威力が40%上昇する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "spellDamageMultiplier",
                 "operation": "pctAdd",
-                "value": 0.13,
+                "value": 0.4,
                 "spellIds": [
                     "lightning"
                 ]
@@ -6607,15 +6553,111 @@
         ]
     },
     {
-        "id": "nuclear_power_plus_1pct",
-        "name": "核攻撃威力+1%",
-        "description": "核攻撃の威力が1%上昇する。",
+        "id": "lightning_power_plus_50pct",
+        "name": "電撃威力+50%",
+        "description": "電撃の威力が50%上昇する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "spellDamageMultiplier",
                 "operation": "pctAdd",
-                "value": 0.01,
+                "value": 0.5,
+                "spellIds": [
+                    "lightning"
+                ]
+            }
+        ]
+    },
+    {
+        "id": "lightning_power_plus_60pct",
+        "name": "電撃威力+60%",
+        "description": "電撃の威力が60%上昇する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "spellDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.6,
+                "spellIds": [
+                    "lightning"
+                ]
+            }
+        ]
+    },
+    {
+        "id": "lightning_power_plus_70pct",
+        "name": "電撃威力+70%",
+        "description": "電撃の威力が70%上昇する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "spellDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.7,
+                "spellIds": [
+                    "lightning"
+                ]
+            }
+        ]
+    },
+    {
+        "id": "lightning_power_plus_80pct",
+        "name": "電撃威力+80%",
+        "description": "電撃の威力が80%上昇する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "spellDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.8,
+                "spellIds": [
+                    "lightning"
+                ]
+            }
+        ]
+    },
+    {
+        "id": "lightning_power_plus_90pct",
+        "name": "電撃威力+90%",
+        "description": "電撃の威力が90%上昇する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "spellDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.9,
+                "spellIds": [
+                    "lightning"
+                ]
+            }
+        ]
+    },
+    {
+        "id": "lightning_power_plus_100pct",
+        "name": "電撃威力+100%",
+        "description": "電撃の威力が100%上昇する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "spellDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 1.0,
+                "spellIds": [
+                    "lightning"
+                ]
+            }
+        ]
+    },
+    {
+        "id": "nuclear_power_minus_30pct",
+        "name": "核攻撃威力-30%",
+        "description": "核攻撃の威力が30%減少する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "spellDamageMultiplier",
+                "operation": "pctAdd",
+                "value": -0.3,
                 "spellIds": [
                     "nuclear"
                 ]
@@ -6623,15 +6665,15 @@
         ]
     },
     {
-        "id": "nuclear_power_plus_2pct",
-        "name": "核攻撃威力+2%",
-        "description": "核攻撃の威力が2%上昇する。",
+        "id": "nuclear_power_minus_20pct",
+        "name": "核攻撃威力-20%",
+        "description": "核攻撃の威力が20%減少する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "spellDamageMultiplier",
                 "operation": "pctAdd",
-                "value": 0.02,
+                "value": -0.2,
                 "spellIds": [
                     "nuclear"
                 ]
@@ -6639,111 +6681,15 @@
         ]
     },
     {
-        "id": "nuclear_power_plus_3pct",
-        "name": "核攻撃威力+3%",
-        "description": "核攻撃の威力が3%上昇する。",
+        "id": "nuclear_power_minus_10pct",
+        "name": "核攻撃威力-10%",
+        "description": "核攻撃の威力が10%減少する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "spellDamageMultiplier",
                 "operation": "pctAdd",
-                "value": 0.03,
-                "spellIds": [
-                    "nuclear"
-                ]
-            }
-        ]
-    },
-    {
-        "id": "nuclear_power_plus_4pct",
-        "name": "核攻撃威力+4%",
-        "description": "核攻撃の威力が4%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "spellDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.04,
-                "spellIds": [
-                    "nuclear"
-                ]
-            }
-        ]
-    },
-    {
-        "id": "nuclear_power_plus_5pct",
-        "name": "核攻撃威力+5%",
-        "description": "核攻撃の威力が5%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "spellDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.05,
-                "spellIds": [
-                    "nuclear"
-                ]
-            }
-        ]
-    },
-    {
-        "id": "nuclear_power_plus_6pct",
-        "name": "核攻撃威力+6%",
-        "description": "核攻撃の威力が6%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "spellDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.06,
-                "spellIds": [
-                    "nuclear"
-                ]
-            }
-        ]
-    },
-    {
-        "id": "nuclear_power_plus_7pct",
-        "name": "核攻撃威力+7%",
-        "description": "核攻撃の威力が7%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "spellDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.07,
-                "spellIds": [
-                    "nuclear"
-                ]
-            }
-        ]
-    },
-    {
-        "id": "nuclear_power_plus_8pct",
-        "name": "核攻撃威力+8%",
-        "description": "核攻撃の威力が8%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "spellDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.08,
-                "spellIds": [
-                    "nuclear"
-                ]
-            }
-        ]
-    },
-    {
-        "id": "nuclear_power_plus_9pct",
-        "name": "核攻撃威力+9%",
-        "description": "核攻撃の威力が9%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "spellDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.09,
+                "value": -0.1,
                 "spellIds": [
                     "nuclear"
                 ]
@@ -6767,15 +6713,15 @@
         ]
     },
     {
-        "id": "nuclear_power_plus_11pct",
-        "name": "核攻撃威力+11%",
-        "description": "核攻撃の威力が11%上昇する。",
+        "id": "nuclear_power_plus_20pct",
+        "name": "核攻撃威力+20%",
+        "description": "核攻撃の威力が20%上昇する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "spellDamageMultiplier",
                 "operation": "pctAdd",
-                "value": 0.11,
+                "value": 0.2,
                 "spellIds": [
                     "nuclear"
                 ]
@@ -6783,15 +6729,15 @@
         ]
     },
     {
-        "id": "nuclear_power_plus_12pct",
-        "name": "核攻撃威力+12%",
-        "description": "核攻撃の威力が12%上昇する。",
+        "id": "nuclear_power_plus_30pct",
+        "name": "核攻撃威力+30%",
+        "description": "核攻撃の威力が30%上昇する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "spellDamageMultiplier",
                 "operation": "pctAdd",
-                "value": 0.12,
+                "value": 0.3,
                 "spellIds": [
                     "nuclear"
                 ]
@@ -6799,15 +6745,111 @@
         ]
     },
     {
-        "id": "nuclear_power_plus_13pct",
-        "name": "核攻撃威力+13%",
-        "description": "核攻撃の威力が13%上昇する。",
+        "id": "nuclear_power_plus_40pct",
+        "name": "核攻撃威力+40%",
+        "description": "核攻撃の威力が40%上昇する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "spellDamageMultiplier",
                 "operation": "pctAdd",
-                "value": 0.13,
+                "value": 0.4,
+                "spellIds": [
+                    "nuclear"
+                ]
+            }
+        ]
+    },
+    {
+        "id": "nuclear_power_plus_50pct",
+        "name": "核攻撃威力+50%",
+        "description": "核攻撃の威力が50%上昇する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "spellDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.5,
+                "spellIds": [
+                    "nuclear"
+                ]
+            }
+        ]
+    },
+    {
+        "id": "nuclear_power_plus_60pct",
+        "name": "核攻撃威力+60%",
+        "description": "核攻撃の威力が60%上昇する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "spellDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.6,
+                "spellIds": [
+                    "nuclear"
+                ]
+            }
+        ]
+    },
+    {
+        "id": "nuclear_power_plus_70pct",
+        "name": "核攻撃威力+70%",
+        "description": "核攻撃の威力が70%上昇する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "spellDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.7,
+                "spellIds": [
+                    "nuclear"
+                ]
+            }
+        ]
+    },
+    {
+        "id": "nuclear_power_plus_80pct",
+        "name": "核攻撃威力+80%",
+        "description": "核攻撃の威力が80%上昇する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "spellDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.8,
+                "spellIds": [
+                    "nuclear"
+                ]
+            }
+        ]
+    },
+    {
+        "id": "nuclear_power_plus_90pct",
+        "name": "核攻撃威力+90%",
+        "description": "核攻撃の威力が90%上昇する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "spellDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.9,
+                "spellIds": [
+                    "nuclear"
+                ]
+            }
+        ]
+    },
+    {
+        "id": "nuclear_power_plus_100pct",
+        "name": "核攻撃威力+100%",
+        "description": "核攻撃の威力が100%上昇する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "spellDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 1.0,
                 "spellIds": [
                     "nuclear"
                 ]
@@ -6868,170 +6910,170 @@
     },
     {
         "id": "physicalResistanceMultiplier_plus_13pct",
-        "name": "物理耐性+13%",
+        "name": "物理ダメージ軽減13%",
         "description": "受ける物理ダメージが13%減少する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "physicalResistanceMultiplier",
-                "operation": "mul",
-                "value": 0.87
+                "operation": "pctAdd",
+                "value": -0.13
             }
         ]
     },
     {
         "id": "physicalResistanceMultiplier_plus_12pct",
-        "name": "物理耐性+12%",
+        "name": "物理ダメージ軽減12%",
         "description": "受ける物理ダメージが12%減少する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "physicalResistanceMultiplier",
-                "operation": "mul",
-                "value": 0.88
+                "operation": "pctAdd",
+                "value": -0.12
             }
         ]
     },
     {
         "id": "physicalResistanceMultiplier_plus_11pct",
-        "name": "物理耐性+11%",
+        "name": "物理ダメージ軽減11%",
         "description": "受ける物理ダメージが11%減少する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "physicalResistanceMultiplier",
-                "operation": "mul",
-                "value": 0.89
+                "operation": "pctAdd",
+                "value": -0.11
             }
         ]
     },
     {
         "id": "physicalResistanceMultiplier_plus_10pct",
-        "name": "物理耐性+10%",
+        "name": "物理ダメージ軽減10%",
         "description": "受ける物理ダメージが10%減少する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "physicalResistanceMultiplier",
-                "operation": "mul",
-                "value": 0.9
+                "operation": "pctAdd",
+                "value": -0.1
             }
         ]
     },
     {
         "id": "physicalResistanceMultiplier_plus_9pct",
-        "name": "物理耐性+9%",
+        "name": "物理ダメージ軽減9%",
         "description": "受ける物理ダメージが9%減少する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "physicalResistanceMultiplier",
-                "operation": "mul",
-                "value": 0.91
+                "operation": "pctAdd",
+                "value": -0.09
             }
         ]
     },
     {
         "id": "physicalResistanceMultiplier_plus_8pct",
-        "name": "物理耐性+8%",
+        "name": "物理ダメージ軽減8%",
         "description": "受ける物理ダメージが8%減少する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "physicalResistanceMultiplier",
-                "operation": "mul",
-                "value": 0.92
+                "operation": "pctAdd",
+                "value": -0.08
             }
         ]
     },
     {
         "id": "physicalResistanceMultiplier_plus_7pct",
-        "name": "物理耐性+7%",
+        "name": "物理ダメージ軽減7%",
         "description": "受ける物理ダメージが7%減少する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "physicalResistanceMultiplier",
-                "operation": "mul",
-                "value": 0.93
+                "operation": "pctAdd",
+                "value": -0.07
             }
         ]
     },
     {
         "id": "physicalResistanceMultiplier_plus_6pct",
-        "name": "物理耐性+6%",
+        "name": "物理ダメージ軽減6%",
         "description": "受ける物理ダメージが6%減少する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "physicalResistanceMultiplier",
-                "operation": "mul",
-                "value": 0.94
+                "operation": "pctAdd",
+                "value": -0.06
             }
         ]
     },
     {
         "id": "physicalResistanceMultiplier_plus_5pct",
-        "name": "物理耐性+5%",
+        "name": "物理ダメージ軽減5%",
         "description": "受ける物理ダメージが5%減少する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "physicalResistanceMultiplier",
-                "operation": "mul",
-                "value": 0.95
+                "operation": "pctAdd",
+                "value": -0.05
             }
         ]
     },
     {
         "id": "physicalResistanceMultiplier_plus_4pct",
-        "name": "物理耐性+4%",
+        "name": "物理ダメージ軽減4%",
         "description": "受ける物理ダメージが4%減少する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "physicalResistanceMultiplier",
-                "operation": "mul",
-                "value": 0.96
+                "operation": "pctAdd",
+                "value": -0.04
             }
         ]
     },
     {
         "id": "physicalResistanceMultiplier_plus_3pct",
-        "name": "物理耐性+3%",
+        "name": "物理ダメージ軽減3%",
         "description": "受ける物理ダメージが3%減少する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "physicalResistanceMultiplier",
-                "operation": "mul",
-                "value": 0.97
+                "operation": "pctAdd",
+                "value": -0.03
             }
         ]
     },
     {
         "id": "physicalResistanceMultiplier_plus_2pct",
-        "name": "物理耐性+2%",
+        "name": "物理ダメージ軽減2%",
         "description": "受ける物理ダメージが2%減少する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "physicalResistanceMultiplier",
-                "operation": "mul",
-                "value": 0.98
+                "operation": "pctAdd",
+                "value": -0.02
             }
         ]
     },
     {
         "id": "physicalResistanceMultiplier_plus_1pct",
-        "name": "物理耐性+1%",
+        "name": "物理ダメージ軽減1%",
         "description": "受ける物理ダメージが1%減少する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "physicalResistanceMultiplier",
-                "operation": "mul",
-                "value": 0.99
+                "operation": "pctAdd",
+                "value": -0.01
             }
         ]
     },
@@ -7089,170 +7131,170 @@
     },
     {
         "id": "magicResistanceMultiplier_plus_13pct",
-        "name": "魔法耐性+13%",
+        "name": "魔法ダメージ軽減13%",
         "description": "受ける魔法ダメージが13%減少する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "magicResistanceMultiplier",
-                "operation": "mul",
-                "value": 0.87
+                "operation": "pctAdd",
+                "value": -0.13
             }
         ]
     },
     {
         "id": "magicResistanceMultiplier_plus_12pct",
-        "name": "魔法耐性+12%",
+        "name": "魔法ダメージ軽減12%",
         "description": "受ける魔法ダメージが12%減少する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "magicResistanceMultiplier",
-                "operation": "mul",
-                "value": 0.88
+                "operation": "pctAdd",
+                "value": -0.12
             }
         ]
     },
     {
         "id": "magicResistanceMultiplier_plus_11pct",
-        "name": "魔法耐性+11%",
+        "name": "魔法ダメージ軽減11%",
         "description": "受ける魔法ダメージが11%減少する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "magicResistanceMultiplier",
-                "operation": "mul",
-                "value": 0.89
+                "operation": "pctAdd",
+                "value": -0.11
             }
         ]
     },
     {
         "id": "magicResistanceMultiplier_plus_10pct",
-        "name": "魔法耐性+10%",
+        "name": "魔法ダメージ軽減10%",
         "description": "受ける魔法ダメージが10%減少する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "magicResistanceMultiplier",
-                "operation": "mul",
-                "value": 0.9
+                "operation": "pctAdd",
+                "value": -0.1
             }
         ]
     },
     {
         "id": "magicResistanceMultiplier_plus_9pct",
-        "name": "魔法耐性+9%",
+        "name": "魔法ダメージ軽減9%",
         "description": "受ける魔法ダメージが9%減少する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "magicResistanceMultiplier",
-                "operation": "mul",
-                "value": 0.91
+                "operation": "pctAdd",
+                "value": -0.09
             }
         ]
     },
     {
         "id": "magicResistanceMultiplier_plus_8pct",
-        "name": "魔法耐性+8%",
+        "name": "魔法ダメージ軽減8%",
         "description": "受ける魔法ダメージが8%減少する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "magicResistanceMultiplier",
-                "operation": "mul",
-                "value": 0.92
+                "operation": "pctAdd",
+                "value": -0.08
             }
         ]
     },
     {
         "id": "magicResistanceMultiplier_plus_7pct",
-        "name": "魔法耐性+7%",
+        "name": "魔法ダメージ軽減7%",
         "description": "受ける魔法ダメージが7%減少する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "magicResistanceMultiplier",
-                "operation": "mul",
-                "value": 0.93
+                "operation": "pctAdd",
+                "value": -0.07
             }
         ]
     },
     {
         "id": "magicResistanceMultiplier_plus_6pct",
-        "name": "魔法耐性+6%",
+        "name": "魔法ダメージ軽減6%",
         "description": "受ける魔法ダメージが6%減少する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "magicResistanceMultiplier",
-                "operation": "mul",
-                "value": 0.94
+                "operation": "pctAdd",
+                "value": -0.06
             }
         ]
     },
     {
         "id": "magicResistanceMultiplier_plus_5pct",
-        "name": "魔法耐性+5%",
+        "name": "魔法ダメージ軽減5%",
         "description": "受ける魔法ダメージが5%減少する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "magicResistanceMultiplier",
-                "operation": "mul",
-                "value": 0.95
+                "operation": "pctAdd",
+                "value": -0.05
             }
         ]
     },
     {
         "id": "magicResistanceMultiplier_plus_4pct",
-        "name": "魔法耐性+4%",
+        "name": "魔法ダメージ軽減4%",
         "description": "受ける魔法ダメージが4%減少する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "magicResistanceMultiplier",
-                "operation": "mul",
-                "value": 0.96
+                "operation": "pctAdd",
+                "value": -0.04
             }
         ]
     },
     {
         "id": "magicResistanceMultiplier_plus_3pct",
-        "name": "魔法耐性+3%",
+        "name": "魔法ダメージ軽減3%",
         "description": "受ける魔法ダメージが3%減少する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "magicResistanceMultiplier",
-                "operation": "mul",
-                "value": 0.97
+                "operation": "pctAdd",
+                "value": -0.03
             }
         ]
     },
     {
         "id": "magicResistanceMultiplier_plus_2pct",
-        "name": "魔法耐性+2%",
+        "name": "魔法ダメージ軽減2%",
         "description": "受ける魔法ダメージが2%減少する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "magicResistanceMultiplier",
-                "operation": "mul",
-                "value": 0.98
+                "operation": "pctAdd",
+                "value": -0.02
             }
         ]
     },
     {
         "id": "magicResistanceMultiplier_plus_1pct",
-        "name": "魔法耐性+1%",
+        "name": "魔法ダメージ軽減1%",
         "description": "受ける魔法ダメージが1%減少する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "magicResistanceMultiplier",
-                "operation": "mul",
-                "value": 0.99
+                "operation": "pctAdd",
+                "value": -0.01
             }
         ]
     },
@@ -7310,170 +7352,170 @@
     },
     {
         "id": "breathResistanceMultiplier_plus_13pct",
-        "name": "ブレス耐性+13%",
+        "name": "ブレスダメージ軽減13%",
         "description": "受けるブレスダメージが13%減少する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "breathResistanceMultiplier",
-                "operation": "mul",
-                "value": 0.87
+                "operation": "pctAdd",
+                "value": -0.13
             }
         ]
     },
     {
         "id": "breathResistanceMultiplier_plus_12pct",
-        "name": "ブレス耐性+12%",
+        "name": "ブレスダメージ軽減12%",
         "description": "受けるブレスダメージが12%減少する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "breathResistanceMultiplier",
-                "operation": "mul",
-                "value": 0.88
+                "operation": "pctAdd",
+                "value": -0.12
             }
         ]
     },
     {
         "id": "breathResistanceMultiplier_plus_11pct",
-        "name": "ブレス耐性+11%",
+        "name": "ブレスダメージ軽減11%",
         "description": "受けるブレスダメージが11%減少する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "breathResistanceMultiplier",
-                "operation": "mul",
-                "value": 0.89
+                "operation": "pctAdd",
+                "value": -0.11
             }
         ]
     },
     {
         "id": "breathResistanceMultiplier_plus_10pct",
-        "name": "ブレス耐性+10%",
+        "name": "ブレスダメージ軽減10%",
         "description": "受けるブレスダメージが10%減少する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "breathResistanceMultiplier",
-                "operation": "mul",
-                "value": 0.9
+                "operation": "pctAdd",
+                "value": -0.1
             }
         ]
     },
     {
         "id": "breathResistanceMultiplier_plus_9pct",
-        "name": "ブレス耐性+9%",
+        "name": "ブレスダメージ軽減9%",
         "description": "受けるブレスダメージが9%減少する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "breathResistanceMultiplier",
-                "operation": "mul",
-                "value": 0.91
+                "operation": "pctAdd",
+                "value": -0.09
             }
         ]
     },
     {
         "id": "breathResistanceMultiplier_plus_8pct",
-        "name": "ブレス耐性+8%",
+        "name": "ブレスダメージ軽減8%",
         "description": "受けるブレスダメージが8%減少する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "breathResistanceMultiplier",
-                "operation": "mul",
-                "value": 0.92
+                "operation": "pctAdd",
+                "value": -0.08
             }
         ]
     },
     {
         "id": "breathResistanceMultiplier_plus_7pct",
-        "name": "ブレス耐性+7%",
+        "name": "ブレスダメージ軽減7%",
         "description": "受けるブレスダメージが7%減少する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "breathResistanceMultiplier",
-                "operation": "mul",
-                "value": 0.93
+                "operation": "pctAdd",
+                "value": -0.07
             }
         ]
     },
     {
         "id": "breathResistanceMultiplier_plus_6pct",
-        "name": "ブレス耐性+6%",
+        "name": "ブレスダメージ軽減6%",
         "description": "受けるブレスダメージが6%減少する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "breathResistanceMultiplier",
-                "operation": "mul",
-                "value": 0.94
+                "operation": "pctAdd",
+                "value": -0.06
             }
         ]
     },
     {
         "id": "breathResistanceMultiplier_plus_5pct",
-        "name": "ブレス耐性+5%",
+        "name": "ブレスダメージ軽減5%",
         "description": "受けるブレスダメージが5%減少する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "breathResistanceMultiplier",
-                "operation": "mul",
-                "value": 0.95
+                "operation": "pctAdd",
+                "value": -0.05
             }
         ]
     },
     {
         "id": "breathResistanceMultiplier_plus_4pct",
-        "name": "ブレス耐性+4%",
+        "name": "ブレスダメージ軽減4%",
         "description": "受けるブレスダメージが4%減少する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "breathResistanceMultiplier",
-                "operation": "mul",
-                "value": 0.96
+                "operation": "pctAdd",
+                "value": -0.04
             }
         ]
     },
     {
         "id": "breathResistanceMultiplier_plus_3pct",
-        "name": "ブレス耐性+3%",
+        "name": "ブレスダメージ軽減3%",
         "description": "受けるブレスダメージが3%減少する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "breathResistanceMultiplier",
-                "operation": "mul",
-                "value": 0.97
+                "operation": "pctAdd",
+                "value": -0.03
             }
         ]
     },
     {
         "id": "breathResistanceMultiplier_plus_2pct",
-        "name": "ブレス耐性+2%",
+        "name": "ブレスダメージ軽減2%",
         "description": "受けるブレスダメージが2%減少する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "breathResistanceMultiplier",
-                "operation": "mul",
-                "value": 0.98
+                "operation": "pctAdd",
+                "value": -0.02
             }
         ]
     },
     {
         "id": "breathResistanceMultiplier_plus_1pct",
-        "name": "ブレス耐性+1%",
+        "name": "ブレスダメージ軽減1%",
         "description": "受けるブレスダメージが1%減少する。",
         "effects": [
             {
                 "kind": "battleDerivedModifier",
                 "target": "breathResistanceMultiplier",
-                "operation": "mul",
-                "value": 0.99
+                "operation": "pctAdd",
+                "value": -0.01
             }
         ]
     },
@@ -7513,15 +7555,14 @@
         ]
     },
     {
-        "id": "support_magic_access",
-        "name": "強化魔法解放",
-        "description": "攻撃バフ、魔法バフを使用可能にする。",
+        "id": "magic_buff_access",
+        "name": "魔法バフ解放",
+        "description": "魔法バフを使用可能にする。",
         "effects": [
             {
                 "kind": "magicAccess",
                 "operation": "grant",
                 "spellIds": [
-                    "attack_buff",
                     "magic_buff"
                 ]
             }
@@ -7986,23 +8027,44 @@
         ]
     },
     {
+        "id": "fire_resistance_4_5",
+        "name": "炎耐性4/5",
+        "description": "受ける炎ダメージが4/5になる。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "magicResistanceMultiplier",
+                "operation": "mul",
+                "value": 0.8,
+                "spellIds": [
+                    "fire"
+                ]
+            }
+        ]
+    },
+    {
+        "id": "lightning_resistance_4_5",
+        "name": "電撃耐性4/5",
+        "description": "受ける電撃ダメージが4/5になる。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "magicResistanceMultiplier",
+                "operation": "mul",
+                "value": 0.8,
+                "spellIds": [
+                    "lightning"
+                ]
+            }
+        ]
+    },
+    {
         "id": "breath_access",
         "name": "ブレス解放",
         "description": "ブレスを使用可能にする。",
         "effects": [
             {
                 "kind": "breathAccess"
-            }
-        ]
-    },
-    {
-        "id": "rescue",
-        "name": "救出",
-        "description": "救出の発生資格を付与する。",
-        "effects": [
-            {
-                "kind": "interruptGrant",
-                "interruptKind": "rescue"
             }
         ]
     },
@@ -8036,6 +8098,1989 @@
             {
                 "kind": "interruptGrant",
                 "interruptKind": "pursuit"
+            }
+        ]
+    },
+    {
+        "id": "talent_maxHP",
+        "name": "[才能]最大HP",
+        "description": "最大HPの基礎戦闘能力値を2倍にする。",
+        "effects": [
+            {
+                "kind": "baseBattleStatMultiplier",
+                "target": "maxHP",
+                "operation": "mul",
+                "value": 2.0
+            }
+        ]
+    },
+    {
+        "id": "talent_physicalAttack",
+        "name": "[才能]物理攻撃",
+        "description": "物理攻撃の基礎戦闘能力値を2倍にする。",
+        "effects": [
+            {
+                "kind": "baseBattleStatMultiplier",
+                "target": "physicalAttack",
+                "operation": "mul",
+                "value": 2.0
+            }
+        ]
+    },
+    {
+        "id": "talent_physicalDefense",
+        "name": "[才能]物理防御",
+        "description": "物理防御の基礎戦闘能力値を2倍にする。",
+        "effects": [
+            {
+                "kind": "baseBattleStatMultiplier",
+                "target": "physicalDefense",
+                "operation": "mul",
+                "value": 2.0
+            }
+        ]
+    },
+    {
+        "id": "talent_magic",
+        "name": "[才能]魔法",
+        "description": "魔法の基礎戦闘能力値を2倍にする。",
+        "effects": [
+            {
+                "kind": "baseBattleStatMultiplier",
+                "target": "magic",
+                "operation": "mul",
+                "value": 2.0
+            }
+        ]
+    },
+    {
+        "id": "talent_magicDefense",
+        "name": "[才能]魔法防御",
+        "description": "魔法防御の基礎戦闘能力値を2倍にする。",
+        "effects": [
+            {
+                "kind": "baseBattleStatMultiplier",
+                "target": "magicDefense",
+                "operation": "mul",
+                "value": 2.0
+            }
+        ]
+    },
+    {
+        "id": "talent_healing",
+        "name": "[才能]回復",
+        "description": "回復の基礎戦闘能力値を2倍にする。",
+        "effects": [
+            {
+                "kind": "baseBattleStatMultiplier",
+                "target": "healing",
+                "operation": "mul",
+                "value": 2.0
+            }
+        ]
+    },
+    {
+        "id": "talent_accuracy",
+        "name": "[才能]命中",
+        "description": "命中の基礎戦闘能力値を2倍にする。",
+        "effects": [
+            {
+                "kind": "baseBattleStatMultiplier",
+                "target": "accuracy",
+                "operation": "mul",
+                "value": 2.0
+            }
+        ]
+    },
+    {
+        "id": "talent_evasion",
+        "name": "[才能]回避",
+        "description": "回避の基礎戦闘能力値を2倍にする。",
+        "effects": [
+            {
+                "kind": "baseBattleStatMultiplier",
+                "target": "evasion",
+                "operation": "mul",
+                "value": 2.0
+            }
+        ]
+    },
+    {
+        "id": "talent_attackCount",
+        "name": "[才能]攻撃回数",
+        "description": "攻撃回数の基礎戦闘能力値を2倍にする。",
+        "effects": [
+            {
+                "kind": "baseBattleStatMultiplier",
+                "target": "attackCount",
+                "operation": "mul",
+                "value": 2.0
+            }
+        ]
+    },
+    {
+        "id": "talent_criticalRate",
+        "name": "[才能]必殺率",
+        "description": "必殺率の基礎戦闘能力値を2倍にする。",
+        "effects": [
+            {
+                "kind": "baseBattleStatMultiplier",
+                "target": "criticalRate",
+                "operation": "mul",
+                "value": 2.0
+            }
+        ]
+    },
+    {
+        "id": "talent_breathPower",
+        "name": "[才能]ブレス威力",
+        "description": "ブレス威力の基礎戦闘能力値を2倍にする。",
+        "effects": [
+            {
+                "kind": "baseBattleStatMultiplier",
+                "target": "breathPower",
+                "operation": "mul",
+                "value": 2.0
+            }
+        ]
+    },
+    {
+        "id": "incompetence_maxHP",
+        "name": "[無能]最大HP",
+        "description": "最大HPの基礎戦闘能力値を0.5倍にする。",
+        "effects": [
+            {
+                "kind": "baseBattleStatMultiplier",
+                "target": "maxHP",
+                "operation": "mul",
+                "value": 0.5
+            }
+        ]
+    },
+    {
+        "id": "incompetence_physicalAttack",
+        "name": "[無能]物理攻撃",
+        "description": "物理攻撃の基礎戦闘能力値を0.5倍にする。",
+        "effects": [
+            {
+                "kind": "baseBattleStatMultiplier",
+                "target": "physicalAttack",
+                "operation": "mul",
+                "value": 0.5
+            }
+        ]
+    },
+    {
+        "id": "incompetence_physicalDefense",
+        "name": "[無能]物理防御",
+        "description": "物理防御の基礎戦闘能力値を0.5倍にする。",
+        "effects": [
+            {
+                "kind": "baseBattleStatMultiplier",
+                "target": "physicalDefense",
+                "operation": "mul",
+                "value": 0.5
+            }
+        ]
+    },
+    {
+        "id": "incompetence_magic",
+        "name": "[無能]魔法",
+        "description": "魔法の基礎戦闘能力値を0.5倍にする。",
+        "effects": [
+            {
+                "kind": "baseBattleStatMultiplier",
+                "target": "magic",
+                "operation": "mul",
+                "value": 0.5
+            }
+        ]
+    },
+    {
+        "id": "incompetence_magicDefense",
+        "name": "[無能]魔法防御",
+        "description": "魔法防御の基礎戦闘能力値を0.5倍にする。",
+        "effects": [
+            {
+                "kind": "baseBattleStatMultiplier",
+                "target": "magicDefense",
+                "operation": "mul",
+                "value": 0.5
+            }
+        ]
+    },
+    {
+        "id": "incompetence_healing",
+        "name": "[無能]回復",
+        "description": "回復の基礎戦闘能力値を0.5倍にする。",
+        "effects": [
+            {
+                "kind": "baseBattleStatMultiplier",
+                "target": "healing",
+                "operation": "mul",
+                "value": 0.5
+            }
+        ]
+    },
+    {
+        "id": "incompetence_accuracy",
+        "name": "[無能]命中",
+        "description": "命中の基礎戦闘能力値を0.5倍にする。",
+        "effects": [
+            {
+                "kind": "baseBattleStatMultiplier",
+                "target": "accuracy",
+                "operation": "mul",
+                "value": 0.5
+            }
+        ]
+    },
+    {
+        "id": "incompetence_evasion",
+        "name": "[無能]回避",
+        "description": "回避の基礎戦闘能力値を0.5倍にする。",
+        "effects": [
+            {
+                "kind": "baseBattleStatMultiplier",
+                "target": "evasion",
+                "operation": "mul",
+                "value": 0.5
+            }
+        ]
+    },
+    {
+        "id": "incompetence_attackCount",
+        "name": "[無能]攻撃回数",
+        "description": "攻撃回数の基礎戦闘能力値を0.5倍にする。",
+        "effects": [
+            {
+                "kind": "baseBattleStatMultiplier",
+                "target": "attackCount",
+                "operation": "mul",
+                "value": 0.5
+            }
+        ]
+    },
+    {
+        "id": "incompetence_criticalRate",
+        "name": "[無能]必殺率",
+        "description": "必殺率の基礎戦闘能力値を0.5倍にする。",
+        "effects": [
+            {
+                "kind": "baseBattleStatMultiplier",
+                "target": "criticalRate",
+                "operation": "mul",
+                "value": 0.5
+            }
+        ]
+    },
+    {
+        "id": "incompetence_breathPower",
+        "name": "[無能]ブレス威力",
+        "description": "ブレス威力の基礎戦闘能力値を0.5倍にする。",
+        "effects": [
+            {
+                "kind": "baseBattleStatMultiplier",
+                "target": "breathPower",
+                "operation": "mul",
+                "value": 0.5
+            }
+        ]
+    },
+    {
+        "id": "equipmentCapacity_minus_5",
+        "name": "装備可能数-5",
+        "description": "装備可能数を5減らす。",
+        "effects": [
+            {
+                "kind": "equipmentCapacityModifier",
+                "value": -5
+            }
+        ]
+    },
+    {
+        "id": "equipmentCapacity_minus_4",
+        "name": "装備可能数-4",
+        "description": "装備可能数を4減らす。",
+        "effects": [
+            {
+                "kind": "equipmentCapacityModifier",
+                "value": -4
+            }
+        ]
+    },
+    {
+        "id": "equipmentCapacity_minus_3",
+        "name": "装備可能数-3",
+        "description": "装備可能数を3減らす。",
+        "effects": [
+            {
+                "kind": "equipmentCapacityModifier",
+                "value": -3
+            }
+        ]
+    },
+    {
+        "id": "equipmentCapacity_minus_2",
+        "name": "装備可能数-2",
+        "description": "装備可能数を2減らす。",
+        "effects": [
+            {
+                "kind": "equipmentCapacityModifier",
+                "value": -2
+            }
+        ]
+    },
+    {
+        "id": "equipmentCapacity_minus_1",
+        "name": "装備可能数-1",
+        "description": "装備可能数を1減らす。",
+        "effects": [
+            {
+                "kind": "equipmentCapacityModifier",
+                "value": -1
+            }
+        ]
+    },
+    {
+        "id": "equipmentCapacity_plus_1",
+        "name": "装備可能数+1",
+        "description": "装備可能数を1増やす。",
+        "effects": [
+            {
+                "kind": "equipmentCapacityModifier",
+                "value": 1
+            }
+        ]
+    },
+    {
+        "id": "equipmentCapacity_plus_2",
+        "name": "装備可能数+2",
+        "description": "装備可能数を2増やす。",
+        "effects": [
+            {
+                "kind": "equipmentCapacityModifier",
+                "value": 2
+            }
+        ]
+    },
+    {
+        "id": "equipmentCapacity_plus_3",
+        "name": "装備可能数+3",
+        "description": "装備可能数を3増やす。",
+        "effects": [
+            {
+                "kind": "equipmentCapacityModifier",
+                "value": 3
+            }
+        ]
+    },
+    {
+        "id": "equipmentCapacity_plus_4",
+        "name": "装備可能数+4",
+        "description": "装備可能数を4増やす。",
+        "effects": [
+            {
+                "kind": "equipmentCapacityModifier",
+                "value": 4
+            }
+        ]
+    },
+    {
+        "id": "equipmentCapacity_plus_5",
+        "name": "装備可能数+5",
+        "description": "装備可能数を5増やす。",
+        "effects": [
+            {
+                "kind": "equipmentCapacityModifier",
+                "value": 5
+            }
+        ]
+    },
+    {
+        "id": "evasion_plus_20pct",
+        "name": "回避+20%",
+        "description": "回避の基本値が20%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "evasion",
+                "operation": "pctAdd",
+                "value": 0.2
+            }
+        ]
+    },
+    {
+        "id": "accuracy_plus_20pct",
+        "name": "命中+20%",
+        "description": "命中の基本値が20%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "accuracy",
+                "operation": "pctAdd",
+                "value": 0.2
+            }
+        ]
+    },
+    {
+        "id": "accuracy_minus_10pct",
+        "name": "命中-10%",
+        "description": "命中の基本値が10%減少する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "accuracy",
+                "operation": "pctAdd",
+                "value": -0.1
+            }
+        ]
+    },
+    {
+        "id": "criticalRate_plus_30",
+        "name": "必殺率+30",
+        "description": "必殺率の基本値が30増加する。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "criticalRate",
+                "operation": "flatAdd",
+                "value": 30
+            }
+        ]
+    },
+    {
+        "id": "criticalRate_plus_50",
+        "name": "必殺率+50",
+        "description": "必殺率の基本値が50増加する。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "criticalRate",
+                "operation": "flatAdd",
+                "value": 50
+            }
+        ]
+    },
+    {
+        "id": "attackCount_minus_1",
+        "name": "攻撃回数-1",
+        "description": "攻撃回数の基本値が1減少する。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "attackCount",
+                "operation": "flatAdd",
+                "value": -1
+            }
+        ]
+    },
+    {
+        "id": "meleeDamageMultiplier_plus_30pct",
+        "name": "近接威力+30%",
+        "description": "近接攻撃の威力が30%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "meleeDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.3
+            }
+        ]
+    },
+    {
+        "id": "meleeDamageMultiplier_plus_50pct",
+        "name": "近接威力+50%",
+        "description": "近接攻撃の威力が50%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "meleeDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.5
+            }
+        ]
+    },
+    {
+        "id": "rangedDamageMultiplier_plus_30pct",
+        "name": "遠距離威力+30%",
+        "description": "遠距離攻撃の威力が30%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "rangedDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.3
+            }
+        ]
+    },
+    {
+        "id": "physicalDamageMultiplier_plus_50pct",
+        "name": "物理威力+50%",
+        "description": "物理攻撃の威力が50%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "physicalDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.5
+            }
+        ]
+    },
+    {
+        "id": "criticalDamageMultiplier_plus_30pct",
+        "name": "必殺時威力+30%",
+        "description": "必殺時の威力が30%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "criticalDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.3
+            }
+        ]
+    },
+    {
+        "id": "criticalDamageMultiplier_plus_100pct",
+        "name": "必殺時威力+100%",
+        "description": "必殺時の威力が100%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "criticalDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 1.0
+            }
+        ]
+    },
+    {
+        "id": "physical_resistance_3_4",
+        "name": "物理耐性3/4",
+        "description": "受ける物理ダメージが3/4になる。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "physicalResistanceMultiplier",
+                "operation": "mul",
+                "value": 0.75
+            }
+        ]
+    },
+    {
+        "id": "breath_resistance_1_100",
+        "name": "ブレス耐性1/100",
+        "description": "受けるブレスダメージが1/100になる。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "breathResistanceMultiplier",
+                "operation": "mul",
+                "value": 0.01
+            }
+        ]
+    },
+    {
+        "id": "maxHP_minus_50pct",
+        "name": "最大HP-50%",
+        "description": "最大HPの基本値が50%減少する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "maxHP",
+                "operation": "pctAdd",
+                "value": -0.5
+            }
+        ]
+    },
+    {
+        "id": "actionSpeedMultiplier_minus_50pct",
+        "name": "行動速度-50%",
+        "description": "行動速度が50%減少する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "actionSpeedMultiplier",
+                "operation": "pctAdd",
+                "value": -0.5
+            }
+        ]
+    },
+    {
+        "id": "goldGainMultiplier_minus_50pct",
+        "name": "取得ゴールド-50%",
+        "description": "戦闘ゴールド差分を50%減らす。",
+        "effects": [
+            {
+                "kind": "rewardMultiplier",
+                "target": "goldGainMultiplier",
+                "operation": "pctAdd",
+                "value": -0.5
+            }
+        ]
+    },
+    {
+        "id": "experienceGainMultiplier_plus_50pct",
+        "name": "取得経験値+50%",
+        "description": "戦闘経験値を50%増やす。",
+        "effects": [
+            {
+                "kind": "rewardMultiplier",
+                "target": "experienceGainMultiplier",
+                "operation": "pctAdd",
+                "value": 0.5
+            }
+        ]
+    },
+    {
+        "id": "experienceGainMultiplier_minus_50pct",
+        "name": "取得経験値-50%",
+        "description": "戦闘経験値を50%減らす。",
+        "effects": [
+            {
+                "kind": "rewardMultiplier",
+                "target": "experienceGainMultiplier",
+                "operation": "pctAdd",
+                "value": -0.5
+            }
+        ]
+    },
+    {
+        "id": "experienceGainMultiplier_minus_75pct",
+        "name": "取得経験値-75%",
+        "description": "戦闘経験値を75%減らす。",
+        "effects": [
+            {
+                "kind": "rewardMultiplier",
+                "target": "experienceGainMultiplier",
+                "operation": "pctAdd",
+                "value": -0.75
+            }
+        ]
+    },
+    {
+        "id": "experienceGainMultiplier_1_20",
+        "name": "自身の取得経験値1/20",
+        "description": "戦闘経験値を1/20にする。",
+        "effects": [
+            {
+                "kind": "rewardMultiplier",
+                "target": "experienceGainMultiplier",
+                "operation": "mul",
+                "value": 0.05
+            }
+        ]
+    },
+    {
+        "id": "onHit_sleep_25pct",
+        "name": "通常攻撃時25%で眠り",
+        "description": "通常攻撃命中時に25%で睡眠を付与する。",
+        "effects": [
+            {
+                "kind": "onHitAilmentGrant",
+                "target": "sleep",
+                "value": 0.25
+            }
+        ]
+    },
+    {
+        "id": "onHit_curse_25pct",
+        "name": "通常攻撃時25%で呪い",
+        "description": "通常攻撃命中時に25%で呪いを付与する。",
+        "effects": [
+            {
+                "kind": "onHitAilmentGrant",
+                "target": "curse",
+                "value": 0.25
+            }
+        ]
+    },
+    {
+        "id": "defendDamageTakenMultiplier_1_3",
+        "name": "防御時軽減強化",
+        "description": "防御時の被ダメージ倍率を1/3にする。",
+        "effects": [
+            {
+                "kind": "defenseRule",
+                "target": "defendDamageTakenMultiplier",
+                "value": 0.3333333333
+            }
+        ]
+    },
+    {
+        "id": "armorEquipmentBattleStatFlatMultiplier_150pct",
+        "name": "鎧戦闘能力値+50%",
+        "description": "鎧カテゴリ装備の戦闘能力値が50%増加する。",
+        "effects": [
+            {
+                "kind": "specialRule",
+                "target": "armorEquipmentBattleStatFlatMultiplier",
+                "value": 1.5
+            }
+        ]
+    },
+    {
+        "id": "cleanseExtraHeal_50pct",
+        "name": "cleanse時追加回復",
+        "description": "cleanse時に回復力0.5倍の追加回復を行う。",
+        "effects": [
+            {
+                "kind": "recoveryRule",
+                "target": "cleanseExtraHealMultiplier",
+                "value": 0.5
+            }
+        ]
+    },
+    {
+        "id": "lowHPReceivedHealingMultiplier_125pct",
+        "name": "HP50%未満で被回復量1.25倍",
+        "description": "HP50%未満の時に受ける回復量を1.25倍にする。",
+        "effects": [
+            {
+                "kind": "recoveryRule",
+                "target": "lowHPReceivedHealingMultiplier",
+                "value": 1.25
+            }
+        ]
+    },
+    {
+        "id": "magicDefenseEquipmentFlatMultiplier_150pct",
+        "name": "装備魔法防御+50%",
+        "description": "装備による魔法防御が50%増加する。",
+        "effects": [
+            {
+                "kind": "specialRule",
+                "target": "magicDefenseEquipmentFlatMultiplier",
+                "value": 1.5
+            }
+        ]
+    },
+    {
+        "id": "lowHPMeleeDamageMultiplier_150pct",
+        "name": "HP30%未満で近接威力+50%",
+        "description": "HP30%未満の時に近接威力を50%上昇する。",
+        "effects": [
+            {
+                "kind": "combatRule",
+                "target": "lowHPMeleeDamageMultiplier",
+                "value": 1.5
+            }
+        ]
+    },
+    {
+        "id": "lowHPTargetRangedDamageMultiplier_120pct",
+        "name": "HP50%未満に遠距離威力+20%",
+        "description": "HP50%未満の敵への遠距離威力を20%上昇する。",
+        "effects": [
+            {
+                "kind": "combatRule",
+                "target": "lowHPTargetRangedDamageMultiplier",
+                "value": 1.2
+            }
+        ]
+    },
+    {
+        "id": "explorationTimeMultiplier_80pct",
+        "name": "探索時間-20%",
+        "description": "探索にかかる時間を20%短縮する。",
+        "effects": [
+            {
+                "kind": "specialRule",
+                "target": "explorationTimeMultiplier",
+                "value": 0.8
+            }
+        ]
+    },
+    {
+        "id": "damageVarianceWidthMultiplier_200pct",
+        "name": "与ダメージ乱数幅増加",
+        "description": "与ダメージの乱数幅を広げる。",
+        "effects": [
+            {
+                "kind": "specialRule",
+                "target": "damageVarianceWidthMultiplier",
+                "value": 2.0
+            }
+        ]
+    },
+    {
+        "id": "ailmentInflictionChanceMultiplier_140pct",
+        "name": "状態異常成功率+40%",
+        "description": "状態異常付与成功率を40%上昇する。",
+        "effects": [
+            {
+                "kind": "combatRule",
+                "target": "ailmentInflictionChanceMultiplier",
+                "value": 1.4
+            }
+        ]
+    },
+    {
+        "id": "damageMultiplierAgainstAilingTarget_150pct",
+        "name": "状態異常中へ与ダメージ+50%",
+        "description": "状態異常の敵への与ダメージを50%上昇する。",
+        "effects": [
+            {
+                "kind": "combatRule",
+                "target": "damageMultiplierAgainstAilingTarget",
+                "value": 1.5
+            }
+        ]
+    },
+    {
+        "id": "receivedHealingMultiplier_75pct",
+        "name": "被回復量-25%",
+        "description": "受ける回復量を25%減少する。",
+        "effects": [
+            {
+                "kind": "recoveryRule",
+                "target": "receivedHealingMultiplier",
+                "value": 0.75
+            }
+        ]
+    },
+    {
+        "id": "receivedHealingMultiplier_20pct",
+        "name": "自身の被回復量1/5",
+        "description": "受ける回復量を1/5にする。",
+        "effects": [
+            {
+                "kind": "recoveryRule",
+                "target": "receivedHealingMultiplier",
+                "value": 0.2
+            }
+        ]
+    },
+    {
+        "id": "allyPhysicalDamageMultiplier_1_10",
+        "name": "味方の物理威力1/10",
+        "description": "味方全体の物理威力を1/10にする。",
+        "effects": [
+            {
+                "kind": "partyModifier",
+                "target": "allyPhysicalDamageMultiplier",
+                "operation": "mul",
+                "value": 0.1
+            }
+        ]
+    },
+    {
+        "id": "allyMagicDamageMultiplier_1_10",
+        "name": "味方の魔法威力1/10",
+        "description": "味方全体の魔法威力を1/10にする。",
+        "effects": [
+            {
+                "kind": "partyModifier",
+                "target": "allyMagicDamageMultiplier",
+                "operation": "mul",
+                "value": 0.1
+            }
+        ]
+    },
+    {
+        "id": "job_knight_guard",
+        "name": "護衛",
+        "description": "味方への物理攻撃をアクション単位で引き受ける。",
+        "effects": [
+            {
+                "kind": "actionRule",
+                "target": "guardPhysicalActionChance",
+                "value": 0.5
+            }
+        ]
+    },
+    {
+        "id": "job_knight_iron_wall",
+        "name": "鉄壁",
+        "description": "味方全体の物理ダメージを1/3軽減する。",
+        "effects": [
+            {
+                "kind": "partyModifier",
+                "target": "allyPhysicalDamageTakenMultiplier",
+                "operation": "mul",
+                "value": 0.6666666667
+            }
+        ]
+    },
+    {
+        "id": "job_knight_aegis",
+        "name": "アイギス",
+        "description": "護衛で引き受けた攻撃の被ダメージをさらに減らす。",
+        "effects": [
+            {
+                "kind": "defenseRule",
+                "target": "guardedDamageTakenMultiplier",
+                "value": 0.75
+            }
+        ]
+    },
+    {
+        "id": "job_swordsman_fierce_strike",
+        "name": "猛撃",
+        "description": "通常攻撃時の近接威力を高める。",
+        "effects": [
+            {
+                "kind": "actionRule",
+                "target": "normalAttackMeleeDamageMultiplier",
+                "value": 1.3
+            }
+        ]
+    },
+    {
+        "id": "job_swordsman_mind_eye",
+        "name": "心眼",
+        "description": "通常攻撃時の必殺率を25加算する。",
+        "effects": [
+            {
+                "kind": "actionRule",
+                "target": "normalAttackCriticalRateAdd",
+                "value": 25
+            }
+        ]
+    },
+    {
+        "id": "job_swordsman_shura",
+        "name": "修羅",
+        "description": "再攻撃の発動率と威力を強化する。",
+        "effects": [
+            {
+                "kind": "actionRule",
+                "target": "extraAttackChance",
+                "value": 0.5
+            },
+            {
+                "kind": "actionRule",
+                "target": "extraAttackDamageMultiplier",
+                "value": 0.75
+            }
+        ]
+    },
+    {
+        "id": "job_priest_blessing",
+        "name": "祝福",
+        "description": "回復魔法を受けた対象へ追加HPバリアを付与する。",
+        "effects": [
+            {
+                "kind": "recoveryRule",
+                "target": "recoverySpellBarrierByMaxHPRatio",
+                "value": 0.05
+            }
+        ]
+    },
+    {
+        "id": "job_priest_overheal",
+        "name": "オーバーヒール",
+        "description": "回復の余剰分を追加HPバリアへ変換する。",
+        "effects": [
+            {
+                "kind": "recoveryRule",
+                "target": "overhealToBarrierMultiplier",
+                "value": 0.5
+            }
+        ]
+    },
+    {
+        "id": "job_priest_rescue",
+        "name": "救出",
+        "description": "救出の発生資格を付与する。",
+        "effects": [
+            {
+                "kind": "interruptGrant",
+                "interruptKind": "rescue"
+            }
+        ]
+    },
+    {
+        "id": "job_spellguard_magic_domination",
+        "name": "魔力支配",
+        "description": "味方全体の回復威力を30%上げる。",
+        "effects": [
+            {
+                "kind": "partyModifier",
+                "target": "allyHealingMultiplier",
+                "operation": "pctAdd",
+                "value": 0.3
+            }
+        ]
+    },
+    {
+        "id": "job_spellguard_barrier_formation",
+        "name": "結界陣",
+        "description": "味方全体の魔法ダメージを1/3軽減する。",
+        "effects": [
+            {
+                "kind": "partyModifier",
+                "target": "allyMagicDamageTakenMultiplier",
+                "operation": "mul",
+                "value": 0.6666666667
+            }
+        ]
+    },
+    {
+        "id": "job_spellguard_multi_barrier",
+        "name": "多重結界",
+        "description": "魔法バリア中の被魔法ダメージ倍率を2/5にする。",
+        "effects": [
+            {
+                "kind": "defenseRule",
+                "target": "magicBarrierDamageTakenMultiplier",
+                "value": 0.4
+            }
+        ]
+    },
+    {
+        "id": "job_mage_magic_damage_multiplier_plus_30pct",
+        "name": "魔法威力+30%",
+        "description": "魔法の威力が30%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "magicDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.3
+            }
+        ]
+    },
+    {
+        "id": "job_mage_magic_reflux",
+        "name": "魔力還流",
+        "description": "通常攻撃命中時に攻撃魔法の使用回数を回復する。",
+        "effects": [
+            {
+                "kind": "actionRule",
+                "target": "restoreRandomAttackSpellUsageOnNormalHit",
+                "value": 1
+            }
+        ]
+    },
+    {
+        "id": "job_mage_magic_amplification",
+        "name": "魔力増幅",
+        "description": "攻撃魔法命中ごとに戦闘中の魔法威力を上げる。",
+        "effects": [
+            {
+                "kind": "combatRule",
+                "target": "attackSpellDamagePctAddPerHit",
+                "value": 0.05
+            }
+        ]
+    },
+    {
+        "id": "job_hunter_rapid_fire",
+        "name": "速射",
+        "description": "通常攻撃時の遠距離威力を高める。",
+        "effects": [
+            {
+                "kind": "actionRule",
+                "target": "normalAttackRangedDamageMultiplier",
+                "value": 1.3
+            }
+        ]
+    },
+    {
+        "id": "job_hunter_sniping",
+        "name": "狙撃",
+        "description": "後列からの通常攻撃時に必殺時威力を高める。",
+        "effects": [
+            {
+                "kind": "actionRule",
+                "target": "backRowNormalAttackCriticalDamageMultiplier",
+                "value": 1.3
+            }
+        ]
+    },
+    {
+        "id": "job_hunter_follow_up",
+        "name": "追い打ち",
+        "description": "追撃の発動率と威力を強化する。",
+        "effects": [
+            {
+                "kind": "actionRule",
+                "target": "pursuitChance",
+                "value": 0.5
+            },
+            {
+                "kind": "actionRule",
+                "target": "pursuitDamageMultiplier",
+                "value": 0.75
+            }
+        ]
+    },
+    {
+        "id": "job_ninja_mikiri",
+        "name": "見切り",
+        "description": "防御時の被ダメージ倍率を1/4にする。",
+        "effects": [
+            {
+                "kind": "defenseRule",
+                "target": "defendDamageTakenMultiplier",
+                "value": 0.25
+            }
+        ]
+    },
+    {
+        "id": "job_ninja_chain_kill",
+        "name": "連破",
+        "description": "敵撃破時に未解決段数を次の敵へ引き継ぐ。",
+        "effects": [
+            {
+                "kind": "actionRule",
+                "target": "carryOverRemainingHitsOnKill",
+                "value": 1
+            }
+        ]
+    },
+    {
+        "id": "job_ninja_critical_damage_multiplier_plus_50pct",
+        "name": "必殺時威力+50%",
+        "description": "必殺時の威力が50%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "criticalDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.5
+            }
+        ]
+    },
+    {
+        "id": "job_noble_gold_gain_multiplier_plus_50pct",
+        "name": "取得ゴールド+50%",
+        "description": "戦闘ゴールド差分を50%増やす。",
+        "effects": [
+            {
+                "kind": "rewardMultiplier",
+                "target": "goldGainMultiplier",
+                "operation": "pctAdd",
+                "value": 0.5
+            }
+        ]
+    },
+    {
+        "id": "job_noble_gold_gain_multiplier_plus_100pct",
+        "name": "取得ゴールド+100%",
+        "description": "戦闘ゴールド差分を100%増やす。",
+        "effects": [
+            {
+                "kind": "rewardMultiplier",
+                "target": "goldGainMultiplier",
+                "operation": "pctAdd",
+                "value": 1.0
+            }
+        ]
+    },
+    {
+        "id": "job_noble_compensation",
+        "name": "賠償",
+        "description": "受けた総ダメージに応じて戦闘ゴールド差分を減算する。",
+        "effects": [
+            {
+                "kind": "rewardRule",
+                "target": "goldPenaltyPerDamageTaken",
+                "value": 0.1
+            }
+        ]
+    },
+    {
+        "id": "job_monk_rest",
+        "name": "休息",
+        "description": "戦闘終了時に自身のHPを全回復する。",
+        "effects": [
+            {
+                "kind": "recoveryRule",
+                "target": "healToFullAfterBattle",
+                "value": 1
+            }
+        ]
+    },
+    {
+        "id": "job_monk_experience_gain_multiplier_plus_75pct",
+        "name": "取得経験値+75%",
+        "description": "戦闘経験値を75%増やす。",
+        "effects": [
+            {
+                "kind": "rewardMultiplier",
+                "target": "experienceGainMultiplier",
+                "operation": "pctAdd",
+                "value": 0.75
+            }
+        ]
+    },
+    {
+        "id": "job_monk_experience_gain_multiplier_plus_150pct",
+        "name": "取得経験値+150%",
+        "description": "戦闘経験値を150%増やす。",
+        "effects": [
+            {
+                "kind": "rewardMultiplier",
+                "target": "experienceGainMultiplier",
+                "operation": "pctAdd",
+                "value": 1.5
+            }
+        ]
+    },
+    {
+        "id": "job_clown_big_win",
+        "name": "大当たり",
+        "description": "命中時に一定確率で威力を2倍にする。",
+        "effects": [
+            {
+                "kind": "specialRule",
+                "target": "hitDamageLuckyChance",
+                "value": 0.2
+            },
+            {
+                "kind": "specialRule",
+                "target": "hitDamageLuckyMultiplier",
+                "value": 2.0
+            }
+        ]
+    },
+    {
+        "id": "job_clown_big_loss",
+        "name": "大外れ",
+        "description": "命中時に一定確率で威力を1/2にする。",
+        "effects": [
+            {
+                "kind": "specialRule",
+                "target": "hitDamageUnluckyChance",
+                "value": 0.2
+            },
+            {
+                "kind": "specialRule",
+                "target": "hitDamageUnluckyMultiplier",
+                "value": 0.5
+            }
+        ]
+    },
+    {
+        "id": "job_clown_big_chaos",
+        "name": "大混乱",
+        "description": "戦闘中の通常行動順を完全ランダムにする。",
+        "effects": [
+            {
+                "kind": "actionRule",
+                "target": "randomizeNormalActionOrder",
+                "value": 1
+            }
+        ]
+    },
+    {
+        "id": "job_thief_mugging",
+        "name": "追い剥ぎ",
+        "description": "通常攻撃で敵を倒した時に戦闘ゴールドを増やす。",
+        "effects": [
+            {
+                "kind": "rewardRule",
+                "target": "goldGainPctAddOnNormalKill",
+                "value": 0.5
+            }
+        ]
+    },
+    {
+        "id": "job_thief_title_roll_count_plus_3",
+        "name": "称号抽選回数+3",
+        "description": "称号抽選回数を3回増やす。",
+        "effects": [
+            {
+                "kind": "titleRollCountModifier",
+                "value": 3
+            }
+        ]
+    },
+    {
+        "id": "job_thief_rare_drop_multiplier_plus_100pct",
+        "name": "レアドロップ率+100%",
+        "description": "レアドロップ率を100%増やす。",
+        "effects": [
+            {
+                "kind": "rewardMultiplier",
+                "target": "rareDropMultiplier",
+                "operation": "pctAdd",
+                "value": 1.0
+            }
+        ]
+    },
+    {
+        "id": "job_hexer_on_hit_curse_25pct",
+        "name": "通常攻撃時25%で呪い",
+        "description": "通常攻撃命中時に25%で呪いを付与する。",
+        "effects": [
+            {
+                "kind": "onHitAilmentGrant",
+                "target": "curse",
+                "value": 0.25
+            }
+        ]
+    },
+    {
+        "id": "job_hexer_on_hit_paralysis_25pct",
+        "name": "通常攻撃時25%で麻痺",
+        "description": "通常攻撃命中時に25%で麻痺を付与する。",
+        "effects": [
+            {
+                "kind": "onHitAilmentGrant",
+                "target": "paralysis",
+                "value": 0.25
+            }
+        ]
+    },
+    {
+        "id": "job_hexer_on_hit_petrify_10pct",
+        "name": "通常攻撃時10%で石化",
+        "description": "通常攻撃命中時に10%で石化を付与する。",
+        "effects": [
+            {
+                "kind": "onHitAilmentGrant",
+                "target": "petrify",
+                "value": 0.1
+            }
+        ]
+    },
+    {
+        "id": "job_samurai_attack_count_one_melee_damage_multiplier_150pct",
+        "name": "攻撃回数1時近接威力+50%",
+        "description": "攻撃回数が1の時に近接威力を50%上昇する。",
+        "effects": [
+            {
+                "kind": "actionRule",
+                "target": "attackCountOneMeleeDamageMultiplier",
+                "value": 1.5
+            }
+        ]
+    },
+    {
+        "id": "job_samurai_attack_count_one_critical_rate_plus_30",
+        "name": "攻撃回数1時必殺率+30",
+        "description": "攻撃回数が1の時に必殺率を30加算する。",
+        "effects": [
+            {
+                "kind": "actionRule",
+                "target": "attackCountOneCriticalRateAdd",
+                "value": 30
+            }
+        ]
+    },
+    {
+        "id": "job_samurai_attack_count_one_critical_damage_multiplier_150pct",
+        "name": "攻撃回数1時必殺時威力+50%",
+        "description": "攻撃回数が1の時に必殺時威力を50%上昇する。",
+        "effects": [
+            {
+                "kind": "actionRule",
+                "target": "attackCountOneCriticalDamageMultiplier",
+                "value": 1.5
+            }
+        ]
+    },
+    {
+        "id": "job_berserker_blood_price",
+        "name": "血の代償",
+        "description": "ターン開始時に自身の現在HPの一部を失う。",
+        "effects": [
+            {
+                "kind": "combatRule",
+                "target": "startTurnSelfCurrentHPLossPct",
+                "value": 0.05
+            }
+        ]
+    },
+    {
+        "id": "job_berserker_frenzy",
+        "name": "狂化",
+        "description": "失ったHP割合に応じて近接威力を上げる。",
+        "effects": [
+            {
+                "kind": "combatRule",
+                "target": "lostHP10PctToMeleeDamagePctAdd",
+                "value": 0.1
+            }
+        ]
+    },
+    {
+        "id": "job_berserker_slaughter",
+        "name": "殺戮",
+        "description": "経過ターンごとに物理攻撃を上げる。",
+        "effects": [
+            {
+                "kind": "combatRule",
+                "target": "elapsedTurnToPhysicalAttackPctAdd",
+                "value": 0.1
+            }
+        ]
+    },
+    {
+        "id": "job_alchemist_normal_drop_jewelize_5pct",
+        "name": "ノーマルドロップ宝石化5%",
+        "description": "ノーマルドロップ時に5%で宝石ベースへ変換する。",
+        "effects": [
+            {
+                "kind": "normalDropJewelize",
+                "value": 0.05
+            }
+        ]
+    },
+    {
+        "id": "job_alchemist_normal_drop_jewelize_10pct",
+        "name": "ノーマルドロップ宝石化10%",
+        "description": "ノーマルドロップ時に10%で宝石ベースへ変換する。",
+        "effects": [
+            {
+                "kind": "normalDropJewelize",
+                "value": 0.1
+            }
+        ]
+    },
+    {
+        "id": "job_alchemist_normal_drop_jewelize_25pct",
+        "name": "ノーマルドロップ宝石化25%",
+        "description": "ノーマルドロップ時に25%で宝石ベースへ変換する。",
+        "effects": [
+            {
+                "kind": "normalDropJewelize",
+                "value": 0.25
+            }
+        ]
+    },
+    {
+        "id": "job_swordsaint_renzan",
+        "name": "連閃",
+        "description": "通常攻撃の威力を下げる代わりに多段減衰を無視する。",
+        "effects": [
+            {
+                "kind": "actionRule",
+                "target": "normalAttackBaseDamageMultiplier",
+                "value": 0.6
+            },
+            {
+                "kind": "multiHitFalloffModifier",
+                "value": 0.0
+            }
+        ]
+    },
+    {
+        "id": "job_swordsaint_accuracy_plus_30pct",
+        "name": "命中+30%",
+        "description": "命中の基本値が30%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "accuracy",
+                "operation": "pctAdd",
+                "value": 0.3
+            }
+        ]
+    },
+    {
+        "id": "job_swordsaint_hit_rate_floor_25pct",
+        "name": "命中率下限25%",
+        "description": "通常攻撃の命中率下限を25%にする。",
+        "effects": [
+            {
+                "kind": "hitRateFloorModifier",
+                "value": 0.25
+            }
+        ]
+    },
+    {
+        "id": "race_human_adaptation",
+        "name": "順応",
+        "description": "最も高い物理攻撃、魔法、回復に応じて行動倍率を上げる。",
+        "effects": [
+            {
+                "kind": "combatRule",
+                "target": "highestOffenseActionMultiplier",
+                "value": 1.5
+            }
+        ]
+    },
+    {
+        "id": "race_human_hero",
+        "name": "英雄",
+        "description": "初回戦闘不能時にHP50%で復活する。",
+        "effects": [
+            {
+                "kind": "reviveRule",
+                "target": "reviveOnceOnFirstDefeatHPRatio",
+                "value": 0.5
+            }
+        ]
+    },
+    {
+        "id": "race_dwarf_grit",
+        "name": "負けん気",
+        "description": "ダメージを受けるたびに物理威力を累積する。",
+        "effects": [
+            {
+                "kind": "combatRule",
+                "target": "physicalDamagePctAddOnDamageTaken",
+                "value": 0.1
+            }
+        ]
+    },
+    {
+        "id": "race_dwarf_last_stand",
+        "name": "踏ん張り",
+        "description": "HP50%未満の時に火力と物理耐性を強化する。",
+        "effects": [
+            {
+                "kind": "combatRule",
+                "target": "lowHPPhysicalDamageMultiplier",
+                "value": 1.5
+            },
+            {
+                "kind": "combatRule",
+                "target": "lowHPPhysicalResistanceMultiplier",
+                "value": 0.75
+            }
+        ]
+    },
+    {
+        "id": "race_elf_spirit_chant",
+        "name": "精霊詠唱",
+        "description": "防御時に味方全体を回復し状態異常を1つ解除する。",
+        "effects": [
+            {
+                "kind": "recoveryRule",
+                "target": "defendPartyHealMultiplier",
+                "value": 0.5
+            },
+            {
+                "kind": "recoveryRule",
+                "target": "defendPartyCleanseCount",
+                "value": 1
+            }
+        ]
+    },
+    {
+        "id": "race_elf_forest_blessing",
+        "name": "森羅の加護",
+        "description": "防御時に戦闘不能の味方1体を蘇生する。",
+        "effects": [
+            {
+                "kind": "reviveRule",
+                "target": "defendReviveOneAlly",
+                "value": 1
+            }
+        ]
+    },
+    {
+        "id": "race_amazoness_war_dance",
+        "name": "戦舞",
+        "description": "通常攻撃が回避された時にもう一度通常攻撃する。",
+        "effects": [
+            {
+                "kind": "actionRule",
+                "target": "repeatNormalAttackOnEvade",
+                "value": 1
+            }
+        ]
+    },
+    {
+        "id": "race_amazoness_queen_hunt",
+        "name": "女王の狩り",
+        "description": "HP50%未満の敵を倒した時にもう一度行動する。",
+        "effects": [
+            {
+                "kind": "actionRule",
+                "target": "extraActionOnLowHPKill",
+                "value": 1
+            }
+        ]
+    },
+    {
+        "id": "race_vampire_blood_feast",
+        "name": "血宴",
+        "description": "与えたダメージの半分だけ自身を回復する。",
+        "effects": [
+            {
+                "kind": "recoveryRule",
+                "target": "lifestealMultiplier",
+                "value": 0.5
+            }
+        ]
+    },
+    {
+        "id": "race_vampire_undead_hunt",
+        "name": "不死狩り",
+        "description": "HP50%未満の敵を倒した時に回復し連撃する。",
+        "effects": [
+            {
+                "kind": "recoveryRule",
+                "target": "healOnLowHPKillHPRatio",
+                "value": 0.5
+            },
+            {
+                "kind": "actionRule",
+                "target": "chainNormalAttackOnLowHPKill",
+                "value": 1
+            }
+        ]
+    },
+    {
+        "id": "race_dragonewt_dragon_breath_chain",
+        "name": "竜息",
+        "description": "ブレス使用後に同じ対象へ通常攻撃する。",
+        "effects": [
+            {
+                "kind": "actionRule",
+                "target": "normalAttackAfterBreath",
+                "value": 1
+            }
+        ]
+    },
+    {
+        "id": "race_dragonewt_dragon_king_breath",
+        "name": "竜王息",
+        "description": "ブレスを3回使えるようになり、受けるブレスダメージを99%軽減する。",
+        "effects": [
+            {
+                "kind": "actionRule",
+                "target": "breathRepeatCount",
+                "value": 3
+            },
+            {
+                "kind": "battleDerivedModifier",
+                "target": "breathResistanceMultiplier",
+                "operation": "mul",
+                "value": 0.01
+            }
+        ]
+    },
+    {
+        "id": "race_halfling_slip_through",
+        "name": "すり抜け",
+        "description": "回避した時に一定確率で通常攻撃する。",
+        "effects": [
+            {
+                "kind": "actionRule",
+                "target": "normalAttackOnEvadeChance",
+                "value": 0.5
+            }
+        ]
+    },
+    {
+        "id": "race_halfling_lucky_shot",
+        "name": "幸運撃ち",
+        "description": "通常攻撃で必殺が発生した時にもう一度通常攻撃する。",
+        "effects": [
+            {
+                "kind": "actionRule",
+                "target": "repeatNormalAttackOnCritical",
+                "value": 1
+            }
+        ]
+    },
+    {
+        "id": "race_zombie_corpse_drive",
+        "name": "死体稼働",
+        "description": "初回戦闘不能時にHP1で踏みとどまる。",
+        "effects": [
+            {
+                "kind": "reviveRule",
+                "target": "surviveFirstDefeatAtHP1",
+                "value": 1
+            }
+        ]
+    },
+    {
+        "id": "race_zombie_immortal",
+        "name": "不朽",
+        "description": "戦闘不能中、各ターン終了時に一定確率で復活する。",
+        "effects": [
+            {
+                "kind": "reviveRule",
+                "target": "endTurnReviveChance",
+                "value": 0.3
+            },
+            {
+                "kind": "reviveRule",
+                "target": "endTurnReviveHPRatio",
+                "value": 0.5
+            }
+        ]
+    },
+    {
+        "id": "race_beastkin_wild_release",
+        "name": "野生解放",
+        "description": "ダメージを受けた次の通常攻撃を強化する。",
+        "effects": [
+            {
+                "kind": "combatRule",
+                "target": "nextNormalAttackPhysicalDamageMultiplierAfterTakingDamage",
+                "value": 1.5
+            }
+        ]
+    },
+    {
+        "id": "race_beastkin_beast_king",
+        "name": "獣王",
+        "description": "HP50%未満の敵を攻撃する時に必ず追撃する。",
+        "effects": [
+            {
+                "kind": "actionRule",
+                "target": "pursuitAgainstLowHPTargetChance",
+                "value": 1
+            }
+        ]
+    },
+    {
+        "id": "race_tengu_gale",
+        "name": "疾風",
+        "description": "1ターン目の速度を2倍として扱う。",
+        "effects": [
+            {
+                "kind": "combatRule",
+                "target": "turnOneActionSpeedMultiplier",
+                "value": 2.0
+            }
+        ]
+    },
+    {
+        "id": "race_tengu_sky_rend",
+        "name": "空裂",
+        "description": "1ターン目の通常行動後にもう一度行動する。",
+        "effects": [
+            {
+                "kind": "actionRule",
+                "target": "extraTurnAfterNormalActionOnTurnOne",
+                "value": 1
+            }
+        ]
+    },
+    {
+        "id": "race_dark_elf_evil_eye",
+        "name": "呪眼",
+        "description": "通常攻撃と攻撃魔法命中時に睡眠を付与する。",
+        "effects": [
+            {
+                "kind": "contactAilmentGrant",
+                "target": "sleep",
+                "value": 0.25
+            }
+        ]
+    },
+    {
+        "id": "race_dark_elf_abyss",
+        "name": "深淵",
+        "description": "状態異常の敵への攻撃魔法をもう一度発動する。",
+        "effects": [
+            {
+                "kind": "actionRule",
+                "target": "repeatAttackSpellOnAilingTarget",
+                "value": 1
+            }
+        ]
+    },
+    {
+        "id": "race_medusa_stone_gaze",
+        "name": "石の視線",
+        "description": "通常攻撃と攻撃魔法命中時に石化を付与する。",
+        "effects": [
+            {
+                "kind": "contactAilmentGrant",
+                "target": "petrify",
+                "value": 0.1
+            }
+        ]
+    },
+    {
+        "id": "race_medusa_serpent_god",
+        "name": "蛇神",
+        "description": "石化状態の敵への与ダメージを2倍にする。",
+        "effects": [
+            {
+                "kind": "combatRule",
+                "target": "damageMultiplierAgainstPetrifiedTarget",
+                "value": 2.0
+            }
+        ]
+    },
+    {
+        "id": "race_psychic_psy_strike",
+        "name": "念撃",
+        "description": "攻撃魔法にも必殺判定を行う。",
+        "effects": [
+            {
+                "kind": "actionRule",
+                "target": "attackSpellCanCritical",
+                "value": 1
+            }
+        ]
+    },
+    {
+        "id": "race_psychic_foresight",
+        "name": "未来視",
+        "description": "必殺が発生した攻撃魔法をもう一度発動する。",
+        "effects": [
+            {
+                "kind": "actionRule",
+                "target": "repeatAttackSpellOnCritical",
+                "value": 1
+            }
+        ]
+    },
+    {
+        "id": "race_minotaur_charge",
+        "name": "突進",
+        "description": "最初の通常攻撃を強化する。",
+        "effects": [
+            {
+                "kind": "actionRule",
+                "target": "firstNormalAttackPhysicalDamageMultiplier",
+                "value": 1.5
+            },
+            {
+                "kind": "actionRule",
+                "target": "firstNormalAttackAccuracyPctAdd",
+                "value": 0.2
+            }
+        ]
+    },
+    {
+        "id": "race_minotaur_tyrant",
+        "name": "暴君",
+        "description": "通常攻撃が命中した時に物理バリアを破壊し、物理防御を一部無視する。",
+        "effects": [
+            {
+                "kind": "actionRule",
+                "target": "normalAttackBreakPhysicalBarrierOnHit",
+                "value": 1
+            },
+            {
+                "kind": "actionRule",
+                "target": "normalAttackIgnorePhysicalDefensePct",
+                "value": 0.3
+            }
+        ]
+    },
+    {
+        "id": "race_giant_mighty_arms",
+        "name": "豪腕",
+        "description": "通常攻撃が主対象とは別の敵もう1体にも当たる。",
+        "effects": [
+            {
+                "kind": "actionRule",
+                "target": "normalAttackHitsRandomAdditionalTarget",
+                "value": 1
+            }
+        ]
+    },
+    {
+        "id": "race_giant_taizan",
+        "name": "泰山",
+        "description": "通常攻撃時、20%で敵全体対象になる。",
+        "effects": [
+            {
+                "kind": "actionRule",
+                "target": "normalAttackTargetingAllEnemiesChance",
+                "value": 0.2
+            }
+        ]
+    },
+    {
+        "id": "race_oni_asura_path",
+        "name": "修羅道",
+        "description": "HP50%未満の時に近接威力と必殺率を強化する。",
+        "effects": [
+            {
+                "kind": "combatRule",
+                "target": "lowHPMeleeDamageMultiplier",
+                "value": 1.5
+            },
+            {
+                "kind": "combatRule",
+                "target": "lowHPCriticalRateAdd",
+                "value": 20
+            }
+        ]
+    },
+    {
+        "id": "race_oni_blood_festival",
+        "name": "血祭り",
+        "description": "HP50%未満の敵への必殺性能を大きく強化する。",
+        "effects": [
+            {
+                "kind": "combatRule",
+                "target": "criticalRateAgainstLowHPTargetAdd",
+                "value": 50
+            },
+            {
+                "kind": "combatRule",
+                "target": "criticalDamageMultiplierAgainstLowHPTarget",
+                "value": 2.0
+            }
+        ]
+    },
+    {
+        "id": "swordEquipmentBattleStatFlatMultiplier_140pct",
+        "name": "剣戦闘能力値+40%",
+        "description": "剣カテゴリ装備の戦闘能力値が40%増加する。",
+        "effects": [
+            {
+                "kind": "specialRule",
+                "target": "swordEquipmentBattleStatFlatMultiplier",
+                "value": 1.4
+            }
+        ]
+    },
+    {
+        "id": "katanaEquipmentBattleStatFlatMultiplier_140pct",
+        "name": "刀戦闘能力値+40%",
+        "description": "刀カテゴリ装備の戦闘能力値が40%増加する。",
+        "effects": [
+            {
+                "kind": "specialRule",
+                "target": "katanaEquipmentBattleStatFlatMultiplier",
+                "value": 1.4
+            }
+        ]
+    },
+    {
+        "id": "bowEquipmentBattleStatFlatMultiplier_140pct",
+        "name": "弓戦闘能力値+40%",
+        "description": "弓カテゴリ装備の戦闘能力値が40%増加する。",
+        "effects": [
+            {
+                "kind": "specialRule",
+                "target": "bowEquipmentBattleStatFlatMultiplier",
+                "value": 1.4
+            }
+        ]
+    },
+    {
+        "id": "defenseEquipmentBattleStatFlatMultiplier_135pct",
+        "name": "防具戦闘能力値+35%",
+        "description": "防具カテゴリ装備の戦闘能力値が35%増加する。",
+        "effects": [
+            {
+                "kind": "specialRule",
+                "target": "defenseEquipmentBattleStatFlatMultiplier",
+                "value": 1.35
+            }
+        ]
+    },
+    {
+        "id": "turnOneActionSpeedMultiplier_150pct",
+        "name": "1ターン目速度1.5倍",
+        "description": "1ターン目の速度を1.5倍として扱う。",
+        "effects": [
+            {
+                "kind": "combatRule",
+                "target": "turnOneActionSpeedMultiplier",
+                "value": 1.5
+            }
+        ]
+    },
+    {
+        "id": "goldGainMultiplier_plus_30pct",
+        "name": "取得ゴールド+30%",
+        "description": "戦闘ゴールド差分を30%増やす。",
+        "effects": [
+            {
+                "kind": "rewardMultiplier",
+                "target": "goldGainMultiplier",
+                "operation": "pctAdd",
+                "value": 0.3
             }
         ]
     }

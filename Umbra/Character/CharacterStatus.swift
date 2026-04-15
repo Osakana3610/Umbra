@@ -14,6 +14,22 @@ nonisolated struct CharacterStatus: Equatable, Sendable {
     let weaponRangeClass: ItemRangeClass
     let spellDamageMultipliersBySpellID: [Int: Double]
     let spellResistanceMultipliersBySpellID: [Int: Double]
+    let rewardMultipliersByTarget: [String: Double]
+    let partyModifiersByTarget: [String: Double]
+    let onHitAilmentChanceByStatusID: [Int: Double]
+    let contactAilmentChanceByStatusID: [Int: Double]
+    let titleRollCountModifier: Int
+    let equipmentCapacityModifier: Int
+    let normalDropJewelizeChance: Double
+    let multiHitFalloffModifier: Double
+    let hitRateFloor: Double
+    let defenseRuleValuesByTarget: [String: [Double]]
+    let recoveryRuleValuesByTarget: [String: [Double]]
+    let actionRuleValuesByTarget: [String: [Double]]
+    let reviveRuleValuesByTarget: [String: [Double]]
+    let combatRuleValuesByTarget: [String: [Double]]
+    let rewardRuleValuesByTarget: [String: [Double]]
+    let specialRuleValuesByTarget: [String: [Double]]
 
     var maxHP: Int {
         battleStats.maxHP
@@ -25,6 +41,90 @@ nonisolated struct CharacterStatus: Equatable, Sendable {
 
     func magicResistanceMultiplier(for spellID: Int) -> Double {
         spellResistanceMultipliersBySpellID[spellID] ?? 1.0
+    }
+
+    func rewardMultiplier(for target: String) -> Double {
+        rewardMultipliersByTarget[target] ?? 1.0
+    }
+
+    func partyModifier(for target: String) -> Double {
+        partyModifiersByTarget[target] ?? 1.0
+    }
+
+    func defenseRuleValues(for target: String) -> [Double] {
+        defenseRuleValuesByTarget[target] ?? []
+    }
+
+    func defenseRuleMaxValue(for target: String) -> Double? {
+        defenseRuleValues(for: target).max()
+    }
+
+    func defenseRuleProduct(for target: String) -> Double {
+        defenseRuleValues(for: target).reduce(1.0, *)
+    }
+
+    func recoveryRuleValues(for target: String) -> [Double] {
+        recoveryRuleValuesByTarget[target] ?? []
+    }
+
+    func recoveryRuleMaxValue(for target: String) -> Double? {
+        recoveryRuleValues(for: target).max()
+    }
+
+    func recoveryRuleProduct(for target: String) -> Double {
+        recoveryRuleValues(for: target).reduce(1.0, *)
+    }
+
+    func actionRuleValues(for target: String) -> [Double] {
+        actionRuleValuesByTarget[target] ?? []
+    }
+
+    func actionRuleMaxValue(for target: String) -> Double? {
+        actionRuleValues(for: target).max()
+    }
+
+    func actionRuleProduct(for target: String) -> Double {
+        actionRuleValues(for: target).reduce(1.0, *)
+    }
+
+    func reviveRuleValues(for target: String) -> [Double] {
+        reviveRuleValuesByTarget[target] ?? []
+    }
+
+    func reviveRuleMaxValue(for target: String) -> Double? {
+        reviveRuleValues(for: target).max()
+    }
+
+    func combatRuleValues(for target: String) -> [Double] {
+        combatRuleValuesByTarget[target] ?? []
+    }
+
+    func combatRuleMaxValue(for target: String) -> Double? {
+        combatRuleValues(for: target).max()
+    }
+
+    func combatRuleProduct(for target: String) -> Double {
+        combatRuleValues(for: target).reduce(1.0, *)
+    }
+
+    func rewardRuleValues(for target: String) -> [Double] {
+        rewardRuleValuesByTarget[target] ?? []
+    }
+
+    func rewardRuleMaxValue(for target: String) -> Double? {
+        rewardRuleValues(for: target).max()
+    }
+
+    func specialRuleValues(for target: String) -> [Double] {
+        specialRuleValuesByTarget[target] ?? []
+    }
+
+    func specialRuleMaxValue(for target: String) -> Double? {
+        specialRuleValues(for: target).max()
+    }
+
+    func specialRuleProduct(for target: String) -> Double {
+        specialRuleValues(for: target).reduce(1.0, *)
     }
 }
 

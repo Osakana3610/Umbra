@@ -3,17 +3,20 @@
 import SwiftUI
 
 struct PartyMembersView: View {
+    let masterData: MasterData
     let memberCharacterIds: [Int]
     let charactersById: [Int: CharacterRecord]
     let displayedHPs: [Int]?
     let onSelectCharacter: ((CharacterRecord) -> Void)?
 
     init(
+        masterData: MasterData,
         memberCharacterIds: [Int],
         charactersById: [Int: CharacterRecord],
         displayedHPs: [Int]? = nil,
         onSelectCharacter: ((CharacterRecord) -> Void)? = nil
     ) {
+        self.masterData = masterData
         self.memberCharacterIds = memberCharacterIds
         self.charactersById = charactersById
         self.displayedHPs = displayedHPs
@@ -24,6 +27,7 @@ struct PartyMembersView: View {
         HStack(alignment: .top, spacing: 0) {
             ForEach(0..<PartyRecord.memberLimit, id: \.self) { index in
                 PartyMemberSlotView(
+                    masterData: masterData,
                     character: character(at: index),
                     displayedCurrentHP: displayedHP(at: index),
                     onSelectCharacter: onSelectCharacter
@@ -54,6 +58,7 @@ struct PartyMembersView: View {
 }
 
 private struct PartyMemberSlotView: View {
+    let masterData: MasterData
     let character: CharacterRecord?
     let displayedCurrentHP: Int?
     let onSelectCharacter: ((CharacterRecord) -> Void)?
@@ -81,7 +86,7 @@ private struct PartyMemberSlotView: View {
     private func slotContent(for character: CharacterRecord) -> some View {
         // Every slot keeps the same compact layout so six members fit across without nested lists.
         VStack(spacing: 2) {
-            Image(character.portraitAssetName)
+            Image(masterData.portraitAssetName(for: character))
                 .resizable()
                 .scaledToFit()
                 .frame(maxWidth: .infinity)

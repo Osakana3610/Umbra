@@ -62,6 +62,7 @@ struct AdventureHomeView: View {
                             )
                         } label: {
                             PartyMembersView(
+                                masterData: masterData,
                                 memberCharacterIds: party.memberCharacterIds,
                                 charactersById: rosterStore.charactersById,
                                 displayedHPs: status.activeRun?.currentPartyHPs

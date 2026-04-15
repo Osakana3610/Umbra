@@ -9,7 +9,7 @@ struct EquipmentCharacterRow: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 16) {
-            Image(character.portraitAssetName)
+            Image(masterData.portraitAssetName(for: character))
                 .resizable()
                 .scaledToFill()
                 .frame(width: 72, height: 72)
@@ -20,7 +20,7 @@ struct EquipmentCharacterRow: View {
                     Text(character.name)
                         .font(.headline)
 
-                    Text("装備 \(character.equippedItemCount)/\(character.maximumEquippedItemCount)")
+                    Text("装備 \(character.equippedItemCount)/\(character.maximumEquippedItemCount(masterData: masterData))")
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(.secondary)
                 }

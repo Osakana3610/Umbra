@@ -1,19 +1,19 @@
 [
     {
-        "id": "debug_monster",
-        "name": "デバッグ（モンスター）",
+        "id": "slime",
+        "name": "スライム",
         "enemyRace": "monster",
         "jobKey": "knight",
         "baseStats": {
-            "vitality": 5,
-            "strength": 5,
-            "mind": 5,
-            "intelligence": 5,
-            "agility": 5,
-            "luck": 5
+            "vitality": 2,
+            "strength": 2,
+            "mind": 1,
+            "intelligence": 1,
+            "agility": 2,
+            "luck": 1
         },
-        "goldBaseValue": 125,
-        "experienceBaseValue": 5,
+        "goldBaseValue": 10,
+        "experienceBaseValue": 1,
         "skillIds": [],
         "rareDropItemKeys": [
             "sword_uncommon_01",
@@ -34,515 +34,21 @@
         ]
     },
     {
-        "id": "debug_undead",
-        "name": "デバッグ（アンデッド）",
-        "enemyRace": "zombie",
-        "jobKey": "swordsman",
-        "baseStats": {
-            "vitality": 10,
-            "strength": 10,
-            "mind": 10,
-            "intelligence": 10,
-            "agility": 10,
-            "luck": 10
-        },
-        "goldBaseValue": 150,
-        "experienceBaseValue": 6,
-        "skillIds": [],
-        "rareDropItemKeys": [
-            "katana_uncommon_01",
-            "robe_uncommon_01",
-            "gauntlet_uncommon_01"
-        ],
-        "actionRates": {
-            "breath": 0,
-            "attack": 100,
-            "recoverySpell": 0,
-            "attackSpell": 0
-        },
-        "actionPriority": [
-            "attack",
-            "attackSpell",
-            "recoverySpell",
-            "breath"
-        ]
-    },
-    {
-        "id": "debug_dragon",
-        "name": "デバッグ（ドラゴン）",
-        "enemyRace": "dragon",
-        "jobKey": "magician",
-        "baseStats": {
-            "vitality": 15,
-            "strength": 15,
-            "mind": 15,
-            "intelligence": 15,
-            "agility": 15,
-            "luck": 15
-        },
-        "goldBaseValue": 400,
-        "experienceBaseValue": 7,
-        "skillIds": [],
-        "rareDropItemKeys": [
-            "bow_uncommon_01",
-            "wand_uncommon_01",
-            "rod_uncommon_01"
-        ],
-        "actionRates": {
-            "breath": 0,
-            "attack": 100,
-            "recoverySpell": 0,
-            "attackSpell": 0
-        },
-        "actionPriority": [
-            "attack",
-            "attackSpell",
-            "recoverySpell",
-            "breath"
-        ]
-    },
-    {
-        "id": "debug_pyromancer",
-        "name": "デバッグ（炎術兵）",
+        "id": "rabbit",
+        "name": "ラビット",
         "enemyRace": "monster",
-        "jobKey": "magician",
-        "baseStats": {
-            "vitality": 11,
-            "strength": 7,
-            "mind": 10,
-            "intelligence": 15,
-            "agility": 10,
-            "luck": 9
-        },
-        "goldBaseValue": 200,
-        "experienceBaseValue": 8,
-        "skillIds": [
-            "attack_magic_access",
-            "fire_resistance_4_5"
-        ],
-        "rareDropItemKeys": [
-            "wand_uncommon_01",
-            "rod_uncommon_01",
-            "robe_uncommon_01"
-        ],
-        "actionRates": {
-            "breath": 0,
-            "attack": 30,
-            "recoverySpell": 0,
-            "attackSpell": 100
-        },
-        "actionPriority": [
-            "attackSpell",
-            "attack",
-            "recoverySpell",
-            "breath"
-        ]
-    },
-    {
-        "id": "debug_stormguard",
-        "name": "デバッグ（雷護兵）",
-        "enemyRace": "zombie",
-        "jobKey": "spellguard",
-        "baseStats": {
-            "vitality": 13,
-            "strength": 9,
-            "mind": 11,
-            "intelligence": 13,
-            "agility": 9,
-            "luck": 8
-        },
-        "goldBaseValue": 225,
-        "experienceBaseValue": 9,
-        "skillIds": [
-            "attack_magic_access",
-            "lightning_resistance_4_5"
-        ],
-        "rareDropItemKeys": [
-            "rod_uncommon_01",
-            "shield_uncommon_01",
-            "jewel_uncommon_01"
-        ],
-        "actionRates": {
-            "breath": 0,
-            "attack": 40,
-            "recoverySpell": 0,
-            "attackSpell": 100
-        },
-        "actionPriority": [
-            "attackSpell",
-            "attack",
-            "recoverySpell",
-            "breath"
-        ]
-    },
-    {
-        "id": "debug_bastion",
-        "name": "デバッグ（城塞兵）",
-        "enemyRace": "monster",
-        "jobKey": "knight",
-        "baseStats": {
-            "vitality": 17,
-            "strength": 14,
-            "mind": 10,
-            "intelligence": 9,
-            "agility": 11,
-            "luck": 10
-        },
-        "goldBaseValue": 250,
-        "experienceBaseValue": 10,
-        "skillIds": [
-            "physical_resistance_4_5",
-            "counter"
-        ],
-        "rareDropItemKeys": [
-            "armor_uncommon_01",
-            "shield_uncommon_01",
-            "sword_uncommon_01"
-        ],
-        "actionRates": {
-            "breath": 0,
-            "attack": 100,
-            "recoverySpell": 0,
-            "attackSpell": 0
-        },
-        "actionPriority": [
-            "attack",
-            "attackSpell",
-            "recoverySpell",
-            "breath"
-        ]
-    },
-    {
-        "id": "debug_revenger",
-        "name": "デバッグ（怨刃兵）",
-        "enemyRace": "zombie",
-        "jobKey": "swordsman",
-        "baseStats": {
-            "vitality": 16,
-            "strength": 17,
-            "mind": 11,
-            "intelligence": 10,
-            "agility": 16,
-            "luck": 12
-        },
-        "goldBaseValue": 275,
-        "experienceBaseValue": 11,
-        "skillIds": [
-            "counter",
-            "extra_attack"
-        ],
-        "rareDropItemKeys": [
-            "katana_uncommon_01",
-            "gauntlet_uncommon_01",
-            "bow_uncommon_01"
-        ],
-        "actionRates": {
-            "breath": 0,
-            "attack": 100,
-            "recoverySpell": 0,
-            "attackSpell": 0
-        },
-        "actionPriority": [
-            "attack",
-            "attackSpell",
-            "recoverySpell",
-            "breath"
-        ]
-    },
-    {
-        "id": "debug_warmage",
-        "name": "デバッグ（魔装兵）",
-        "enemyRace": "monster",
-        "jobKey": "spellguard",
-        "baseStats": {
-            "vitality": 16,
-            "strength": 12,
-            "mind": 15,
-            "intelligence": 17,
-            "agility": 13,
-            "luck": 12
-        },
-        "goldBaseValue": 275,
-        "experienceBaseValue": 11,
-        "skillIds": [
-            "attack_magic_access",
-            "physical_resistance_4_5",
-            "magic_resistance_4_5"
-        ],
-        "rareDropItemKeys": [
-            "wand_uncommon_01",
-            "armor_uncommon_01",
-            "jewel_uncommon_01"
-        ],
-        "actionRates": {
-            "breath": 0,
-            "attack": 40,
-            "recoverySpell": 0,
-            "attackSpell": 100
-        },
-        "actionPriority": [
-            "attackSpell",
-            "attack",
-            "recoverySpell",
-            "breath"
-        ]
-    },
-    {
-        "id": "debug_hierophant",
-        "name": "デバッグ（祈祷兵）",
-        "enemyRace": "monster",
-        "jobKey": "priest",
-        "baseStats": {
-            "vitality": 15,
-            "strength": 10,
-            "mind": 17,
-            "intelligence": 16,
-            "agility": 12,
-            "luck": 14
-        },
-        "goldBaseValue": 300,
-        "experienceBaseValue": 12,
-        "skillIds": [
-            "attack_magic_access",
-            "recovery_magic_access",
-            "magic_resistance_4_5",
-            "rescue"
-        ],
-        "rareDropItemKeys": [
-            "rod_uncommon_01",
-            "robe_uncommon_01",
-            "shield_uncommon_01"
-        ],
-        "actionRates": {
-            "breath": 0,
-            "attack": 20,
-            "recoverySpell": 100,
-            "attackSpell": 70
-        },
-        "actionPriority": [
-            "recoverySpell",
-            "attackSpell",
-            "attack",
-            "breath"
-        ]
-    },
-    {
-        "id": "debug_overlord",
-        "name": "デバッグ（封将兵）",
-        "enemyRace": "dragon",
-        "jobKey": "priest",
-        "baseStats": {
-            "vitality": 18,
-            "strength": 17,
-            "mind": 18,
-            "intelligence": 18,
-            "agility": 16,
-            "luck": 16
-        },
-        "goldBaseValue": 325,
-        "experienceBaseValue": 13,
-        "skillIds": [
-            "attack_magic_access",
-            "recovery_magic_access",
-            "physical_resistance_4_5",
-            "magic_resistance_4_5",
-            "counter",
-            "rescue"
-        ],
-        "rareDropItemKeys": [
-            "misc_uncommon_01",
-            "jewel_uncommon_01",
-            "sword_uncommon_01"
-        ],
-        "actionRates": {
-            "breath": 0,
-            "attack": 70,
-            "recoverySpell": 100,
-            "attackSpell": 100
-        },
-        "actionPriority": [
-            "recoverySpell",
-            "attackSpell",
-            "attack",
-            "breath"
-        ]
-    },
-    {
-        "id": "debug_ironwarden",
-        "name": "デバッグ（鉄壁兵）",
-        "enemyRace": "monster",
-        "jobKey": "knight",
-        "baseStats": {
-            "vitality": 20,
-            "strength": 15,
-            "mind": 14,
-            "intelligence": 10,
-            "agility": 9,
-            "luck": 12
-        },
-        "goldBaseValue": 350,
-        "experienceBaseValue": 14,
-        "skillIds": [
-            "physicalResistanceMultiplier_2_3",
-            "counter"
-        ],
-        "rareDropItemKeys": [
-            "armor_uncommon_01",
-            "shield_uncommon_01",
-            "gauntlet_uncommon_01"
-        ],
-        "actionRates": {
-            "breath": 0,
-            "attack": 100,
-            "recoverySpell": 0,
-            "attackSpell": 0
-        },
-        "actionPriority": [
-            "attack",
-            "attackSpell",
-            "recoverySpell",
-            "breath"
-        ]
-    },
-    {
-        "id": "debug_oathkeeper",
-        "name": "デバッグ（封護兵）",
-        "enemyRace": "monster",
-        "jobKey": "priest",
-        "baseStats": {
-            "vitality": 17,
-            "strength": 10,
-            "mind": 19,
-            "intelligence": 18,
-            "agility": 10,
-            "luck": 15
-        },
-        "goldBaseValue": 375,
-        "experienceBaseValue": 15,
-        "skillIds": [
-            "attack_magic_access",
-            "recovery_magic_access",
-            "physicalResistanceMultiplier_3_4",
-            "magic_resistance_4_5",
-            "rescue"
-        ],
-        "rareDropItemKeys": [
-            "rod_uncommon_01",
-            "robe_uncommon_01",
-            "jewel_uncommon_01"
-        ],
-        "actionRates": {
-            "breath": 0,
-            "attack": 10,
-            "recoverySpell": 100,
-            "attackSpell": 80
-        },
-        "actionPriority": [
-            "recoverySpell",
-            "attackSpell",
-            "attack",
-            "breath"
-        ]
-    },
-    {
-        "id": "debug_dreadnought",
-        "name": "デバッグ（断界将）",
-        "enemyRace": "dragon",
-        "jobKey": "spellguard",
-        "baseStats": {
-            "vitality": 22,
-            "strength": 18,
-            "mind": 19,
-            "intelligence": 19,
-            "agility": 14,
-            "luck": 16
-        },
-        "goldBaseValue": 400,
-        "experienceBaseValue": 16,
-        "skillIds": [
-            "attack_magic_access",
-            "recovery_magic_access",
-            "physicalResistanceMultiplier_2_3",
-            "magic_resistance_4_5",
-            "counter",
-            "rescue"
-        ],
-        "rareDropItemKeys": [
-            "misc_uncommon_01",
-            "shield_uncommon_01",
-            "jewel_uncommon_01"
-        ],
-        "actionRates": {
-            "breath": 0,
-            "attack": 70,
-            "recoverySpell": 100,
-            "attackSpell": 100
-        },
-        "actionPriority": [
-            "recoverySpell",
-            "attackSpell",
-            "attack",
-            "breath"
-        ]
-    },
-    {
-        "id": "debug_grandbastion",
-        "name": "デバッグ（黒城兵）",
-        "enemyRace": "monster",
-        "jobKey": "knight",
-        "baseStats": {
-            "vitality": 24,
-            "strength": 20,
-            "mind": 15,
-            "intelligence": 12,
-            "agility": 12,
-            "luck": 14
-        },
-        "goldBaseValue": 450,
-        "experienceBaseValue": 18,
-        "skillIds": [
-            "physical_resistance_4_5",
-            "counter",
-            "maxHP_plus_10pct"
-        ],
-        "rareDropItemKeys": [
-            "armor_uncommon_01",
-            "shield_uncommon_01",
-            "gauntlet_uncommon_01"
-        ],
-        "actionRates": {
-            "breath": 0,
-            "attack": 100,
-            "recoverySpell": 0,
-            "attackSpell": 0
-        },
-        "actionPriority": [
-            "attack",
-            "attackSpell",
-            "recoverySpell",
-            "breath"
-        ]
-    },
-    {
-        "id": "debug_hexhunter",
-        "name": "デバッグ（呪狩兵）",
-        "enemyRace": "zombie",
         "jobKey": "hunter",
         "baseStats": {
-            "vitality": 18,
-            "strength": 23,
-            "mind": 13,
-            "intelligence": 12,
-            "agility": 20,
-            "luck": 17
+            "vitality": 2,
+            "strength": 3,
+            "mind": 1,
+            "intelligence": 1,
+            "agility": 3,
+            "luck": 2
         },
-        "goldBaseValue": 450,
-        "experienceBaseValue": 18,
-        "skillIds": [
-            "extra_attack",
-            "accuracy_plus_10pct",
-            "physicalAttack_plus_8pct"
-        ],
+        "goldBaseValue": 12,
+        "experienceBaseValue": 1,
+        "skillIds": [],
         "rareDropItemKeys": [
             "bow_uncommon_01",
             "gauntlet_uncommon_01",
@@ -562,164 +68,139 @@
         ]
     },
     {
-        "id": "debug_veilmage",
-        "name": "デバッグ（幻紡兵）",
+        "id": "wolf",
+        "name": "ウルフ",
         "enemyRace": "monster",
-        "jobKey": "magician",
+        "jobKey": "swordsman",
         "baseStats": {
-            "vitality": 19,
-            "strength": 10,
-            "mind": 16,
-            "intelligence": 24,
-            "agility": 18,
-            "luck": 15
+            "vitality": 5,
+            "strength": 6,
+            "mind": 1,
+            "intelligence": 1,
+            "agility": 5,
+            "luck": 3
         },
-        "goldBaseValue": 475,
-        "experienceBaseValue": 19,
-        "skillIds": [
-            "attack_magic_access",
-            "physicalResistanceMultiplier_3_4",
-            "magic_plus_10pct"
-        ],
+        "goldBaseValue": 15,
+        "experienceBaseValue": 2,
+        "skillIds": [],
         "rareDropItemKeys": [
-            "wand_uncommon_01",
-            "robe_uncommon_01",
-            "jewel_uncommon_01"
+            "sword_uncommon_01",
+            "bow_uncommon_01",
+            "gauntlet_uncommon_01"
         ],
         "actionRates": {
             "breath": 0,
-            "attack": 20,
+            "attack": 100,
             "recoverySpell": 0,
-            "attackSpell": 100
+            "attackSpell": 0
         },
         "actionPriority": [
-            "attackSpell",
             "attack",
+            "attackSpell",
             "recoverySpell",
             "breath"
         ]
     },
     {
-        "id": "debug_requiem",
-        "name": "デバッグ（葬祈兵）",
-        "enemyRace": "zombie",
-        "jobKey": "priest",
+        "id": "spider",
+        "name": "スパイダー",
+        "enemyRace": "monster",
+        "jobKey": "hunter",
         "baseStats": {
-            "vitality": 20,
-            "strength": 12,
-            "mind": 24,
-            "intelligence": 22,
-            "agility": 15,
-            "luck": 18
+            "vitality": 4,
+            "strength": 6,
+            "mind": 1,
+            "intelligence": 1,
+            "agility": 7,
+            "luck": 3
         },
-        "goldBaseValue": 500,
-        "experienceBaseValue": 20,
-        "skillIds": [
-            "attack_magic_access",
-            "recovery_magic_access",
-            "physicalResistanceMultiplier_3_4",
-            "rescue",
-            "maxHP_plus_8pct"
-        ],
+        "goldBaseValue": 15,
+        "experienceBaseValue": 2,
+        "skillIds": [],
         "rareDropItemKeys": [
-            "rod_uncommon_01",
+            "bow_uncommon_01",
             "robe_uncommon_01",
+            "jewel_uncommon_01"
+        ],
+        "actionRates": {
+            "breath": 0,
+            "attack": 100,
+            "recoverySpell": 0,
+            "attackSpell": 0
+        },
+        "actionPriority": [
+            "attack",
+            "attackSpell",
+            "recoverySpell",
+            "breath"
+        ]
+    },
+    {
+        "id": "bat",
+        "name": "バット",
+        "enemyRace": "monster",
+        "jobKey": "hunter",
+        "baseStats": {
+            "vitality": 6,
+            "strength": 7,
+            "mind": 1,
+            "intelligence": 1,
+            "agility": 7,
+            "luck": 3
+        },
+        "goldBaseValue": 18,
+        "experienceBaseValue": 2,
+        "skillIds": [],
+        "rareDropItemKeys": [
+            "bow_uncommon_01",
+            "robe_uncommon_01",
+            "jewel_uncommon_01"
+        ],
+        "actionRates": {
+            "breath": 0,
+            "attack": 100,
+            "recoverySpell": 0,
+            "attackSpell": 0
+        },
+        "actionPriority": [
+            "attack",
+            "attackSpell",
+            "recoverySpell",
+            "breath"
+        ]
+    },
+    {
+        "id": "ogre",
+        "name": "オーガ",
+        "enemyRace": "monster",
+        "jobKey": "knight",
+        "baseStats": {
+            "vitality": 9,
+            "strength": 10,
+            "mind": 2,
+            "intelligence": 1,
+            "agility": 3,
+            "luck": 2
+        },
+        "goldBaseValue": 30,
+        "experienceBaseValue": 3,
+        "skillIds": [],
+        "rareDropItemKeys": [
+            "sword_uncommon_01",
+            "armor_uncommon_01",
             "shield_uncommon_01"
         ],
         "actionRates": {
             "breath": 0,
-            "attack": 10,
-            "recoverySpell": 100,
-            "attackSpell": 100
+            "attack": 100,
+            "recoverySpell": 0,
+            "attackSpell": 0
         },
         "actionPriority": [
-            "recoverySpell",
-            "attackSpell",
             "attack",
+            "attackSpell",
+            "recoverySpell",
             "breath"
-        ]
-    },
-    {
-        "id": "debug_nullguard",
-        "name": "デバッグ（虚盾将）",
-        "enemyRace": "dragon",
-        "jobKey": "spellguard",
-        "baseStats": {
-            "vitality": 25,
-            "strength": 19,
-            "mind": 22,
-            "intelligence": 22,
-            "agility": 16,
-            "luck": 18
-        },
-        "goldBaseValue": 525,
-        "experienceBaseValue": 21,
-        "skillIds": [
-            "attack_magic_access",
-            "recovery_magic_access",
-            "physical_resistance_4_5",
-            "magic_resistance_4_5",
-            "counter",
-            "rescue"
-        ],
-        "rareDropItemKeys": [
-            "shield_uncommon_01",
-            "armor_uncommon_01",
-            "jewel_uncommon_01"
-        ],
-        "actionRates": {
-            "breath": 60,
-            "attack": 60,
-            "recoverySpell": 100,
-            "attackSpell": 100
-        },
-        "actionPriority": [
-            "recoverySpell",
-            "attackSpell",
-            "breath",
-            "attack"
-        ]
-    },
-    {
-        "id": "debug_worldender",
-        "name": "デバッグ（終滅王）",
-        "enemyRace": "dragon",
-        "jobKey": "priest",
-        "baseStats": {
-            "vitality": 28,
-            "strength": 22,
-            "mind": 24,
-            "intelligence": 24,
-            "agility": 18,
-            "luck": 20
-        },
-        "goldBaseValue": 600,
-        "experienceBaseValue": 24,
-        "skillIds": [
-            "attack_magic_access",
-            "recovery_magic_access",
-            "physical_resistance_4_5",
-            "magic_resistance_4_5",
-            "counter",
-            "rescue",
-            "maxHP_plus_10pct"
-        ],
-        "rareDropItemKeys": [
-            "misc_uncommon_01",
-            "jewel_uncommon_01",
-            "rod_uncommon_01"
-        ],
-        "actionRates": {
-            "breath": 80,
-            "attack": 70,
-            "recoverySpell": 100,
-            "attackSpell": 100
-        },
-        "actionPriority": [
-            "recoverySpell",
-            "attackSpell",
-            "breath",
-            "attack"
         ]
     }
 ]

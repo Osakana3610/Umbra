@@ -67,7 +67,6 @@ nonisolated struct RunSessionRecord: Equatable, Sendable, Identifiable {
     let progressIntervalMultiplier: Double
     let goldMultiplier: Double
     let rareDropMultiplier: Double
-    let titleDropMultiplier: Double
     let partyAverageLuck: Double
     let latestBattleFloorNumber: Int?
     let latestBattleNumber: Int?
@@ -94,6 +93,8 @@ nonisolated struct RunSessionRecord: Equatable, Sendable, Identifiable {
     }
 
     func progressIntervalSeconds(baseIntervalSeconds: Int) -> Double {
+        // Both inputs are clamped so malformed persisted multipliers never freeze progress or make
+        // it run with a non-positive interval.
         let clampedBaseIntervalSeconds = max(baseIntervalSeconds, 1)
         let clampedMultiplier = max(progressIntervalMultiplier, 0.1)
         return Double(clampedBaseIntervalSeconds) * clampedMultiplier
@@ -118,7 +119,6 @@ nonisolated struct RunSessionRecord: Equatable, Sendable, Identifiable {
             progressIntervalMultiplier: progressIntervalMultiplier,
             goldMultiplier: goldMultiplier,
             rareDropMultiplier: rareDropMultiplier,
-            titleDropMultiplier: titleDropMultiplier,
             partyAverageLuck: partyAverageLuck,
             latestBattleFloorNumber: latestBattleFloorNumber,
             latestBattleNumber: latestBattleNumber,
@@ -141,6 +141,8 @@ nonisolated struct RunSessionRecord: Equatable, Sendable, Identifiable {
 }
 
 nonisolated struct ExplorationRunSnapshot: Equatable, Sendable {
+    // Reward application is reported alongside the refreshed runs so UI layers can reload only the
+    // dependent stores that actually changed.
     let runs: [RunSessionRecord]
     let didApplyRewards: Bool
     let appliedInventoryCounts: [CompositeItemID: Int]

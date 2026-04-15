@@ -50,8 +50,7 @@
             "healing_plus_13pct",
             "magic_plus_13pct",
             "magicDamageMultiplier_plus_13pct",
-            "magic_resistance_4_5",
-            "rescue"
+            "magic_resistance_4_5"
         ]
     },
     {
@@ -81,8 +80,7 @@
             "maxHP_plus_20",
             "healing_plus_13pct",
             "physical_resistance_4_5",
-            "magic_resistance_4_5",
-            "rescue"
+            "magic_resistance_4_5"
         ]
     },
     {

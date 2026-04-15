@@ -50,12 +50,28 @@ VALID_EFFECT_TARGETS = {
 
 VALID_SKILL_EFFECT_KINDS = {
     "battleStatModifier",
+    "baseBattleStatMultiplier",
     "battleDerivedModifier",
+    "partyModifier",
     "allBattleStatMultiplier",
     "rewardMultiplier",
+    "equipmentCapacityModifier",
+    "titleRollCountModifier",
+    "normalDropJewelize",
     "magicAccess",
+    "onHitAilmentGrant",
+    "contactAilmentGrant",
+    "multiHitFalloffModifier",
+    "hitRateFloorModifier",
     "breathAccess",
     "interruptGrant",
+    "defenseRule",
+    "recoveryRule",
+    "actionRule",
+    "reviveRule",
+    "combatRule",
+    "rewardRule",
+    "specialRule",
 }
 
 VALID_BATTLE_STAT_OPERATIONS = {
@@ -114,6 +130,21 @@ VALID_REWARD_MULTIPLIER_TARGETS = {
     "experienceGainMultiplier",
     "rareDropMultiplier",
     "titleDropMultiplier",
+}
+
+VALID_PARTY_MODIFIER_TARGETS = {
+    "allyPhysicalDamageMultiplier",
+    "allyMagicDamageMultiplier",
+    "allyHealingMultiplier",
+    "allyPhysicalDamageTakenMultiplier",
+    "allyMagicDamageTakenMultiplier",
+}
+
+VALID_AILMENT_KEYS = {
+    "sleep",
+    "curse",
+    "paralysis",
+    "petrify",
 }
 
 VALID_INTERRUPT_KINDS = {
@@ -190,17 +221,30 @@ def build_races(records: list[dict], skill_indices: dict[str, int]) -> list[dict
             ("vitality", "strength", "mind", "intelligence", "agility", "luck"),
             f"race[{record['id']}].baseStats",
         )
-        skill_ids = record.get("skillIds", [])
-        if not isinstance(skill_ids, list):
-            raise ValueError(f"Expected race[{record['id']}].skillIds to be an array")
-        for skill_id in skill_ids:
-            if not isinstance(skill_id, str):
-                raise ValueError(f"Expected race[{record['id']}].skillIds values to be strings")
-            if skill_id not in skill_indices:
-                raise ValueError(f"Unknown skillId '{skill_id}' in race[{record['id']}]")
+        def build_skill_ids(raw_value: object, field_name: str) -> list[int]:
+            if raw_value is None:
+                return []
+            if not isinstance(raw_value, list):
+                raise ValueError(f"Expected race[{record['id']}].{field_name} to be an array")
+
+            built_skill_ids: list[int] = []
+            for skill_id in raw_value:
+                if not isinstance(skill_id, str):
+                    raise ValueError(f"Expected race[{record['id']}].{field_name} values to be strings")
+                if skill_id not in skill_indices:
+                    raise ValueError(f"Unknown skillId '{skill_id}' in race[{record['id']}]")
+                built_skill_ids.append(skill_indices[skill_id])
+            return built_skill_ids
+
+        legacy_skill_ids = record.get("skillIds")
+        passive_skill_ids = build_skill_ids(record.get("passiveSkillIds"), "passiveSkillIds")
+        level_skill_ids = build_skill_ids(record.get("levelSkillIds"), "levelSkillIds")
+        if not passive_skill_ids and not level_skill_ids and legacy_skill_ids is not None:
+            passive_skill_ids = build_skill_ids(legacy_skill_ids, "skillIds")
         races.append(
             {
                 "id": index,
+                "key": record["id"],
                 "name": record["name"],
                 "levelCap": int(record["levelCap"]),
                 "baseHirePrice": int(record["baseHirePrice"]),
@@ -212,7 +256,8 @@ def build_races(records: list[dict], skill_indices: dict[str, int]) -> list[dict
                     "agility": int(base_stats["agility"]),
                     "luck": int(base_stats["luck"]),
                 },
-                "skillIds": [skill_indices[skill_id] for skill_id in skill_ids],
+                "passiveSkillIds": passive_skill_ids,
+                "levelSkillIds": level_skill_ids,
             }
         )
     return races
@@ -285,6 +330,7 @@ def build_jobs(records: list[dict], skill_indices: dict[str, int]) -> list[dict]
         jobs.append(
             {
                 "id": index,
+                "key": record["id"],
                 "name": record["name"],
                 "hirePriceMultiplier": float(record["hirePriceMultiplier"]),
                 "coefficients": {key: float(coefficients[key]) for key in coefficient_keys},
@@ -296,14 +342,32 @@ def build_jobs(records: list[dict], skill_indices: dict[str, int]) -> list[dict]
     return jobs
 
 
-def build_aptitudes(records: list[dict]) -> list[dict]:
+def build_aptitudes(records: list[dict], skill_indices: dict[str, int]) -> list[dict]:
     aptitudes: list[dict] = []
     for index, record in enumerate(records, start=1):
         require_keys(record, ("id", "name"), f"aptitude[{index}]")
+
+        def build_skill_ids(raw_value: object, field_name: str) -> list[int]:
+            if raw_value is None:
+                return []
+            if not isinstance(raw_value, list):
+                raise ValueError(f"Expected aptitude[{record['id']}].{field_name} to be an array")
+
+            built_skill_ids: list[int] = []
+            for skill_id in raw_value:
+                if not isinstance(skill_id, str):
+                    raise ValueError(f"Expected aptitude[{record['id']}].{field_name} values to be strings")
+                if skill_id not in skill_indices:
+                    raise ValueError(f"Unknown skillId '{skill_id}' in aptitude[{record['id']}]")
+                built_skill_ids.append(skill_indices[skill_id])
+            return built_skill_ids
+
+        passive_skill_ids = build_skill_ids(record.get("passiveSkillIds"), "passiveSkillIds")
         aptitudes.append(
             {
                 "id": index,
                 "name": record["name"],
+                "passiveSkillIds": passive_skill_ids,
             }
         )
     return aptitudes
@@ -537,7 +601,13 @@ def build_skills(records: list[dict], spell_indices: dict[str, int]) -> list[dic
                     f"Unsupported condition '{condition}' in skill[{record['id']}].effects[{effect_index}]"
                 )
 
-            if kind in {"battleStatModifier", "battleDerivedModifier", "rewardMultiplier"}:
+            if kind in {
+                "battleStatModifier",
+                "baseBattleStatMultiplier",
+                "battleDerivedModifier",
+                "partyModifier",
+                "rewardMultiplier",
+            }:
                 require_keys(
                     effect,
                     ("target", "operation", "value"),
@@ -546,8 +616,12 @@ def build_skills(records: list[dict], spell_indices: dict[str, int]) -> list[dic
                 target = effect["target"]
                 if kind == "battleStatModifier":
                     valid_targets = VALID_BATTLE_STAT_TARGETS
+                elif kind == "baseBattleStatMultiplier":
+                    valid_targets = VALID_BATTLE_STAT_TARGETS
                 elif kind == "battleDerivedModifier":
                     valid_targets = VALID_BATTLE_DERIVED_STAT_TARGETS
+                elif kind == "partyModifier":
+                    valid_targets = VALID_PARTY_MODIFIER_TARGETS
                 else:
                     valid_targets = VALID_REWARD_MULTIPLIER_TARGETS
                 if target not in valid_targets:
@@ -558,7 +632,11 @@ def build_skills(records: list[dict], spell_indices: dict[str, int]) -> list[dic
                 operation = effect["operation"]
                 if kind == "battleStatModifier":
                     valid_operations = VALID_BATTLE_STAT_OPERATIONS
+                elif kind == "baseBattleStatMultiplier":
+                    valid_operations = {"mul"}
                 elif kind == "battleDerivedModifier":
+                    valid_operations = VALID_BATTLE_DERIVED_OPERATIONS
+                elif kind == "partyModifier":
                     valid_operations = VALID_BATTLE_DERIVED_OPERATIONS
                 else:
                     valid_operations = VALID_REWARD_MULTIPLIER_OPERATIONS
@@ -618,6 +696,85 @@ def build_skills(records: list[dict], spell_indices: dict[str, int]) -> list[dic
                 )
                 continue
 
+            if kind in {
+                "equipmentCapacityModifier",
+                "titleRollCountModifier",
+                "normalDropJewelize",
+                "multiHitFalloffModifier",
+                "hitRateFloorModifier",
+            }:
+                require_keys(effect, ("value",), f"skill[{record['id']}].effects[{effect_index}]")
+                for unexpected_key in ("target", "operation", "spellIds", "interruptKind"):
+                    if unexpected_key in effect:
+                        raise ValueError(
+                            f"Unexpected key '{unexpected_key}' in "
+                            f"skill[{record['id']}].effects[{effect_index}]"
+                        )
+                built_effects.append(
+                    {
+                        "kind": kind,
+                        "target": None,
+                        "operation": None,
+                        "value": float(effect["value"]),
+                        "spellIds": [],
+                        "condition": None,
+                        "interruptKind": None,
+                    }
+                )
+                continue
+
+            if kind == "onHitAilmentGrant":
+                require_keys(effect, ("target", "value"), f"skill[{record['id']}].effects[{effect_index}]")
+                target = effect["target"]
+                if target not in VALID_AILMENT_KEYS:
+                    raise ValueError(
+                        f"Unsupported target '{target}' in skill[{record['id']}].effects[{effect_index}]"
+                    )
+                for unexpected_key in ("operation", "spellIds", "interruptKind"):
+                    if unexpected_key in effect:
+                        raise ValueError(
+                            f"Unexpected key '{unexpected_key}' in "
+                            f"skill[{record['id']}].effects[{effect_index}]"
+                        )
+                built_effects.append(
+                    {
+                        "kind": kind,
+                        "target": target,
+                        "operation": None,
+                        "value": float(effect["value"]),
+                        "spellIds": [],
+                        "condition": None,
+                        "interruptKind": None,
+                    }
+                )
+                continue
+
+            if kind == "contactAilmentGrant":
+                require_keys(effect, ("target", "value"), f"skill[{record['id']}].effects[{effect_index}]")
+                target = effect["target"]
+                if target not in VALID_AILMENT_KEYS:
+                    raise ValueError(
+                        f"Unsupported target '{target}' in skill[{record['id']}].effects[{effect_index}]"
+                    )
+                for unexpected_key in ("operation", "spellIds", "interruptKind"):
+                    if unexpected_key in effect:
+                        raise ValueError(
+                            f"Unexpected key '{unexpected_key}' in "
+                            f"skill[{record['id']}].effects[{effect_index}]"
+                        )
+                built_effects.append(
+                    {
+                        "kind": kind,
+                        "target": target,
+                        "operation": None,
+                        "value": float(effect["value"]),
+                        "spellIds": [],
+                        "condition": None,
+                        "interruptKind": None,
+                    }
+                )
+                continue
+
             if kind == "magicAccess":
                 require_keys(effect, ("spellIds", "operation"), f"skill[{record['id']}].effects[{effect_index}]")
                 operation = effect["operation"]
@@ -662,6 +819,65 @@ def build_skills(records: list[dict], spell_indices: dict[str, int]) -> list[dic
                         "value": None,
                         "spellIds": [],
                         "condition": None,
+                        "interruptKind": None,
+                    }
+                )
+                continue
+
+            if kind == "specialRule":
+                require_keys(effect, ("target", "value"), f"skill[{record['id']}].effects[{effect_index}]")
+                target = effect["target"]
+                if not isinstance(target, str) or not target:
+                    raise ValueError(
+                        f"Expected non-empty string target in skill[{record['id']}].effects[{effect_index}]"
+                    )
+                for unexpected_key in ("operation", "spellIds", "interruptKind"):
+                    if unexpected_key in effect:
+                        raise ValueError(
+                            f"Unexpected key '{unexpected_key}' in "
+                            f"skill[{record['id']}].effects[{effect_index}]"
+                        )
+                built_effects.append(
+                    {
+                        "kind": kind,
+                        "target": target,
+                        "operation": None,
+                        "value": float(effect["value"]),
+                        "spellIds": [],
+                        "condition": condition,
+                        "interruptKind": None,
+                    }
+                )
+                continue
+
+            if kind in {
+                "defenseRule",
+                "recoveryRule",
+                "actionRule",
+                "reviveRule",
+                "combatRule",
+                "rewardRule",
+            }:
+                require_keys(effect, ("target", "value"), f"skill[{record['id']}].effects[{effect_index}]")
+                target = effect["target"]
+                if not isinstance(target, str) or not target:
+                    raise ValueError(
+                        f"Expected non-empty string target in skill[{record['id']}].effects[{effect_index}]"
+                    )
+                for unexpected_key in ("operation", "spellIds", "interruptKind"):
+                    if unexpected_key in effect:
+                        raise ValueError(
+                            f"Unexpected key '{unexpected_key}' in "
+                            f"skill[{record['id']}].effects[{effect_index}]"
+                        )
+                built_effects.append(
+                    {
+                        "kind": kind,
+                        "target": target,
+                        "operation": None,
+                        "value": float(effect["value"]),
+                        "spellIds": [],
+                        "condition": condition,
                         "interruptKind": None,
                     }
                 )
@@ -974,7 +1190,7 @@ def build_runtime_master_data(source_dir: Path) -> dict:
         },
         "races": build_races(races, keyed_indices(skills)),
         "jobs": build_jobs(jobs, keyed_indices(skills)),
-        "aptitudes": build_aptitudes(aptitudes),
+        "aptitudes": build_aptitudes(aptitudes, keyed_indices(skills)),
         "items": build_items(items, keyed_indices(skills)),
         "titles": build_titles(titles),
         "superRares": build_super_rares(super_rares, keyed_indices(skills)),

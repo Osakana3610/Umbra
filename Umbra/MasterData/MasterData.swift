@@ -61,15 +61,18 @@ extension MasterData {
 
     nonisolated struct Race: Identifiable, Decodable, Sendable {
         let id: Int
+        let key: String
         let name: String
         let levelCap: Int
         let baseHirePrice: Int
         let baseStats: BaseStats
-        let skillIds: [Int]
+        let passiveSkillIds: [Int]
+        let levelSkillIds: [Int]
     }
 
     nonisolated struct Job: Identifiable, Decodable, Sendable {
         let id: Int
+        let key: String
         let name: String
         let hirePriceMultiplier: Double
         let coefficients: BattleStatCoefficients
@@ -86,6 +89,7 @@ extension MasterData {
     nonisolated struct Aptitude: Identifiable, Decodable, Sendable {
         let id: Int
         let name: String
+        let passiveSkillIds: [Int]
     }
 
     nonisolated struct Item: Identifiable, Decodable, Sendable {
@@ -255,12 +259,28 @@ nonisolated enum ItemRangeClass: String, Decodable, Sendable {
 
 nonisolated enum SkillEffectKind: String, Decodable, Sendable {
     case battleStatModifier
+    case baseBattleStatMultiplier
     case battleDerivedModifier
+    case partyModifier
     case allBattleStatMultiplier
     case rewardMultiplier
+    case equipmentCapacityModifier
+    case titleRollCountModifier
+    case normalDropJewelize
     case magicAccess
+    case onHitAilmentGrant
+    case contactAilmentGrant
+    case multiHitFalloffModifier
+    case hitRateFloorModifier
     case breathAccess
     case interruptGrant
+    case defenseRule
+    case recoveryRule
+    case actionRule
+    case reviveRule
+    case combatRule
+    case rewardRule
+    case specialRule
 }
 
 nonisolated enum SkillEffectCondition: String, Decodable, Sendable {

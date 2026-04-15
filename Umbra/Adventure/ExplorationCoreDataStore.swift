@@ -846,7 +846,6 @@ nonisolated private enum ExplorationCoreDataBridge {
             progressIntervalMultiplier: entity.progressIntervalMultiplier,
             goldMultiplier: entity.goldMultiplier,
             rareDropMultiplier: entity.rareDropMultiplier,
-            titleDropMultiplier: entity.titleDropMultiplier,
             partyAverageLuck: entity.partyAverageLuck,
             latestBattleFloorNumber: entity.latestBattleFloorNumber > 0 ? Int(entity.latestBattleFloorNumber) : nil,
             latestBattleNumber: entity.latestBattleNumber > 0 ? Int(entity.latestBattleNumber) : nil,
@@ -885,7 +884,6 @@ nonisolated private enum ExplorationCoreDataBridge {
             progressIntervalMultiplier: summary.progressIntervalMultiplier,
             goldMultiplier: summary.goldMultiplier,
             rareDropMultiplier: summary.rareDropMultiplier,
-            titleDropMultiplier: summary.titleDropMultiplier,
             partyAverageLuck: summary.partyAverageLuck,
             latestBattleFloorNumber: summary.latestBattleFloorNumber,
             latestBattleNumber: summary.latestBattleNumber,
@@ -1079,7 +1077,6 @@ nonisolated private enum ExplorationCoreDataBridge {
         entity.progressIntervalMultiplier = session.progressIntervalMultiplier
         entity.goldMultiplier = session.goldMultiplier
         entity.rareDropMultiplier = session.rareDropMultiplier
-        entity.titleDropMultiplier = session.titleDropMultiplier
         entity.partyAverageLuck = session.partyAverageLuck
         entity.latestBattleFloorNumber = Int64(session.latestBattleFloorNumber ?? -1)
         entity.latestBattleNumber = Int64(session.latestBattleNumber ?? -1)
@@ -1277,6 +1274,7 @@ nonisolated private enum ExplorationCoreDataBridge {
         entity.previousJobId = Int64(character.previousJobId)
         entity.currentJobId = Int64(character.currentJobId)
         entity.aptitudeId = Int64(character.aptitudeId)
+        entity.portraitAssetID = character.portraitAssetID
         entity.portraitVariant = Int64(character.portraitGender.rawValue)
         entity.experience = Int64(character.experience)
         entity.level = Int64(character.level)
@@ -1309,6 +1307,7 @@ nonisolated private enum ExplorationCoreDataBridge {
             currentJobId: Int(entity.currentJobId),
             aptitudeId: Int(entity.aptitudeId),
             portraitGender: PortraitGender(rawValue: Int(entity.portraitVariant)) ?? .unisex,
+            portraitAssetID: entity.portraitAssetID ?? "",
             experience: Int(entity.experience),
             level: Int(entity.level),
             currentHP: Int(entity.currentHP),
@@ -1341,6 +1340,7 @@ nonisolated private enum ExplorationCoreDataBridge {
             currentJobId: Int(entity.currentJobId),
             aptitudeId: Int(entity.aptitudeId),
             portraitGender: PortraitGender(rawValue: Int(entity.portraitVariant)) ?? .unisex,
+            portraitAssetID: entity.portraitAssetID ?? "",
             experience: Int(entity.experience),
             level: Int(entity.level),
             currentHP: Int(entity.currentHP),

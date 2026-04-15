@@ -5,6 +5,7 @@ import unittest
 from pathlib import Path
 
 from Generator.generate_master_db import (
+    build_aptitudes,
     build_enemies,
     build_items,
     build_recruit_names,
@@ -93,6 +94,51 @@ class BuildSkillsValidationTests(unittest.TestCase):
             ],
         )
 
+    def test_accepts_valid_base_battle_stat_multiplier(self):
+        records = [
+            {
+                "id": "skill-1",
+                "name": "valid base stat",
+                "description": "valid",
+                "effects": [
+                    {
+                        "kind": "baseBattleStatMultiplier",
+                        "target": "physicalAttack",
+                        "operation": "mul",
+                        "value": 2.0,
+                    }
+                ],
+            }
+        ]
+
+        built = build_skills(records, {})
+
+        self.assertEqual(built[0]["effects"][0]["kind"], "baseBattleStatMultiplier")
+        self.assertEqual(built[0]["effects"][0]["target"], "physicalAttack")
+        self.assertEqual(built[0]["effects"][0]["value"], 2.0)
+
+    def test_accepts_valid_special_rule(self):
+        records = [
+            {
+                "id": "skill-1",
+                "name": "valid special rule",
+                "description": "valid",
+                "effects": [
+                    {
+                        "kind": "specialRule",
+                        "target": "guardPhysicalActionChance",
+                        "value": 0.5,
+                    }
+                ],
+            }
+        ]
+
+        built = build_skills(records, {})
+
+        self.assertEqual(built[0]["effects"][0]["kind"], "specialRule")
+        self.assertEqual(built[0]["effects"][0]["target"], "guardPhysicalActionChance")
+        self.assertEqual(built[0]["effects"][0]["value"], 0.5)
+
 
 class BuildTitlesTests(unittest.TestCase):
     def test_builds_titles_with_numeric_ids_and_weights(self):
@@ -156,6 +202,59 @@ class BuildRecruitNamesTests(unittest.TestCase):
                 "unisex": ["ノア"],
             },
         )
+
+
+class BuildAptitudesTests(unittest.TestCase):
+    def test_builds_aptitudes_with_numeric_ids_and_passive_skill_ids(self):
+        records = [
+            {
+                "id": "swordsmanship",
+                "name": "剣術の心得",
+                "passiveSkillIds": ["skill-a", "skill-c"],
+            },
+            {
+                "id": "fortune",
+                "name": "運が良い",
+                "passiveSkillIds": [],
+            },
+        ]
+
+        built = build_aptitudes(
+            records,
+            {
+                "skill-a": 10,
+                "skill-b": 20,
+                "skill-c": 30,
+            },
+        )
+
+        self.assertEqual(
+            built,
+            [
+                {
+                    "id": 1,
+                    "name": "剣術の心得",
+                    "passiveSkillIds": [10, 30],
+                },
+                {
+                    "id": 2,
+                    "name": "運が良い",
+                    "passiveSkillIds": [],
+                },
+            ],
+        )
+
+    def test_rejects_unknown_passive_skill_id(self):
+        records = [
+            {
+                "id": "swordsmanship",
+                "name": "剣術の心得",
+                "passiveSkillIds": ["missing-skill"],
+            }
+        ]
+
+        with self.assertRaisesRegex(ValueError, "Unknown skillId 'missing-skill'"):
+            build_aptitudes(records, {})
 
 
 class BuildItemsTests(unittest.TestCase):
@@ -436,11 +535,37 @@ class GeneratedMasterDataOutputTests(unittest.TestCase):
         job_ids = {entry["id"] for entry in master_data["jobs"]}
         item_ids = {entry["id"] for entry in master_data["items"]}
         enemy_ids = {entry["id"] for entry in master_data["enemies"]}
+        race_level_skill_ids = [
+            skill_id
+            for race in master_data["races"]
+            for skill_id in race["levelSkillIds"]
+        ]
+        job_level_skill_ids = [
+            skill_id
+            for job in master_data["jobs"]
+            for skill_id in job["levelSkillIds"]
+        ]
+
+        self.assertEqual(len(master_data["races"]), 16)
+        self.assertEqual(len(master_data["jobs"]), 16)
+        self.assertEqual(len(race_level_skill_ids), 32)
+        self.assertEqual(len(job_level_skill_ids), 48)
 
         for race in master_data["races"]:
-            self.assertTrue(set(race["skillIds"]).issubset(skill_ids))
+            self.assertIsInstance(race["key"], str)
+            self.assertTrue(race["key"])
+            self.assertEqual(len(race["levelSkillIds"]), 2, race["id"])
+            self.assertTrue(set(race["passiveSkillIds"]).issubset(skill_ids))
+            self.assertTrue(set(race["levelSkillIds"]).issubset(skill_ids))
         for job in master_data["jobs"]:
-            self.assertTrue(set(job["skillIds"]).issubset(skill_ids))
+            self.assertIsInstance(job["key"], str)
+            self.assertTrue(job["key"])
+            self.assertEqual(len(job["levelSkillIds"]), 3, job["id"])
+            self.assertTrue(set(job["passiveSkillIds"]).issubset(skill_ids))
+            self.assertTrue(set(job["levelSkillIds"]).issubset(skill_ids))
+
+        for aptitude in master_data["aptitudes"]:
+            self.assertTrue(set(aptitude["passiveSkillIds"]).issubset(skill_ids))
         for item in master_data["items"]:
             self.assertTrue(set(item["skillIds"]).issubset(skill_ids))
         for super_rare in master_data["superRares"]:
@@ -474,6 +599,53 @@ class GeneratedMasterDataOutputTests(unittest.TestCase):
                     self.assertTrue({entry["enemyId"] for entry in fixed_battle}.issubset(enemy_ids))
                     for entry in fixed_battle:
                         self.assertGreater(entry["level"], 0)
+
+    def test_source_level_skill_ids_use_expected_prefixes_and_counts(self):
+        root = Path(__file__).resolve().parent.parent / "MasterDataSource"
+        races = json.loads((root / "races.json").read_text())
+        jobs = json.loads((root / "jobs.json").read_text())
+
+        race_level_skill_ids = [
+            skill_id
+            for race in races
+            for skill_id in race["levelSkillIds"]
+        ]
+        job_level_skill_ids = [
+            skill_id
+            for job in jobs
+            for skill_id in job["levelSkillIds"]
+        ]
+
+        self.assertEqual(len(races), 16)
+        self.assertEqual(len(jobs), 16)
+        self.assertEqual(len(race_level_skill_ids), 32)
+        self.assertEqual(len(job_level_skill_ids), 48)
+        self.assertTrue(all(len(race["levelSkillIds"]) == 2 for race in races))
+        self.assertTrue(all(len(job["levelSkillIds"]) == 3 for job in jobs))
+        self.assertTrue(all(skill_id.startswith("race_") for skill_id in race_level_skill_ids))
+        self.assertTrue(all(skill_id.startswith("job_") for skill_id in job_level_skill_ids))
+
+    def test_generated_output_uses_pct_add_for_percentage_based_resistance_skills(self):
+        output_path = Path(__file__).resolve().parent / "Output" / "masterdata.json"
+        self.assertTrue(output_path.exists(), output_path)
+
+        master_data = json.loads(output_path.read_text())
+        expected_targets = {
+            "物理ダメージ軽減": "physicalResistanceMultiplier",
+            "魔法ダメージ軽減": "magicResistanceMultiplier",
+            "ブレスダメージ軽減": "breathResistanceMultiplier",
+        }
+
+        for label_prefix, target in expected_targets.items():
+            for value in range(1, 14):
+                skill_name = f"{label_prefix}{value}%"
+                skill = next((entry for entry in master_data["skills"] if entry["name"] == skill_name), None)
+                self.assertIsNotNone(skill, skill_name)
+                self.assertEqual(len(skill["effects"]), 1, skill_name)
+                effect = skill["effects"][0]
+                self.assertEqual(effect["target"], target, skill_name)
+                self.assertEqual(effect["operation"], "pctAdd", skill_name)
+                self.assertAlmostEqual(effect["value"], -(value / 100), places=6, msg=skill_name)
 
 
 if __name__ == "__main__":

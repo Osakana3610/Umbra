@@ -39,7 +39,6 @@ nonisolated enum ExplorationResolver {
         var goldBuffer = 0
         var experienceRewards: [ExplorationExperienceReward] = []
         var dropRewards: [ExplorationDropReward] = []
-        let rewardContext = makeRewardContext(from: session, masterData: masterData)
         var completion: RunCompletionRecord?
 
         while completedBattleCount < battlePlans.count, completion == nil {
@@ -50,13 +49,14 @@ nonisolated enum ExplorationResolver {
                 floorNumber: battlePlan.floorNumber,
                 battleNumber: battlePlan.battleNumber
             )
+            let resolvedMembers = try resolvedPartyMembers(
+                from: currentPartyMembers,
+                masterData: masterData,
+                cachedStatuses: &cachedStatuses
+            )
             let result = try SingleBattleResolver.resolve(
                 context: battleContext,
-                partyMembers: try resolvedPartyMembers(
-                    from: currentPartyMembers,
-                    masterData: masterData,
-                    cachedStatuses: &cachedStatuses
-                ),
+                partyMembers: resolvedMembers,
                 enemies: battlePlan.enemies,
                 masterData: masterData
             )
@@ -76,7 +76,11 @@ nonisolated enum ExplorationResolver {
             switch result.result {
             case .victory:
                 let rewards = resolveRewards(
-                    rewardContext: rewardContext,
+                    rewardContext: makeRewardContext(
+                        from: session,
+                        partyMembers: resolvedMembers,
+                        masterData: masterData
+                    ),
                     enemySeeds: battlePlan.enemies,
                     result: result,
                     floorNumber: battlePlan.floorNumber,
@@ -152,7 +156,6 @@ nonisolated enum ExplorationResolver {
             progressIntervalMultiplier: session.progressIntervalMultiplier,
             goldMultiplier: session.goldMultiplier,
             rareDropMultiplier: session.rareDropMultiplier,
-            titleDropMultiplier: session.titleDropMultiplier,
             partyAverageLuck: session.partyAverageLuck,
             latestBattleFloorNumber: battleLogs.last?.battleRecord.floorNumber,
             latestBattleNumber: battleLogs.last?.battleRecord.battleNumber,
@@ -219,7 +222,6 @@ nonisolated enum ExplorationResolver {
             progressIntervalMultiplier: session.progressIntervalMultiplier,
             goldMultiplier: session.goldMultiplier,
             rareDropMultiplier: session.rareDropMultiplier,
-            titleDropMultiplier: session.titleDropMultiplier,
             partyAverageLuck: session.partyAverageLuck,
             latestBattleFloorNumber: latestBattleLog?.battleRecord.floorNumber,
             latestBattleNumber: latestBattleLog?.battleRecord.battleNumber,
@@ -273,7 +275,10 @@ nonisolated extension ExplorationResolver {
         let memberExperienceMultipliers: [Double]
         let goldMultiplier: Double
         let rareDropMultiplier: Double
-        let titleDropMultiplier: Double
+        let titleRollCountModifier: Int
+        let normalDropJewelizeChance: Double
+        let goldPenaltyPerDamageTaken: Double
+        let goldGainPctAddOnNormalKill: Double
         let partyAverageLuck: Double
         let defaultTitle: MasterData.Title
         let enemyTitle: MasterData.Title
@@ -503,17 +508,37 @@ nonisolated extension ExplorationResolver {
 
     static func makeRewardContext(
         from session: RunSessionRecord,
+        partyMembers: [PartyBattleMember],
         masterData: MasterData
     ) -> RewardContext {
         let defaultTitle = masterData.defaultExplorationDifficultyTitle ?? masterData.titles[0]
         let enemyTitle = masterData.explorationDifficultyTitle(id: session.selectedDifficultyTitleId) ?? defaultTitle
+        let skillTable = Dictionary(uniqueKeysWithValues: masterData.skills.map { ($0.id, $0) })
+        let uniqueSkillIDs = Set(partyMembers.flatMap(\.status.skillIds))
 
         return RewardContext(
             memberCharacterIds: session.memberCharacterIds,
             memberExperienceMultipliers: session.memberExperienceMultipliers,
             goldMultiplier: session.goldMultiplier,
             rareDropMultiplier: session.rareDropMultiplier,
-            titleDropMultiplier: session.titleDropMultiplier,
+            titleRollCountModifier: titleRollCountModifier(
+                skillIds: uniqueSkillIDs,
+                skillTable: skillTable
+            ),
+            normalDropJewelizeChance: normalDropJewelizeChance(
+                skillIds: uniqueSkillIDs,
+                skillTable: skillTable
+            ),
+            goldPenaltyPerDamageTaken: rewardRuleTotal(
+                target: "goldPenaltyPerDamageTaken",
+                skillIds: uniqueSkillIDs,
+                skillTable: skillTable
+            ),
+            goldGainPctAddOnNormalKill: rewardRuleTotal(
+                target: "goldGainPctAddOnNormalKill",
+                skillIds: uniqueSkillIDs,
+                skillTable: skillTable
+            ),
             partyAverageLuck: session.partyAverageLuck,
             defaultTitle: defaultTitle,
             enemyTitle: enemyTitle
@@ -564,7 +589,15 @@ nonisolated extension ExplorationResolver {
             partial += enemy.experienceBaseValue * enemySeed.level
         }
 
-        let gold = Int((Double(totalBaseGold) * rewardContext.goldMultiplier).rounded())
+        let goldPenalty = Int((
+            totalDamageTakenByAllies(in: result) * rewardContext.goldPenaltyPerDamageTaken
+        ).rounded())
+        let goldBonus = Int((
+            Double(totalBaseGold)
+                * rewardContext.goldGainPctAddOnNormalKill
+                * Double(normalAttackKillCount(in: result))
+        ).rounded())
+        let gold = Int((Double(totalBaseGold) * rewardContext.goldMultiplier).rounded()) + goldBonus - goldPenalty
         let sharedExperience = rewardContext.memberCharacterIds.isEmpty
             ? 0.0
             : Double(totalBaseExperience) / Double(rewardContext.memberCharacterIds.count)
@@ -572,13 +605,13 @@ nonisolated extension ExplorationResolver {
             guard livingCharacterIds.contains(characterId) else {
                 return nil
             }
+            guard totalBaseExperience > 0 else {
+                return nil
+            }
             let experienceMultiplier = rewardContext.memberExperienceMultipliers.indices.contains(index)
                 ? rewardContext.memberExperienceMultipliers[index]
                 : 1.0
-            let experience = Int((sharedExperience * experienceMultiplier).rounded())
-            guard experience > 0 else {
-                return nil
-            }
+            let experience = max(Int((sharedExperience * experienceMultiplier).rounded()), 1)
             return ExplorationExperienceReward(characterId: characterId, experience: experience)
         }
 
@@ -687,7 +720,7 @@ nonisolated extension ExplorationResolver {
         }
 
         let candidates = itemTable.values
-            .filter { $0.normalDropTier == tier }
+            .filter { $0.normalDropTier == tier && $0.category != .jewel }
             .sorted { $0.id < $1.id }
         guard !candidates.isEmpty else {
             return nil
@@ -698,7 +731,16 @@ nonisolated extension ExplorationResolver {
             rootSeed: rootSeed,
             purpose: "drop:normal:item:\(floorNumber):\(battleNumber):enemy:\(enemyIndex):tier:\(tier)"
         )
-        let item = candidates[itemRoll]
+        let item = normalDropBaseItem(
+            from: candidates[itemRoll],
+            tier: tier,
+            rewardContext: rewardContext,
+            floorNumber: floorNumber,
+            battleNumber: battleNumber,
+            enemyIndex: enemyIndex,
+            rootSeed: rootSeed,
+            itemTable: itemTable
+        )
         let title = resolveTitle(
             floorNumber: floorNumber,
             battleNumber: battleNumber,
@@ -817,11 +859,134 @@ nonisolated extension ExplorationResolver {
         max(
             Int((
                 rewardContext.enemyTitle.positiveMultiplier
-                * rewardContext.titleDropMultiplier
                 + cbrt(max(rewardContext.partyAverageLuck, 0))
-            ).rounded()),
+            ).rounded()) + rewardContext.titleRollCountModifier,
             1
         )
+    }
+
+    static func titleRollCountModifier(
+        skillIds: Set<Int>,
+        skillTable: [Int: MasterData.Skill]
+    ) -> Int {
+        skillIds.reduce(into: 0) { partialResult, skillId in
+            guard let skill = skillTable[skillId] else {
+                return
+            }
+
+            for effect in skill.effects where effect.kind == .titleRollCountModifier {
+                guard let value = effect.value else {
+                    continue
+                }
+                partialResult += Int(value.rounded())
+            }
+        }
+    }
+
+    static func normalDropJewelizeChance(
+        skillIds: Set<Int>,
+        skillTable: [Int: MasterData.Skill]
+    ) -> Double {
+        skillIds.reduce(into: 0.0) { partialResult, skillId in
+            guard let skill = skillTable[skillId] else {
+                return
+            }
+
+            for effect in skill.effects where effect.kind == .normalDropJewelize {
+                guard let value = effect.value else {
+                    continue
+                }
+                partialResult = max(partialResult, value)
+            }
+        }
+    }
+
+    static func rewardRuleTotal(
+        target: String,
+        skillIds: Set<Int>,
+        skillTable: [Int: MasterData.Skill]
+    ) -> Double {
+        skillIds.reduce(into: 0.0) { partialResult, skillId in
+            guard let skill = skillTable[skillId] else {
+                return
+            }
+
+            for effect in skill.effects where effect.kind == .rewardRule && effect.target == target {
+                guard let value = effect.value else {
+                    continue
+                }
+                partialResult += value
+            }
+        }
+    }
+
+    static func totalDamageTakenByAllies(
+        in result: SingleBattleResult
+    ) -> Double {
+        let allyIDs = Set(result.combatants.filter { $0.side == .ally }.map(\.id))
+        return Double(
+            result.battleRecord.turns
+                .flatMap(\.actions)
+                .flatMap(\.results)
+                .reduce(into: 0) { partialResult, targetResult in
+                    guard targetResult.resultKind == .damage,
+                          let value = targetResult.value,
+                          allyIDs.contains(targetResult.targetId) else {
+                        return
+                    }
+                    partialResult += value
+                }
+        )
+    }
+
+    static func normalAttackKillCount(
+        in result: SingleBattleResult
+    ) -> Int {
+        result.battleRecord.turns
+            .flatMap(\.actions)
+            .reduce(into: 0) { partialResult, action in
+                guard action.actionKind == .attack else {
+                    return
+                }
+                partialResult += action.results.filter { $0.flags.contains(.defeated) }.count
+            }
+    }
+
+    static func normalDropBaseItem(
+        from defaultItem: MasterData.Item,
+        tier: Int,
+        rewardContext: RewardContext,
+        floorNumber: Int,
+        battleNumber: Int,
+        enemyIndex: Int,
+        rootSeed: UInt64,
+        itemTable: [Int: MasterData.Item]
+    ) -> MasterData.Item {
+        guard rewardContext.normalDropJewelizeChance > 0 else {
+            return defaultItem
+        }
+
+        let roll = ExplorationDeterministicRandom.uniform(
+            rootSeed: rootSeed,
+            purpose: "drop:normal:jewelize:\(floorNumber):\(battleNumber):enemy:\(enemyIndex):tier:\(tier)"
+        )
+        guard roll < rewardContext.normalDropJewelizeChance else {
+            return defaultItem
+        }
+
+        let jewelCandidates = itemTable.values
+            .filter { $0.normalDropTier == tier && $0.category == .jewel }
+            .sorted { $0.id < $1.id }
+        guard !jewelCandidates.isEmpty else {
+            return defaultItem
+        }
+
+        let jewelRoll = ExplorationDeterministicRandom.integer(
+            upperBound: jewelCandidates.count,
+            rootSeed: rootSeed,
+            purpose: "drop:normal:jewelize:item:\(floorNumber):\(battleNumber):enemy:\(enemyIndex):tier:\(tier)"
+        )
+        return jewelCandidates[jewelRoll]
     }
 
     static func resolveSuperRareId(

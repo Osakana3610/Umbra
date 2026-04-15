@@ -37,6 +37,7 @@ struct PartyDetailView: View {
                                 .accessibilityLabel("パーティ名")
 
                             PartyMembersView(
+                                masterData: masterData,
                                 memberCharacterIds: party.memberCharacterIds,
                                 charactersById: rosterStore.charactersById,
                                 displayedHPs: activeRun?.currentPartyHPs,

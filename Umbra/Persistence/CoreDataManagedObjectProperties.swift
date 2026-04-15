@@ -21,6 +21,7 @@ extension CharacterEntity {
     @NSManaged nonisolated public var experience: Int64
     @NSManaged nonisolated public var level: Int64
     @NSManaged nonisolated public var name: String?
+    @NSManaged nonisolated public var portraitAssetID: String?
     @NSManaged nonisolated public var portraitVariant: Int64
     @NSManaged nonisolated public var previousJobId: Int64
     @NSManaged nonisolated public var raceId: Int64
@@ -332,7 +333,6 @@ extension RunSessionEntity {
     @NSManaged nonisolated public var rewardsApplied: Bool
     @NSManaged nonisolated public var rootSeedSigned: Int64
     @NSManaged nonisolated public var selectedDifficultyTitleId: Int64
-    @NSManaged nonisolated public var titleDropMultiplier: Double
     @NSManaged nonisolated public var startedAt: Date?
     @NSManaged nonisolated public var targetFloorNumber: Int64
     @NSManaged nonisolated public var goldMultiplier: Double
@@ -451,6 +451,7 @@ extension RunSessionMemberEntity {
     @NSManaged nonisolated public var formationIndex: Int64
     @NSManaged nonisolated public var level: Int64
     @NSManaged nonisolated public var name: String?
+    @NSManaged nonisolated public var portraitAssetID: String?
     @NSManaged nonisolated public var portraitVariant: Int64
     @NSManaged nonisolated public var previousJobId: Int64
     @NSManaged nonisolated public var raceId: Int64

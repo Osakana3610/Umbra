@@ -226,6 +226,7 @@ final class GuildCoreDataStore {
             entity.previousJobId = Int64(character.previousJobId)
             entity.currentJobId = Int64(character.currentJobId)
             entity.aptitudeId = Int64(character.aptitudeId)
+            entity.portraitAssetID = character.portraitAssetID
             entity.portraitVariant = Int64(character.portraitGender.rawValue)
             entity.experience = Int64(character.experience)
             entity.level = Int64(character.level)
@@ -562,6 +563,7 @@ final class GuildCoreDataStore {
             currentJobId: Int(entity.currentJobId),
             aptitudeId: Int(entity.aptitudeId),
             portraitGender: PortraitGender(rawValue: Int(entity.portraitVariant)) ?? .unisex,
+            portraitAssetID: entity.portraitAssetID ?? "",
             experience: Int(entity.experience),
             level: Int(entity.level),
             currentHP: Int(entity.currentHP),
@@ -588,6 +590,7 @@ final class GuildCoreDataStore {
         entity.previousJobId = Int64(character.previousJobId)
         entity.currentJobId = Int64(character.currentJobId)
         entity.aptitudeId = Int64(character.aptitudeId)
+        entity.portraitAssetID = character.portraitAssetID
         entity.portraitVariant = Int64(character.portraitGender.rawValue)
         entity.experience = Int64(character.experience)
         entity.level = Int64(character.level)

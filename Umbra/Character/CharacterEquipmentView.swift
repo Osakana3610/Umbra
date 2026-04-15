@@ -16,6 +16,7 @@ struct CharacterEquipmentView: View {
     var body: some View {
         Group {
             if let character {
+                let maximumEquippedItemCount = character.maximumEquippedItemCount(masterData: masterData)
                 let filterCatalog = filterCatalog(for: character)
                 let visibleSections = visibleSections(for: character)
 
@@ -24,7 +25,7 @@ struct CharacterEquipmentView: View {
                         header(for: character)
                     }
 
-                    Section("装備中 (\(character.equippedItemCount)/\(character.maximumEquippedItemCount))") {
+                    Section("装備中 (\(character.equippedItemCount)/\(maximumEquippedItemCount))") {
                         if equippedItems(for: character).isEmpty {
                             Text("装備なし")
                                 .foregroundStyle(.secondary)
@@ -32,7 +33,7 @@ struct CharacterEquipmentView: View {
                             ForEach(equippedItems(for: character)) { item in
                                 EquippedItemRow(
                                     item: item,
-                                    characterPortraitAssetName: character.portraitAssetName,
+                                    characterPortraitAssetName: masterData.portraitAssetName(for: character),
                                     onTap: {
                                         equipmentStore.unequip(
                                             itemID: item.itemID,
@@ -72,8 +73,9 @@ struct CharacterEquipmentView: View {
                             Section(section.key.title) {
                                 EquipmentSectionRowsView(
                                     rows: section.rows,
-                                    characterPortraitAssetName: character.portraitAssetName,
-                                    isAtCapacity: character.equippedItemCount >= character.maximumEquippedItemCount,
+                                    masterData: masterData,
+                                    characterPortraitAssetName: masterData.portraitAssetName(for: character),
+                                    isAtCapacity: character.equippedItemCount >= maximumEquippedItemCount,
                                     onEquip: { itemID in
                                         equipmentStore.equip(
                                             itemID: itemID,
@@ -219,7 +221,7 @@ struct CharacterEquipmentView: View {
     @ViewBuilder
     private func header(for character: CharacterRecord) -> some View {
         HStack(alignment: .top, spacing: 16) {
-            Image(character.portraitAssetName)
+            Image(masterData.portraitAssetName(for: character))
                 .resizable()
                 .scaledToFill()
                 .frame(width: 88, height: 88)
@@ -285,6 +287,7 @@ private struct EquipmentInventoryLoadingRow: View {
 
 private struct EquipmentSectionRowsView: View {
     let rows: [EquipmentDisplayRow]
+    let masterData: MasterData
     let characterPortraitAssetName: String
     let isAtCapacity: Bool
     let onEquip: (CompositeItemID) -> Void
@@ -325,28 +328,22 @@ private struct EquipmentDisplayRowView: View, Equatable {
         switch row {
         case .inventory(let item):
             HStack(spacing: 12) {
-                Button {
-                    onEquip(item.itemID)
-                } label: {
-                    HStack(spacing: 12) {
-                        Text("x\(item.quantity)")
-                            .font(.body.weight(.semibold))
-                            .monospacedDigit()
-
-                        Text(item.displayName)
-                            .font(item.isSuperRare ? .body.weight(.semibold) : .body)
-                            .lineLimit(2)
-
-                        Spacer(minLength: 12)
-                    }
-                    .contentShape(Rectangle())
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                }
-                .buttonStyle(.plain)
-                // Inventory rows become non-interactive once the character is at the equip cap.
-                .disabled(isAtCapacity)
+                equipmentLabel(
+                    title: item.displayName,
+                    detail: "所持 \(item.quantity)",
+                    emphasizesTitle: item.isSuperRare
+                )
+                .frame(maxWidth: .infinity, alignment: .leading)
 
                 detailButton(for: item.itemID)
+            }
+            .contentShape(Rectangle())
+            // Inventory rows become non-interactive once the character is at the equip cap.
+            .onTapGesture {
+                guard !isAtCapacity else {
+                    return
+                }
+                onEquip(item.itemID)
             }
         case .equipped(let item):
             EquippedItemRow(
@@ -355,6 +352,24 @@ private struct EquipmentDisplayRowView: View, Equatable {
                 onTap: { onUnequip(item.itemID) },
                 onShowDetail: { onShowDetail(item.itemID) }
             )
+        }
+    }
+
+    @ViewBuilder
+    private func equipmentLabel(
+        title: String,
+        detail: String,
+        emphasizesTitle: Bool
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(title)
+                .font(emphasizesTitle ? .body.weight(.semibold) : .body)
+                .lineLimit(2)
+
+            Text(detail)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .monospacedDigit()
         }
     }
 
@@ -386,28 +401,32 @@ private struct EquippedItemRow: View, Equatable {
 
     var body: some View {
         HStack(spacing: 12) {
-            Button(action: onTap) {
-                HStack(spacing: 12) {
-                    Image(characterPortraitAssetName)
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: 36, height: 36)
-                        .clipShape(.rect(cornerRadius: 10))
+            HStack(spacing: 12) {
+                Image(characterPortraitAssetName)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 36, height: 36)
+                    .clipShape(.rect(cornerRadius: 10))
 
-                    Text("x\(item.quantity)")
-                        .font(.body.weight(.semibold))
-                        .monospacedDigit()
-
+                VStack(alignment: .leading, spacing: 4) {
                     Text(item.displayName)
                         .font(item.isSuperRare ? .body.weight(.semibold) : .body)
                         .lineLimit(2)
 
-                    Spacer(minLength: 12)
+                    Text("装備 \(item.quantity)")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .monospacedDigit()
                 }
-                .contentShape(Rectangle())
-                .frame(maxWidth: .infinity, alignment: .leading)
+
+                Spacer(minLength: 12)
             }
-            .buttonStyle(.plain)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .contentShape(Rectangle())
+            .onTapGesture(perform: onTap)
+            .accessibilityAddTraits(.isButton)
+            .accessibilityLabel("\(item.displayName)、装備中")
+            .accessibilityHint("タップで装備を外します。")
 
             Button(action: onShowDetail) {
                 Image(systemName: "info.circle")

@@ -10,6 +10,7 @@ nonisolated struct CharacterRecord: Identifiable, Equatable, Sendable {
     var currentJobId: Int
     let aptitudeId: Int
     let portraitGender: PortraitGender
+    var portraitAssetID: String
     var experience: Int
     var level: Int
     var currentHP: Int
@@ -18,12 +19,26 @@ nonisolated struct CharacterRecord: Identifiable, Equatable, Sendable {
 
     var id: Int { characterId }
 
-    var portraitAssetName: String {
-        "job_\(currentJobId)_\(portraitGender.rawValue)"
-    }
-
     var orderedEquippedItemStacks: [CompositeItemStack] {
         equippedItemStacks.sorted { $0.itemID.isOrdered(before: $1.itemID) }
+    }
+
+    var baseMaximumEquippedItemCount: Int {
+        // Equip capacity scales with level in rounded 20-level steps on top of the base 3 slots.
+        3 + Int((Double(level) / 20).rounded())
+    }
+
+    func maximumEquippedItemCount(masterData: MasterData) -> Int {
+        let modifier = CharacterDerivedStatsCalculator
+            .status(for: self, masterData: masterData)?
+            .equipmentCapacityModifier ?? 0
+        return max(baseMaximumEquippedItemCount + modifier, 0)
+    }
+
+    var equippedItemCount: Int {
+        equippedItemStacks.reduce(into: 0) { partialResult, stack in
+            partialResult += stack.count
+        }
     }
 }
 
@@ -31,6 +46,17 @@ nonisolated enum PortraitGender: Int, CaseIterable, Sendable {
     case male = 1
     case female = 2
     case unisex = 3
+
+    var assetKey: String {
+        switch self {
+        case .male:
+            "male"
+        case .female:
+            "female"
+        case .unisex:
+            "unisex"
+        }
+    }
 }
 
 nonisolated struct CharacterAutoBattleSettings: Equatable, Sendable {

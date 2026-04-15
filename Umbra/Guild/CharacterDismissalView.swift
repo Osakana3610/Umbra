@@ -29,6 +29,7 @@ struct CharacterDismissalView: View {
                     ForEach(rosterStore.characters) { character in
                         CharacterDismissalRow(
                             character: character,
+                            portraitAssetName: masterData.portraitAssetName(for: character),
                             partyName: partyStore.partyContainingCharacter(characterId: character.characterId)?.name,
                             summaryText: masterData.characterSummaryText(for: character),
                             isLocked: explorationStore.hasActiveRun(forCharacterId: character.characterId)
@@ -129,13 +130,14 @@ struct CharacterDismissalView: View {
 
 private struct CharacterDismissalRow: View {
     let character: CharacterRecord
+    let portraitAssetName: String
     let partyName: String?
     let summaryText: String
     let isLocked: Bool
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
-            Image(character.portraitAssetName)
+            Image(portraitAssetName)
                 .resizable()
                 .scaledToFill()
                 .frame(width: 44, height: 44)

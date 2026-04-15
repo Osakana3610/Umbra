@@ -16,6 +16,8 @@ nonisolated enum EquipmentAggregationError: LocalizedError, Equatable {
 nonisolated struct EquipmentAggregation: Equatable, Sendable {
     let baseStats: CharacterBaseStats
     let battleStats: CharacterBattleStats
+    let armorBattleStats: CharacterBattleStats
+    let categoryBattleStats: [ItemCategory: CharacterBattleStats]
     let itemSkillIDs: [Int]
     let isUnarmed: Bool
     let hasMeleeWeapon: Bool
@@ -56,6 +58,20 @@ nonisolated struct EquipmentAggregator {
             criticalRate: 0,
             breathPower: 0
         )
+        var armorBattleStats = CharacterBattleStats(
+            maxHP: 0,
+            physicalAttack: 0,
+            physicalDefense: 0,
+            magic: 0,
+            magicDefense: 0,
+            healing: 0,
+            accuracy: 0,
+            evasion: 0,
+            attackCount: 0,
+            criticalRate: 0,
+            breathPower: 0
+        )
+        var categoryBattleStats: [ItemCategory: CharacterBattleStats] = [:]
         var itemSkillIDs: [Int] = []
         var seenSkillIDs = Set<Int>()
         var hasMeleeWeapon = false
@@ -76,6 +92,8 @@ nonisolated struct EquipmentAggregator {
                 count: stack.count,
                 baseStats: &baseStats,
                 battleStats: &battleStats,
+                armorBattleStats: &armorBattleStats,
+                categoryBattleStats: &categoryBattleStats,
                 itemSkillIDs: &itemSkillIDs,
                 seenSkillIDs: &seenSkillIDs,
                 hasMeleeWeapon: &hasMeleeWeapon,
@@ -98,6 +116,8 @@ nonisolated struct EquipmentAggregator {
                     statDivisor: 2,
                     baseStats: &baseStats,
                     battleStats: &battleStats,
+                    armorBattleStats: &armorBattleStats,
+                    categoryBattleStats: &categoryBattleStats,
                     itemSkillIDs: &itemSkillIDs,
                     seenSkillIDs: &seenSkillIDs,
                     hasMeleeWeapon: &hasMeleeWeapon,
@@ -110,6 +130,8 @@ nonisolated struct EquipmentAggregator {
         return EquipmentAggregation(
             baseStats: baseStats,
             battleStats: battleStats,
+            armorBattleStats: armorBattleStats,
+            categoryBattleStats: categoryBattleStats,
             itemSkillIDs: itemSkillIDs,
             isUnarmed: totalWeaponAttack <= 0,
             hasMeleeWeapon: hasMeleeWeapon,
@@ -141,6 +163,7 @@ nonisolated struct EquipmentAggregator {
             baseStats: scaledBaseStats(item.nativeBaseStats, title: title),
             battleStats: scaledBattleStats(item.nativeBattleStats, title: title),
             skillIDs: item.skillIds + (superRare?.skillIds ?? []),
+            itemCategory: item.category,
             rangeClass: item.rangeClass
         )
     }
@@ -151,6 +174,8 @@ nonisolated struct EquipmentAggregator {
         statDivisor: Int = 1,
         baseStats: inout CharacterBaseStats,
         battleStats: inout CharacterBattleStats,
+        armorBattleStats: inout CharacterBattleStats,
+        categoryBattleStats: inout [ItemCategory: CharacterBattleStats],
         itemSkillIDs: inout [Int],
         seenSkillIDs: inout Set<Int>,
         hasMeleeWeapon: inout Bool,
@@ -166,17 +191,43 @@ nonisolated struct EquipmentAggregator {
         baseStats.agility += (contribution.baseStats.agility / statDivisor) * count
         baseStats.luck += (contribution.baseStats.luck / statDivisor) * count
 
-        battleStats.maxHP += (contribution.battleStats.maxHP / statDivisor) * count
-        battleStats.physicalAttack += (contribution.battleStats.physicalAttack / statDivisor) * count
-        battleStats.physicalDefense += (contribution.battleStats.physicalDefense / statDivisor) * count
-        battleStats.magic += (contribution.battleStats.magic / statDivisor) * count
-        battleStats.magicDefense += (contribution.battleStats.magicDefense / statDivisor) * count
-        battleStats.healing += (contribution.battleStats.healing / statDivisor) * count
-        battleStats.accuracy += (contribution.battleStats.accuracy / statDivisor) * count
-        battleStats.evasion += (contribution.battleStats.evasion / statDivisor) * count
-        battleStats.attackCount += (contribution.battleStats.attackCount / statDivisor) * count
-        battleStats.criticalRate += (contribution.battleStats.criticalRate / statDivisor) * count
-        battleStats.breathPower += (contribution.battleStats.breathPower / statDivisor) * count
+        applyBattleStats(
+            contribution.battleStats,
+            count: count,
+            statDivisor: statDivisor,
+            to: &battleStats
+        )
+
+        if contribution.itemCategory == .armor {
+            applyBattleStats(
+                contribution.battleStats,
+                count: count,
+                statDivisor: statDivisor,
+                to: &armorBattleStats
+            )
+        }
+
+        var aggregatedCategoryBattleStats = categoryBattleStats[contribution.itemCategory]
+            ?? CharacterBattleStats(
+                maxHP: 0,
+                physicalAttack: 0,
+                physicalDefense: 0,
+                magic: 0,
+                magicDefense: 0,
+                healing: 0,
+                accuracy: 0,
+                evasion: 0,
+                attackCount: 0,
+                criticalRate: 0,
+                breathPower: 0
+            )
+        applyBattleStats(
+            contribution.battleStats,
+            count: count,
+            statDivisor: statDivisor,
+            to: &aggregatedCategoryBattleStats
+        )
+        categoryBattleStats[contribution.itemCategory] = aggregatedCategoryBattleStats
 
         totalWeaponAttack += (contribution.battleStats.physicalAttack / statDivisor) * count
 
@@ -194,6 +245,25 @@ nonisolated struct EquipmentAggregator {
         case .ranged:
             hasRangedWeapon = true
         }
+    }
+
+    private func applyBattleStats(
+        _ contribution: CharacterBattleStats,
+        count: Int,
+        statDivisor: Int,
+        to totals: inout CharacterBattleStats
+    ) {
+        totals.maxHP += (contribution.maxHP / statDivisor) * count
+        totals.physicalAttack += (contribution.physicalAttack / statDivisor) * count
+        totals.physicalDefense += (contribution.physicalDefense / statDivisor) * count
+        totals.magic += (contribution.magic / statDivisor) * count
+        totals.magicDefense += (contribution.magicDefense / statDivisor) * count
+        totals.healing += (contribution.healing / statDivisor) * count
+        totals.accuracy += (contribution.accuracy / statDivisor) * count
+        totals.evasion += (contribution.evasion / statDivisor) * count
+        totals.attackCount += (contribution.attackCount / statDivisor) * count
+        totals.criticalRate += (contribution.criticalRate / statDivisor) * count
+        totals.breathPower += (contribution.breathPower / statDivisor) * count
     }
 
     private func scaledBaseStats(
@@ -270,5 +340,6 @@ nonisolated private struct ResolvedItemContribution {
     let baseStats: CharacterBaseStats
     let battleStats: CharacterBattleStats
     let skillIDs: [Int]
+    let itemCategory: ItemCategory
     let rangeClass: ItemRangeClass
 }

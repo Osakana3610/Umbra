@@ -87,7 +87,6 @@ final class ExplorationSessionService {
                     progressIntervalMultiplier: plannedSession.progressIntervalMultiplier,
                     goldMultiplier: plannedSession.goldMultiplier,
                     rareDropMultiplier: plannedSession.rareDropMultiplier,
-                    titleDropMultiplier: plannedSession.titleDropMultiplier,
                     partyAverageLuck: plannedSession.partyAverageLuck,
                     latestBattleFloorNumber: nil,
                     latestBattleNumber: nil,
@@ -199,10 +198,24 @@ final class ExplorationSessionService {
                 }
             }
         }
+        func specialRuleProduct(for skillIds: [Int], target: String) -> Double {
+            Set(skillIds).reduce(into: 1.0) { partialResult, skillId in
+                guard let skill = skillTable[skillId] else {
+                    return
+                }
+
+                for effect in skill.effects where effect.kind == .specialRule && effect.target == target {
+                    guard let value = effect.value else {
+                        continue
+                    }
+                    partialResult *= value
+                }
+            }
+        }
 
         let partyRewardSkillIds = memberStatuses.flatMap(\.skillIds)
         let memberExperienceMultipliers = memberStatuses.map { status in
-            let baseMultiplier = rewardMultiplier(for: status.skillIds, target: "experience")
+            let baseMultiplier = status.rewardMultiplier(for: "experienceGainMultiplier")
             return appliesCatTicket
                 ? baseMultiplier * Self.catTicketRewardMultiplier
                 : baseMultiplier
@@ -231,14 +244,14 @@ final class ExplorationSessionService {
             completedBattleCount: 0,
             currentPartyHPs: startContext.partyMembers.map(\.currentHP),
             memberExperienceMultipliers: memberExperienceMultipliers,
-            progressIntervalMultiplier: appliesCatTicket
-                ? Self.catTicketProgressIntervalMultiplier
-                : 1.0,
-            goldMultiplier: rewardMultiplier(for: partyRewardSkillIds, target: "gold")
+            progressIntervalMultiplier: (
+                appliesCatTicket
+                    ? Self.catTicketProgressIntervalMultiplier
+                    : 1.0
+            ) * specialRuleProduct(for: partyRewardSkillIds, target: "explorationTimeMultiplier"),
+            goldMultiplier: rewardMultiplier(for: partyRewardSkillIds, target: "goldGainMultiplier")
                 * (appliesCatTicket ? Self.catTicketRewardMultiplier : 1.0),
-            rareDropMultiplier: rewardMultiplier(for: partyRewardSkillIds, target: "rareDrop")
-                * (appliesCatTicket ? Self.catTicketRewardMultiplier : 1.0),
-            titleDropMultiplier: rewardMultiplier(for: partyRewardSkillIds, target: "titleDrop")
+            rareDropMultiplier: rewardMultiplier(for: partyRewardSkillIds, target: "rareDropMultiplier")
                 * (appliesCatTicket ? Self.catTicketRewardMultiplier : 1.0),
             partyAverageLuck: partyAverageLuck,
             latestBattleFloorNumber: nil,

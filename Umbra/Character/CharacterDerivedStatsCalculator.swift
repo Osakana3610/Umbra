@@ -26,6 +26,20 @@ nonisolated enum CharacterDerivedStatsCalculator {
             criticalRate: 0,
             breathPower: 0
         ),
+        armorBattleStats: CharacterBattleStats(
+            maxHP: 0,
+            physicalAttack: 0,
+            physicalDefense: 0,
+            magic: 0,
+            magicDefense: 0,
+            healing: 0,
+            accuracy: 0,
+            evasion: 0,
+            attackCount: 0,
+            criticalRate: 0,
+            breathPower: 0
+        ),
+        categoryBattleStats: [:],
         itemSkillIDs: [],
         isUnarmed: true,
         hasMeleeWeapon: false,
@@ -36,6 +50,7 @@ nonisolated enum CharacterDerivedStatsCalculator {
     static func maxHP(
         raceId: Int,
         currentJobId: Int,
+        aptitudeId: Int = 0,
         level: Int,
         masterData: MasterData
     ) -> Int? {
@@ -43,6 +58,7 @@ nonisolated enum CharacterDerivedStatsCalculator {
             raceId: raceId,
             previousJobId: 0,
             currentJobId: currentJobId,
+            aptitudeId: aptitudeId,
             level: level,
             masterData: masterData
         )?.maxHP
@@ -57,6 +73,7 @@ nonisolated enum CharacterDerivedStatsCalculator {
             raceId: character.raceId,
             previousJobId: character.previousJobId,
             currentJobId: character.currentJobId,
+            aptitudeId: character.aptitudeId,
             level: character.level,
             masterData: masterData,
             equipmentAggregation: equipmentAggregation
@@ -64,9 +81,46 @@ nonisolated enum CharacterDerivedStatsCalculator {
     }
 
     static func status(
+        for enemy: MasterData.Enemy,
+        level: Int,
+        masterData: MasterData
+    ) -> CharacterStatus? {
+        guard let currentJob = masterData.jobs.first(where: { $0.id == enemy.jobId }) else {
+            return nil
+        }
+
+        let activeSkillIds = activeSkillIds(
+            racePassiveSkillIds: [],
+            raceLevelSkillIds: [],
+            previousJobPassiveSkillIds: [],
+            currentJobPassiveSkillIds: currentJob.passiveSkillIds,
+            currentJobLevelSkillIds: currentJob.levelSkillIds,
+            aptitudePassiveSkillIds: [],
+            level: level,
+            additionalSkillIds: enemy.skillIds
+        )
+
+        return status(
+            baseStats: CharacterBaseStats(
+                vitality: enemy.baseStats.vitality,
+                strength: enemy.baseStats.strength,
+                mind: enemy.baseStats.mind,
+                intelligence: enemy.baseStats.intelligence,
+                agility: enemy.baseStats.agility,
+                luck: enemy.baseStats.luck
+            ),
+            jobId: enemy.jobId,
+            level: level,
+            skillIds: activeSkillIds,
+            masterData: masterData
+        )
+    }
+
+    static func status(
         raceId: Int,
         previousJobId: Int,
         currentJobId: Int,
+        aptitudeId: Int = 0,
         level: Int,
         masterData: MasterData,
         equipmentAggregation: EquipmentAggregation = defaultEquipmentAggregation
@@ -79,6 +133,7 @@ nonisolated enum CharacterDerivedStatsCalculator {
         let previousJob = previousJobId == 0
             ? nil
             : masterData.jobs.first(where: { $0.id == previousJobId })
+        let aptitude = masterData.aptitudes.first(where: { $0.id == aptitudeId })
 
         // Equipment contributes directly to base stats and active skills before job coefficients
         // are applied, so derived battle values always reflect the fully equipped build.
@@ -91,11 +146,14 @@ nonisolated enum CharacterDerivedStatsCalculator {
             luck: race.baseStats.luck + equipmentAggregation.baseStats.luck
         )
         let activeSkillIds = activeSkillIds(
-            raceSkillIds: race.skillIds,
+            racePassiveSkillIds: race.passiveSkillIds,
+            raceLevelSkillIds: race.levelSkillIds,
             previousJobPassiveSkillIds: previousJob?.passiveSkillIds ?? [],
             currentJobPassiveSkillIds: currentJob.passiveSkillIds,
             currentJobLevelSkillIds: currentJob.levelSkillIds,
-            equipmentSkillIds: equipmentAggregation.itemSkillIDs
+            aptitudePassiveSkillIds: aptitude?.passiveSkillIds ?? [],
+            level: level,
+            additionalSkillIds: equipmentAggregation.itemSkillIDs
         )
 
         return status(
@@ -105,6 +163,8 @@ nonisolated enum CharacterDerivedStatsCalculator {
             skillIds: activeSkillIds,
             masterData: masterData,
             equipmentBattleStats: equipmentAggregation.battleStats,
+            armorEquipmentBattleStats: equipmentAggregation.armorBattleStats,
+            equipmentBattleStatsByCategory: equipmentAggregation.categoryBattleStats,
             isUnarmed: equipmentAggregation.isUnarmed,
             hasMeleeWeapon: equipmentAggregation.hasMeleeWeapon,
             hasRangedWeapon: equipmentAggregation.hasRangedWeapon,
@@ -119,6 +179,8 @@ nonisolated enum CharacterDerivedStatsCalculator {
         skillIds: [Int],
         masterData: MasterData,
         equipmentBattleStats: CharacterBattleStats = defaultEquipmentAggregation.battleStats,
+        armorEquipmentBattleStats: CharacterBattleStats = defaultEquipmentAggregation.armorBattleStats,
+        equipmentBattleStatsByCategory: [ItemCategory: CharacterBattleStats] = defaultEquipmentAggregation.categoryBattleStats,
         isUnarmed: Bool = defaultEquipmentAggregation.isUnarmed,
         hasMeleeWeapon: Bool = defaultEquipmentAggregation.hasMeleeWeapon,
         hasRangedWeapon: Bool = defaultEquipmentAggregation.hasRangedWeapon,
@@ -135,6 +197,15 @@ nonisolated enum CharacterDerivedStatsCalculator {
             skillLookup: skillLookup,
             isUnarmed: isUnarmed
         )
+        let normalizedEquipmentBattleStatsByCategory = normalizedEquipmentBattleStatsByCategory(
+            explicitCategoryBattleStats: equipmentBattleStatsByCategory,
+            legacyArmorBattleStats: armorEquipmentBattleStats
+        )
+        let adjustedEquipmentBattleStats = adjustedEquipmentBattleStats(
+            equipmentBattleStats: equipmentBattleStats,
+            equipmentBattleStatsByCategory: normalizedEquipmentBattleStatsByCategory,
+            skillAdjustments: skillAdjustments
+        )
 
         let battleStats = CharacterBattleStats(
             maxHP: battleStatValue(
@@ -143,7 +214,7 @@ nonisolated enum CharacterDerivedStatsCalculator {
                 level: level,
                 jobCoefficient: currentJob.coefficients.maxHP,
                 statScale: 3.0,
-                equipmentFlatBonus: equipmentBattleStats.maxHP,
+                equipmentFlatBonus: adjustedEquipmentBattleStats.maxHP,
                 skillAdjustments: skillAdjustments
             ),
             physicalAttack: battleStatValue(
@@ -152,7 +223,7 @@ nonisolated enum CharacterDerivedStatsCalculator {
                 level: level,
                 jobCoefficient: currentJob.coefficients.physicalAttack,
                 statScale: 0.6,
-                equipmentFlatBonus: equipmentBattleStats.physicalAttack,
+                equipmentFlatBonus: adjustedEquipmentBattleStats.physicalAttack,
                 skillAdjustments: skillAdjustments
             ),
             physicalDefense: battleStatValue(
@@ -161,7 +232,7 @@ nonisolated enum CharacterDerivedStatsCalculator {
                 level: level,
                 jobCoefficient: currentJob.coefficients.physicalDefense,
                 statScale: 0.3,
-                equipmentFlatBonus: equipmentBattleStats.physicalDefense,
+                equipmentFlatBonus: adjustedEquipmentBattleStats.physicalDefense,
                 skillAdjustments: skillAdjustments
             ),
             magic: battleStatValue(
@@ -170,7 +241,7 @@ nonisolated enum CharacterDerivedStatsCalculator {
                 level: level,
                 jobCoefficient: currentJob.coefficients.magic,
                 statScale: 0.6,
-                equipmentFlatBonus: equipmentBattleStats.magic,
+                equipmentFlatBonus: adjustedEquipmentBattleStats.magic,
                 skillAdjustments: skillAdjustments
             ),
             magicDefense: battleStatValue(
@@ -179,7 +250,7 @@ nonisolated enum CharacterDerivedStatsCalculator {
                 level: level,
                 jobCoefficient: currentJob.coefficients.magicDefense,
                 statScale: 0.3,
-                equipmentFlatBonus: equipmentBattleStats.magicDefense,
+                equipmentFlatBonus: adjustedEquipmentBattleStats.magicDefense,
                 skillAdjustments: skillAdjustments
             ),
             healing: battleStatValue(
@@ -188,7 +259,7 @@ nonisolated enum CharacterDerivedStatsCalculator {
                 level: level,
                 jobCoefficient: currentJob.coefficients.healing,
                 statScale: 0.45,
-                equipmentFlatBonus: equipmentBattleStats.healing,
+                equipmentFlatBonus: adjustedEquipmentBattleStats.healing,
                 skillAdjustments: skillAdjustments
             ),
             accuracy: battleStatValue(
@@ -197,7 +268,7 @@ nonisolated enum CharacterDerivedStatsCalculator {
                 level: level,
                 jobCoefficient: currentJob.coefficients.accuracy,
                 statScale: 0.10,
-                equipmentFlatBonus: equipmentBattleStats.accuracy,
+                equipmentFlatBonus: adjustedEquipmentBattleStats.accuracy,
                 skillAdjustments: skillAdjustments
             ),
             evasion: battleStatValue(
@@ -206,7 +277,7 @@ nonisolated enum CharacterDerivedStatsCalculator {
                 level: level,
                 jobCoefficient: currentJob.coefficients.evasion,
                 statScale: 0.09,
-                equipmentFlatBonus: equipmentBattleStats.evasion,
+                equipmentFlatBonus: adjustedEquipmentBattleStats.evasion,
                 skillAdjustments: skillAdjustments
             ),
             attackCount: battleStatValue(
@@ -215,7 +286,7 @@ nonisolated enum CharacterDerivedStatsCalculator {
                 level: level,
                 jobCoefficient: currentJob.coefficients.attackCount,
                 statScale: 0.003,
-                equipmentFlatBonus: equipmentBattleStats.attackCount,
+                equipmentFlatBonus: adjustedEquipmentBattleStats.attackCount,
                 skillAdjustments: skillAdjustments
             ),
             criticalRate: battleStatValue(
@@ -224,7 +295,7 @@ nonisolated enum CharacterDerivedStatsCalculator {
                 level: level,
                 jobCoefficient: currentJob.coefficients.criticalRate,
                 statScale: 0.010,
-                equipmentFlatBonus: equipmentBattleStats.criticalRate,
+                equipmentFlatBonus: adjustedEquipmentBattleStats.criticalRate,
                 skillAdjustments: skillAdjustments
             ),
             breathPower: battleStatValue(
@@ -233,7 +304,7 @@ nonisolated enum CharacterDerivedStatsCalculator {
                 level: level,
                 jobCoefficient: currentJob.coefficients.breathPower,
                 statScale: 0.6,
-                equipmentFlatBonus: equipmentBattleStats.breathPower,
+                equipmentFlatBonus: adjustedEquipmentBattleStats.breathPower,
                 skillAdjustments: skillAdjustments
             )
         )
@@ -307,24 +378,233 @@ nonisolated enum CharacterDerivedStatsCalculator {
             hasRangedWeapon: hasRangedWeapon,
             weaponRangeClass: weaponRangeClass,
             spellDamageMultipliersBySpellID: spellDamageMultipliersBySpellID,
-            spellResistanceMultipliersBySpellID: spellResistanceMultipliersBySpellID
+            spellResistanceMultipliersBySpellID: spellResistanceMultipliersBySpellID,
+            rewardMultipliersByTarget: multiplierValues(
+                pctAdds: skillAdjustments.rewardPctAdds,
+                multipliers: skillAdjustments.rewardMultipliers
+            ),
+            partyModifiersByTarget: multiplierValues(
+                pctAdds: skillAdjustments.partyModifierPctAdds,
+                multipliers: skillAdjustments.partyModifierMultipliers
+            ),
+            onHitAilmentChanceByStatusID: skillAdjustments.onHitAilmentChanceByStatusID,
+            contactAilmentChanceByStatusID: skillAdjustments.contactAilmentChanceByStatusID,
+            titleRollCountModifier: skillAdjustments.titleRollCountModifier,
+            equipmentCapacityModifier: skillAdjustments.equipmentCapacityModifier,
+            normalDropJewelizeChance: skillAdjustments.normalDropJewelizeChance,
+            multiHitFalloffModifier: skillAdjustments.multiHitFalloffModifier,
+            hitRateFloor: skillAdjustments.hitRateFloor,
+            defenseRuleValuesByTarget: skillAdjustments.defenseRuleValuesByTarget,
+            recoveryRuleValuesByTarget: skillAdjustments.recoveryRuleValuesByTarget,
+            actionRuleValuesByTarget: skillAdjustments.actionRuleValuesByTarget,
+            reviveRuleValuesByTarget: skillAdjustments.reviveRuleValuesByTarget,
+            combatRuleValuesByTarget: skillAdjustments.combatRuleValuesByTarget,
+            rewardRuleValuesByTarget: skillAdjustments.rewardRuleValuesByTarget,
+            specialRuleValuesByTarget: skillAdjustments.specialRuleValuesByTarget
         )
     }
 
+    private static func adjustedEquipmentBattleStats(
+        equipmentBattleStats: CharacterBattleStats,
+        equipmentBattleStatsByCategory: [ItemCategory: CharacterBattleStats],
+        skillAdjustments: SkillAdjustments
+    ) -> CharacterBattleStats {
+        let magicDefenseMultiplier = skillAdjustments.specialRuleProduct(
+            for: "magicDefenseEquipmentFlatMultiplier"
+        )
+        let defenseEquipmentMultiplier = skillAdjustments.specialRuleProduct(
+            for: "defenseEquipmentBattleStatFlatMultiplier"
+        )
+        let categorizedBattleStats = equipmentBattleStatsByCategory.values.reduce(
+            initialBattleStats()
+        ) { partialResult, battleStats in
+            addBattleStats(partialResult, battleStats)
+        }
+        let uncategorizedBattleStats = subtractBattleStats(equipmentBattleStats, categorizedBattleStats)
+
+        let subtotals = equipmentBattleStatsByCategory.reduce(
+            (nonDefense: uncategorizedBattleStats, defense: initialBattleStats())
+        ) { partialResult, entry in
+            let scaledCategoryBattleStats = scaledBattleStats(
+                entry.value,
+                equipmentMultiplier: equipmentBattleStatFlatMultiplier(
+                    for: entry.key,
+                    skillAdjustments: skillAdjustments
+                ),
+                magicDefenseMultiplier: 1.0
+            )
+            if isDefenseEquipmentCategory(entry.key) {
+                return (
+                    nonDefense: partialResult.nonDefense,
+                    defense: addBattleStats(partialResult.defense, scaledCategoryBattleStats)
+                )
+            }
+            return (
+                nonDefense: addBattleStats(partialResult.nonDefense, scaledCategoryBattleStats),
+                defense: partialResult.defense
+            )
+        }
+
+        let adjustedDefenseBattleStats = scaledBattleStats(
+            subtotals.defense,
+            equipmentMultiplier: defenseEquipmentMultiplier,
+            magicDefenseMultiplier: 1.0
+        )
+        let totalBattleStats = addBattleStats(subtotals.nonDefense, adjustedDefenseBattleStats)
+        return scaledBattleStats(
+            totalBattleStats,
+            equipmentMultiplier: 1.0,
+            magicDefenseMultiplier: magicDefenseMultiplier
+        )
+    }
+
+    private static func normalizedEquipmentBattleStatsByCategory(
+        explicitCategoryBattleStats: [ItemCategory: CharacterBattleStats],
+        legacyArmorBattleStats: CharacterBattleStats
+    ) -> [ItemCategory: CharacterBattleStats] {
+        if explicitCategoryBattleStats.isEmpty, legacyArmorBattleStats != initialBattleStats() {
+            return [.armor: legacyArmorBattleStats]
+        }
+        return explicitCategoryBattleStats
+    }
+
+    private static func equipmentBattleStatFlatMultiplier(
+        for category: ItemCategory,
+        skillAdjustments: SkillAdjustments
+    ) -> Double {
+        let multiplier = skillAdjustments.specialRuleProduct(
+            for: "\(category.rawValue)EquipmentBattleStatFlatMultiplier"
+        )
+        return multiplier
+    }
+
+    private static func scaledBattleStats(
+        _ battleStats: CharacterBattleStats,
+        equipmentMultiplier: Double,
+        magicDefenseMultiplier: Double
+    ) -> CharacterBattleStats {
+        CharacterBattleStats(
+            maxHP: Int((Double(battleStats.maxHP) * equipmentMultiplier).rounded()),
+            physicalAttack: Int((Double(battleStats.physicalAttack) * equipmentMultiplier).rounded()),
+            physicalDefense: Int((Double(battleStats.physicalDefense) * equipmentMultiplier).rounded()),
+            magic: Int((Double(battleStats.magic) * equipmentMultiplier).rounded()),
+            magicDefense: Int(
+                (Double(battleStats.magicDefense) * equipmentMultiplier * magicDefenseMultiplier).rounded()
+            ),
+            healing: Int((Double(battleStats.healing) * equipmentMultiplier).rounded()),
+            accuracy: Int((Double(battleStats.accuracy) * equipmentMultiplier).rounded()),
+            evasion: Int((Double(battleStats.evasion) * equipmentMultiplier).rounded()),
+            attackCount: Int((Double(battleStats.attackCount) * equipmentMultiplier).rounded()),
+            criticalRate: Int((Double(battleStats.criticalRate) * equipmentMultiplier).rounded()),
+            breathPower: Int((Double(battleStats.breathPower) * equipmentMultiplier).rounded())
+        )
+    }
+
+    private static func initialBattleStats() -> CharacterBattleStats {
+        CharacterBattleStats(
+            maxHP: 0,
+            physicalAttack: 0,
+            physicalDefense: 0,
+            magic: 0,
+            magicDefense: 0,
+            healing: 0,
+            accuracy: 0,
+            evasion: 0,
+            attackCount: 0,
+            criticalRate: 0,
+            breathPower: 0
+        )
+    }
+
+    private static func addBattleStats(
+        _ lhs: CharacterBattleStats,
+        _ rhs: CharacterBattleStats
+    ) -> CharacterBattleStats {
+        CharacterBattleStats(
+            maxHP: lhs.maxHP + rhs.maxHP,
+            physicalAttack: lhs.physicalAttack + rhs.physicalAttack,
+            physicalDefense: lhs.physicalDefense + rhs.physicalDefense,
+            magic: lhs.magic + rhs.magic,
+            magicDefense: lhs.magicDefense + rhs.magicDefense,
+            healing: lhs.healing + rhs.healing,
+            accuracy: lhs.accuracy + rhs.accuracy,
+            evasion: lhs.evasion + rhs.evasion,
+            attackCount: lhs.attackCount + rhs.attackCount,
+            criticalRate: lhs.criticalRate + rhs.criticalRate,
+            breathPower: lhs.breathPower + rhs.breathPower
+        )
+    }
+
+    private static func subtractBattleStats(
+        _ lhs: CharacterBattleStats,
+        _ rhs: CharacterBattleStats
+    ) -> CharacterBattleStats {
+        CharacterBattleStats(
+            maxHP: lhs.maxHP - rhs.maxHP,
+            physicalAttack: lhs.physicalAttack - rhs.physicalAttack,
+            physicalDefense: lhs.physicalDefense - rhs.physicalDefense,
+            magic: lhs.magic - rhs.magic,
+            magicDefense: lhs.magicDefense - rhs.magicDefense,
+            healing: lhs.healing - rhs.healing,
+            accuracy: lhs.accuracy - rhs.accuracy,
+            evasion: lhs.evasion - rhs.evasion,
+            attackCount: lhs.attackCount - rhs.attackCount,
+            criticalRate: lhs.criticalRate - rhs.criticalRate,
+            breathPower: lhs.breathPower - rhs.breathPower
+        )
+    }
+
+    private static func isDefenseEquipmentCategory(_ category: ItemCategory) -> Bool {
+        switch category {
+        case .armor, .shield, .robe, .gauntlet:
+            true
+        default:
+            false
+        }
+    }
+
     private static func activeSkillIds(
-        raceSkillIds: [Int],
+        racePassiveSkillIds: [Int],
+        raceLevelSkillIds: [Int],
         previousJobPassiveSkillIds: [Int],
         currentJobPassiveSkillIds: [Int],
         currentJobLevelSkillIds: [Int],
-        equipmentSkillIds: [Int]
+        aptitudePassiveSkillIds: [Int],
+        level: Int,
+        additionalSkillIds: [Int]
     ) -> [Int] {
-        deduplicatedSkillIds(
-            raceSkillIds
+        let unlockedRaceLevelSkillIds = unlockedSkillIds(
+            from: raceLevelSkillIds,
+            level: level,
+            unlockLevels: [50, 99]
+        )
+        let unlockedJobLevelSkillIds = unlockedSkillIds(
+            from: currentJobLevelSkillIds,
+            level: level,
+            unlockLevels: [15, 30, 75]
+        )
+        return deduplicatedSkillIds(
+            racePassiveSkillIds
+            + unlockedRaceLevelSkillIds
             + previousJobPassiveSkillIds
             + currentJobPassiveSkillIds
-            + currentJobLevelSkillIds
-            + equipmentSkillIds
+            + unlockedJobLevelSkillIds
+            + aptitudePassiveSkillIds
+            + additionalSkillIds
         )
+    }
+
+    private static func unlockedSkillIds(
+        from skillIds: [Int],
+        level: Int,
+        unlockLevels: [Int]
+    ) -> [Int] {
+        skillIds.enumerated().compactMap { index, skillId in
+            guard unlockLevels.indices.contains(index), level >= unlockLevels[index] else {
+                return nil
+            }
+            return skillId
+        }
     }
 
     private static func deduplicatedSkillIds(_ skillIds: [Int]) -> [Int] {
@@ -387,8 +667,8 @@ nonisolated enum CharacterDerivedStatsCalculator {
         equipmentFlatBonus: Int,
         skillAdjustments: SkillAdjustments
     ) -> Int {
-        // The formula intentionally applies flat equipment first, then additive skill modifiers,
-        // and finally the global multiplier so each source scales in a predictable order.
+        // Base-only multipliers apply before equipment and other skill adjustments so aptitude
+        // effects only scale the intrinsic battle-stat baseline.
         let baseValue = Int(
             (
                 baseInput
@@ -398,7 +678,8 @@ nonisolated enum CharacterDerivedStatsCalculator {
             )
             .rounded()
         )
-        let equipmentAdjusted = Double(baseValue + equipmentFlatBonus)
+        let baseAdjusted = Double(baseValue) * skillAdjustments.baseBattleStatMultipliers[target, default: 1.0]
+        let equipmentAdjusted = baseAdjusted + Double(equipmentFlatBonus)
         let flatAdjusted = equipmentAdjusted + skillAdjustments.battleStatFlatAdds[target, default: 0.0]
         let percentAdjusted = flatAdjusted * (1.0 + skillAdjustments.battleStatPctAdds[target, default: 0.0])
         let finalValue = Int((percentAdjusted * skillAdjustments.allBattleStatMultiplier).rounded())
@@ -442,18 +723,63 @@ nonisolated enum CharacterDerivedStatsCalculator {
         }
     }
 
+    private static func multiplierValues(
+        pctAdds: [String: Double],
+        multipliers: [String: Double]
+    ) -> [String: Double] {
+        let targets = Set(pctAdds.keys).union(multipliers.keys)
+        return targets.reduce(into: [:]) { partialResult, target in
+            let rawValue = (1.0 + pctAdds[target, default: 0.0]) * multipliers[target, default: 1.0]
+            partialResult[target] = max(rawValue, 0.0)
+        }
+    }
+
+    static func ailmentStatusID(for key: String) -> Int? {
+        switch key {
+        case "sleep":
+            1
+        case "curse":
+            2
+        case "paralysis":
+            3
+        case "petrify":
+            4
+        default:
+            nil
+        }
+    }
+
     private static func average(_ lhs: Int, _ rhs: Int) -> Double {
         Double(lhs + rhs) / 2.0
     }
 }
 
 nonisolated private struct SkillAdjustments {
+    var baseBattleStatMultipliers: [String: Double] = [:]
     var battleStatFlatAdds: [String: Double] = [:]
     var battleStatPctAdds: [String: Double] = [:]
     var battleDerivedPctAdds: [String: Double] = [:]
     var battleDerivedMultipliers: [String: Double] = [:]
     var spellSpecificBattleDerivedPctAdds: [String: [Int: Double]] = [:]
     var spellSpecificBattleDerivedMultipliers: [String: [Int: Double]] = [:]
+    var rewardPctAdds: [String: Double] = [:]
+    var rewardMultipliers: [String: Double] = [:]
+    var partyModifierPctAdds: [String: Double] = [:]
+    var partyModifierMultipliers: [String: Double] = [:]
+    var onHitAilmentChanceByStatusID: [Int: Double] = [:]
+    var contactAilmentChanceByStatusID: [Int: Double] = [:]
+    var titleRollCountModifier = 0
+    var equipmentCapacityModifier = 0
+    var normalDropJewelizeChance = 0.0
+    var multiHitFalloffModifier = 0.5
+    var hitRateFloor = 0.10
+    var defenseRuleValuesByTarget: [String: [Double]] = [:]
+    var recoveryRuleValuesByTarget: [String: [Double]] = [:]
+    var actionRuleValuesByTarget: [String: [Double]] = [:]
+    var reviveRuleValuesByTarget: [String: [Double]] = [:]
+    var combatRuleValuesByTarget: [String: [Double]] = [:]
+    var rewardRuleValuesByTarget: [String: [Double]] = [:]
+    var specialRuleValuesByTarget: [String: [Double]] = [:]
     var grantedSpellIds = Set<Int>()
     var revokedSpellIds = Set<Int>()
     var interruptKinds = Set<InterruptKind>()
@@ -542,8 +868,145 @@ nonisolated private struct SkillAdjustments {
             }
 
             interruptKinds.insert(interruptKind)
+        case .baseBattleStatMultiplier:
+            guard let target = effect.target,
+                  let value = effect.value else {
+                return
+            }
+
+            switch effect.operation {
+            case nil, "mul":
+                baseBattleStatMultipliers[target, default: 1.0] *= value
+            case "pctAdd":
+                baseBattleStatMultipliers[target, default: 1.0] *= 1.0 + value
+            default:
+                return
+            }
         case .rewardMultiplier:
-            return
+            guard let target = effect.target,
+                  let operation = effect.operation,
+                  let value = effect.value else {
+                return
+            }
+
+            switch operation {
+            case "pctAdd":
+                rewardPctAdds[target, default: 0.0] += value
+            case "mul":
+                rewardMultipliers[target, default: 1.0] *= value
+            default:
+                return
+            }
+        case .partyModifier:
+            guard let target = effect.target,
+                  let operation = effect.operation,
+                  let value = effect.value else {
+                return
+            }
+
+            switch operation {
+            case "pctAdd":
+                partyModifierPctAdds[target, default: 0.0] += value
+            case "mul":
+                partyModifierMultipliers[target, default: 1.0] *= value
+            default:
+                return
+            }
+        case .equipmentCapacityModifier:
+            guard let value = effect.value else {
+                return
+            }
+            equipmentCapacityModifier += Int(value.rounded())
+        case .titleRollCountModifier:
+            guard let value = effect.value else {
+                return
+            }
+            titleRollCountModifier += Int(value.rounded())
+        case .normalDropJewelize:
+            guard let value = effect.value else {
+                return
+            }
+            normalDropJewelizeChance = min(normalDropJewelizeChance + value, 1.0)
+        case .onHitAilmentGrant:
+            guard let target = effect.target,
+                  let value = effect.value,
+                  let statusID = CharacterDerivedStatsCalculator.ailmentStatusID(for: target) else {
+                return
+            }
+            onHitAilmentChanceByStatusID[statusID, default: 0.0] = min(
+                onHitAilmentChanceByStatusID[statusID, default: 0.0] + value,
+                1.0
+            )
+        case .contactAilmentGrant:
+            guard let target = effect.target,
+                  let value = effect.value,
+                  let statusID = CharacterDerivedStatsCalculator.ailmentStatusID(for: target) else {
+                return
+            }
+            contactAilmentChanceByStatusID[statusID, default: 0.0] = min(
+                contactAilmentChanceByStatusID[statusID, default: 0.0] + value,
+                1.0
+            )
+        case .multiHitFalloffModifier:
+            guard let value = effect.value else {
+                return
+            }
+            multiHitFalloffModifier = min(multiHitFalloffModifier, value)
+        case .hitRateFloorModifier:
+            guard let value = effect.value else {
+                return
+            }
+            hitRateFloor = max(hitRateFloor, value)
+        case .defenseRule:
+            guard let target = effect.target,
+                  let value = effect.value else {
+                return
+            }
+            defenseRuleValuesByTarget[target, default: []].append(value)
+        case .recoveryRule:
+            guard let target = effect.target,
+                  let value = effect.value else {
+                return
+            }
+            recoveryRuleValuesByTarget[target, default: []].append(value)
+        case .actionRule:
+            guard let target = effect.target,
+                  let value = effect.value else {
+                return
+            }
+            actionRuleValuesByTarget[target, default: []].append(value)
+        case .reviveRule:
+            guard let target = effect.target,
+                  let value = effect.value else {
+                return
+            }
+            reviveRuleValuesByTarget[target, default: []].append(value)
+        case .combatRule:
+            guard let target = effect.target,
+                  let value = effect.value else {
+                return
+            }
+            combatRuleValuesByTarget[target, default: []].append(value)
+        case .rewardRule:
+            guard let target = effect.target,
+                  let value = effect.value else {
+                return
+            }
+            rewardRuleValuesByTarget[target, default: []].append(value)
+        case .specialRule:
+            guard let target = effect.target,
+                  let value = effect.value else {
+                return
+            }
+            specialRuleValuesByTarget[target, default: []].append(value)
         }
+    }
+
+    func specialRuleValues(for target: String) -> [Double] {
+        specialRuleValuesByTarget[target] ?? []
+    }
+
+    func specialRuleProduct(for target: String) -> Double {
+        specialRuleValues(for: target).reduce(1.0, *)
     }
 }

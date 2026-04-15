@@ -48,29 +48,32 @@ struct EquipmentDisplayNameResolver {
     }
 }
 
-extension CharacterRecord {
-    var maximumEquippedItemCount: Int {
-        // Equip capacity scales with level in rounded 20-level steps on top of the base 3 slots.
-        3 + Int((Double(level) / 20).rounded())
-    }
-
-    var equippedItemCount: Int {
-        equippedItemStacks.reduce(into: 0) { partialResult, stack in
-            partialResult += stack.count
-        }
-    }
-}
-
 extension MasterData {
-    func raceName(for raceID: Int) -> String {
-        races.first(where: { $0.id == raceID })?.name ?? "不明"
+    nonisolated func race(for raceID: Int) -> Race? {
+        races.first(where: { $0.id == raceID })
     }
 
-    func jobName(for jobID: Int) -> String {
-        jobs.first(where: { $0.id == jobID })?.name ?? "不明"
+    nonisolated func job(for jobID: Int) -> Job? {
+        jobs.first(where: { $0.id == jobID })
     }
 
-    func jobDisplayName(for character: CharacterRecord) -> String {
+    nonisolated func raceName(for raceID: Int) -> String {
+        race(for: raceID)?.name ?? "不明"
+    }
+
+    nonisolated func jobName(for jobID: Int) -> String {
+        job(for: jobID)?.name ?? "不明"
+    }
+
+    nonisolated func raceAssetName(for raceID: Int) -> String {
+        race(for: raceID)?.assetName ?? ""
+    }
+
+    nonisolated func portraitAssetName(for character: CharacterRecord) -> String {
+        character.portraitAssetID
+    }
+
+    nonisolated func jobDisplayName(for character: CharacterRecord) -> String {
         let currentJobName = jobName(for: character.currentJobId)
         guard character.previousJobId != 0 else {
             return currentJobName
@@ -81,12 +84,24 @@ extension MasterData {
         return "\(currentJobName)（\(jobName(for: character.previousJobId))）"
     }
 
-    func aptitudeName(for aptitudeID: Int) -> String {
+    nonisolated func aptitudeName(for aptitudeID: Int) -> String {
         aptitudes.first(where: { $0.id == aptitudeID })?.name ?? "不明"
     }
 
-    func characterSummaryText(for character: CharacterRecord) -> String {
+    nonisolated func characterSummaryText(for character: CharacterRecord) -> String {
         "Lv.\(character.level) / \(raceName(for: character.raceId)) / \(jobDisplayName(for: character)) / \(aptitudeName(for: character.aptitudeId))"
+    }
+}
+
+extension MasterData.Race {
+    nonisolated var assetName: String {
+        "race_\(key)"
+    }
+}
+
+extension MasterData.Job {
+    nonisolated func portraitAssetName(for portraitGender: PortraitGender) -> String {
+        "job_\(key)_\(portraitGender.assetKey)"
     }
 }
 
