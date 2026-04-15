@@ -82,6 +82,13 @@ struct DebugMenuView: View {
                     .foregroundStyle(.secondary)
             }
 
+            Section("画像確認") {
+                NavigationLink("キャラ画像一覧") {
+                    DebugCharacterImageGalleryView(masterData: masterData)
+                        .navigationTitle("キャラ画像")
+                }
+            }
+
             Section("生成対象") {
                 Text("称号のみ → 超レア+称号 → 超レア+称号+宝石強化 の順で生成します。")
                     .foregroundStyle(.secondary)

@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "job_noble_unisex.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

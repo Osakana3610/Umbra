@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "job_knight_male.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

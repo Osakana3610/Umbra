@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "job_thief_female.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

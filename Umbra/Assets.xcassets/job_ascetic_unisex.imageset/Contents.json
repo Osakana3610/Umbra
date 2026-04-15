@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "job_ascetic_unisex.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

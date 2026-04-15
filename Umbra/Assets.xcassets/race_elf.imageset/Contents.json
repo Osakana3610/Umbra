@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "race_elf.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

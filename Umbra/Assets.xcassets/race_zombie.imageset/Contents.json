@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "race_zombie.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

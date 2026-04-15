@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "job_spellguard_male.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}
