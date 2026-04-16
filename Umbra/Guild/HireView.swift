@@ -1,7 +1,6 @@
 // Provides the dedicated hiring form reachable from the guild tab.
 
 import SwiftUI
-import UIKit
 
 struct HireView: View {
     let masterData: MasterData
@@ -11,7 +10,6 @@ struct HireView: View {
     @State private var selectedJobId: Int
     @State private var selectedAptitudeId: Int
     @State private var presentedDetail: HireDetailDestination?
-    @State private var isShowingHireAlert = false
 
     init(masterData: MasterData, rosterStore: GuildRosterStore) {
         self.masterData = masterData
@@ -101,20 +99,6 @@ struct HireView: View {
                     .disabled(!canHire)
                     .accessibilityIdentifier("hire-button")
             }
-        }
-        .onChange(of: rosterStore.lastHireMessage) { _, newValue in
-            isShowingHireAlert = newValue != nil
-        }
-        .alert(
-            "雇用完了",
-            isPresented: $isShowingHireAlert,
-            presenting: rosterStore.lastHireMessage
-        ) { _ in
-            Button("OK") {
-                rosterStore.dismissHireMessage()
-            }
-        } message: { message in
-            Text(message)
         }
         .sheet(item: $presentedDetail) { destination in
             NavigationStack {

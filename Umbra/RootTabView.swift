@@ -116,6 +116,28 @@ struct RootTabView: View {
             }
         }
         .environment(\.playerStatusContentInset, playerStatusContentInset)
+        .safeAreaInset(edge: .top, spacing: 0) {
+            if let hireMessage = rosterStore.lastHireMessage {
+                HStack {
+                    Spacer(minLength: 0)
+
+                    HireCompletionNotificationView(
+                        message: hireMessage,
+                        dismissNotification: rosterStore.dismissHireMessage
+                    )
+                    .id(hireMessage)
+                    .transition(
+                        .asymmetric(
+                            insertion: .identity,
+                            removal: .move(edge: .top).combined(with: .opacity)
+                        )
+                    )
+
+                    Spacer(minLength: 0)
+                }
+                .padding(.horizontal, 16)
+            }
+        }
         .overlay(alignment: .bottomLeading) {
             VStack(alignment: .leading, spacing: 8) {
                 ItemDropNotificationView(
