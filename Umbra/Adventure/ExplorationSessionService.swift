@@ -2,10 +2,20 @@
 
 import Foundation
 
+nonisolated private struct ResolvedRunUpdate: Sendable {
+    let currentSession: RunSessionRecord
+    let resolvedSession: RunSessionRecord
+}
+
+nonisolated private struct ResolvedRunProgress: Sendable {
+    let runs: [RunSessionRecord]
+    let updates: [ResolvedRunUpdate]
+}
+
 final class ExplorationSessionService {
     private let coreDataStore: ExplorationCoreDataStore
-    private static let catTicketRewardMultiplier = 2.0
-    private static let catTicketProgressIntervalMultiplier = 0.5
+    nonisolated private static let catTicketRewardMultiplier = 2.0
+    nonisolated private static let catTicketProgressIntervalMultiplier = 0.5
 
     init(coreDataStore: ExplorationCoreDataStore) {
         self.coreDataStore = coreDataStore
@@ -57,18 +67,19 @@ final class ExplorationSessionService {
                 }
                 appliesCatTicket = true
             }
-            var cachedStatuses: [Int: ExplorationMemberStatusCacheEntry] = [:]
+            let cachedStatuses: [Int: ExplorationMemberStatusCacheEntry] = [:]
             // Status caches are scoped per planned run so repeated character calculations inside
             // planning do not recompute the same derived stats for one party setup.
-            let plannedSession = try ExplorationResolver.plan(
-                session: try await makeInitialSession(
-                    runStart: runStart,
-                    startedAt: startedAt,
-                    appliesCatTicket: appliesCatTicket,
-                    masterData: masterData
-                ),
+            let initialSession = try await makeInitialSession(
+                runStart: runStart,
+                startedAt: startedAt,
+                appliesCatTicket: appliesCatTicket,
+                masterData: masterData
+            )
+            let plannedSession = try await Self.planSession(
+                initialSession,
                 masterData: masterData,
-                cachedStatuses: &cachedStatuses
+                cachedStatuses: cachedStatuses
             )
             try await coreDataStore.insertRun(
                 RunSessionRecord(
@@ -112,41 +123,25 @@ final class ExplorationSessionService {
         masterData: MasterData
     ) async throws -> ExplorationRunSnapshot {
         let progressContexts = try await coreDataStore.loadProgressContexts()
-        var runs: [RunSessionRecord] = []
-        runs.reserveCapacity(progressContexts.count)
-        var resolvedUpdates: [(currentSession: RunSessionRecord, resolvedSession: RunSessionRecord)] = []
-        resolvedUpdates.reserveCapacity(progressContexts.count)
-
-        for currentSession in progressContexts {
-            let session: RunSessionRecord
-            if currentSession.completion == nil {
-                // Active runs are revealed up to the requested wall-clock time; completed runs are
-                // passed through unchanged to avoid re-resolving rewards.
-                session = try ExplorationResolver.reveal(
-                    session: currentSession,
-                    upTo: currentDate,
-                    masterData: masterData
-                )
-            } else {
-                session = currentSession
-            }
-            resolvedUpdates.append(
-                (currentSession: currentSession, resolvedSession: session)
-            )
-            runs.append(session.completion == nil ? session.summaryRecord : session)
-        }
+        let resolvedProgress = try await Self.resolveProgress(
+            progressContexts,
+            at: currentDate,
+            masterData: masterData
+        )
 
         let rewardApplication = try await coreDataStore.commitProgressUpdates(
-            resolvedUpdates,
+            resolvedProgress.updates.map { update in
+                (currentSession: update.currentSession, resolvedSession: update.resolvedSession)
+            },
             masterData: masterData
         )
 
         return ExplorationRunSnapshot(
-            runs: runs,
+            runs: resolvedProgress.runs,
             didApplyRewards: rewardApplication.didApplyRewards,
             appliedInventoryCounts: rewardApplication.appliedInventoryCounts,
             appliedShopInventoryCounts: rewardApplication.appliedShopInventoryCounts,
-            dropNotificationBatches: resolvedUpdates.compactMap(Self.dropNotificationBatch(from:))
+            dropNotificationBatches: resolvedProgress.updates.compactMap(Self.dropNotificationBatch(from:))
         )
     }
 
@@ -166,6 +161,76 @@ final class ExplorationSessionService {
             requestedDifficultyTitleId: runStart.selectedDifficultyTitleId,
             masterData: masterData
         )
+        return try await Self.buildInitialSession(
+            runStart: runStart,
+            startedAt: startedAt,
+            appliesCatTicket: appliesCatTicket,
+            labyrinth: labyrinth,
+            startContext: startContext,
+            masterData: masterData
+        )
+    }
+
+    @concurrent
+    nonisolated private static func planSession(
+        _ initialSession: RunSessionRecord,
+        masterData: MasterData,
+        cachedStatuses: [Int: ExplorationMemberStatusCacheEntry]
+    ) async throws -> RunSessionRecord {
+        var cachedStatuses = cachedStatuses
+        return try ExplorationResolver.plan(
+            session: initialSession,
+            masterData: masterData,
+            cachedStatuses: &cachedStatuses
+        )
+    }
+
+    @concurrent
+    nonisolated private static func resolveProgress(
+        _ progressContexts: [RunSessionRecord],
+        at currentDate: Date,
+        masterData: MasterData
+    ) async throws -> ResolvedRunProgress {
+        var runs: [RunSessionRecord] = []
+        runs.reserveCapacity(progressContexts.count)
+        var updates: [ResolvedRunUpdate] = []
+        updates.reserveCapacity(progressContexts.count)
+
+        for currentSession in progressContexts {
+            let resolvedSession: RunSessionRecord
+            if currentSession.completion == nil {
+                // Active runs are revealed up to the requested wall-clock time; completed runs are
+                // passed through unchanged to avoid re-resolving rewards.
+                resolvedSession = try ExplorationResolver.reveal(
+                    session: currentSession,
+                    upTo: currentDate,
+                    masterData: masterData
+                )
+            } else {
+                resolvedSession = currentSession
+            }
+
+            updates.append(
+                ResolvedRunUpdate(
+                    currentSession: currentSession,
+                    resolvedSession: resolvedSession
+                )
+            )
+            runs.append(resolvedSession.completion == nil ? resolvedSession.summaryRecord : resolvedSession)
+        }
+
+        return ResolvedRunProgress(runs: runs, updates: updates)
+    }
+
+    @concurrent
+    nonisolated private static func buildInitialSession(
+        runStart: ConfiguredRunStart,
+        startedAt: Date,
+        appliesCatTicket: Bool,
+        labyrinth: MasterData.Labyrinth,
+        startContext: (nextPartyRunId: Int, partyMembers: [CharacterRecord], selectedDifficultyTitleId: Int),
+        masterData: MasterData
+    ) async throws -> RunSessionRecord {
         let skillTable = Dictionary(uniqueKeysWithValues: masterData.skills.map { ($0.id, $0) })
         let memberStatuses = try startContext.partyMembers.map { member in
             guard let status = CharacterDerivedStatsCalculator.status(
@@ -267,7 +332,7 @@ final class ExplorationSessionService {
     }
 
     private static func dropNotificationBatch(
-        from update: (currentSession: RunSessionRecord, resolvedSession: RunSessionRecord)
+        from update: ResolvedRunUpdate
     ) -> ExplorationDropNotificationBatch? {
         let currentBattleCount = update.currentSession.completedBattleCount
         let resolvedBattleCount = update.resolvedSession.completedBattleCount

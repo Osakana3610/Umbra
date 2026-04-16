@@ -74,6 +74,17 @@ nonisolated private struct BattleResolutionEngine {
     private var currentTurn = 0
     private var currentActionNumber = 0
     private var initiativeScores: [Double]
+    private var livingCombatantIndices: [Int]
+    private var livingAllyIndices: [Int]
+    private var livingEnemyIndices: [Int]
+    private var livingAllyFrontIndices: [Int]
+    private var livingAllyMiddleIndices: [Int]
+    private var livingAllyBackIndices: [Int]
+    private var livingEnemyFrontIndices: [Int]
+    private var livingEnemyMiddleIndices: [Int]
+    private var livingEnemyBackIndices: [Int]
+    private var allyPartyModifiersByTarget: [String: Double]
+    private var enemyPartyModifiersByTarget: [String: Double]
 
     init(
         context: BattleContext,
@@ -91,6 +102,17 @@ nonisolated private struct BattleResolutionEngine {
         self.skillLookup = Dictionary(uniqueKeysWithValues: masterData.skills.map { ($0.id, $0) })
         self.combatants = []
         self.initiativeScores = []
+        self.livingCombatantIndices = []
+        self.livingAllyIndices = []
+        self.livingEnemyIndices = []
+        self.livingAllyFrontIndices = []
+        self.livingAllyMiddleIndices = []
+        self.livingAllyBackIndices = []
+        self.livingEnemyFrontIndices = []
+        self.livingEnemyMiddleIndices = []
+        self.livingEnemyBackIndices = []
+        self.allyPartyModifiersByTarget = [:]
+        self.enemyPartyModifiersByTarget = [:]
         let enemyDisplayNames = Self.makeEnemyDisplayNames(enemies: enemies, masterData: masterData)
 
         for (formationIndex, character) in partyMembers.enumerated() {
@@ -145,6 +167,112 @@ nonisolated private struct BattleResolutionEngine {
         }
 
         self.initiativeScores = Array(repeating: 0, count: combatants.count)
+        refreshBattlefieldCaches()
+    }
+
+    private mutating func refreshBattlefieldCaches() {
+        var livingCombatantIndices: [Int] = []
+        var livingAllyIndices: [Int] = []
+        var livingEnemyIndices: [Int] = []
+        var livingAllyFrontIndices: [Int] = []
+        var livingAllyMiddleIndices: [Int] = []
+        var livingAllyBackIndices: [Int] = []
+        var livingEnemyFrontIndices: [Int] = []
+        var livingEnemyMiddleIndices: [Int] = []
+        var livingEnemyBackIndices: [Int] = []
+        var activeAllySkillIds = Set<Int>()
+        var activeEnemySkillIds = Set<Int>()
+
+        for combatantIndex in combatants.indices where combatants[combatantIndex].isAlive {
+            let combatant = combatants[combatantIndex]
+            livingCombatantIndices.append(combatantIndex)
+
+            switch combatant.side {
+            case .ally:
+                livingAllyIndices.append(combatantIndex)
+                activeAllySkillIds.formUnion(combatant.status.skillIds)
+                switch formationRank(for: combatant.formationIndex) {
+                case .front:
+                    livingAllyFrontIndices.append(combatantIndex)
+                case .middle:
+                    livingAllyMiddleIndices.append(combatantIndex)
+                case .back:
+                    livingAllyBackIndices.append(combatantIndex)
+                }
+            case .enemy:
+                livingEnemyIndices.append(combatantIndex)
+                activeEnemySkillIds.formUnion(combatant.status.skillIds)
+                switch formationRank(for: combatant.formationIndex) {
+                case .front:
+                    livingEnemyFrontIndices.append(combatantIndex)
+                case .middle:
+                    livingEnemyMiddleIndices.append(combatantIndex)
+                case .back:
+                    livingEnemyBackIndices.append(combatantIndex)
+                }
+            }
+        }
+
+        self.livingCombatantIndices = livingCombatantIndices
+        self.livingAllyIndices = livingAllyIndices
+        self.livingEnemyIndices = livingEnemyIndices
+        self.livingAllyFrontIndices = livingAllyFrontIndices
+        self.livingAllyMiddleIndices = livingAllyMiddleIndices
+        self.livingAllyBackIndices = livingAllyBackIndices
+        self.livingEnemyFrontIndices = livingEnemyFrontIndices
+        self.livingEnemyMiddleIndices = livingEnemyMiddleIndices
+        self.livingEnemyBackIndices = livingEnemyBackIndices
+        self.allyPartyModifiersByTarget = partyModifiers(for: activeAllySkillIds)
+        self.enemyPartyModifiersByTarget = partyModifiers(for: activeEnemySkillIds)
+    }
+
+    private func partyModifiers(for activeSkillIds: Set<Int>) -> [String: Double] {
+        var pctAddsByTarget: [String: Double] = [:]
+        var multipliersByTarget: [String: Double] = [:]
+
+        for skillId in activeSkillIds {
+            guard let skill = skillLookup[skillId] else {
+                continue
+            }
+
+            for effect in skill.effects {
+                guard effect.kind == .partyModifier,
+                      let target = effect.target,
+                      let value = effect.value else {
+                    continue
+                }
+
+                switch effect.operation {
+                case "pctAdd":
+                    pctAddsByTarget[target, default: 0.0] += value
+                case "mul", nil:
+                    multipliersByTarget[target, default: 1.0] *= value
+                default:
+                    continue
+                }
+            }
+        }
+
+        var resolved: [String: Double] = [:]
+        let targets = Set(pctAddsByTarget.keys).union(multipliersByTarget.keys)
+        for target in targets {
+            resolved[target] = max(
+                (1.0 + pctAddsByTarget[target, default: 0.0]) * multipliersByTarget[target, default: 1.0],
+                0.0
+            )
+        }
+        return resolved
+    }
+
+    private mutating func setCurrentHP(
+        for targetIndex: Int,
+        to newValue: Int
+    ) {
+        let wasAlive = combatants[targetIndex].isAlive
+        combatants[targetIndex].currentHP = newValue
+        if wasAlive != combatants[targetIndex].isAlive {
+            refreshBattlefieldCaches()
+        }
     }
 
     private static func makeEnemyDisplayNames(
@@ -249,7 +377,7 @@ nonisolated private struct BattleResolutionEngine {
             for index in combatants.indices
             where combatants[index].isAlive
                 && combatants[index].status.recoveryRuleMaxValue(for: "healToFullAfterBattle") != nil {
-                combatants[index].currentHP = combatants[index].status.maxHP
+                setCurrentHP(for: index, to: combatants[index].status.maxHP)
             }
         }
         let battleRecord = BattleRecord(
@@ -1889,16 +2017,19 @@ nonisolated private struct BattleResolutionEngine {
             guard roll < reviveChance else {
                 continue
             }
-            combatants[index].currentHP = max(
-                1,
-                Int((Double(combatants[index].status.maxHP) * reviveHPRatio).rounded())
+            setCurrentHP(
+                for: index,
+                to: max(
+                    1,
+                    Int((Double(combatants[index].status.maxHP) * reviveHPRatio).rounded())
+                )
             )
         }
     }
 
     private func currentOutcomeIfFinished() -> BattleOutcome? {
-        let livingAllies = combatants.contains { $0.side == .ally && $0.isAlive }
-        let livingEnemies = combatants.contains { $0.side == .enemy && $0.isAlive }
+        let livingAllies = !livingAllyIndices.isEmpty
+        let livingEnemies = !livingEnemyIndices.isEmpty
 
         switch (livingAllies, livingEnemies) {
         case (true, true):
@@ -2025,36 +2156,12 @@ nonisolated private struct BattleResolutionEngine {
         for side: BattleSide,
         target: String
     ) -> Double {
-        let activeSkillIds = Set(
-            combatants
-                .filter { $0.side == side && $0.isAlive }
-                .flatMap(\.status.skillIds)
-        )
-        var pctAdd = 0.0
-        var multiplier = 1.0
-
-        for skillId in activeSkillIds {
-            guard let skill = skillLookup[skillId] else {
-                continue
-            }
-
-            for effect in skill.effects where effect.kind == .partyModifier && effect.target == target {
-                guard let value = effect.value else {
-                    continue
-                }
-
-                switch effect.operation {
-                case "pctAdd":
-                    pctAdd += value
-                case "mul", nil:
-                    multiplier *= value
-                default:
-                    continue
-                }
-            }
+        switch side {
+        case .ally:
+            return allyPartyModifiersByTarget[target] ?? 1.0
+        case .enemy:
+            return enemyPartyModifiersByTarget[target] ?? 1.0
         }
-
-        return max((1.0 + pctAdd) * multiplier, 0.0)
     }
 
     private func redirectedPhysicalTarget(
@@ -2516,6 +2623,9 @@ nonisolated private struct BattleResolutionEngine {
                 flags.append(.defeated)
             }
         }
+        if wasAlive != combatants[targetIndex].isAlive {
+            refreshBattlefieldCaches()
+        }
 
         return BattleTargetResult(
             targetId: combatants[targetIndex].id,
@@ -2539,7 +2649,7 @@ nonisolated private struct BattleResolutionEngine {
         let restoredHP = fullRestore
             ? combatants[targetIndex].status.maxHP
             : min(combatants[targetIndex].currentHP + scaledValue, combatants[targetIndex].status.maxHP)
-        combatants[targetIndex].currentHP = restoredHP
+        setCurrentHP(for: targetIndex, to: restoredHP)
         return BattleTargetResult(
             targetId: combatants[targetIndex].id,
             resultKind: .heal,
@@ -2557,7 +2667,7 @@ nonisolated private struct BattleResolutionEngine {
         let restoredHP = fullRestore
             ? combatants[targetIndex].status.maxHP
             : max(1, min(recoveredHP, combatants[targetIndex].status.maxHP))
-        combatants[targetIndex].currentHP = restoredHP
+        setCurrentHP(for: targetIndex, to: restoredHP)
         return BattleTargetResult(
             targetId: combatants[targetIndex].id,
             resultKind: .heal,
@@ -3123,18 +3233,32 @@ nonisolated private struct BattleResolutionEngine {
     }
 
     private func livingIndices() -> [Int] {
-        combatants.indices.filter { combatants[$0].isAlive }
+        livingCombatantIndices
     }
 
     private func livingIndices(on side: BattleSide) -> [Int] {
-        combatants.indices.filter { combatants[$0].side == side && combatants[$0].isAlive }
+        switch side {
+        case .ally:
+            livingAllyIndices
+        case .enemy:
+            livingEnemyIndices
+        }
     }
 
     private func livingIndices(on side: BattleSide, rank: FormationRank) -> [Int] {
-        combatants.indices.filter {
-            combatants[$0].side == side
-                && combatants[$0].isAlive
-                && formationRank(for: combatants[$0].formationIndex) == rank
+        switch (side, rank) {
+        case (.ally, .front):
+            livingAllyFrontIndices
+        case (.ally, .middle):
+            livingAllyMiddleIndices
+        case (.ally, .back):
+            livingAllyBackIndices
+        case (.enemy, .front):
+            livingEnemyFrontIndices
+        case (.enemy, .middle):
+            livingEnemyMiddleIndices
+        case (.enemy, .back):
+            livingEnemyBackIndices
         }
     }
 
