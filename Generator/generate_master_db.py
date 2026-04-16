@@ -455,6 +455,11 @@ def build_items(records: list[dict], skill_indices: dict[str, int]) -> list[dict
         normal_drop_tier = int(record["normalDropTier"])
         if normal_drop_tier < 0 or normal_drop_tier > 8:
             raise ValueError(f"Expected normalDropTier to be within 0...8 in item[{record['id']}]")
+        if rarity == "normal" and category != "misc" and normal_drop_tier == 0:
+            raise ValueError(
+                "Expected normalDropTier to be within 1...8 "
+                f"for normal item[{record['id']}]"
+            )
 
         native_base_stats = build_sparse_int_map(
             record["nativeBaseStats"],

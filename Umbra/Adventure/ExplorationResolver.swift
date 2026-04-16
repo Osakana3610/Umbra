@@ -779,32 +779,54 @@ nonisolated extension ExplorationResolver {
         enemyIndex: Int,
         rootSeed: UInt64
     ) -> Int? {
-        let cbrtLevel = cbrt(Double(enemyLevel))
-        // Higher tiers are checked first with separately clamped probabilities, so stronger
-        // enemies widen the upper-tier window without removing low-tier fallback drops.
-        let tierProbabilities: [(tier: Int, probability: Double)] = [
-            (8, clamp(0.005 + 0.015 * (cbrtLevel - 1), min: 0.005, max: 0.10)),
-            (7, clamp(0.020 + 0.020 * (cbrtLevel - 1), min: 0.020, max: 0.20)),
-            (6, clamp(0.040 + 0.030 * (cbrtLevel - 1), min: 0.040, max: 0.30)),
-            (5, clamp(0.080 + 0.040 * (cbrtLevel - 1), min: 0.080, max: 0.40)),
-            (4, clamp(0.160 + 0.050 * (cbrtLevel - 1), min: 0.160, max: 0.50)),
-            (3, clamp(0.320 + 0.060 * (cbrtLevel - 1), min: 0.320, max: 0.60)),
-            (2, clamp(0.640 + 0.070 * (cbrtLevel - 1), min: 0.640, max: 0.70)),
-            (1, 1.0)
+        // Normal-drop progression stays two-stage on purpose:
+        // 1) enemy level only decides how many times to reroll the tier,
+        // 2) this static weight table decides the baseline rarity skew inside each roll.
+        // Keeping the tier weights fixed in code avoids splitting one tuning rule across master
+        // data and resolver logic, while the exponential roll thresholds define when high-level
+        // enemies are allowed to fish for better tiers.
+        let weightedTiers: [(value: Int, weight: Double)] = [
+            (8, 1),
+            (7, 2),
+            (6, 4),
+            (5, 8),
+            (4, 16),
+            (3, 32),
+            (2, 64),
+            (1, 128)
         ]
+        let rollCount = normalDropTierRollCount(enemyLevel: enemyLevel)
+        var bestTier = 1
 
-        for tierProbability in tierProbabilities {
-            let purpose = "drop:normal:tier:\(floorNumber):\(battleNumber):enemy:\(enemyIndex):tier:\(tierProbability.tier)"
-            let roll = ExplorationDeterministicRandom.uniform(
+        for rollIndex in 0..<rollCount {
+            guard let tier = weightedRandomChoice(
+                from: weightedTiers,
                 rootSeed: rootSeed,
-                purpose: purpose
-            )
-            if roll < tierProbability.probability {
-                return tierProbability.tier
+                purpose: "drop:normal:tier:\(floorNumber):\(battleNumber):enemy:\(enemyIndex):roll:\(rollIndex)"
+            ) else {
+                continue
             }
+            // Stronger enemies earn extra rolls and keep the best result instead of warping the
+            // base table, which makes the tier curve easier to tune.
+            bestTier = max(bestTier, tier)
         }
 
-        return nil
+        return bestTier
+    }
+
+    static func normalDropTierRollCount(
+        enemyLevel: Int
+    ) -> Int {
+        let sanitizedLevel = max(enemyLevel, 1)
+        var rollCount = 1
+        var upperBound = 10
+
+        while sanitizedLevel > upperBound, rollCount < 10 {
+            rollCount += 1
+            upperBound *= 2
+        }
+
+        return rollCount
     }
 
     static func rareDropRate(
@@ -975,18 +997,41 @@ nonisolated extension ExplorationResolver {
         }
 
         let jewelCandidates = itemTable.values
-            .filter { $0.normalDropTier == tier && $0.category == .jewel }
+            .filter { $0.category == .jewel }
             .sorted { $0.id < $1.id }
         guard !jewelCandidates.isEmpty else {
             return defaultItem
         }
 
-        let jewelRoll = ExplorationDeterministicRandom.integer(
-            upperBound: jewelCandidates.count,
+        let weightedJewelCandidates = jewelCandidates.map { jewel in
+            (value: jewel, weight: normalDropJewelRarityWeight(for: jewel.rarity))
+        }
+        guard let selectedJewel = weightedRandomChoice(
+            from: weightedJewelCandidates,
             rootSeed: rootSeed,
             purpose: "drop:normal:jewelize:item:\(floorNumber):\(battleNumber):enemy:\(enemyIndex):tier:\(tier)"
-        )
-        return jewelCandidates[jewelRoll]
+        ) else {
+            return defaultItem
+        }
+
+        return selectedJewel
+    }
+
+    static func normalDropJewelRarityWeight(
+        for rarity: ItemRarity
+    ) -> Double {
+        switch rarity {
+        case .normal:
+            256
+        case .uncommon:
+            64
+        case .rare:
+            16
+        case .mythic:
+            4
+        case .godfiend:
+            1
+        }
     }
 
     static func resolveSuperRareId(

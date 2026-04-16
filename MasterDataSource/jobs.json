@@ -465,9 +465,9 @@
             "receivedHealingMultiplier_20pct"
         ],
         "levelSkillIds": [
-            "job_alchemist_normal_drop_jewelize_5pct",
-            "job_alchemist_normal_drop_jewelize_10pct",
-            "job_alchemist_normal_drop_jewelize_25pct"
+            "job_alchemist_normal_drop_jewelize_1_25pct",
+            "job_alchemist_normal_drop_jewelize_2_5pct",
+            "job_alchemist_normal_drop_jewelize_5pct"
         ]
     },
     {

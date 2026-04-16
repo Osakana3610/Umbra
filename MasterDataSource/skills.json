@@ -9509,6 +9509,28 @@
         ]
     },
     {
+        "id": "job_alchemist_normal_drop_jewelize_1_25pct",
+        "name": "ノーマルドロップ宝石化1.25%",
+        "description": "ノーマルドロップ時に1.25%で宝石ベースへ変換する。",
+        "effects": [
+            {
+                "kind": "normalDropJewelize",
+                "value": 0.0125
+            }
+        ]
+    },
+    {
+        "id": "job_alchemist_normal_drop_jewelize_2_5pct",
+        "name": "ノーマルドロップ宝石化2.5%",
+        "description": "ノーマルドロップ時に2.5%で宝石ベースへ変換する。",
+        "effects": [
+            {
+                "kind": "normalDropJewelize",
+                "value": 0.025
+            }
+        ]
+    },
+    {
         "id": "job_alchemist_normal_drop_jewelize_5pct",
         "name": "ノーマルドロップ宝石化5%",
         "description": "ノーマルドロップ時に5%で宝石ベースへ変換する。",
@@ -9516,28 +9538,6 @@
             {
                 "kind": "normalDropJewelize",
                 "value": 0.05
-            }
-        ]
-    },
-    {
-        "id": "job_alchemist_normal_drop_jewelize_10pct",
-        "name": "ノーマルドロップ宝石化10%",
-        "description": "ノーマルドロップ時に10%で宝石ベースへ変換する。",
-        "effects": [
-            {
-                "kind": "normalDropJewelize",
-                "value": 0.1
-            }
-        ]
-    },
-    {
-        "id": "job_alchemist_normal_drop_jewelize_25pct",
-        "name": "ノーマルドロップ宝石化25%",
-        "description": "ノーマルドロップ時に25%で宝石ベースへ変換する。",
-        "effects": [
-            {
-                "kind": "normalDropJewelize",
-                "value": 0.25
             }
         ]
     },

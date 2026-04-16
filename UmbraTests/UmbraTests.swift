@@ -483,6 +483,29 @@ struct UmbraTests {
     }
 
     @Test
+    func completeStatusCalculationUsesHighestNormalDropJewelizeChance() throws {
+        let masterData = try loadGeneratedMasterData()
+        let character = CharacterRecord(
+            characterId: 1,
+            name: "テスト錬金術師",
+            raceId: try raceId(named: "人間", in: masterData),
+            previousJobId: 0,
+            currentJobId: try jobId(named: "錬金術師", in: masterData),
+            aptitudeId: try #require(masterData.aptitudes.first?.id),
+            portraitGender: .male,
+            portraitAssetID: "job_alchemist_male",
+            experience: 0,
+            level: 75,
+            currentHP: 1,
+            autoBattleSettings: .default
+        )
+
+        let status = try #require(CharacterDerivedStatsCalculator.status(for: character, masterData: masterData))
+
+        #expect(abs(status.normalDropJewelizeChance - 0.05) < 0.000_000_001)
+    }
+
+    @Test
     func completeStatusCalculationAppliesAllBattleStatMultiplierAndRevokesGrantedSpell() throws {
         let attackSpell = MasterData.Spell(
             id: 1,
@@ -4975,6 +4998,164 @@ struct UmbraTests {
         )
 
         #expect(title.id == roughTitle.id)
+    }
+
+    @Test
+    func normalDropTierRollCountUsesExponentialThresholds() {
+        #expect(ExplorationResolver.normalDropTierRollCount(enemyLevel: 1) == 1)
+        #expect(ExplorationResolver.normalDropTierRollCount(enemyLevel: 10) == 1)
+        #expect(ExplorationResolver.normalDropTierRollCount(enemyLevel: 11) == 2)
+        #expect(ExplorationResolver.normalDropTierRollCount(enemyLevel: 20) == 2)
+        #expect(ExplorationResolver.normalDropTierRollCount(enemyLevel: 21) == 3)
+        #expect(ExplorationResolver.normalDropTierRollCount(enemyLevel: 40) == 3)
+        #expect(ExplorationResolver.normalDropTierRollCount(enemyLevel: 41) == 4)
+        #expect(ExplorationResolver.normalDropTierRollCount(enemyLevel: 80) == 4)
+        #expect(ExplorationResolver.normalDropTierRollCount(enemyLevel: 81) == 5)
+        #expect(ExplorationResolver.normalDropTierRollCount(enemyLevel: 160) == 5)
+        #expect(ExplorationResolver.normalDropTierRollCount(enemyLevel: 161) == 6)
+        #expect(ExplorationResolver.normalDropTierRollCount(enemyLevel: 320) == 6)
+        #expect(ExplorationResolver.normalDropTierRollCount(enemyLevel: 321) == 7)
+        #expect(ExplorationResolver.normalDropTierRollCount(enemyLevel: 640) == 7)
+        #expect(ExplorationResolver.normalDropTierRollCount(enemyLevel: 641) == 8)
+        #expect(ExplorationResolver.normalDropTierRollCount(enemyLevel: 1_280) == 8)
+        #expect(ExplorationResolver.normalDropTierRollCount(enemyLevel: 1_281) == 9)
+        #expect(ExplorationResolver.normalDropTierRollCount(enemyLevel: 2_560) == 9)
+        #expect(ExplorationResolver.normalDropTierRollCount(enemyLevel: 2_561) == 10)
+        #expect(ExplorationResolver.normalDropTierRollCount(enemyLevel: 99_999) == 10)
+    }
+
+    @Test
+    func normalDropTierKeepsBestResultWhenEnemyLevelAddsRolls() {
+        for seed in 0..<128 {
+            let singleRollTier = ExplorationResolver.resolveNormalDropTier(
+                enemyLevel: 10,
+                floorNumber: 1,
+                battleNumber: 1,
+                enemyIndex: 0,
+                rootSeed: UInt64(seed)
+            )
+            let doubleRollTier = ExplorationResolver.resolveNormalDropTier(
+                enemyLevel: 11,
+                floorNumber: 1,
+                battleNumber: 1,
+                enemyIndex: 0,
+                rootSeed: UInt64(seed)
+            )
+            let tripleRollTier = ExplorationResolver.resolveNormalDropTier(
+                enemyLevel: 21,
+                floorNumber: 1,
+                battleNumber: 1,
+                enemyIndex: 0,
+                rootSeed: UInt64(seed)
+            )
+
+            #expect((singleRollTier ?? 0) <= (doubleRollTier ?? 0))
+            #expect((doubleRollTier ?? 0) <= (tripleRollTier ?? 0))
+        }
+    }
+
+    @Test
+    func normalDropJewelizeCanSelectNonNormalJewelRarity() {
+        let defaultItem = MasterData.Item(
+            id: 1,
+            name: "テストソード",
+            category: .sword,
+            rarity: .normal,
+            basePrice: 100,
+            nativeBaseStats: MasterData.BaseStats(
+                vitality: 0,
+                strength: 0,
+                mind: 0,
+                intelligence: 0,
+                agility: 0,
+                luck: 0
+            ),
+            nativeBattleStats: MasterData.BattleStats(
+                maxHP: 0,
+                physicalAttack: 0,
+                physicalDefense: 0,
+                magic: 0,
+                magicDefense: 0,
+                healing: 0,
+                accuracy: 0,
+                evasion: 0,
+                attackCount: 0,
+                criticalRate: 0,
+                breathPower: 0
+            ),
+            skillIds: [],
+            rangeClass: .melee,
+            normalDropTier: 1
+        )
+        let rareJewel = MasterData.Item(
+            id: 2,
+            name: "テストレア宝石",
+            category: .jewel,
+            rarity: .rare,
+            basePrice: 100,
+            nativeBaseStats: MasterData.BaseStats(
+                vitality: 0,
+                strength: 0,
+                mind: 0,
+                intelligence: 0,
+                agility: 0,
+                luck: 0
+            ),
+            nativeBattleStats: MasterData.BattleStats(
+                maxHP: 0,
+                physicalAttack: 0,
+                physicalDefense: 0,
+                magic: 0,
+                magicDefense: 0,
+                healing: 0,
+                accuracy: 0,
+                evasion: 0,
+                attackCount: 0,
+                criticalRate: 0,
+                breathPower: 0
+            ),
+            skillIds: [],
+            rangeClass: .none,
+            normalDropTier: 0
+        )
+        let title = MasterData.Title(
+            id: 1,
+            key: "untitled",
+            name: "無名",
+            positiveMultiplier: 1.0,
+            negativeMultiplier: 1.0,
+            dropWeight: 1
+        )
+        let rewardContext = ExplorationResolver.RewardContext(
+            memberCharacterIds: [],
+            memberExperienceMultipliers: [],
+            goldMultiplier: 1,
+            rareDropMultiplier: 1,
+            titleRollCountModifier: 0,
+            normalDropJewelizeChance: 1,
+            goldPenaltyPerDamageTaken: 0,
+            goldGainPctAddOnNormalKill: 0,
+            partyAverageLuck: 0,
+            defaultTitle: title,
+            enemyTitle: title
+        )
+
+        let item = ExplorationResolver.normalDropBaseItem(
+            from: defaultItem,
+            tier: 1,
+            rewardContext: rewardContext,
+            floorNumber: 1,
+            battleNumber: 1,
+            enemyIndex: 0,
+            rootSeed: 0,
+            itemTable: [
+                defaultItem.id: defaultItem,
+                rareJewel.id: rareJewel
+            ]
+        )
+
+        #expect(item.id == rareJewel.id)
+        #expect(item.rarity == .rare)
     }
 
     @Test

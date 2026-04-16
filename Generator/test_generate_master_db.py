@@ -405,6 +405,30 @@ class BuildItemsTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Unexpected field\\(s\\) charisma"):
             build_items(records, {})
 
+    def test_rejects_normal_item_with_zero_drop_tier(self):
+        records = [
+            {
+                "id": "sword_normal_01",
+                "name": "ショートソード",
+                "category": "sword",
+                "rarity": "normal",
+                "basePrice": 120,
+                "nativeBaseStats": {},
+                "nativeBattleStats": {
+                    "physicalAttack": 1,
+                },
+                "skillIds": [],
+                "rangeClass": "melee",
+                "normalDropTier": 0,
+            }
+        ]
+
+        with self.assertRaisesRegex(
+            ValueError,
+            "Expected normalDropTier to be within 1...8 for normal item\\[sword_normal_01\\]",
+        ):
+            build_items(records, {})
+
 
 class BuildEnemiesTests(unittest.TestCase):
     def test_builds_enemies_with_reward_base_values(self):

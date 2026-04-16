@@ -926,7 +926,7 @@ nonisolated private struct SkillAdjustments {
             guard let value = effect.value else {
                 return
             }
-            normalDropJewelizeChance = min(normalDropJewelizeChance + value, 1.0)
+            normalDropJewelizeChance = max(normalDropJewelizeChance, value)
         case .onHitAilmentGrant:
             guard let target = effect.target,
                   let value = effect.value,
