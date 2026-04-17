@@ -712,6 +712,41 @@ struct UmbraTests {
     }
 
     @Test
+    func equipmentAggregationAppliesTitleMultiplierOnlyToBattleStats() throws {
+        let masterData = makeEquipmentShopTestMasterData(
+            baseStats: battleBaseStats(vitality: 10, strength: -4, agility: 3),
+            battleStats: battleCharacterBattleStats(maxHP: 12, physicalAttack: -8, accuracy: 5)
+        )
+        let titledItemID = CompositeItemID.baseItem(itemId: 1, titleId: 1)
+
+        let aggregation = try EquipmentAggregator(masterData: masterData).aggregate(
+            equippedItemStacks: [CompositeItemStack(itemID: titledItemID, count: 1)]
+        )
+
+        #expect(aggregation.baseStats == CharacterBaseStats(
+            vitality: 10,
+            strength: -4,
+            mind: 0,
+            intelligence: 0,
+            agility: 3,
+            luck: 0
+        ))
+        #expect(aggregation.battleStats == CharacterBattleStats(
+            maxHP: 18,
+            physicalAttack: -8,
+            physicalDefense: 0,
+            magic: 0,
+            magicDefense: 0,
+            healing: 0,
+            accuracy: 8,
+            evasion: 0,
+            attackCount: 0,
+            criticalRate: 0,
+            breathPower: 0
+        ))
+    }
+
+    @Test
     func armorEquipmentFlatMultiplierScalesArmorBattleStats() throws {
         let armorSkill = MasterData.Skill(
             id: 1,

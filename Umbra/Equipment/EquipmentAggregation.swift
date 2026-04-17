@@ -154,13 +154,20 @@ nonisolated struct EquipmentAggregator {
             throw EquipmentAggregationError.invalidJewelItem(itemId)
         }
 
-        // Titles scale positive and negative stats independently, while super-rares contribute
-        // only extra skills and never alter the numeric stat payload directly.
+        // Titles scale only battle stats, while super-rares contribute only extra skills and
+        // never alter the numeric stat payload directly.
         let title = titleId > 0 ? titlesByID[titleId] : nil
         let superRare = includeSuperRareSkills && superRareId > 0 ? superRaresByID[superRareId] : nil
 
         return ResolvedItemContribution(
-            baseStats: scaledBaseStats(item.nativeBaseStats, title: title),
+            baseStats: CharacterBaseStats(
+                vitality: item.nativeBaseStats.vitality,
+                strength: item.nativeBaseStats.strength,
+                mind: item.nativeBaseStats.mind,
+                intelligence: item.nativeBaseStats.intelligence,
+                agility: item.nativeBaseStats.agility,
+                luck: item.nativeBaseStats.luck
+            ),
             battleStats: scaledBattleStats(item.nativeBattleStats, title: title),
             skillIDs: item.skillIds + (superRare?.skillIds ?? []),
             itemCategory: item.category,
@@ -264,20 +271,6 @@ nonisolated struct EquipmentAggregator {
         totals.attackCount += (contribution.attackCount / statDivisor) * count
         totals.criticalRate += (contribution.criticalRate / statDivisor) * count
         totals.breathPower += (contribution.breathPower / statDivisor) * count
-    }
-
-    private func scaledBaseStats(
-        _ stats: MasterData.BaseStats,
-        title: MasterData.Title?
-    ) -> CharacterBaseStats {
-        CharacterBaseStats(
-            vitality: scaled(stats.vitality, title: title),
-            strength: scaled(stats.strength, title: title),
-            mind: scaled(stats.mind, title: title),
-            intelligence: scaled(stats.intelligence, title: title),
-            agility: scaled(stats.agility, title: title),
-            luck: scaled(stats.luck, title: title)
-        )
     }
 
     private func scaledBattleStats(
