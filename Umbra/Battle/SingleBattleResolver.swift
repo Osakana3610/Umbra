@@ -150,7 +150,7 @@ nonisolated private struct BattleResolutionEngine {
                     id: BattleCombatantID(rawValue: "enemy:\(enemy.id):\(formationIndex + 1)"),
                     name: enemyDisplayName,
                     side: .enemy,
-                    imageAssetID: nil,
+                    imageAssetID: enemy.imageAssetName,
                     level: enemySeed.level,
                     formationIndex: formationIndex,
                     currentHP: status.maxHP,

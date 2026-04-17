@@ -183,6 +183,7 @@ extension MasterData {
     nonisolated struct Enemy: Identifiable, Decodable, Sendable {
         let id: Int
         let name: String
+        let imageAssetName: String?
         let enemyRace: EnemyRace
         let jobId: Int
         let baseStats: BaseStats
@@ -226,6 +227,68 @@ extension MasterData {
     nonisolated struct FixedBattle: Decodable, Sendable {
         let enemyId: Int
         let level: Int
+    }
+}
+
+extension MasterData.Enemy {
+    init(
+        id: Int,
+        name: String,
+        enemyRace: EnemyRace,
+        jobId: Int,
+        baseStats: MasterData.BaseStats,
+        goldBaseValue: Int,
+        experienceBaseValue: Int,
+        skillIds: [Int],
+        rareDropItemIds: [Int],
+        actionRates: MasterData.ActionRates,
+        actionPriority: [BattleActionKind]
+    ) {
+        self.init(
+            id: id,
+            name: name,
+            imageAssetName: nil,
+            enemyRace: enemyRace,
+            jobId: jobId,
+            baseStats: baseStats,
+            goldBaseValue: goldBaseValue,
+            experienceBaseValue: experienceBaseValue,
+            skillIds: skillIds,
+            rareDropItemIds: rareDropItemIds,
+            actionRates: actionRates,
+            actionPriority: actionPriority
+        )
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id
+        case name
+        case imageAssetName
+        case enemyRace
+        case jobId
+        case baseStats
+        case goldBaseValue
+        case experienceBaseValue
+        case skillIds
+        case rareDropItemIds
+        case actionRates
+        case actionPriority
+    }
+
+    nonisolated init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.id = try container.decode(Int.self, forKey: .id)
+        self.name = try container.decode(String.self, forKey: .name)
+        self.imageAssetName = try container.decodeIfPresent(String.self, forKey: .imageAssetName)
+        self.enemyRace = try container.decode(EnemyRace.self, forKey: .enemyRace)
+        self.jobId = try container.decode(Int.self, forKey: .jobId)
+        self.baseStats = try container.decode(MasterData.BaseStats.self, forKey: .baseStats)
+        self.goldBaseValue = try container.decode(Int.self, forKey: .goldBaseValue)
+        self.experienceBaseValue = try container.decode(Int.self, forKey: .experienceBaseValue)
+        self.skillIds = try container.decode([Int].self, forKey: .skillIds)
+        self.rareDropItemIds = try container.decode([Int].self, forKey: .rareDropItemIds)
+        self.actionRates = try container.decode(MasterData.ActionRates.self, forKey: .actionRates)
+        self.actionPriority = try container.decode([BattleActionKind].self, forKey: .actionPriority)
     }
 }
 

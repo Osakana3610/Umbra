@@ -180,6 +180,13 @@ private struct MonsterBookEnemyRowView: View {
 
     var body: some View {
         HStack(alignment: .center, spacing: 12) {
+            MonsterEnemyThumbnailView(
+                imageAssetName: enemy?.imageAssetName,
+                fallbackSystemName: "pawprint.fill",
+                size: 44,
+                cornerRadius: 10
+            )
+
             VStack(alignment: .leading, spacing: 6) {
                 Text(enemy?.name ?? "不明な敵")
                     .font(.body.weight(.medium))
@@ -198,6 +205,34 @@ private struct MonsterBookEnemyRowView: View {
             .buttonStyle(.borderless)
             .accessibilityLabel("\(enemy?.name ?? "敵")の詳細")
         }
+    }
+
+}
+
+struct MonsterEnemyThumbnailView: View {
+    let imageAssetName: String?
+    let fallbackSystemName: String
+    let size: CGFloat
+    let cornerRadius: CGFloat
+
+    var body: some View {
+        Group {
+            if let imageAssetName {
+                Image(imageAssetName)
+                    .resizable()
+                    .scaledToFill()
+            } else {
+                RoundedRectangle(cornerRadius: cornerRadius)
+                    .fill(Color.red.opacity(0.12))
+                    .overlay {
+                        Image(systemName: fallbackSystemName)
+                            .font(.system(size: size * 0.36, weight: .semibold))
+                            .foregroundStyle(Color.red)
+                    }
+            }
+        }
+        .frame(width: size, height: size)
+        .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
     }
 }
 

@@ -156,14 +156,12 @@ private struct MonsterEnemyHeaderView: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 16) {
-            RoundedRectangle(cornerRadius: 16)
-                .fill(.quaternary)
-                .frame(width: 96, height: 96)
-                .overlay {
-                    Image(systemName: enemy.enemyRace.symbolName)
-                        .font(.system(size: 34, weight: .semibold))
-                        .foregroundStyle(.secondary)
-                }
+            MonsterEnemyThumbnailView(
+                imageAssetName: enemy.imageAssetName,
+                fallbackSystemName: enemy.enemyRace.symbolName,
+                size: 96,
+                cornerRadius: 16
+            )
 
             VStack(alignment: .leading, spacing: 8) {
                 Text(enemy.name)

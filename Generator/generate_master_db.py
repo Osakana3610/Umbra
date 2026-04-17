@@ -963,6 +963,13 @@ def build_enemies(
             f"enemy[{index}]",
         )
 
+        image_asset_name = record.get("imageAssetName")
+        if image_asset_name is not None:
+            if not isinstance(image_asset_name, str):
+                raise ValueError(f"Expected enemy[{record['id']}].imageAssetName to be a string")
+            if not image_asset_name:
+                raise ValueError(f"Expected enemy[{record['id']}].imageAssetName to be non-empty")
+
         enemy_race = record["enemyRace"]
         if enemy_race not in VALID_ENEMY_RACES:
             raise ValueError(f"Unsupported enemyRace '{enemy_race}' in enemy[{record['id']}]")
@@ -1009,21 +1016,23 @@ def build_enemies(
                 raise ValueError(f"Duplicate action kind '{action_kind}' in enemy[{record['id']}].actionPriority")
             seen_action_kinds.add(action_kind)
 
-        enemies.append(
-            {
-                "id": index,
-                "name": record["name"],
-                "enemyRace": enemy_race,
-                "jobId": job_indices[job_key],
-                "baseStats": {key: int(base_stats[key]) for key in base_stat_keys},
-                "goldBaseValue": int(record["goldBaseValue"]),
-                "experienceBaseValue": int(record["experienceBaseValue"]),
-                "skillIds": [skill_indices[skill_id] for skill_id in skill_ids],
-                "rareDropItemIds": [item_indices[item_key] for item_key in rare_drop_item_keys],
-                "actionRates": {key: int(action_rates[key]) for key in action_rate_keys},
-                "actionPriority": action_priority,
-            }
-        )
+        enemy_payload = {
+            "id": index,
+            "name": record["name"],
+            "enemyRace": enemy_race,
+            "jobId": job_indices[job_key],
+            "baseStats": {key: int(base_stats[key]) for key in base_stat_keys},
+            "goldBaseValue": int(record["goldBaseValue"]),
+            "experienceBaseValue": int(record["experienceBaseValue"]),
+            "skillIds": [skill_indices[skill_id] for skill_id in skill_ids],
+            "rareDropItemIds": [item_indices[item_key] for item_key in rare_drop_item_keys],
+            "actionRates": {key: int(action_rates[key]) for key in action_rate_keys},
+            "actionPriority": action_priority,
+        }
+        if image_asset_name is not None:
+            enemy_payload["imageAssetName"] = image_asset_name
+
+        enemies.append(enemy_payload)
     return enemies
 
 

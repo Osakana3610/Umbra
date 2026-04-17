@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "enemy_specter.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

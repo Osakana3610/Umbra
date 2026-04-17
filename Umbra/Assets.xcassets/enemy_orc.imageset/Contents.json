@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "enemy_orc.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}
