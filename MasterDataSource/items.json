@@ -27,7 +27,7 @@
             "accuracy": 1
         },
         "skillIds": [
-            "physicalDamageMultiplier_plus_10pct"
+            "criticalDamageMultiplier_plus_10pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 2
@@ -44,7 +44,7 @@
             "accuracy": 1
         },
         "skillIds": [
-            "physicalDamageMultiplier_plus_10pct"
+            "accuracy_plus_10pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 3
@@ -62,7 +62,7 @@
             "criticalRate": 1
         },
         "skillIds": [
-            "physicalDamageMultiplier_plus_10pct"
+            "criticalRate_plus_10pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 4
@@ -80,7 +80,7 @@
             "criticalRate": 1
         },
         "skillIds": [
-            "physicalDamageMultiplier_plus_10pct"
+            "actionSpeedMultiplier_plus_10pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 5
@@ -116,7 +116,7 @@
             "criticalRate": 1
         },
         "skillIds": [
-            "physicalDamageMultiplier_plus_20pct"
+            "criticalDamageMultiplier_plus_20pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 7
@@ -134,7 +134,7 @@
             "criticalRate": 2
         },
         "skillIds": [
-            "physicalDamageMultiplier_plus_20pct"
+            "accuracy_plus_20pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 8
@@ -152,7 +152,7 @@
             "criticalRate": 2
         },
         "skillIds": [
-            "physicalDamageMultiplier_plus_10pct"
+            "criticalRate_plus_20pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -170,7 +170,7 @@
             "criticalRate": 2
         },
         "skillIds": [
-            "physicalDamageMultiplier_plus_10pct"
+            "actionSpeedMultiplier_plus_20pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -188,7 +188,7 @@
             "criticalRate": 2
         },
         "skillIds": [
-            "physicalDamageMultiplier_plus_10pct"
+            "physicalDamageMultiplier_plus_30pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -206,7 +206,7 @@
             "criticalRate": 3
         },
         "skillIds": [
-            "physicalDamageMultiplier_plus_10pct"
+            "criticalDamageMultiplier_plus_30pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -224,7 +224,7 @@
             "criticalRate": 3
         },
         "skillIds": [
-            "physicalDamageMultiplier_plus_10pct"
+            "accuracy_plus_30pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -242,7 +242,7 @@
             "criticalRate": 3
         },
         "skillIds": [
-            "physicalDamageMultiplier_plus_10pct"
+            "criticalRate_plus_30pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -260,7 +260,7 @@
             "criticalRate": 3
         },
         "skillIds": [
-            "physicalDamageMultiplier_plus_10pct"
+            "actionSpeedMultiplier_plus_30pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -278,7 +278,7 @@
             "criticalRate": 4
         },
         "skillIds": [
-            "physicalDamageMultiplier_plus_10pct"
+            "physicalDamageMultiplier_plus_40pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -296,7 +296,7 @@
             "criticalRate": 4
         },
         "skillIds": [
-            "physicalDamageMultiplier_plus_10pct"
+            "criticalDamageMultiplier_plus_40pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -314,7 +314,7 @@
             "criticalRate": 4
         },
         "skillIds": [
-            "physicalDamageMultiplier_plus_10pct"
+            "accuracy_plus_40pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -332,7 +332,7 @@
             "criticalRate": 4
         },
         "skillIds": [
-            "physicalDamageMultiplier_plus_10pct"
+            "criticalRate_plus_40pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -350,7 +350,7 @@
             "criticalRate": 5
         },
         "skillIds": [
-            "physicalDamageMultiplier_plus_10pct"
+            "actionSpeedMultiplier_plus_40pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -368,7 +368,7 @@
             "criticalRate": 5
         },
         "skillIds": [
-            "physicalDamageMultiplier_plus_20pct"
+            "physicalDamageMultiplier_plus_50pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -386,7 +386,7 @@
             "criticalRate": 5
         },
         "skillIds": [
-            "physicalDamageMultiplier_plus_20pct"
+            "criticalDamageMultiplier_plus_50pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -404,7 +404,7 @@
             "criticalRate": 5
         },
         "skillIds": [
-            "physicalDamageMultiplier_plus_20pct"
+            "accuracy_plus_50pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -422,7 +422,7 @@
             "criticalRate": 6
         },
         "skillIds": [
-            "physicalDamageMultiplier_plus_20pct"
+            "actionSpeedMultiplier_plus_50pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -455,7 +455,7 @@
             "criticalRate": 1
         },
         "skillIds": [
-            "meleeDamageMultiplier_plus_10pct"
+            "criticalDamageMultiplier_plus_10pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 2
@@ -472,7 +472,7 @@
             "criticalRate": 1
         },
         "skillIds": [
-            "meleeDamageMultiplier_plus_10pct"
+            "accuracy_plus_10pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 3
@@ -490,7 +490,7 @@
             "criticalRate": 1
         },
         "skillIds": [
-            "meleeDamageMultiplier_plus_10pct"
+            "criticalRate_plus_10pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 4
@@ -508,7 +508,7 @@
             "criticalRate": 2
         },
         "skillIds": [
-            "meleeDamageMultiplier_plus_10pct"
+            "actionSpeedMultiplier_plus_10pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 5
@@ -544,7 +544,7 @@
             "criticalRate": 2
         },
         "skillIds": [
-            "meleeDamageMultiplier_plus_20pct"
+            "criticalDamageMultiplier_plus_20pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 7
@@ -562,7 +562,7 @@
             "criticalRate": 3
         },
         "skillIds": [
-            "meleeDamageMultiplier_plus_20pct"
+            "accuracy_plus_20pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 8
@@ -580,7 +580,7 @@
             "criticalRate": 3
         },
         "skillIds": [
-            "meleeDamageMultiplier_plus_10pct"
+            "criticalRate_plus_20pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -598,7 +598,7 @@
             "criticalRate": 3
         },
         "skillIds": [
-            "meleeDamageMultiplier_plus_10pct"
+            "actionSpeedMultiplier_plus_20pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -616,7 +616,7 @@
             "criticalRate": 4
         },
         "skillIds": [
-            "meleeDamageMultiplier_plus_10pct"
+            "meleeDamageMultiplier_plus_30pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -634,7 +634,7 @@
             "criticalRate": 4
         },
         "skillIds": [
-            "meleeDamageMultiplier_plus_10pct"
+            "criticalDamageMultiplier_plus_30pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -652,7 +652,7 @@
             "criticalRate": 4
         },
         "skillIds": [
-            "meleeDamageMultiplier_plus_10pct"
+            "accuracy_plus_30pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -670,7 +670,7 @@
             "criticalRate": 5
         },
         "skillIds": [
-            "meleeDamageMultiplier_plus_10pct"
+            "criticalRate_plus_30pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -688,7 +688,7 @@
             "criticalRate": 5
         },
         "skillIds": [
-            "meleeDamageMultiplier_plus_10pct"
+            "actionSpeedMultiplier_plus_30pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -706,7 +706,7 @@
             "criticalRate": 5
         },
         "skillIds": [
-            "meleeDamageMultiplier_plus_10pct"
+            "meleeDamageMultiplier_plus_40pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -724,7 +724,7 @@
             "criticalRate": 6
         },
         "skillIds": [
-            "meleeDamageMultiplier_plus_10pct"
+            "criticalDamageMultiplier_plus_40pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -742,7 +742,7 @@
             "criticalRate": 6
         },
         "skillIds": [
-            "meleeDamageMultiplier_plus_10pct"
+            "accuracy_plus_40pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -760,7 +760,7 @@
             "criticalRate": 6
         },
         "skillIds": [
-            "meleeDamageMultiplier_plus_10pct"
+            "criticalRate_plus_40pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -778,7 +778,7 @@
             "criticalRate": 7
         },
         "skillIds": [
-            "meleeDamageMultiplier_plus_10pct"
+            "actionSpeedMultiplier_plus_40pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -796,7 +796,7 @@
             "criticalRate": 7
         },
         "skillIds": [
-            "meleeDamageMultiplier_plus_20pct"
+            "meleeDamageMultiplier_plus_50pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -814,7 +814,7 @@
             "criticalRate": 7
         },
         "skillIds": [
-            "meleeDamageMultiplier_plus_20pct"
+            "criticalDamageMultiplier_plus_50pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -832,7 +832,7 @@
             "criticalRate": 8
         },
         "skillIds": [
-            "meleeDamageMultiplier_plus_20pct"
+            "accuracy_plus_50pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -850,7 +850,7 @@
             "criticalRate": 8
         },
         "skillIds": [
-            "meleeDamageMultiplier_plus_20pct"
+            "actionSpeedMultiplier_plus_50pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -884,7 +884,7 @@
             "accuracy": 1
         },
         "skillIds": [
-            "rangedDamageMultiplier_plus_10pct"
+            "criticalDamageMultiplier_plus_10pct"
         ],
         "rangeClass": "ranged",
         "normalDropTier": 2
@@ -901,7 +901,7 @@
             "accuracy": 2
         },
         "skillIds": [
-            "rangedDamageMultiplier_plus_10pct"
+            "accuracy_plus_10pct"
         ],
         "rangeClass": "ranged",
         "normalDropTier": 3
@@ -918,7 +918,7 @@
             "accuracy": 2
         },
         "skillIds": [
-            "rangedDamageMultiplier_plus_10pct"
+            "criticalRate_plus_10pct"
         ],
         "rangeClass": "ranged",
         "normalDropTier": 4
@@ -936,7 +936,7 @@
             "criticalRate": 1
         },
         "skillIds": [
-            "rangedDamageMultiplier_plus_10pct"
+            "actionSpeedMultiplier_plus_10pct"
         ],
         "rangeClass": "ranged",
         "normalDropTier": 5
@@ -972,7 +972,7 @@
             "criticalRate": 1
         },
         "skillIds": [
-            "rangedDamageMultiplier_plus_20pct"
+            "criticalDamageMultiplier_plus_20pct"
         ],
         "rangeClass": "ranged",
         "normalDropTier": 7
@@ -990,7 +990,7 @@
             "criticalRate": 1
         },
         "skillIds": [
-            "rangedDamageMultiplier_plus_20pct"
+            "accuracy_plus_20pct"
         ],
         "rangeClass": "ranged",
         "normalDropTier": 8
@@ -1008,7 +1008,7 @@
             "criticalRate": 1
         },
         "skillIds": [
-            "rangedDamageMultiplier_plus_10pct"
+            "criticalRate_plus_20pct"
         ],
         "rangeClass": "ranged",
         "normalDropTier": 0
@@ -1026,7 +1026,7 @@
             "criticalRate": 2
         },
         "skillIds": [
-            "rangedDamageMultiplier_plus_10pct"
+            "actionSpeedMultiplier_plus_20pct"
         ],
         "rangeClass": "ranged",
         "normalDropTier": 0
@@ -1044,7 +1044,7 @@
             "criticalRate": 2
         },
         "skillIds": [
-            "rangedDamageMultiplier_plus_10pct"
+            "rangedDamageMultiplier_plus_30pct"
         ],
         "rangeClass": "ranged",
         "normalDropTier": 0
@@ -1062,7 +1062,7 @@
             "criticalRate": 2
         },
         "skillIds": [
-            "rangedDamageMultiplier_plus_10pct"
+            "criticalDamageMultiplier_plus_30pct"
         ],
         "rangeClass": "ranged",
         "normalDropTier": 0
@@ -1080,7 +1080,7 @@
             "criticalRate": 2
         },
         "skillIds": [
-            "rangedDamageMultiplier_plus_10pct"
+            "accuracy_plus_30pct"
         ],
         "rangeClass": "ranged",
         "normalDropTier": 0
@@ -1098,7 +1098,7 @@
             "criticalRate": 2
         },
         "skillIds": [
-            "rangedDamageMultiplier_plus_10pct"
+            "criticalRate_plus_30pct"
         ],
         "rangeClass": "ranged",
         "normalDropTier": 0
@@ -1116,7 +1116,7 @@
             "criticalRate": 3
         },
         "skillIds": [
-            "rangedDamageMultiplier_plus_10pct"
+            "actionSpeedMultiplier_plus_30pct"
         ],
         "rangeClass": "ranged",
         "normalDropTier": 0
@@ -1134,7 +1134,7 @@
             "criticalRate": 3
         },
         "skillIds": [
-            "rangedDamageMultiplier_plus_10pct"
+            "rangedDamageMultiplier_plus_40pct"
         ],
         "rangeClass": "ranged",
         "normalDropTier": 0
@@ -1152,7 +1152,7 @@
             "criticalRate": 3
         },
         "skillIds": [
-            "rangedDamageMultiplier_plus_10pct"
+            "criticalDamageMultiplier_plus_40pct"
         ],
         "rangeClass": "ranged",
         "normalDropTier": 0
@@ -1170,7 +1170,7 @@
             "criticalRate": 3
         },
         "skillIds": [
-            "rangedDamageMultiplier_plus_10pct"
+            "accuracy_plus_40pct"
         ],
         "rangeClass": "ranged",
         "normalDropTier": 0
@@ -1188,7 +1188,7 @@
             "criticalRate": 3
         },
         "skillIds": [
-            "rangedDamageMultiplier_plus_10pct"
+            "criticalRate_plus_40pct"
         ],
         "rangeClass": "ranged",
         "normalDropTier": 0
@@ -1206,7 +1206,7 @@
             "criticalRate": 4
         },
         "skillIds": [
-            "rangedDamageMultiplier_plus_10pct"
+            "actionSpeedMultiplier_plus_40pct"
         ],
         "rangeClass": "ranged",
         "normalDropTier": 0
@@ -1224,7 +1224,7 @@
             "criticalRate": 4
         },
         "skillIds": [
-            "rangedDamageMultiplier_plus_20pct"
+            "rangedDamageMultiplier_plus_50pct"
         ],
         "rangeClass": "ranged",
         "normalDropTier": 0
@@ -1242,7 +1242,7 @@
             "criticalRate": 4
         },
         "skillIds": [
-            "rangedDamageMultiplier_plus_20pct"
+            "criticalDamageMultiplier_plus_50pct"
         ],
         "rangeClass": "ranged",
         "normalDropTier": 0
@@ -1260,7 +1260,7 @@
             "criticalRate": 4
         },
         "skillIds": [
-            "rangedDamageMultiplier_plus_20pct"
+            "accuracy_plus_50pct"
         ],
         "rangeClass": "ranged",
         "normalDropTier": 0
@@ -1278,7 +1278,7 @@
             "criticalRate": 4
         },
         "skillIds": [
-            "rangedDamageMultiplier_plus_20pct"
+            "actionSpeedMultiplier_plus_50pct"
         ],
         "rangeClass": "ranged",
         "normalDropTier": 0
@@ -1311,7 +1311,7 @@
             "healing": 1
         },
         "skillIds": [
-            "magicDamageMultiplier_plus_10pct"
+            "magic_plus_10pct"
         ],
         "rangeClass": "ranged",
         "normalDropTier": 2
@@ -1328,7 +1328,7 @@
             "healing": 1
         },
         "skillIds": [
-            "magicDamageMultiplier_plus_10pct"
+            "healing_plus_10pct"
         ],
         "rangeClass": "ranged",
         "normalDropTier": 3
@@ -1345,7 +1345,7 @@
             "healing": 1
         },
         "skillIds": [
-            "magicDamageMultiplier_plus_10pct"
+            "accuracy_plus_10pct"
         ],
         "rangeClass": "ranged",
         "normalDropTier": 4
@@ -1362,7 +1362,7 @@
             "healing": 2
         },
         "skillIds": [
-            "magicDamageMultiplier_plus_10pct"
+            "actionSpeedMultiplier_plus_10pct"
         ],
         "rangeClass": "ranged",
         "normalDropTier": 5
@@ -1396,7 +1396,7 @@
             "healing": 2
         },
         "skillIds": [
-            "magicDamageMultiplier_plus_20pct"
+            "magic_plus_20pct"
         ],
         "rangeClass": "ranged",
         "normalDropTier": 7
@@ -1413,7 +1413,7 @@
             "healing": 3
         },
         "skillIds": [
-            "magicDamageMultiplier_plus_20pct"
+            "healing_plus_20pct"
         ],
         "rangeClass": "ranged",
         "normalDropTier": 8
@@ -1430,7 +1430,7 @@
             "healing": 3
         },
         "skillIds": [
-            "magicDamageMultiplier_plus_10pct"
+            "accuracy_plus_20pct"
         ],
         "rangeClass": "ranged",
         "normalDropTier": 0
@@ -1447,7 +1447,7 @@
             "healing": 3
         },
         "skillIds": [
-            "magicDamageMultiplier_plus_10pct"
+            "actionSpeedMultiplier_plus_20pct"
         ],
         "rangeClass": "ranged",
         "normalDropTier": 0
@@ -1464,7 +1464,7 @@
             "healing": 4
         },
         "skillIds": [
-            "magicDamageMultiplier_plus_10pct"
+            "magicDamageMultiplier_plus_30pct"
         ],
         "rangeClass": "ranged",
         "normalDropTier": 0
@@ -1481,7 +1481,7 @@
             "healing": 4
         },
         "skillIds": [
-            "magicDamageMultiplier_plus_10pct"
+            "magic_plus_30pct"
         ],
         "rangeClass": "ranged",
         "normalDropTier": 0
@@ -1498,7 +1498,7 @@
             "healing": 4
         },
         "skillIds": [
-            "magicDamageMultiplier_plus_10pct"
+            "healing_plus_30pct"
         ],
         "rangeClass": "ranged",
         "normalDropTier": 0
@@ -1515,7 +1515,7 @@
             "healing": 5
         },
         "skillIds": [
-            "magicDamageMultiplier_plus_10pct"
+            "accuracy_plus_30pct"
         ],
         "rangeClass": "ranged",
         "normalDropTier": 0
@@ -1532,7 +1532,7 @@
             "healing": 5
         },
         "skillIds": [
-            "magicDamageMultiplier_plus_10pct"
+            "actionSpeedMultiplier_plus_30pct"
         ],
         "rangeClass": "ranged",
         "normalDropTier": 0
@@ -1549,7 +1549,7 @@
             "healing": 5
         },
         "skillIds": [
-            "magicDamageMultiplier_plus_10pct"
+            "magicDamageMultiplier_plus_40pct"
         ],
         "rangeClass": "ranged",
         "normalDropTier": 0
@@ -1566,7 +1566,7 @@
             "healing": 6
         },
         "skillIds": [
-            "magicDamageMultiplier_plus_10pct"
+            "magic_plus_40pct"
         ],
         "rangeClass": "ranged",
         "normalDropTier": 0
@@ -1583,7 +1583,7 @@
             "healing": 6
         },
         "skillIds": [
-            "magicDamageMultiplier_plus_10pct"
+            "healing_plus_40pct"
         ],
         "rangeClass": "ranged",
         "normalDropTier": 0
@@ -1600,7 +1600,7 @@
             "healing": 6
         },
         "skillIds": [
-            "magicDamageMultiplier_plus_10pct"
+            "accuracy_plus_40pct"
         ],
         "rangeClass": "ranged",
         "normalDropTier": 0
@@ -1617,7 +1617,7 @@
             "healing": 7
         },
         "skillIds": [
-            "magicDamageMultiplier_plus_10pct"
+            "actionSpeedMultiplier_plus_40pct"
         ],
         "rangeClass": "ranged",
         "normalDropTier": 0
@@ -1634,7 +1634,7 @@
             "healing": 7
         },
         "skillIds": [
-            "magicDamageMultiplier_plus_20pct"
+            "magicDamageMultiplier_plus_50pct"
         ],
         "rangeClass": "ranged",
         "normalDropTier": 0
@@ -1651,7 +1651,7 @@
             "healing": 7
         },
         "skillIds": [
-            "magicDamageMultiplier_plus_20pct"
+            "magic_plus_50pct"
         ],
         "rangeClass": "ranged",
         "normalDropTier": 0
@@ -1668,7 +1668,7 @@
             "healing": 8
         },
         "skillIds": [
-            "magicDamageMultiplier_plus_20pct"
+            "healing_plus_50pct"
         ],
         "rangeClass": "ranged",
         "normalDropTier": 0
@@ -1685,7 +1685,7 @@
             "healing": 8
         },
         "skillIds": [
-            "magicDamageMultiplier_plus_20pct"
+            "actionSpeedMultiplier_plus_50pct"
         ],
         "rangeClass": "ranged",
         "normalDropTier": 0
@@ -1719,7 +1719,7 @@
             "healing": 2
         },
         "skillIds": [
-            "magicDamageMultiplier_plus_10pct"
+            "magic_plus_10pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 2
@@ -1736,7 +1736,7 @@
             "healing": 3
         },
         "skillIds": [
-            "magicDamageMultiplier_plus_10pct"
+            "healing_plus_10pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 3
@@ -1753,7 +1753,7 @@
             "healing": 4
         },
         "skillIds": [
-            "magicDamageMultiplier_plus_10pct"
+            "accuracy_plus_10pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 4
@@ -1770,7 +1770,7 @@
             "healing": 5
         },
         "skillIds": [
-            "magicDamageMultiplier_plus_10pct"
+            "actionSpeedMultiplier_plus_10pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 5
@@ -1804,7 +1804,7 @@
             "healing": 7
         },
         "skillIds": [
-            "magicDamageMultiplier_plus_20pct"
+            "magic_plus_20pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 7
@@ -1821,7 +1821,7 @@
             "healing": 8
         },
         "skillIds": [
-            "magicDamageMultiplier_plus_20pct"
+            "healing_plus_20pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 8
@@ -1838,7 +1838,7 @@
             "healing": 9
         },
         "skillIds": [
-            "magicDamageMultiplier_plus_10pct"
+            "accuracy_plus_20pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -1855,7 +1855,7 @@
             "healing": 10
         },
         "skillIds": [
-            "magicDamageMultiplier_plus_10pct"
+            "actionSpeedMultiplier_plus_20pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -1872,7 +1872,7 @@
             "healing": 11
         },
         "skillIds": [
-            "magicDamageMultiplier_plus_10pct"
+            "magicDamageMultiplier_plus_30pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -1889,7 +1889,7 @@
             "healing": 12
         },
         "skillIds": [
-            "magicDamageMultiplier_plus_10pct"
+            "magic_plus_30pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -1906,7 +1906,7 @@
             "healing": 13
         },
         "skillIds": [
-            "magicDamageMultiplier_plus_10pct"
+            "healing_plus_30pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -1923,7 +1923,7 @@
             "healing": 14
         },
         "skillIds": [
-            "magicDamageMultiplier_plus_10pct"
+            "accuracy_plus_30pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -1940,7 +1940,7 @@
             "healing": 15
         },
         "skillIds": [
-            "magicDamageMultiplier_plus_10pct"
+            "actionSpeedMultiplier_plus_30pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -1957,7 +1957,7 @@
             "healing": 16
         },
         "skillIds": [
-            "magicDamageMultiplier_plus_10pct"
+            "magicDamageMultiplier_plus_40pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -1974,7 +1974,7 @@
             "healing": 17
         },
         "skillIds": [
-            "magicDamageMultiplier_plus_10pct"
+            "magic_plus_40pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -1991,7 +1991,7 @@
             "healing": 18
         },
         "skillIds": [
-            "magicDamageMultiplier_plus_10pct"
+            "healing_plus_40pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -2008,7 +2008,7 @@
             "healing": 19
         },
         "skillIds": [
-            "magicDamageMultiplier_plus_10pct"
+            "accuracy_plus_40pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -2025,7 +2025,7 @@
             "healing": 20
         },
         "skillIds": [
-            "magicDamageMultiplier_plus_10pct"
+            "actionSpeedMultiplier_plus_40pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -2042,7 +2042,7 @@
             "healing": 21
         },
         "skillIds": [
-            "magicDamageMultiplier_plus_20pct"
+            "magicDamageMultiplier_plus_50pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -2059,7 +2059,7 @@
             "healing": 22
         },
         "skillIds": [
-            "magicDamageMultiplier_plus_20pct"
+            "magic_plus_50pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -2076,7 +2076,7 @@
             "healing": 23
         },
         "skillIds": [
-            "magicDamageMultiplier_plus_20pct"
+            "healing_plus_50pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -2093,7 +2093,7 @@
             "healing": 24
         },
         "skillIds": [
-            "magicDamageMultiplier_plus_20pct"
+            "actionSpeedMultiplier_plus_50pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -2246,7 +2246,7 @@
             "physicalDefense": 5
         },
         "skillIds": [
-            "physicalResistanceMultiplier_plus_1pct"
+            "physicalResistanceMultiplier_plus_8pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 0
@@ -2263,7 +2263,7 @@
             "physicalDefense": 5
         },
         "skillIds": [
-            "physicalResistanceMultiplier_plus_1pct"
+            "physicalResistanceMultiplier_plus_10pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 0
@@ -2280,7 +2280,7 @@
             "physicalDefense": 6
         },
         "skillIds": [
-            "physicalResistanceMultiplier_plus_3pct"
+            "physicalResistanceMultiplier_plus_12pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 0
@@ -2297,7 +2297,7 @@
             "physicalDefense": 6
         },
         "skillIds": [
-            "physicalResistanceMultiplier_plus_3pct"
+            "physicalResistanceMultiplier_plus_13pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 0
@@ -2314,7 +2314,7 @@
             "physicalDefense": 7
         },
         "skillIds": [
-            "physicalResistanceMultiplier_plus_2pct"
+            "physicalResistanceMultiplier_plus_8pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 0
@@ -2331,7 +2331,7 @@
             "physicalDefense": 7
         },
         "skillIds": [
-            "physicalResistanceMultiplier_plus_2pct"
+            "physicalResistanceMultiplier_plus_10pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 0
@@ -2348,7 +2348,7 @@
             "physicalDefense": 8
         },
         "skillIds": [
-            "physicalResistanceMultiplier_plus_4pct"
+            "physicalResistanceMultiplier_plus_12pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 0
@@ -2365,7 +2365,7 @@
             "physicalDefense": 8
         },
         "skillIds": [
-            "physicalResistanceMultiplier_plus_4pct"
+            "physicalResistanceMultiplier_plus_13pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 0
@@ -2382,7 +2382,7 @@
             "physicalDefense": 9
         },
         "skillIds": [
-            "physicalResistanceMultiplier_plus_5pct"
+            "physicalResistanceMultiplier_plus_8pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 0
@@ -2399,7 +2399,7 @@
             "physicalDefense": 9
         },
         "skillIds": [
-            "physicalResistanceMultiplier_plus_5pct"
+            "physicalResistanceMultiplier_plus_10pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 0
@@ -2416,7 +2416,7 @@
             "physicalDefense": 10
         },
         "skillIds": [
-            "physicalResistanceMultiplier_plus_5pct"
+            "physicalResistanceMultiplier_plus_12pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 0
@@ -2433,7 +2433,7 @@
             "physicalDefense": 10
         },
         "skillIds": [
-            "physicalResistanceMultiplier_plus_5pct"
+            "physicalResistanceMultiplier_plus_13pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 0
@@ -2450,7 +2450,7 @@
             "physicalDefense": 11
         },
         "skillIds": [
-            "physicalResistanceMultiplier_plus_13pct"
+            "physicalResistanceMultiplier_plus_8pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 0
@@ -2467,7 +2467,7 @@
             "physicalDefense": 11
         },
         "skillIds": [
-            "physicalResistanceMultiplier_plus_13pct"
+            "physicalResistanceMultiplier_plus_10pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 0
@@ -2484,7 +2484,7 @@
             "physicalDefense": 12
         },
         "skillIds": [
-            "physicalResistanceMultiplier_plus_13pct"
+            "physicalResistanceMultiplier_plus_12pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 0
@@ -2645,7 +2645,7 @@
             "maxHP": 36
         },
         "skillIds": [
-            "breathResistanceMultiplier_plus_1pct"
+            "breathResistanceMultiplier_plus_8pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 0
@@ -2661,7 +2661,7 @@
             "maxHP": 40
         },
         "skillIds": [
-            "breathResistanceMultiplier_plus_1pct"
+            "breathResistanceMultiplier_plus_10pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 0
@@ -2677,7 +2677,7 @@
             "maxHP": 44
         },
         "skillIds": [
-            "breathResistanceMultiplier_plus_3pct"
+            "breathResistanceMultiplier_plus_12pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 0
@@ -2693,7 +2693,7 @@
             "maxHP": 48
         },
         "skillIds": [
-            "breathResistanceMultiplier_plus_3pct"
+            "breathResistanceMultiplier_plus_13pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 0
@@ -2709,7 +2709,7 @@
             "maxHP": 52
         },
         "skillIds": [
-            "breathResistanceMultiplier_plus_2pct"
+            "breathResistanceMultiplier_plus_8pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 0
@@ -2725,7 +2725,7 @@
             "maxHP": 56
         },
         "skillIds": [
-            "breathResistanceMultiplier_plus_2pct"
+            "breathResistanceMultiplier_plus_10pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 0
@@ -2741,7 +2741,7 @@
             "maxHP": 60
         },
         "skillIds": [
-            "breathResistanceMultiplier_plus_4pct"
+            "breathResistanceMultiplier_plus_12pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 0
@@ -2757,7 +2757,7 @@
             "maxHP": 64
         },
         "skillIds": [
-            "breathResistanceMultiplier_plus_4pct"
+            "breathResistanceMultiplier_plus_13pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 0
@@ -2773,7 +2773,7 @@
             "maxHP": 68
         },
         "skillIds": [
-            "breathResistanceMultiplier_plus_5pct"
+            "breathResistanceMultiplier_plus_8pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 0
@@ -2789,7 +2789,7 @@
             "maxHP": 72
         },
         "skillIds": [
-            "breathResistanceMultiplier_plus_5pct"
+            "breathResistanceMultiplier_plus_10pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 0
@@ -2805,7 +2805,7 @@
             "maxHP": 76
         },
         "skillIds": [
-            "breathResistanceMultiplier_plus_5pct"
+            "breathResistanceMultiplier_plus_12pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 0
@@ -2821,7 +2821,7 @@
             "maxHP": 80
         },
         "skillIds": [
-            "breathResistanceMultiplier_plus_5pct"
+            "breathResistanceMultiplier_plus_13pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 0
@@ -2837,7 +2837,7 @@
             "maxHP": 84
         },
         "skillIds": [
-            "breathResistanceMultiplier_plus_13pct"
+            "breathResistanceMultiplier_plus_8pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 0
@@ -2853,7 +2853,7 @@
             "maxHP": 88
         },
         "skillIds": [
-            "breathResistanceMultiplier_plus_13pct"
+            "breathResistanceMultiplier_plus_10pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 0
@@ -2869,7 +2869,7 @@
             "maxHP": 92
         },
         "skillIds": [
-            "breathResistanceMultiplier_plus_13pct"
+            "breathResistanceMultiplier_plus_12pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 0
@@ -3045,7 +3045,7 @@
             "healing": 2
         },
         "skillIds": [
-            "magicResistanceMultiplier_plus_1pct"
+            "magicResistanceMultiplier_plus_8pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 0
@@ -3063,7 +3063,7 @@
             "healing": 3
         },
         "skillIds": [
-            "magicResistanceMultiplier_plus_1pct"
+            "magicResistanceMultiplier_plus_10pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 0
@@ -3081,7 +3081,7 @@
             "healing": 3
         },
         "skillIds": [
-            "magicResistanceMultiplier_plus_3pct"
+            "magicResistanceMultiplier_plus_12pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 0
@@ -3099,7 +3099,7 @@
             "healing": 3
         },
         "skillIds": [
-            "magicResistanceMultiplier_plus_3pct"
+            "magicResistanceMultiplier_plus_13pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 0
@@ -3117,7 +3117,7 @@
             "healing": 3
         },
         "skillIds": [
-            "magicResistanceMultiplier_plus_2pct"
+            "magicResistanceMultiplier_plus_8pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 0
@@ -3135,7 +3135,7 @@
             "healing": 4
         },
         "skillIds": [
-            "magicResistanceMultiplier_plus_2pct"
+            "magicResistanceMultiplier_plus_10pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 0
@@ -3153,7 +3153,7 @@
             "healing": 4
         },
         "skillIds": [
-            "magicResistanceMultiplier_plus_4pct"
+            "magicResistanceMultiplier_plus_12pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 0
@@ -3171,7 +3171,7 @@
             "healing": 4
         },
         "skillIds": [
-            "magicResistanceMultiplier_plus_4pct"
+            "magicResistanceMultiplier_plus_13pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 0
@@ -3189,7 +3189,7 @@
             "healing": 4
         },
         "skillIds": [
-            "magicResistanceMultiplier_plus_5pct"
+            "magicResistanceMultiplier_plus_8pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 0
@@ -3207,7 +3207,7 @@
             "healing": 5
         },
         "skillIds": [
-            "magicResistanceMultiplier_plus_5pct"
+            "magicResistanceMultiplier_plus_10pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 0
@@ -3225,7 +3225,7 @@
             "healing": 5
         },
         "skillIds": [
-            "magicResistanceMultiplier_plus_5pct"
+            "magicResistanceMultiplier_plus_12pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 0
@@ -3243,7 +3243,7 @@
             "healing": 5
         },
         "skillIds": [
-            "magicResistanceMultiplier_plus_5pct"
+            "magicResistanceMultiplier_plus_13pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 0
@@ -3261,7 +3261,7 @@
             "healing": 5
         },
         "skillIds": [
-            "magicResistanceMultiplier_plus_13pct"
+            "magicResistanceMultiplier_plus_8pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 0
@@ -3279,7 +3279,7 @@
             "healing": 6
         },
         "skillIds": [
-            "magicResistanceMultiplier_plus_13pct"
+            "magicResistanceMultiplier_plus_10pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 0
@@ -3297,7 +3297,7 @@
             "healing": 6
         },
         "skillIds": [
-            "magicResistanceMultiplier_plus_13pct"
+            "magicResistanceMultiplier_plus_12pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 0
@@ -3346,7 +3346,7 @@
             "criticalRate": 1
         },
         "skillIds": [
-            "attackCount_plus_1"
+            "accuracy_plus_10pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 2
@@ -3363,7 +3363,7 @@
             "criticalRate": 1
         },
         "skillIds": [
-            "attackCount_plus_1"
+            "criticalRate_plus_10pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 3
@@ -3380,7 +3380,7 @@
             "criticalRate": 1
         },
         "skillIds": [
-            "attackCount_plus_1"
+            "actionSpeedMultiplier_plus_10pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 4
@@ -3397,7 +3397,7 @@
             "criticalRate": 2
         },
         "skillIds": [
-            "attackCount_plus_1"
+            "meleeDamageMultiplier_plus_10pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 5
@@ -3431,7 +3431,7 @@
             "criticalRate": 2
         },
         "skillIds": [
-            "attackCount_plus_2"
+            "accuracy_plus_20pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 7
@@ -3448,7 +3448,7 @@
             "criticalRate": 3
         },
         "skillIds": [
-            "attackCount_plus_2"
+            "criticalRate_plus_20pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 8
@@ -3465,7 +3465,7 @@
             "criticalRate": 3
         },
         "skillIds": [
-            "attackCount_plus_1"
+            "actionSpeedMultiplier_plus_20pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -3482,7 +3482,7 @@
             "criticalRate": 3
         },
         "skillIds": [
-            "attackCount_plus_1"
+            "meleeDamageMultiplier_plus_20pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -3499,7 +3499,7 @@
             "criticalRate": 4
         },
         "skillIds": [
-            "attackCount_plus_1"
+            "attackCount_plus_3"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -3516,7 +3516,7 @@
             "criticalRate": 4
         },
         "skillIds": [
-            "attackCount_plus_1"
+            "accuracy_plus_30pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -3533,7 +3533,7 @@
             "criticalRate": 4
         },
         "skillIds": [
-            "attackCount_plus_1"
+            "criticalRate_plus_30pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -3550,7 +3550,7 @@
             "criticalRate": 5
         },
         "skillIds": [
-            "attackCount_plus_1"
+            "actionSpeedMultiplier_plus_30pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -3567,7 +3567,7 @@
             "criticalRate": 5
         },
         "skillIds": [
-            "attackCount_plus_1"
+            "meleeDamageMultiplier_plus_30pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -3584,7 +3584,7 @@
             "criticalRate": 5
         },
         "skillIds": [
-            "attackCount_plus_1"
+            "accuracy_plus_40pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -3602,7 +3602,7 @@
             "criticalRate": 6
         },
         "skillIds": [
-            "attackCount_plus_1"
+            "criticalRate_plus_40pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -3620,7 +3620,7 @@
             "criticalRate": 6
         },
         "skillIds": [
-            "attackCount_plus_1"
+            "actionSpeedMultiplier_plus_40pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -3638,7 +3638,7 @@
             "criticalRate": 6
         },
         "skillIds": [
-            "attackCount_plus_1"
+            "meleeDamageMultiplier_plus_40pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -3656,7 +3656,7 @@
             "criticalRate": 7
         },
         "skillIds": [
-            "attackCount_plus_1"
+            "criticalDamageMultiplier_plus_10pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -3674,7 +3674,7 @@
             "criticalRate": 7
         },
         "skillIds": [
-            "attackCount_plus_2"
+            "accuracy_plus_50pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -3692,7 +3692,7 @@
             "criticalRate": 7
         },
         "skillIds": [
-            "attackCount_plus_2"
+            "criticalRate_plus_50pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -3710,7 +3710,7 @@
             "criticalRate": 8
         },
         "skillIds": [
-            "attackCount_plus_2"
+            "actionSpeedMultiplier_plus_50pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -3728,7 +3728,7 @@
             "criticalRate": 8
         },
         "skillIds": [
-            "attackCount_plus_2"
+            "meleeDamageMultiplier_plus_50pct"
         ],
         "rangeClass": "melee",
         "normalDropTier": 0
@@ -3889,7 +3889,7 @@
     },
     {
         "id": "jewel_uncommon_04",
-        "name": "ムーンストーン",
+        "name": "水晶",
         "rarity": "uncommon",
         "category": "jewel",
         "basePrice": 256000,
@@ -4071,7 +4071,7 @@
     },
     {
         "id": "misc_normal_01",
-        "name": "護符",
+        "name": "ダンベル",
         "rarity": "normal",
         "category": "misc",
         "basePrice": 4000,
@@ -4080,14 +4080,14 @@
             "maxHP": 2
         },
         "skillIds": [
-            "actionSpeedMultiplier_plus_10pct"
+            "experienceGainMultiplier_plus_10pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 1
     },
     {
         "id": "misc_normal_02",
-        "name": "腕輪",
+        "name": "巻藁",
         "rarity": "normal",
         "category": "misc",
         "basePrice": 8000,
@@ -4096,14 +4096,14 @@
             "accuracy": 1
         },
         "skillIds": [
-            "actionSpeedMultiplier_plus_10pct"
+            "experienceGainMultiplier_plus_20pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 2
     },
     {
         "id": "misc_normal_03",
-        "name": "首飾り",
+        "name": "入門書",
         "rarity": "normal",
         "category": "misc",
         "basePrice": 16000,
@@ -4112,14 +4112,14 @@
             "evasion": 1
         },
         "skillIds": [
-            "actionSpeedMultiplier_plus_10pct"
+            "experienceGainMultiplier_plus_30pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 3
     },
     {
         "id": "misc_normal_04",
-        "name": "指輪",
+        "name": "指南書",
         "rarity": "normal",
         "category": "misc",
         "basePrice": 32000,
@@ -4128,14 +4128,14 @@
             "maxHP": 8
         },
         "skillIds": [
-            "actionSpeedMultiplier_plus_10pct"
+            "experienceGainMultiplier_plus_40pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 4
     },
     {
         "id": "misc_normal_05",
-        "name": "羽飾り",
+        "name": "虎の巻",
         "rarity": "normal",
         "category": "misc",
         "basePrice": 64000,
@@ -4144,14 +4144,14 @@
             "accuracy": 2
         },
         "skillIds": [
-            "actionSpeedMultiplier_plus_10pct"
+            "experienceGainMultiplier_plus_50pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 5
     },
     {
         "id": "misc_normal_06",
-        "name": "香袋",
+        "name": "幸運の札",
         "rarity": "normal",
         "category": "misc",
         "basePrice": 128000,
@@ -4160,14 +4160,14 @@
             "evasion": 2
         },
         "skillIds": [
-            "actionSpeedMultiplier_plus_20pct"
+            "rareDropMultiplier_plus_10pct_all_stat_minus_10pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 6
     },
     {
         "id": "misc_normal_07",
-        "name": "煙玉",
+        "name": "脚絆",
         "rarity": "normal",
         "category": "misc",
         "basePrice": 256000,
@@ -4176,14 +4176,14 @@
             "maxHP": 14
         },
         "skillIds": [
-            "actionSpeedMultiplier_plus_20pct"
+            "actionSpeedMultiplier_plus_10pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 7
     },
     {
         "id": "misc_normal_08",
-        "name": "鈴",
+        "name": "狙い鏡",
         "rarity": "normal",
         "category": "misc",
         "basePrice": 512000,
@@ -4192,14 +4192,14 @@
             "accuracy": 3
         },
         "skillIds": [
-            "actionSpeedMultiplier_plus_20pct"
+            "accuracy_plus_10pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 8
     },
     {
         "id": "misc_uncommon_01",
-        "name": "魔除け",
+        "name": "招き猫",
         "rarity": "uncommon",
         "category": "misc",
         "basePrice": 8000,
@@ -4208,7 +4208,7 @@
             "evasion": 3
         },
         "skillIds": [
-            "actionSpeedMultiplier_plus_10pct"
+            "rareDropMultiplier_plus_20pct_all_stat_minus_20pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 0
@@ -4224,7 +4224,7 @@
             "maxHP": 20
         },
         "skillIds": [
-            "actionSpeedMultiplier_plus_10pct"
+            "actionSpeedMultiplier_plus_20pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 0
@@ -4240,7 +4240,7 @@
             "accuracy": 4
         },
         "skillIds": [
-            "actionSpeedMultiplier_plus_10pct"
+            "accuracy_plus_20pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 0
@@ -4256,14 +4256,14 @@
             "evasion": 4
         },
         "skillIds": [
-            "actionSpeedMultiplier_plus_10pct"
+            "criticalRate_plus_20pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 0
     },
     {
         "id": "misc_rare_01",
-        "name": "星見盤",
+        "name": "四つ葉のお守り",
         "rarity": "rare",
         "category": "misc",
         "basePrice": 16000,
@@ -4272,7 +4272,7 @@
             "maxHP": 26
         },
         "skillIds": [
-            "actionSpeedMultiplier_plus_10pct"
+            "rareDropMultiplier_plus_30pct_all_stat_minus_30pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 0
@@ -4288,7 +4288,7 @@
             "accuracy": 5
         },
         "skillIds": [
-            "actionSpeedMultiplier_plus_10pct"
+            "actionSpeedMultiplier_plus_30pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 0
@@ -4304,7 +4304,7 @@
             "evasion": 5
         },
         "skillIds": [
-            "actionSpeedMultiplier_plus_10pct"
+            "accuracy_plus_30pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 0
@@ -4320,7 +4320,7 @@
             "maxHP": 32
         },
         "skillIds": [
-            "actionSpeedMultiplier_plus_10pct"
+            "criticalRate_plus_30pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 0
@@ -4336,7 +4336,7 @@
             "accuracy": 6
         },
         "skillIds": [
-            "actionSpeedMultiplier_plus_10pct"
+            "actionSpeedMultiplier_plus_40pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 0
@@ -4352,7 +4352,7 @@
             "evasion": 6
         },
         "skillIds": [
-            "actionSpeedMultiplier_plus_10pct"
+            "accuracy_plus_40pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 0
@@ -4368,7 +4368,7 @@
             "maxHP": 38
         },
         "skillIds": [
-            "actionSpeedMultiplier_plus_10pct"
+            "criticalRate_plus_40pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 0
@@ -4384,7 +4384,7 @@
             "accuracy": 7
         },
         "skillIds": [
-            "actionSpeedMultiplier_plus_10pct"
+            "evasion_plus_40pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 0
@@ -4400,7 +4400,7 @@
             "evasion": 7
         },
         "skillIds": [
-            "actionSpeedMultiplier_plus_20pct"
+            "actionSpeedMultiplier_plus_50pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 0
@@ -4416,7 +4416,7 @@
             "maxHP": 44
         },
         "skillIds": [
-            "actionSpeedMultiplier_plus_20pct"
+            "accuracy_plus_50pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 0
@@ -4432,7 +4432,7 @@
             "accuracy": 8
         },
         "skillIds": [
-            "actionSpeedMultiplier_plus_20pct"
+            "criticalRate_plus_50pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 0
@@ -4448,7 +4448,7 @@
             "evasion": 8
         },
         "skillIds": [
-            "actionSpeedMultiplier_plus_20pct"
+            "evasion_plus_50pct"
         ],
         "rangeClass": "none",
         "normalDropTier": 0

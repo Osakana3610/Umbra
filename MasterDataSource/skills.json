@@ -5521,6 +5521,58 @@
         ]
     },
     {
+        "id": "experienceGainMultiplier_plus_10pct",
+        "name": "取得経験値+10%",
+        "description": "戦闘経験値を10%増やす。",
+        "effects": [
+            {
+                "kind": "rewardMultiplier",
+                "target": "experienceGainMultiplier",
+                "operation": "pctAdd",
+                "value": 0.1
+            }
+        ]
+    },
+    {
+        "id": "experienceGainMultiplier_plus_20pct",
+        "name": "取得経験値+20%",
+        "description": "戦闘経験値を20%増やす。",
+        "effects": [
+            {
+                "kind": "rewardMultiplier",
+                "target": "experienceGainMultiplier",
+                "operation": "pctAdd",
+                "value": 0.2
+            }
+        ]
+    },
+    {
+        "id": "experienceGainMultiplier_plus_30pct",
+        "name": "取得経験値+30%",
+        "description": "戦闘経験値を30%増やす。",
+        "effects": [
+            {
+                "kind": "rewardMultiplier",
+                "target": "experienceGainMultiplier",
+                "operation": "pctAdd",
+                "value": 0.3
+            }
+        ]
+    },
+    {
+        "id": "experienceGainMultiplier_plus_40pct",
+        "name": "取得経験値+40%",
+        "description": "戦闘経験値を40%増やす。",
+        "effects": [
+            {
+                "kind": "rewardMultiplier",
+                "target": "experienceGainMultiplier",
+                "operation": "pctAdd",
+                "value": 0.4
+            }
+        ]
+    },
+    {
         "id": "experienceGainMultiplier_plus_50pct",
         "name": "取得経験値+50%",
         "description": "戦闘経験値を50%増やす。",
@@ -5569,6 +5621,57 @@
                 "target": "experienceGainMultiplier",
                 "operation": "mul",
                 "value": 0.05
+            }
+        ]
+    },
+    {
+        "id": "rareDropMultiplier_plus_10pct_all_stat_minus_10pct",
+        "name": "レアドロップ率+10% / 全戦闘能力値-10%",
+        "description": "レアドロップ率を10%増やすが、全戦闘能力値を10%下げる。",
+        "effects": [
+            {
+                "kind": "rewardMultiplier",
+                "target": "rareDropMultiplier",
+                "operation": "pctAdd",
+                "value": 0.1
+            },
+            {
+                "kind": "allBattleStatMultiplier",
+                "value": 0.9
+            }
+        ]
+    },
+    {
+        "id": "rareDropMultiplier_plus_20pct_all_stat_minus_20pct",
+        "name": "レアドロップ率+20% / 全戦闘能力値-20%",
+        "description": "レアドロップ率を20%増やすが、全戦闘能力値を20%下げる。",
+        "effects": [
+            {
+                "kind": "rewardMultiplier",
+                "target": "rareDropMultiplier",
+                "operation": "pctAdd",
+                "value": 0.2
+            },
+            {
+                "kind": "allBattleStatMultiplier",
+                "value": 0.8
+            }
+        ]
+    },
+    {
+        "id": "rareDropMultiplier_plus_30pct_all_stat_minus_30pct",
+        "name": "レアドロップ率+30% / 全戦闘能力値-30%",
+        "description": "レアドロップ率を30%増やすが、全戦闘能力値を30%下げる。",
+        "effects": [
+            {
+                "kind": "rewardMultiplier",
+                "target": "rareDropMultiplier",
+                "operation": "pctAdd",
+                "value": 0.3
+            },
+            {
+                "kind": "allBattleStatMultiplier",
+                "value": 0.7
             }
         ]
     },
