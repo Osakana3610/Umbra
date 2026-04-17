@@ -1041,14 +1041,20 @@ def build_enemies(
 def build_labyrinths(records: list[dict], enemy_indices: dict[str, int]) -> list[dict]:
     labyrinths: list[dict] = []
     next_floor_id = 1
+    seen_labyrinth_ids: set[int] = set()
 
-    for labyrinth_index, record in enumerate(records, start=1):
+    for record in records:
         require_keys(
             record,
-            ("id", "name", "enemyCountCap", "progressIntervalSeconds", "floors"),
-            f"labyrinth[{labyrinth_index}]",
+            ("id", "name", "progressIntervalSeconds", "floors"),
+            "labyrinth",
         )
-        enemy_count_cap = int(record["enemyCountCap"])
+        labyrinth_id = int(record["id"])
+        if labyrinth_id <= 0:
+            raise ValueError(f"Expected labyrinth[{record['id']}].id to be positive")
+        if labyrinth_id in seen_labyrinth_ids:
+            raise ValueError(f"Duplicate labyrinth id '{labyrinth_id}'")
+        seen_labyrinth_ids.add(labyrinth_id)
 
         floors = record["floors"]
         if not isinstance(floors, list) or not floors:
@@ -1059,15 +1065,20 @@ def build_labyrinths(records: list[dict], enemy_indices: dict[str, int]) -> list
         for floor in floors:
             require_keys(
                 floor,
-                ("floorNumber", "battleCount", "encounters"),
+                ("floorNumber", "battleCount", "enemyCount", "encounters"),
                 f"labyrinth[{record['id']}].floor",
             )
 
             floor_number = int(floor["floorNumber"])
             battle_count = int(floor["battleCount"])
+            enemy_count = int(floor["enemyCount"])
             if floor_number in seen_floor_numbers:
                 raise ValueError(f"Duplicate floorNumber '{floor_number}' in labyrinth[{record['id']}]")
             seen_floor_numbers.add(floor_number)
+            if enemy_count <= 0:
+                raise ValueError(
+                    f"Expected labyrinth[{record['id']}].floors[{floor_number}].enemyCount to be positive"
+                )
 
             encounters = floor["encounters"]
             if not isinstance(encounters, list):
@@ -1109,10 +1120,6 @@ def build_labyrinths(records: list[dict], enemy_indices: dict[str, int]) -> list
                     raise ValueError(
                         f"Expected labyrinth[{record['id']}].floors[{floor_number}].battleCount to be positive when fixedBattle exists"
                     )
-                if len(built_fixed_battle) > enemy_count_cap:
-                    raise ValueError(
-                        f"Expected labyrinth[{record['id']}].floors[{floor_number}].fixedBattle to contain at most {enemy_count_cap} entries"
-                    )
 
             random_battle_count = battle_count - (1 if built_fixed_battle is not None else 0)
             if random_battle_count > 0 and not encounters:
@@ -1150,6 +1157,7 @@ def build_labyrinths(records: list[dict], enemy_indices: dict[str, int]) -> list
                     "id": next_floor_id,
                     "floorNumber": floor_number,
                     "battleCount": battle_count,
+                    "enemyCount": enemy_count,
                     "encounters": built_encounters,
                     "fixedBattle": built_fixed_battle,
                 }
@@ -1158,9 +1166,8 @@ def build_labyrinths(records: list[dict], enemy_indices: dict[str, int]) -> list
 
         labyrinths.append(
             {
-                "id": labyrinth_index,
+                "id": labyrinth_id,
                 "name": record["name"],
-                "enemyCountCap": enemy_count_cap,
                 "progressIntervalSeconds": int(record["progressIntervalSeconds"]),
                 "floors": built_floors,
             }

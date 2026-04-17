@@ -1309,13 +1309,13 @@ struct UmbraTests {
                 MasterData.Labyrinth(
                     id: 1,
                     name: "自動周回迷宮",
-                    enemyCountCap: 1,
                     progressIntervalSeconds: 1,
                     floors: [
                         MasterData.Floor(
                             id: 1,
                             floorNumber: 1,
                             battleCount: 1,
+                            enemyCount: 1,
                             encounters: [MasterData.Encounter(enemyId: 1, level: 1, weight: 1)],
                             fixedBattle: nil
                         )
@@ -1405,13 +1405,13 @@ struct UmbraTests {
                 MasterData.Labyrinth(
                     id: 1,
                     name: "上限確認迷宮",
-                    enemyCountCap: 1,
                     progressIntervalSeconds: 1,
                     floors: [
                         MasterData.Floor(
                             id: 1,
                             floorNumber: 1,
                             battleCount: 1,
+                            enemyCount: 1,
                             encounters: [MasterData.Encounter(enemyId: 1, level: 1, weight: 1)],
                             fixedBattle: nil
                         )
@@ -1477,13 +1477,13 @@ struct UmbraTests {
                 MasterData.Labyrinth(
                     id: 1,
                     name: "経過時間迷宮",
-                    enemyCountCap: 1,
                     progressIntervalSeconds: 10,
                     floors: [
                         MasterData.Floor(
                             id: 1,
                             floorNumber: 1,
                             battleCount: 1,
+                            enemyCount: 1,
                             encounters: [MasterData.Encounter(enemyId: 1, level: 1, weight: 1)],
                             fixedBattle: nil
                         )
@@ -1573,13 +1573,13 @@ struct UmbraTests {
                 MasterData.Labyrinth(
                     id: 1,
                     name: "部分経過迷宮",
-                    enemyCountCap: 1,
                     progressIntervalSeconds: 10,
                     floors: [
                         MasterData.Floor(
                             id: 1,
                             floorNumber: 1,
                             battleCount: 1,
+                            enemyCount: 1,
                             encounters: [MasterData.Encounter(enemyId: 1, level: 1, weight: 1)],
                             fixedBattle: nil
                         )
@@ -1646,13 +1646,13 @@ struct UmbraTests {
                 MasterData.Labyrinth(
                     id: 1,
                     name: "選別迷宮",
-                    enemyCountCap: 1,
                     progressIntervalSeconds: 1,
                     floors: [
                         MasterData.Floor(
                             id: 1,
                             floorNumber: 1,
                             battleCount: 1,
+                            enemyCount: 1,
                             encounters: [MasterData.Encounter(enemyId: 1, level: 1, weight: 1)],
                             fixedBattle: nil
                         )
@@ -2781,13 +2781,13 @@ struct UmbraTests {
                 MasterData.Labyrinth(
                     id: 1,
                     name: "キャット・チケット迷宮",
-                    enemyCountCap: 1,
                     progressIntervalSeconds: 10,
                     floors: [
                         MasterData.Floor(
                             id: 1,
                             floorNumber: 1,
                             battleCount: 1,
+                            enemyCount: 1,
                             encounters: [MasterData.Encounter(enemyId: 1, level: 1, weight: 1)],
                             fixedBattle: nil
                         )
@@ -3229,13 +3229,13 @@ struct UmbraTests {
                 MasterData.Labyrinth(
                     id: 1,
                     name: "解放確認迷宮",
-                    enemyCountCap: 1,
                     progressIntervalSeconds: 1,
                     floors: [
                         MasterData.Floor(
                             id: 1,
                             floorNumber: 1,
                             battleCount: 1,
+                            enemyCount: 1,
                             encounters: [MasterData.Encounter(enemyId: 1, level: 1, weight: 1)],
                             fixedBattle: nil
                         )
@@ -4087,13 +4087,13 @@ struct UmbraTests {
                 MasterData.Labyrinth(
                     id: 1,
                     name: "引き分け迷宮",
-                    enemyCountCap: 1,
                     progressIntervalSeconds: 1,
                     floors: [
                         MasterData.Floor(
                             id: 1,
                             floorNumber: 1,
                             battleCount: 1,
+                            enemyCount: 1,
                             encounters: [MasterData.Encounter(enemyId: 1, level: 1, weight: 1)],
                             fixedBattle: nil
                         )
@@ -4669,13 +4669,13 @@ struct UmbraTests {
                 MasterData.Labyrinth(
                     id: 1,
                     name: "重複迷宮",
-                    enemyCountCap: 3,
                     progressIntervalSeconds: 1,
                     floors: [
                         MasterData.Floor(
                             id: 1,
                             floorNumber: 1,
                             battleCount: 1,
+                            enemyCount: 3,
                             encounters: [MasterData.Encounter(enemyId: 1, level: 3, weight: 1)],
                             fixedBattle: nil
                         )

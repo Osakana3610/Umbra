@@ -654,6 +654,7 @@ class GeneratedMasterDataOutputTests(unittest.TestCase):
             for floor in labyrinth["floors"]:
                 self.assertGreater(floor["floorNumber"], 0)
                 self.assertGreaterEqual(floor["battleCount"], 0)
+                self.assertGreater(floor["enemyCount"], 0)
                 fixed_battle = floor.get("fixedBattle")
                 random_battle_count = floor["battleCount"] - (1 if fixed_battle else 0)
                 if random_battle_count > 0:

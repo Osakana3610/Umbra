@@ -36,7 +36,7 @@ private struct MonsterBookLabyrinthView: View {
         List {
             Section("概要") {
                 LabeledContent("階層数", value: "\(labyrinth.floors.count)")
-                LabeledContent("敵数上限", value: "\(labyrinth.enemyCountCap)")
+                LabeledContent("敵数", value: enemyCountSummary)
                 LabeledContent("出現敵数", value: "\(enemyAppearances.count)")
             }
 
@@ -124,6 +124,26 @@ private struct MonsterBookLabyrinthView: View {
 
     private var enemyByID: [Int: MasterData.Enemy] {
         Dictionary(uniqueKeysWithValues: masterData.enemies.map { ($0.id, $0) })
+    }
+
+    private var enemyCountSummary: String {
+        let counts = Set(
+            labyrinth.floors.flatMap { floor in
+                var floorCounts = [floor.enemyCount]
+                if let fixedBattle = floor.fixedBattle {
+                    floorCounts.append(fixedBattle.count)
+                }
+                return floorCounts
+            }
+        ).sorted()
+
+        guard let first = counts.first else {
+            return "0"
+        }
+        if counts.count == 1 {
+            return "\(first)"
+        }
+        return counts.map(String.init).joined(separator: ", ")
     }
 }
 

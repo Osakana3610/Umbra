@@ -417,12 +417,11 @@ nonisolated extension ExplorationResolver {
             if normalBattleCount > 0 {
                 for normalBattleIndex in 1...normalBattleCount {
                     battlePlans.append(
-                        PlannedBattle(
+                            PlannedBattle(
                             floorNumber: floor.floorNumber,
                             battleNumber: globalBattleNumber,
                             enemies: resolveEncounterEnemies(
                                 for: floor,
-                                enemyCountCap: labyrinth.enemyCountCap,
                                 difficultyMultiplier: difficultyMultiplier,
                                 battleNumber: globalBattleNumber,
                                 normalBattleIndex: normalBattleIndex,
@@ -459,13 +458,12 @@ nonisolated extension ExplorationResolver {
 
     static func resolveEncounterEnemies(
         for floor: MasterData.Floor,
-        enemyCountCap: Int,
         difficultyMultiplier: Double,
         battleNumber: Int,
         normalBattleIndex: Int,
         rootSeed: UInt64
     ) -> [BattleEnemySeed] {
-        guard !floor.encounters.isEmpty, enemyCountCap > 0 else {
+        guard !floor.encounters.isEmpty, floor.enemyCount > 0 else {
             return []
         }
 
@@ -474,7 +472,7 @@ nonisolated extension ExplorationResolver {
             return []
         }
 
-        return (1...enemyCountCap).compactMap { enemySlot in
+        return (1...floor.enemyCount).compactMap { enemySlot in
             let purpose = "battle:\(battleNumber):normal:\(normalBattleIndex):slot:\(enemySlot):encounter"
             let roll = ExplorationDeterministicRandom.integer(
                 upperBound: totalWeight,

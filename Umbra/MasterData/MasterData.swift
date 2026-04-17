@@ -205,7 +205,6 @@ extension MasterData {
     nonisolated struct Labyrinth: Identifiable, Decodable, Sendable {
         let id: Int
         let name: String
-        let enemyCountCap: Int
         let progressIntervalSeconds: Int
         let floors: [Floor]
     }
@@ -214,6 +213,7 @@ extension MasterData {
         let id: Int
         let floorNumber: Int
         let battleCount: Int
+        let enemyCount: Int
         let encounters: [Encounter]
         let fixedBattle: [FixedBattle]?
     }

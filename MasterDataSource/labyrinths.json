@@ -1,13 +1,13 @@
 [
     {
-        "id": "sunlit_meadow",
+        "id": 1,
         "name": "草原",
-        "enemyCountCap": 1,
         "progressIntervalSeconds": 1,
         "floors": [
             {
                 "floorNumber": 1,
                 "battleCount": 2,
+                "enemyCount": 1,
                 "encounters": [
                     {
                         "enemyKey": "slime",
@@ -24,74 +24,169 @@
         ]
     },
     {
-        "id": "whispering_forest",
+        "id": 2,
         "name": "森",
-        "enemyCountCap": 4,
         "progressIntervalSeconds": 1,
         "floors": [
             {
                 "floorNumber": 1,
-                "battleCount": 3,
+                "battleCount": 2,
+                "enemyCount": 2,
                 "encounters": [
                     {
-                        "enemyKey": "wolf",
-                        "level": 7,
-                        "weight": 2
+                        "enemyKey": "slime",
+                        "level": 3,
+                        "weight": 3
                     },
                     {
                         "enemyKey": "rabbit",
-                        "level": 7,
+                        "level": 3,
                         "weight": 2
+                    },
+                    {
+                        "enemyKey": "goblin",
+                        "level": 4,
+                        "weight": 1
                     }
                 ]
             },
             {
                 "floorNumber": 2,
-                "battleCount": 3,
+                "battleCount": 2,
+                "enemyCount": 2,
                 "encounters": [
                     {
-                        "enemyKey": "spider",
-                        "level": 8,
-                        "weight": 3
+                        "enemyKey": "rabbit",
+                        "level": 4,
+                        "weight": 2
                     },
                     {
-                        "enemyKey": "slime",
-                        "level": 8,
+                        "enemyKey": "wolf",
+                        "level": 4,
                         "weight": 2
+                    },
+                    {
+                        "enemyKey": "orc",
+                        "level": 5,
+                        "weight": 1
                     }
                 ]
             },
             {
                 "floorNumber": 3,
-                "battleCount": 4,
+                "battleCount": 2,
+                "enemyCount": 2,
                 "encounters": [
                     {
-                        "enemyKey": "wolf",
-                        "level": 9,
-                        "weight": 1
+                        "enemyKey": "goblin",
+                        "level": 5,
+                        "weight": 2
+                    },
+                    {
+                        "enemyKey": "imp",
+                        "level": 5,
+                        "weight": 2
                     },
                     {
                         "enemyKey": "spider",
-                        "level": 9,
-                        "weight": 3
-                    },
-                    {
-                        "enemyKey": "slime",
-                        "level": 9,
+                        "level": 5,
                         "weight": 1
                     }
                 ],
                 "fixedBattle": [
                     {
                         "enemyKey": "wolf",
-                        "level": 10
+                        "level": 6
+                    },
+                    {
+                        "enemyKey": "orc",
+                        "level": 6
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": 3,
+        "name": "洞窟",
+        "progressIntervalSeconds": 1,
+        "floors": [
+            {
+                "floorNumber": 1,
+                "battleCount": 2,
+                "enemyCount": 2,
+                "encounters": [
+                    {
+                        "enemyKey": "bat",
+                        "level": 7,
+                        "weight": 2
+                    },
+                    {
+                        "enemyKey": "kobold",
+                        "level": 7,
+                        "weight": 2
                     },
                     {
                         "enemyKey": "spider",
+                        "level": 7,
+                        "weight": 1
+                    }
+                ]
+            },
+            {
+                "floorNumber": 2,
+                "battleCount": 2,
+                "enemyCount": 2,
+                "encounters": [
+                    {
+                        "enemyKey": "kobold",
+                        "level": 8,
+                        "weight": 2
+                    },
+                    {
+                        "enemyKey": "bat",
+                        "level": 8,
+                        "weight": 2
+                    },
+                    {
+                        "enemyKey": "mimic",
+                        "level": 8,
+                        "weight": 1
+                    }
+                ]
+            },
+            {
+                "floorNumber": 3,
+                "battleCount": 3,
+                "enemyCount": 2,
+                "encounters": [
+                    {
+                        "enemyKey": "ogre",
+                        "level": 9,
+                        "weight": 2
+                    },
+                    {
+                        "enemyKey": "bat",
+                        "level": 9,
+                        "weight": 2
+                    },
+                    {
+                        "enemyKey": "mimic",
+                        "level": 9,
+                        "weight": 1
+                    }
+                ],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "ogre",
                         "level": 10
                     },
                     {
-                        "enemyKey": "slime",
+                        "enemyKey": "kobold",
+                        "level": 10
+                    },
+                    {
+                        "enemyKey": "bat",
                         "level": 10
                     }
                 ]
@@ -99,48 +194,411 @@
         ]
     },
     {
-        "id": "echoing_cavern",
-        "name": "洞窟",
-        "enemyCountCap": 6,
+        "id": 4,
+        "name": "古い塔",
         "progressIntervalSeconds": 1,
         "floors": [
             {
                 "floorNumber": 1,
-                "battleCount": 4,
+                "battleCount": 2,
+                "enemyCount": 2,
                 "encounters": [
                     {
-                        "enemyKey": "wolf",
-                        "level": 15,
-                        "weight": 1
+                        "enemyKey": "gargoyle",
+                        "level": 11,
+                        "weight": 2
+                    },
+                    {
+                        "enemyKey": "harpy",
+                        "level": 11,
+                        "weight": 2
                     },
                     {
                         "enemyKey": "spider",
-                        "level": 15,
+                        "level": 11,
+                        "weight": 1
+                    }
+                ]
+            },
+            {
+                "floorNumber": 2,
+                "battleCount": 2,
+                "enemyCount": 2,
+                "encounters": [
+                    {
+                        "enemyKey": "mimic",
+                        "level": 12,
+                        "weight": 2
+                    },
+                    {
+                        "enemyKey": "gargoyle",
+                        "level": 12,
+                        "weight": 2
+                    },
+                    {
+                        "enemyKey": "wisp",
+                        "level": 12,
+                        "weight": 1
+                    }
+                ]
+            },
+            {
+                "floorNumber": 3,
+                "battleCount": 2,
+                "enemyCount": 2,
+                "encounters": [
+                    {
+                        "enemyKey": "harpy",
+                        "level": 12,
+                        "weight": 2
+                    },
+                    {
+                        "enemyKey": "gargoyle",
+                        "level": 12,
+                        "weight": 2
+                    },
+                    {
+                        "enemyKey": "wisp",
+                        "level": 12,
+                        "weight": 1
+                    }
+                ],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "gargoyle",
+                        "level": 13
+                    },
+                    {
+                        "enemyKey": "wisp",
+                        "level": 13
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": 5,
+        "name": "沼地",
+        "progressIntervalSeconds": 1,
+        "floors": [
+            {
+                "floorNumber": 1,
+                "battleCount": 2,
+                "enemyCount": 2,
+                "encounters": [
+                    {
+                        "enemyKey": "lizardman",
+                        "level": 13,
+                        "weight": 2
+                    },
+                    {
+                        "enemyKey": "treant",
+                        "level": 13,
+                        "weight": 2
+                    },
+                    {
+                        "enemyKey": "imp",
+                        "level": 13,
+                        "weight": 1
+                    }
+                ]
+            },
+            {
+                "floorNumber": 2,
+                "battleCount": 2,
+                "enemyCount": 2,
+                "encounters": [
+                    {
+                        "enemyKey": "lizardman",
+                        "level": 14,
+                        "weight": 2
+                    },
+                    {
+                        "enemyKey": "mandrake",
+                        "level": 14,
+                        "weight": 2
+                    },
+                    {
+                        "enemyKey": "wisp",
+                        "level": 14,
+                        "weight": 1
+                    }
+                ]
+            },
+            {
+                "floorNumber": 3,
+                "battleCount": 2,
+                "enemyCount": 2,
+                "encounters": [
+                    {
+                        "enemyKey": "treant",
+                        "level": 14,
+                        "weight": 2
+                    },
+                    {
+                        "enemyKey": "mandrake",
+                        "level": 14,
+                        "weight": 2
+                    },
+                    {
+                        "enemyKey": "wisp",
+                        "level": 14,
+                        "weight": 1
+                    }
+                ],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "mandrake",
+                        "level": 15
+                    },
+                    {
+                        "enemyKey": "wisp",
+                        "level": 15
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": 6,
+        "name": "坑道",
+        "progressIntervalSeconds": 1,
+        "floors": [
+            {
+                "floorNumber": 1,
+                "battleCount": 2,
+                "enemyCount": 3,
+                "encounters": [
+                    {
+                        "enemyKey": "goblin",
+                        "level": 16,
+                        "weight": 2
+                    },
+                    {
+                        "enemyKey": "kobold",
+                        "level": 16,
                         "weight": 2
                     },
                     {
                         "enemyKey": "bat",
-                        "level": 15,
+                        "level": 16,
+                        "weight": 2
+                    },
+                    {
+                        "enemyKey": "mimic",
+                        "level": 16,
+                        "weight": 1
+                    }
+                ]
+            },
+            {
+                "floorNumber": 2,
+                "battleCount": 2,
+                "enemyCount": 4,
+                "encounters": [
+                    {
+                        "enemyKey": "kobold",
+                        "level": 17,
+                        "weight": 2
+                    },
+                    {
+                        "enemyKey": "ogre",
+                        "level": 17,
+                        "weight": 2
+                    },
+                    {
+                        "enemyKey": "mimic",
+                        "level": 17,
+                        "weight": 2
+                    }
+                ]
+            },
+            {
+                "floorNumber": 3,
+                "battleCount": 2,
+                "enemyCount": 4,
+                "encounters": [
+                    {
+                        "enemyKey": "goblin",
+                        "level": 18,
+                        "weight": 2
+                    },
+                    {
+                        "enemyKey": "ogre",
+                        "level": 18,
+                        "weight": 2
+                    },
+                    {
+                        "enemyKey": "mimic",
+                        "level": 18,
+                        "weight": 2
+                    }
+                ],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "ogre",
+                        "level": 18
+                    },
+                    {
+                        "enemyKey": "ogre",
+                        "level": 18
+                    },
+                    {
+                        "enemyKey": "kobold",
+                        "level": 18
+                    },
+                    {
+                        "enemyKey": "mimic",
+                        "level": 18
+                    },
+                    {
+                        "enemyKey": "bat",
+                        "level": 18
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": 7,
+        "name": "湿原",
+        "progressIntervalSeconds": 1,
+        "floors": [
+            {
+                "floorNumber": 1,
+                "battleCount": 2,
+                "enemyCount": 4,
+                "encounters": [
+                    {
+                        "enemyKey": "lizardman",
+                        "level": 13,
+                        "weight": 2
+                    },
+                    {
+                        "enemyKey": "treant",
+                        "level": 13,
+                        "weight": 2
+                    },
+                    {
+                        "enemyKey": "imp",
+                        "level": 13,
                         "weight": 2
                     }
                 ]
             },
             {
                 "floorNumber": 2,
-                "battleCount": 5,
+                "battleCount": 2,
+                "enemyCount": 4,
                 "encounters": [
                     {
-                        "enemyKey": "spider",
+                        "enemyKey": "basilisk",
+                        "level": 14,
+                        "weight": 2
+                    },
+                    {
+                        "enemyKey": "treant",
+                        "level": 14,
+                        "weight": 2
+                    },
+                    {
+                        "enemyKey": "mandrake",
+                        "level": 14,
+                        "weight": 2
+                    }
+                ]
+            },
+            {
+                "floorNumber": 3,
+                "battleCount": 2,
+                "enemyCount": 4,
+                "encounters": [
+                    {
+                        "enemyKey": "basilisk",
+                        "level": 15,
+                        "weight": 2
+                    },
+                    {
+                        "enemyKey": "lizardman",
+                        "level": 15,
+                        "weight": 2
+                    },
+                    {
+                        "enemyKey": "mandrake",
+                        "level": 15,
+                        "weight": 2
+                    }
+                ],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "basilisk",
+                        "level": 16
+                    },
+                    {
+                        "enemyKey": "treant",
+                        "level": 16
+                    },
+                    {
+                        "enemyKey": "mandrake",
+                        "level": 16
+                    },
+                    {
+                        "enemyKey": "lizardman",
+                        "level": 16
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": 8,
+        "name": "古城の入口",
+        "progressIntervalSeconds": 1,
+        "floors": [
+            {
+                "floorNumber": 1,
+                "battleCount": 2,
+                "enemyCount": 4,
+                "encounters": [
+                    {
+                        "enemyKey": "gargoyle",
+                        "level": 15,
+                        "weight": 2
+                    },
+                    {
+                        "enemyKey": "skeleton",
+                        "level": 15,
+                        "weight": 2
+                    },
+                    {
+                        "enemyKey": "goblin",
+                        "level": 15,
+                        "weight": 1
+                    },
+                    {
+                        "enemyKey": "mimic",
+                        "level": 15,
+                        "weight": 1
+                    }
+                ]
+            },
+            {
+                "floorNumber": 2,
+                "battleCount": 2,
+                "enemyCount": 4,
+                "encounters": [
+                    {
+                        "enemyKey": "skeleton",
                         "level": 16,
                         "weight": 2
                     },
                     {
                         "enemyKey": "ogre",
                         "level": 16,
-                        "weight": 3
+                        "weight": 2
                     },
                     {
-                        "enemyKey": "bat",
+                        "enemyKey": "mimic",
                         "level": 16,
                         "weight": 2
                     }
@@ -148,44 +606,337 @@
             },
             {
                 "floorNumber": 3,
-                "battleCount": 5,
+                "battleCount": 2,
+                "enemyCount": 4,
                 "encounters": [
                     {
+                        "enemyKey": "gargoyle",
+                        "level": 17,
+                        "weight": 1
+                    },
+                    {
+                        "enemyKey": "skeleton",
+                        "level": 17,
+                        "weight": 2
+                    },
+                    {
+                        "enemyKey": "specter",
+                        "level": 17,
+                        "weight": 2
+                    }
+                ],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "gargoyle",
+                        "level": 18
+                    },
+                    {
+                        "enemyKey": "specter",
+                        "level": 18
+                    },
+                    {
                         "enemyKey": "ogre",
-                        "level": 16,
-                        "weight": 3
+                        "level": 18
                     },
                     {
-                        "enemyKey": "bat",
-                        "level": 16,
-                        "weight": 3
+                        "enemyKey": "skeleton",
+                        "level": 18
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": 9,
+        "name": "回廊",
+        "progressIntervalSeconds": 1,
+        "floors": [
+            {
+                "floorNumber": 1,
+                "battleCount": 2,
+                "enemyCount": 4,
+                "encounters": [
+                    {
+                        "enemyKey": "gargoyle",
+                        "level": 17,
+                        "weight": 1
                     },
                     {
-                        "enemyKey": "spider",
-                        "level": 16,
+                        "enemyKey": "harpy",
+                        "level": 17,
+                        "weight": 2
+                    },
+                    {
+                        "enemyKey": "thunderbird",
+                        "level": 17,
+                        "weight": 1
+                    },
+                    {
+                        "enemyKey": "basilisk",
+                        "level": 17,
+                        "weight": 2
+                    }
+                ]
+            },
+            {
+                "floorNumber": 2,
+                "battleCount": 2,
+                "enemyCount": 5,
+                "encounters": [
+                    {
+                        "enemyKey": "golem",
+                        "level": 18,
+                        "weight": 2
+                    },
+                    {
+                        "enemyKey": "skeleton",
+                        "level": 18,
+                        "weight": 2
+                    },
+                    {
+                        "enemyKey": "thunderbird",
+                        "level": 18,
+                        "weight": 1
+                    },
+                    {
+                        "enemyKey": "ogre",
+                        "level": 18,
+                        "weight": 2
+                    }
+                ]
+            },
+            {
+                "floorNumber": 3,
+                "battleCount": 2,
+                "enemyCount": 5,
+                "encounters": [
+                    {
+                        "enemyKey": "golem",
+                        "level": 19,
+                        "weight": 2
+                    },
+                    {
+                        "enemyKey": "basilisk",
+                        "level": 19,
+                        "weight": 2
+                    },
+                    {
+                        "enemyKey": "harpy",
+                        "level": 19,
+                        "weight": 2
+                    },
+                    {
+                        "enemyKey": "thunderbird",
+                        "level": 19,
                         "weight": 1
                     }
                 ],
                 "fixedBattle": [
                     {
-                        "enemyKey": "ogre",
-                        "level": 16
+                        "enemyKey": "golem",
+                        "level": 20
                     },
                     {
                         "enemyKey": "ogre",
-                        "level": 16
+                        "level": 20
+                    },
+                    {
+                        "enemyKey": "thunderbird",
+                        "level": 20
+                    },
+                    {
+                        "enemyKey": "skeleton",
+                        "level": 20
+                    },
+                    {
+                        "enemyKey": "gargoyle",
+                        "level": 20
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": 10,
+        "name": "祭壇",
+        "progressIntervalSeconds": 1,
+        "floors": [
+            {
+                "floorNumber": 1,
+                "battleCount": 2,
+                "enemyCount": 3,
+                "encounters": [
+                    {
+                        "enemyKey": "wisp",
+                        "level": 19,
+                        "weight": 2
+                    },
+                    {
+                        "enemyKey": "mandrake",
+                        "level": 19,
+                        "weight": 2
+                    },
+                    {
+                        "enemyKey": "specter",
+                        "level": 19,
+                        "weight": 1
+                    }
+                ]
+            },
+            {
+                "floorNumber": 2,
+                "battleCount": 2,
+                "enemyCount": 4,
+                "encounters": [
+                    {
+                        "enemyKey": "thunderbird",
+                        "level": 20,
+                        "weight": 2
+                    },
+                    {
+                        "enemyKey": "specter",
+                        "level": 20,
+                        "weight": 2
+                    },
+                    {
+                        "enemyKey": "treant",
+                        "level": 20,
+                        "weight": 1
+                    },
+                    {
+                        "enemyKey": "golem",
+                        "level": 20,
+                        "weight": 1
+                    }
+                ]
+            },
+            {
+                "floorNumber": 3,
+                "battleCount": 2,
+                "enemyCount": 4,
+                "encounters": [
+                    {
+                        "enemyKey": "thunderbird",
+                        "level": 21,
+                        "weight": 3
+                    },
+                    {
+                        "enemyKey": "specter",
+                        "level": 21,
+                        "weight": 2
+                    },
+                    {
+                        "enemyKey": "skeleton",
+                        "level": 21,
+                        "weight": 1
+                    }
+                ],
+                "fixedBattle": [
+                    {
+                        "enemyKey": "thunderbird",
+                        "level": 22
+                    },
+                    {
+                        "enemyKey": "thunderbird",
+                        "level": 22
+                    },
+                    {
+                        "enemyKey": "golem",
+                        "level": 22
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": 11,
+        "name": "水晶の間",
+        "progressIntervalSeconds": 1,
+        "floors": [
+            {
+                "floorNumber": 1,
+                "battleCount": 2,
+                "enemyCount": 4,
+                "encounters": [
+                    {
+                        "enemyKey": "thunderbird",
+                        "level": 21,
+                        "weight": 2
+                    },
+                    {
+                        "enemyKey": "golem",
+                        "level": 21,
+                        "weight": 2
+                    },
+                    {
+                        "enemyKey": "specter",
+                        "level": 21,
+                        "weight": 1
+                    },
+                    {
+                        "enemyKey": "bat",
+                        "level": 21,
+                        "weight": 1
+                    }
+                ]
+            },
+            {
+                "floorNumber": 2,
+                "battleCount": 2,
+                "enemyCount": 4,
+                "encounters": [
+                    {
+                        "enemyKey": "golem",
+                        "level": 22,
+                        "weight": 2
+                    },
+                    {
+                        "enemyKey": "specter",
+                        "level": 22,
+                        "weight": 2
+                    },
+                    {
+                        "enemyKey": "gargoyle",
+                        "level": 22,
+                        "weight": 1
                     },
                     {
                         "enemyKey": "spider",
-                        "level": 16
+                        "level": 22,
+                        "weight": 1
+                    }
+                ]
+            },
+            {
+                "floorNumber": 3,
+                "battleCount": 2,
+                "enemyCount": 4,
+                "encounters": [
+                    {
+                        "enemyKey": "thunderbird",
+                        "level": 23,
+                        "weight": 2
+                    },
+                    {
+                        "enemyKey": "golem",
+                        "level": 23,
+                        "weight": 2
+                    },
+                    {
+                        "enemyKey": "gargoyle",
+                        "level": 23,
+                        "weight": 1
                     },
                     {
                         "enemyKey": "bat",
-                        "level": 16
-                    },
+                        "level": 23,
+                        "weight": 1
+                    }
+                ],
+                "fixedBattle": [
                     {
-                        "enemyKey": "bat",
-                        "level": 16
+                        "enemyKey": "crystal_guard",
+                        "level": 24
                     }
                 ]
             }
