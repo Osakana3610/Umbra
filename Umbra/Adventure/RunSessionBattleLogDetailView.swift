@@ -94,10 +94,6 @@ struct RunSessionBattleLogDetailView: View {
         states: inout [BattleCombatantID: RunSessionBattleParticipantState]
     ) -> RunSessionBattleActionPresentation {
         let actor = combatantsByID[action.actorId].map(RunSessionBattleParticipantState.init(snapshot:))
-        let targetNames = action.targetIds.compactMap { combatantsByID[$0]?.name }
-        let targetSummary = !targetNames.isEmpty && (targetNames.count > 1 || action.results.isEmpty)
-            ? "対象: \(targetNames.joined(separator: " / "))"
-            : nil
 
         // Result messages are built while mutating the running HP state so later results in the
         // same turn can render against already-updated values.
@@ -105,7 +101,7 @@ struct RunSessionBattleLogDetailView: View {
             id: id,
             actor: actor,
             headline: actionHeadline(for: action),
-            targetSummary: targetSummary,
+            detailMessage: detailMessage(for: action, actor: actor),
             results: action.results.enumerated().map { offset, result in
                 RunSessionBattleResultPresentation(
                     id: id * 100 + offset,
@@ -115,6 +111,19 @@ struct RunSessionBattleLogDetailView: View {
                 )
             }
         )
+    }
+
+    private func detailMessage(
+        for action: BattleActionRecord,
+        actor: RunSessionBattleParticipantState?
+    ) -> String? {
+        guard action.actionKind == .defend,
+              action.results.isEmpty,
+              let actor else {
+            return nil
+        }
+
+        return "\(actor.name)は身を守った"
     }
 
     private func actionHeadline(for action: BattleActionRecord) -> String {
@@ -297,7 +306,7 @@ private struct RunSessionBattleActionPresentation: Identifiable {
     let id: Int
     let actor: RunSessionBattleParticipantState?
     let headline: String
-    let targetSummary: String?
+    let detailMessage: String?
     let results: [RunSessionBattleResultPresentation]
 }
 
@@ -326,7 +335,6 @@ private struct RunSessionBattleTurnSectionView: View {
         Section {
             VStack(alignment: .leading, spacing: 6) {
                 RunSessionBattleParticipantSummaryView(
-                    title: "味方",
                     participants: summary.allies
                 )
 
@@ -336,7 +344,6 @@ private struct RunSessionBattleTurnSectionView: View {
                         .foregroundStyle(.secondary)
 
                     RunSessionBattleParticipantSummaryView(
-                        title: "敵",
                         participants: summary.enemies
                     )
                 }
@@ -356,15 +363,10 @@ private struct RunSessionBattleTurnSectionView: View {
 }
 
 private struct RunSessionBattleParticipantSummaryView: View {
-    let title: String
     let participants: [RunSessionBattleParticipantState]
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text(title)
-                .font(.caption)
-                .foregroundStyle(.primary)
-
             if participants.isEmpty {
                 Text("情報がありません")
                     .font(.caption)
@@ -392,6 +394,7 @@ private struct RunSessionBattleParticipantSummaryView: View {
 
 private struct RunSessionBattleActionRowView: View {
     let action: RunSessionBattleActionPresentation
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
@@ -399,45 +402,85 @@ private struct RunSessionBattleActionRowView: View {
                 side: action.actor?.side ?? .ally,
                 imageAssetID: action.actor?.imageAssetID
             )
+            .padding(.top, 2)
 
-            VStack(alignment: .leading, spacing: 4) {
-                if let actor = action.actor {
-                    Text("\(actor.name) Lv.\(actor.level)")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
+            VStack(alignment: .leading, spacing: 6) {
+                headerLine
 
-                Text(action.headline)
-                    .font(.subheadline)
-                    .foregroundStyle(.primary)
-                    .fixedSize(horizontal: false, vertical: true)
-
-                if let targetSummary = action.targetSummary {
-                    Text(targetSummary)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                if let detailMessage = action.detailMessage {
+                    Text(detailMessage)
+                        .font(.callout)
+                        .foregroundStyle(.primary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
 
                 ForEach(action.results) { result in
-                    Text(result.message)
-                        .font(.caption)
-                        .foregroundStyle(result.tone == .primary ? .primary : .secondary)
-                        .fixedSize(horizontal: false, vertical: true)
-
-                    if let hpChange = result.hpChange {
-                        RunSessionBattleHPBarView(
-                            currentHP: hpChange.afterHP,
-                            previousHP: hpChange.beforeHP,
-                            maxHP: hpChange.maxHP
-                        )
-                        .frame(maxWidth: 148)
-                        .padding(.top, 1)
-                    }
+                    RunSessionBattleResultLineView(result: result)
                 }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding(.vertical, 2)
+    }
 
+    @ViewBuilder
+    private var headerLine: some View {
+        ViewThatFits(in: .horizontal) {
+            compactHeaderLine
+            expandedHeaderLine
+        }
+    }
+
+    private var compactHeaderLine: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 6) {
+            actorText
+            Text(action.headline)
+                .font(.caption)
+                .foregroundStyle(.secondary)
             Spacer(minLength: 0)
+        }
+    }
+
+    private var expandedHeaderLine: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            actorText
+            Text(action.headline)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    @ViewBuilder
+    private var actorText: some View {
+        if let actor = action.actor {
+            HStack(alignment: .firstTextBaseline, spacing: 4) {
+                Text(actor.name)
+                    .font(.subheadline)
+                    .foregroundStyle(.primary)
+                    .padding(.horizontal, 4)
+                    .padding(.vertical, 1)
+                    .background {
+                        RoundedRectangle(cornerRadius: 4, style: .continuous)
+                            .fill(highlightColor(for: actor.side))
+                    }
+
+                Text("Lv.\(actor.level)")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    private func highlightColor(for side: BattleSide) -> Color {
+        switch (side, colorScheme) {
+        case (.ally, .dark):
+            .teal.opacity(0.34)
+        case (.ally, _):
+            .teal.opacity(0.22)
+        case (.enemy, .dark):
+            .red.opacity(0.32)
+        case (.enemy, _):
+            .red.opacity(0.20)
         }
     }
 }
@@ -454,16 +497,35 @@ private struct RunSessionBattleActorBadge: View {
                     .scaledToFill()
             } else {
                 RoundedRectangle(cornerRadius: 10)
-                    .fill(side == .ally ? Color.blue.opacity(0.12) : Color.red.opacity(0.12))
+                    .fill(.background)
                     .overlay {
                         Image(systemName: side == .ally ? "person.fill" : "pawprint.fill")
                             .font(.system(size: 18, weight: .semibold))
-                            .foregroundStyle(side == .ally ? Color.blue : Color.red)
+                            .foregroundStyle(.secondary)
                     }
             }
         }
         .frame(width: 44, height: 44)
         .clipShape(RoundedRectangle(cornerRadius: 10))
+    }
+}
+
+private struct RunSessionBattleResultLineView: View {
+    let result: RunSessionBattleResultPresentation
+
+    var body: some View {
+        Text(resultLineText)
+            .font(.callout)
+            .foregroundStyle(result.tone == .primary ? .primary : .secondary)
+            .fixedSize(horizontal: false, vertical: true)
+    }
+
+    private var resultLineText: String {
+        guard let hpChange = result.hpChange else {
+            return result.message
+        }
+
+        return "\(result.message)（\(hpChange.afterHP.formatted())/\(hpChange.maxHP.formatted())）"
     }
 }
 
