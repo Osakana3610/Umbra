@@ -76,7 +76,25 @@ struct MonsterBookEnemyDetailView: View {
                                 .foregroundStyle(.secondary)
                         } else {
                             ForEach(enemy.rareDropItemIds, id: \.self) { itemID in
-                                Text(itemsByID[itemID]?.name ?? "不明なアイテム")
+                                if let item = itemsByID[itemID] {
+                                    HStack(spacing: 8) {
+                                        Text(item.name)
+
+                                        Spacer(minLength: 12)
+
+                                        Button {
+                                            presentedSheet = .item(.baseItem(itemId: item.id))
+                                        } label: {
+                                            Image(systemName: "info.circle")
+                                                .foregroundStyle(.tint)
+                                                .frame(width: 28, height: 28)
+                                        }
+                                        .buttonStyle(.plain)
+                                        .accessibilityLabel("\(item.name)の詳細")
+                                    }
+                                } else {
+                                    Text("不明なアイテム")
+                                }
                             }
                         }
                     }
@@ -132,17 +150,22 @@ struct MonsterBookEnemyDetailView: View {
         switch sheet {
         case .job(let job):
             JobDetailView(job: job, masterData: masterData)
+        case .item(let itemID):
+            ItemDetailView(itemID: itemID, masterData: masterData)
         }
     }
 }
 
 private enum MonsterEnemyDetailSheet: Identifiable {
     case job(MasterData.Job)
+    case item(CompositeItemID)
 
     var id: String {
         switch self {
         case .job(let job):
             "job-\(job.id)"
+        case .item(let itemID):
+            "item-\(itemID.stableKey)"
         }
     }
 }
