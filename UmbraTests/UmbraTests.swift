@@ -713,9 +713,57 @@ struct UmbraTests {
 
     @Test
     func equipmentAggregationAppliesTitleMultiplierOnlyToBattleStats() throws {
-        let masterData = makeEquipmentShopTestMasterData(
-            baseStats: battleBaseStats(vitality: 10, strength: -4, agility: 3),
-            battleStats: battleCharacterBattleStats(maxHP: 12, physicalAttack: -8, accuracy: 5)
+        let masterData = MasterData(
+            metadata: MasterData.Metadata(generator: "test"),
+            races: [],
+            jobs: [],
+            aptitudes: [],
+            items: [
+                MasterData.Item(
+                    id: 1,
+                    name: "テスト剣",
+                    category: .sword,
+                    rarity: .normal,
+                    basePrice: 1_000,
+                    nativeBaseStats: battleBaseStats(vitality: 10, strength: -4, agility: 3),
+                    nativeBattleStats: MasterData.BattleStats(
+                        maxHP: 12,
+                        physicalAttack: -8,
+                        physicalDefense: 0,
+                        magic: 0,
+                        magicDefense: 0,
+                        healing: 0,
+                        accuracy: 5,
+                        evasion: 0,
+                        attackCount: 0,
+                        criticalRate: 0,
+                        breathPower: 0
+                    ),
+                    skillIds: [],
+                    rangeClass: .melee,
+                    normalDropTier: 1
+                )
+            ],
+            titles: [
+                MasterData.Title(
+                    id: 1,
+                    key: "test",
+                    name: "テスト",
+                    positiveMultiplier: 1.5,
+                    negativeMultiplier: 1.0,
+                    dropWeight: 1
+                )
+            ],
+            superRares: [],
+            skills: [],
+            spells: [],
+            recruitNames: MasterData.RecruitNames(
+                male: [],
+                female: [],
+                unisex: []
+            ),
+            enemies: [],
+            labyrinths: []
         )
         let titledItemID = CompositeItemID.baseItem(itemId: 1, titleId: 1)
 
