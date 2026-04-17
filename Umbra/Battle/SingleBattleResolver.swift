@@ -2451,7 +2451,7 @@ nonisolated private struct BattleResolutionEngine {
                 Int(
                     (
                         Double(value)
-                        * (combatants[actorIndex].status.specialRuleMaxValue(for: "hitDamageLuckyMultiplier") ?? 1.0)
+                        * (combatants[actorIndex].status.hitRuleMaxValue(for: "hitDamageLuckyMultiplier") ?? 1.0)
                     ).rounded()
                 ),
                 1
@@ -2462,7 +2462,7 @@ nonisolated private struct BattleResolutionEngine {
                 Int(
                     (
                         Double(value)
-                        * (combatants[actorIndex].status.specialRuleMaxValue(for: "hitDamageUnluckyMultiplier") ?? 1.0)
+                        * (combatants[actorIndex].status.hitRuleMaxValue(for: "hitDamageUnluckyMultiplier") ?? 1.0)
                     ).rounded()
                 ),
                 1
@@ -2475,7 +2475,7 @@ nonisolated private struct BattleResolutionEngine {
         for actorIndex: Int,
         subactionNumber: Int
     ) -> Double? {
-        guard let widthScale = combatants[actorIndex].status.specialRuleMaxValue(
+        guard let widthScale = combatants[actorIndex].status.hitRuleMaxValue(
             for: "damageVarianceWidthMultiplier"
         ) else {
             return nil
@@ -2495,7 +2495,7 @@ nonisolated private struct BattleResolutionEngine {
         for actorIndex: Int,
         subactionNumber: Int
     ) -> Bool {
-        guard let chance = combatants[actorIndex].status.specialRuleMaxValue(for: "hitDamageLuckyChance"),
+        guard let chance = combatants[actorIndex].status.hitRuleMaxValue(for: "hitDamageLuckyChance"),
               chance > 0 else {
             return false
         }
@@ -2512,7 +2512,7 @@ nonisolated private struct BattleResolutionEngine {
         for actorIndex: Int,
         subactionNumber: Int
     ) -> Bool {
-        guard let chance = combatants[actorIndex].status.specialRuleMaxValue(for: "hitDamageUnluckyChance"),
+        guard let chance = combatants[actorIndex].status.hitRuleMaxValue(for: "hitDamageUnluckyChance"),
               chance > 0 else {
             return false
         }

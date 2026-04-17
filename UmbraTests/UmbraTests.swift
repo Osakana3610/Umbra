@@ -719,7 +719,7 @@ struct UmbraTests {
             description: "鎧カテゴリ装備の固定値を強化する。",
             effects: [
                 MasterData.SkillEffect(
-                    kind: .specialRule,
+                    kind: .equipmentRule,
                     target: "armorEquipmentBattleStatFlatMultiplier",
                     operation: nil,
                     value: 1.5,
@@ -782,7 +782,7 @@ struct UmbraTests {
             description: "剣カテゴリ装備の固定値を強化する。",
             effects: [
                 MasterData.SkillEffect(
-                    kind: .specialRule,
+                    kind: .equipmentRule,
                     target: "swordEquipmentBattleStatFlatMultiplier",
                     operation: nil,
                     value: 1.4,
@@ -859,7 +859,7 @@ struct UmbraTests {
             description: "防具カテゴリ装備の固定値を強化する。",
             effects: [
                 MasterData.SkillEffect(
-                    kind: .specialRule,
+                    kind: .equipmentRule,
                     target: "defenseEquipmentBattleStatFlatMultiplier",
                     operation: nil,
                     value: 1.35,
@@ -979,7 +979,7 @@ struct UmbraTests {
             description: "装備由来の魔法防御固定値を強化する。",
             effects: [
                 MasterData.SkillEffect(
-                    kind: .specialRule,
+                    kind: .equipmentRule,
                     target: "magicDefenseEquipmentFlatMultiplier",
                     operation: nil,
                     value: 1.5,
@@ -7228,7 +7228,7 @@ struct UmbraTests {
                 criticalRate: 0,
                 breathPower: 0
             ),
-            specialRuleValuesByTarget: ["damageVarianceWidthMultiplier": [2.0]]
+            hitRuleValuesByTarget: ["damageVarianceWidthMultiplier": [2.0]]
         )
         let baselineStatus = makeBattleTestStatus(
             baseStats: battleCharacterBaseStats(agility: 1_000),
@@ -7296,7 +7296,7 @@ struct UmbraTests {
                 criticalRate: 0,
                 breathPower: 0
             ),
-            specialRuleValuesByTarget: [
+            hitRuleValuesByTarget: [
                 "hitDamageLuckyChance": [1.0],
                 "hitDamageLuckyMultiplier": [2.0]
             ]
@@ -7382,7 +7382,7 @@ struct UmbraTests {
                 breathPower: 0
             ),
             spellIds: [attackSpell.id],
-            specialRuleValuesByTarget: [
+            hitRuleValuesByTarget: [
                 "hitDamageUnluckyChance": [1.0],
                 "hitDamageUnluckyMultiplier": [0.5]
             ]
@@ -9884,7 +9884,9 @@ private func equipmentStatusNotificationTestStatus(
         reviveRuleValuesByTarget: [:],
         combatRuleValuesByTarget: [:],
         rewardRuleValuesByTarget: [:],
-        specialRuleValuesByTarget: [:]
+        equipmentRuleValuesByTarget: [:],
+        explorationRuleValuesByTarget: [:],
+        hitRuleValuesByTarget: [:]
     )
 }
 
@@ -10156,7 +10158,9 @@ private func makeBattleTestStatus(
     actionRuleValuesByTarget: [String: [Double]] = [:],
     reviveRuleValuesByTarget: [String: [Double]] = [:],
     combatRuleValuesByTarget: [String: [Double]] = [:],
-    specialRuleValuesByTarget: [String: [Double]] = [:]
+    equipmentRuleValuesByTarget: [String: [Double]] = [:],
+    explorationRuleValuesByTarget: [String: [Double]] = [:],
+    hitRuleValuesByTarget: [String: [Double]] = [:]
 ) -> CharacterStatus {
     CharacterStatus(
         baseStats: baseStats,
@@ -10187,7 +10191,9 @@ private func makeBattleTestStatus(
         reviveRuleValuesByTarget: reviveRuleValuesByTarget,
         combatRuleValuesByTarget: combatRuleValuesByTarget,
         rewardRuleValuesByTarget: [:],
-        specialRuleValuesByTarget: specialRuleValuesByTarget
+        equipmentRuleValuesByTarget: equipmentRuleValuesByTarget,
+        explorationRuleValuesByTarget: explorationRuleValuesByTarget,
+        hitRuleValuesByTarget: hitRuleValuesByTarget
     )
 }
 

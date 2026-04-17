@@ -8812,7 +8812,7 @@
         "description": "鎧カテゴリ装備の戦闘能力値が50%増加する。",
         "effects": [
             {
-                "kind": "specialRule",
+                "kind": "equipmentRule",
                 "target": "armorEquipmentBattleStatFlatMultiplier",
                 "value": 1.5
             }
@@ -8848,7 +8848,7 @@
         "description": "装備による魔法防御が50%増加する。",
         "effects": [
             {
-                "kind": "specialRule",
+                "kind": "equipmentRule",
                 "target": "magicDefenseEquipmentFlatMultiplier",
                 "value": 1.5
             }
@@ -8884,7 +8884,7 @@
         "description": "探索にかかる時間を20%短縮する。",
         "effects": [
             {
-                "kind": "specialRule",
+                "kind": "explorationRule",
                 "target": "explorationTimeMultiplier",
                 "value": 0.8
             }
@@ -8896,7 +8896,7 @@
         "description": "与ダメージの乱数幅を広げる。",
         "effects": [
             {
-                "kind": "specialRule",
+                "kind": "hitRule",
                 "target": "damageVarianceWidthMultiplier",
                 "value": 2.0
             }
@@ -9324,12 +9324,12 @@
         "description": "命中時に一定確率で威力を2倍にする。",
         "effects": [
             {
-                "kind": "specialRule",
+                "kind": "hitRule",
                 "target": "hitDamageLuckyChance",
                 "value": 0.2
             },
             {
-                "kind": "specialRule",
+                "kind": "hitRule",
                 "target": "hitDamageLuckyMultiplier",
                 "value": 2.0
             }
@@ -9341,12 +9341,12 @@
         "description": "命中時に一定確率で威力を1/2にする。",
         "effects": [
             {
-                "kind": "specialRule",
+                "kind": "hitRule",
                 "target": "hitDamageUnluckyChance",
                 "value": 0.2
             },
             {
-                "kind": "specialRule",
+                "kind": "hitRule",
                 "target": "hitDamageUnluckyMultiplier",
                 "value": 0.5
             }
@@ -10017,7 +10017,7 @@
         "description": "剣カテゴリ装備の戦闘能力値が40%増加する。",
         "effects": [
             {
-                "kind": "specialRule",
+                "kind": "equipmentRule",
                 "target": "swordEquipmentBattleStatFlatMultiplier",
                 "value": 1.4
             }
@@ -10029,7 +10029,7 @@
         "description": "刀カテゴリ装備の戦闘能力値が40%増加する。",
         "effects": [
             {
-                "kind": "specialRule",
+                "kind": "equipmentRule",
                 "target": "katanaEquipmentBattleStatFlatMultiplier",
                 "value": 1.4
             }
@@ -10041,7 +10041,7 @@
         "description": "弓カテゴリ装備の戦闘能力値が40%増加する。",
         "effects": [
             {
-                "kind": "specialRule",
+                "kind": "equipmentRule",
                 "target": "bowEquipmentBattleStatFlatMultiplier",
                 "value": 1.4
             }
@@ -10053,7 +10053,7 @@
         "description": "防具カテゴリ装備の戦闘能力値が35%増加する。",
         "effects": [
             {
-                "kind": "specialRule",
+                "kind": "equipmentRule",
                 "target": "defenseEquipmentBattleStatFlatMultiplier",
                 "value": 1.35
             }

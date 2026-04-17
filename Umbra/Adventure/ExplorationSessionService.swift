@@ -264,13 +264,13 @@ final class ExplorationSessionService {
                 }
             }
         }
-        func specialRuleProduct(for skillIds: [Int], target: String) -> Double {
+        func explorationRuleProduct(for skillIds: [Int], target: String) -> Double {
             Set(skillIds).reduce(into: 1.0) { partialResult, skillId in
                 guard let skill = skillTable[skillId] else {
                     return
                 }
 
-                for effect in skill.effects where effect.kind == .specialRule && effect.target == target {
+                for effect in skill.effects where effect.kind == .explorationRule && effect.target == target {
                     guard let value = effect.value else {
                         continue
                     }
@@ -314,7 +314,7 @@ final class ExplorationSessionService {
                 appliesCatTicket
                     ? Self.catTicketProgressIntervalMultiplier
                     : 1.0
-            ) * specialRuleProduct(for: partyRewardSkillIds, target: "explorationTimeMultiplier"),
+            ) * explorationRuleProduct(for: partyRewardSkillIds, target: "explorationTimeMultiplier"),
             goldMultiplier: rewardMultiplier(for: partyRewardSkillIds, target: "goldGainMultiplier")
                 * (appliesCatTicket ? Self.catTicketRewardMultiplier : 1.0),
             rareDropMultiplier: rewardMultiplier(for: partyRewardSkillIds, target: "rareDropMultiplier")

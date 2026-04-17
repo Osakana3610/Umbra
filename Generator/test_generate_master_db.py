@@ -117,17 +117,17 @@ class BuildSkillsValidationTests(unittest.TestCase):
         self.assertEqual(built[0]["effects"][0]["target"], "physicalAttack")
         self.assertEqual(built[0]["effects"][0]["value"], 2.0)
 
-    def test_accepts_valid_special_rule(self):
+    def test_accepts_valid_equipment_rule(self):
         records = [
             {
                 "id": "skill-1",
-                "name": "valid special rule",
+                "name": "valid equipment rule",
                 "description": "valid",
                 "effects": [
                     {
-                        "kind": "specialRule",
-                        "target": "guardPhysicalActionChance",
-                        "value": 0.5,
+                        "kind": "equipmentRule",
+                        "target": "armorEquipmentBattleStatFlatMultiplier",
+                        "value": 1.5,
                     }
                 ],
             }
@@ -135,9 +135,53 @@ class BuildSkillsValidationTests(unittest.TestCase):
 
         built = build_skills(records, {})
 
-        self.assertEqual(built[0]["effects"][0]["kind"], "specialRule")
-        self.assertEqual(built[0]["effects"][0]["target"], "guardPhysicalActionChance")
-        self.assertEqual(built[0]["effects"][0]["value"], 0.5)
+        self.assertEqual(built[0]["effects"][0]["kind"], "equipmentRule")
+        self.assertEqual(built[0]["effects"][0]["target"], "armorEquipmentBattleStatFlatMultiplier")
+        self.assertEqual(built[0]["effects"][0]["value"], 1.5)
+
+    def test_accepts_valid_exploration_rule(self):
+        records = [
+            {
+                "id": "skill-1",
+                "name": "valid exploration rule",
+                "description": "valid",
+                "effects": [
+                    {
+                        "kind": "explorationRule",
+                        "target": "explorationTimeMultiplier",
+                        "value": 0.8,
+                    }
+                ],
+            }
+        ]
+
+        built = build_skills(records, {})
+
+        self.assertEqual(built[0]["effects"][0]["kind"], "explorationRule")
+        self.assertEqual(built[0]["effects"][0]["target"], "explorationTimeMultiplier")
+        self.assertEqual(built[0]["effects"][0]["value"], 0.8)
+
+    def test_accepts_valid_hit_rule(self):
+        records = [
+            {
+                "id": "skill-1",
+                "name": "valid hit rule",
+                "description": "valid",
+                "effects": [
+                    {
+                        "kind": "hitRule",
+                        "target": "hitDamageLuckyChance",
+                        "value": 0.2,
+                    }
+                ],
+            }
+        ]
+
+        built = build_skills(records, {})
+
+        self.assertEqual(built[0]["effects"][0]["kind"], "hitRule")
+        self.assertEqual(built[0]["effects"][0]["target"], "hitDamageLuckyChance")
+        self.assertEqual(built[0]["effects"][0]["value"], 0.2)
 
 
 class BuildTitlesTests(unittest.TestCase):

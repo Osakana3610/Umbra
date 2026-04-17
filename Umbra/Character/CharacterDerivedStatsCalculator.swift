@@ -400,7 +400,9 @@ nonisolated enum CharacterDerivedStatsCalculator {
             reviveRuleValuesByTarget: skillAdjustments.reviveRuleValuesByTarget,
             combatRuleValuesByTarget: skillAdjustments.combatRuleValuesByTarget,
             rewardRuleValuesByTarget: skillAdjustments.rewardRuleValuesByTarget,
-            specialRuleValuesByTarget: skillAdjustments.specialRuleValuesByTarget
+            equipmentRuleValuesByTarget: skillAdjustments.equipmentRuleValuesByTarget,
+            explorationRuleValuesByTarget: skillAdjustments.explorationRuleValuesByTarget,
+            hitRuleValuesByTarget: skillAdjustments.hitRuleValuesByTarget
         )
     }
 
@@ -409,10 +411,10 @@ nonisolated enum CharacterDerivedStatsCalculator {
         equipmentBattleStatsByCategory: [ItemCategory: CharacterBattleStats],
         skillAdjustments: SkillAdjustments
     ) -> CharacterBattleStats {
-        let magicDefenseMultiplier = skillAdjustments.specialRuleProduct(
+        let magicDefenseMultiplier = skillAdjustments.equipmentRuleProduct(
             for: "magicDefenseEquipmentFlatMultiplier"
         )
-        let defenseEquipmentMultiplier = skillAdjustments.specialRuleProduct(
+        let defenseEquipmentMultiplier = skillAdjustments.equipmentRuleProduct(
             for: "defenseEquipmentBattleStatFlatMultiplier"
         )
         let categorizedBattleStats = equipmentBattleStatsByCategory.values.reduce(
@@ -472,7 +474,7 @@ nonisolated enum CharacterDerivedStatsCalculator {
         for category: ItemCategory,
         skillAdjustments: SkillAdjustments
     ) -> Double {
-        let multiplier = skillAdjustments.specialRuleProduct(
+        let multiplier = skillAdjustments.equipmentRuleProduct(
             for: "\(category.rawValue)EquipmentBattleStatFlatMultiplier"
         )
         return multiplier
@@ -779,7 +781,9 @@ nonisolated private struct SkillAdjustments {
     var reviveRuleValuesByTarget: [String: [Double]] = [:]
     var combatRuleValuesByTarget: [String: [Double]] = [:]
     var rewardRuleValuesByTarget: [String: [Double]] = [:]
-    var specialRuleValuesByTarget: [String: [Double]] = [:]
+    var equipmentRuleValuesByTarget: [String: [Double]] = [:]
+    var explorationRuleValuesByTarget: [String: [Double]] = [:]
+    var hitRuleValuesByTarget: [String: [Double]] = [:]
     var grantedSpellIds = Set<Int>()
     var revokedSpellIds = Set<Int>()
     var interruptKinds = Set<InterruptKind>()
@@ -993,20 +997,32 @@ nonisolated private struct SkillAdjustments {
                 return
             }
             rewardRuleValuesByTarget[target, default: []].append(value)
-        case .specialRule:
+        case .equipmentRule:
             guard let target = effect.target,
                   let value = effect.value else {
                 return
             }
-            specialRuleValuesByTarget[target, default: []].append(value)
+            equipmentRuleValuesByTarget[target, default: []].append(value)
+        case .explorationRule:
+            guard let target = effect.target,
+                  let value = effect.value else {
+                return
+            }
+            explorationRuleValuesByTarget[target, default: []].append(value)
+        case .hitRule:
+            guard let target = effect.target,
+                  let value = effect.value else {
+                return
+            }
+            hitRuleValuesByTarget[target, default: []].append(value)
         }
     }
 
-    func specialRuleValues(for target: String) -> [Double] {
-        specialRuleValuesByTarget[target] ?? []
+    func equipmentRuleValues(for target: String) -> [Double] {
+        equipmentRuleValuesByTarget[target] ?? []
     }
 
-    func specialRuleProduct(for target: String) -> Double {
-        specialRuleValues(for: target).reduce(1.0, *)
+    func equipmentRuleProduct(for target: String) -> Double {
+        equipmentRuleValues(for: target).reduce(1.0, *)
     }
 }

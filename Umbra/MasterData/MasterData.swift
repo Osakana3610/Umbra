@@ -343,7 +343,9 @@ nonisolated enum SkillEffectKind: String, Decodable, Sendable {
     case reviveRule
     case combatRule
     case rewardRule
-    case specialRule
+    case equipmentRule
+    case explorationRule
+    case hitRule
 }
 
 nonisolated enum SkillEffectCondition: String, Decodable, Sendable {

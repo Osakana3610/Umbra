@@ -29,7 +29,9 @@ nonisolated struct CharacterStatus: Equatable, Sendable {
     let reviveRuleValuesByTarget: [String: [Double]]
     let combatRuleValuesByTarget: [String: [Double]]
     let rewardRuleValuesByTarget: [String: [Double]]
-    let specialRuleValuesByTarget: [String: [Double]]
+    let equipmentRuleValuesByTarget: [String: [Double]]
+    let explorationRuleValuesByTarget: [String: [Double]]
+    let hitRuleValuesByTarget: [String: [Double]]
 
     var maxHP: Int {
         battleStats.maxHP
@@ -115,16 +117,40 @@ nonisolated struct CharacterStatus: Equatable, Sendable {
         rewardRuleValues(for: target).max()
     }
 
-    func specialRuleValues(for target: String) -> [Double] {
-        specialRuleValuesByTarget[target] ?? []
+    func equipmentRuleValues(for target: String) -> [Double] {
+        equipmentRuleValuesByTarget[target] ?? []
     }
 
-    func specialRuleMaxValue(for target: String) -> Double? {
-        specialRuleValues(for: target).max()
+    func equipmentRuleMaxValue(for target: String) -> Double? {
+        equipmentRuleValues(for: target).max()
     }
 
-    func specialRuleProduct(for target: String) -> Double {
-        specialRuleValues(for: target).reduce(1.0, *)
+    func equipmentRuleProduct(for target: String) -> Double {
+        equipmentRuleValues(for: target).reduce(1.0, *)
+    }
+
+    func explorationRuleValues(for target: String) -> [Double] {
+        explorationRuleValuesByTarget[target] ?? []
+    }
+
+    func explorationRuleMaxValue(for target: String) -> Double? {
+        explorationRuleValues(for: target).max()
+    }
+
+    func explorationRuleProduct(for target: String) -> Double {
+        explorationRuleValues(for: target).reduce(1.0, *)
+    }
+
+    func hitRuleValues(for target: String) -> [Double] {
+        hitRuleValuesByTarget[target] ?? []
+    }
+
+    func hitRuleMaxValue(for target: String) -> Double? {
+        hitRuleValues(for: target).max()
+    }
+
+    func hitRuleProduct(for target: String) -> Double {
+        hitRuleValues(for: target).reduce(1.0, *)
     }
 }
 

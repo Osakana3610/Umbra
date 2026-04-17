@@ -71,7 +71,9 @@ VALID_SKILL_EFFECT_KINDS = {
     "reviveRule",
     "combatRule",
     "rewardRule",
-    "specialRule",
+    "equipmentRule",
+    "explorationRule",
+    "hitRule",
 }
 
 VALID_BATTLE_STAT_OPERATIONS = {
@@ -829,7 +831,7 @@ def build_skills(records: list[dict], spell_indices: dict[str, int]) -> list[dic
                 )
                 continue
 
-            if kind == "specialRule":
+            if kind in {"equipmentRule", "explorationRule", "hitRule"}:
                 require_keys(effect, ("target", "value"), f"skill[{record['id']}].effects[{effect_index}]")
                 target = effect["target"]
                 if not isinstance(target, str) or not target:
