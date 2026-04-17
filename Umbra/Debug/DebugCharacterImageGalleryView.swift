@@ -80,10 +80,8 @@ private struct DebugCharacterImageCardView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            if let uiImage = UIImage(named: entry.assetName) {
-                Image(uiImage: uiImage)
-                    .resizable()
-                    .scaledToFit()
+            if UIImage(named: entry.assetName) != nil {
+                GameAssetImage(assetName: entry.assetName, contentMode: .fit)
                     .frame(maxWidth: .infinity)
                     .frame(height: 120)
                     .padding(.vertical, 8)

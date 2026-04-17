@@ -9,9 +9,7 @@ struct EquipmentCharacterRow: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 16) {
-            Image(masterData.portraitAssetName(for: character))
-                .resizable()
-                .scaledToFill()
+            GameAssetImage(assetName: masterData.portraitAssetName(for: character))
                 .frame(width: 72, height: 72)
                 .clipShape(.rect(cornerRadius: 12))
 

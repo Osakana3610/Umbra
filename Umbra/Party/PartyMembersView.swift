@@ -86,9 +86,10 @@ private struct PartyMemberSlotView: View {
     private func slotContent(for character: CharacterRecord) -> some View {
         // Every slot keeps the same compact layout so six members fit across without nested lists.
         VStack(spacing: 2) {
-            Image(masterData.portraitAssetName(for: character))
-                .resizable()
-                .scaledToFit()
+            GameAssetImage(
+                assetName: masterData.portraitAssetName(for: character),
+                contentMode: .fit
+            )
                 .frame(maxWidth: .infinity)
                 .frame(height: 55)
                 .clipShape(.rect(cornerRadius: 10))

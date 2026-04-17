@@ -418,9 +418,7 @@ private struct CharacterDetailHeaderView: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 16) {
-            Image(portraitAssetName)
-                .resizable()
-                .scaledToFill()
+            GameAssetImage(assetName: portraitAssetName)
                 .frame(width: 96, height: 96)
                 .clipShape(.rect(cornerRadius: 16))
 

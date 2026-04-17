@@ -492,9 +492,7 @@ private struct RunSessionBattleActorBadge: View {
     var body: some View {
         Group {
             if let imageAssetID {
-                Image(imageAssetID)
-                    .resizable()
-                    .scaledToFill()
+                GameAssetImage(assetName: imageAssetID)
             } else {
                 RoundedRectangle(cornerRadius: 10)
                     .fill(.background)

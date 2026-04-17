@@ -145,9 +145,7 @@ private struct CharacterDismissalRow: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
-            Image(portraitAssetName)
-                .resizable()
-                .scaledToFill()
+            GameAssetImage(assetName: portraitAssetName)
                 .frame(width: 44, height: 44)
                 .clipShape(.rect(cornerRadius: 10))
 

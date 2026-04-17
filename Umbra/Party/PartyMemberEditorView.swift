@@ -308,9 +308,7 @@ private struct PartyCharacterRow<Accessory: View>: View {
 
     var body: some View {
         HStack(alignment: .center, spacing: 12) {
-            Image(masterData.portraitAssetName(for: character))
-                .resizable()
-                .scaledToFill()
+            GameAssetImage(assetName: masterData.portraitAssetName(for: character))
                 .frame(width: 44, height: 44)
                 .clipShape(.rect(cornerRadius: 10))
 

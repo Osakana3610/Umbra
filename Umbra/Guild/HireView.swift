@@ -254,10 +254,8 @@ private struct HireRaceIconView: View {
     let race: MasterData.Race
 
     var body: some View {
-        if let uiImage = UIImage(named: race.assetName) {
-            Image(uiImage: uiImage)
-                .resizable()
-                .scaledToFill()
+        if UIImage(named: race.assetName) != nil {
+            GameAssetImage(assetName: race.assetName)
                 .frame(width: 50, height: 50)
                 .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
         } else {
@@ -272,10 +270,8 @@ private struct HireJobIconView: View {
     let job: MasterData.Job
 
     var body: some View {
-        if let uiImage = UIImage(named: job.portraitAssetName(for: .unisex)) {
-            Image(uiImage: uiImage)
-                .resizable()
-                .scaledToFill()
+        if UIImage(named: job.portraitAssetName(for: .unisex)) != nil {
+            GameAssetImage(assetName: job.portraitAssetName(for: .unisex))
                 .frame(width: 50, height: 50)
                 .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
         } else {

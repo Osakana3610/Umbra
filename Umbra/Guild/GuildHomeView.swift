@@ -60,9 +60,7 @@ struct GuildHomeView: View {
                     } else {
                         ForEach(rosterStore.characters) { character in
                             HStack(spacing: 12) {
-                                Image(masterData.portraitAssetName(for: character))
-                                    .resizable()
-                                    .scaledToFill()
+                                GameAssetImage(assetName: masterData.portraitAssetName(for: character))
                                     .frame(width: 52, height: 52)
                                     .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
 

@@ -254,9 +254,7 @@ struct CharacterEquipmentView: View {
     @ViewBuilder
     private func header(for character: CharacterRecord) -> some View {
         HStack(alignment: .top, spacing: 16) {
-            Image(masterData.portraitAssetName(for: character))
-                .resizable()
-                .scaledToFill()
+            GameAssetImage(assetName: masterData.portraitAssetName(for: character))
                 .frame(width: 88, height: 88)
                 .clipShape(.rect(cornerRadius: 16))
 

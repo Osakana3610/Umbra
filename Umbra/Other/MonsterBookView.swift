@@ -238,9 +238,7 @@ struct MonsterEnemyThumbnailView: View {
     var body: some View {
         Group {
             if let imageAssetName {
-                Image(imageAssetName)
-                    .resizable()
-                    .scaledToFill()
+                GameAssetImage(assetName: imageAssetName)
             } else {
                 RoundedRectangle(cornerRadius: cornerRadius)
                     .fill(Color.red.opacity(0.12))

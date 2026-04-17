@@ -172,9 +172,7 @@ struct ShopEnhancementEquippedRowContent: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            Image(portraitAssetName)
-                .resizable()
-                .scaledToFill()
+            GameAssetImage(assetName: portraitAssetName)
                 .frame(width: 36, height: 36)
                 .clipShape(.rect(cornerRadius: 10))
 
