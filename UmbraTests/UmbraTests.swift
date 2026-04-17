@@ -4789,13 +4789,13 @@ struct UmbraTests {
     }
 
     @Test
-    func titleRollCountAddsPartyLuckWithoutUsingEnemyLevel() {
+    func titleRollCountMultipliesBaseLuckAndSkillByEnemyTitle() {
         let rewardContext = ExplorationResolver.RewardContext(
             memberCharacterIds: [],
             memberExperienceMultipliers: [],
             goldMultiplier: 1,
             rareDropMultiplier: 1,
-            titleRollCountModifier: 0,
+            titleRollCountModifier: 3,
             normalDropJewelizeChance: 0,
             goldPenaltyPerDamageTaken: 0,
             goldGainPctAddOnNormalKill: 0,
@@ -4818,7 +4818,7 @@ struct UmbraTests {
             )
         )
 
-        #expect(ExplorationResolver.titleRollCount(rewardContext: rewardContext) == 5)
+        #expect(ExplorationResolver.titleRollCount(rewardContext: rewardContext) == 11)
     }
 
     @Test

@@ -880,9 +880,13 @@ nonisolated extension ExplorationResolver {
     ) -> Int {
         max(
             Int((
-                rewardContext.enemyTitle.positiveMultiplier
-                + cbrt(max(rewardContext.partyAverageLuck, 0))
-            ).rounded()) + rewardContext.titleRollCountModifier,
+                (
+                    1
+                    + Double(rewardContext.titleRollCountModifier)
+                    + cbrt(max(rewardContext.partyAverageLuck, 0))
+                )
+                * rewardContext.enemyTitle.positiveMultiplier
+            ).rounded()),
             1
         )
     }

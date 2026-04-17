@@ -9378,8 +9378,8 @@
     },
     {
         "id": "job_thief_title_roll_count_plus_3",
-        "name": "称号抽選回数+3",
-        "description": "称号抽選回数を3回増やす。",
+        "name": "目利き",
+        "description": "より良い称号が付いたアイテムが手に入りやすくなる。",
         "effects": [
             {
                 "kind": "titleRollCountModifier",
