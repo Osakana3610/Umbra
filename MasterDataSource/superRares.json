@@ -3,10 +3,10 @@
         "id": "unveiled",
         "name": "暴かれし",
         "skillIds": [
-            "accuracy_plus_13pct",
-            "evasion_plus_13pct",
-            "criticalRate_plus_13pct",
-            "actionSpeedMultiplier_plus_13pct",
+            "accuracy_plus_20pct",
+            "evasion_plus_20pct",
+            "criticalRate_plus_20pct",
+            "actionSpeedMultiplier_plus_20pct",
             "pursuit"
         ]
     },
@@ -14,10 +14,10 @@
         "id": "abhorrent",
         "name": "忌まわしき",
         "skillIds": [
-            "physicalDamageMultiplier_plus_13pct",
-            "magicDamageMultiplier_plus_13pct",
-            "criticalDamageMultiplier_plus_13pct",
-            "breathPower_plus_13pct",
+            "physicalDamageMultiplier_plus_20pct",
+            "magicDamageMultiplier_plus_20pct",
+            "criticalDamageMultiplier_plus_20pct",
+            "breathPower_plus_20pct",
             "counter"
         ]
     },
@@ -25,8 +25,8 @@
         "id": "hollow",
         "name": "虚ろなる",
         "skillIds": [
-            "evasion_plus_13pct",
-            "actionSpeedMultiplier_plus_13pct",
+            "evasion_plus_20pct",
+            "actionSpeedMultiplier_plus_20pct",
             "physical_resistance_4_5",
             "magic_resistance_4_5",
             "breath_resistance_4_5"
@@ -36,20 +36,20 @@
         "id": "papermade",
         "name": "紙でできた",
         "skillIds": [
-            "evasion_plus_13pct",
-            "rangedDamageMultiplier_plus_13pct",
-            "actionSpeedMultiplier_plus_13pct",
-            "accuracy_plus_13pct",
-            "criticalRate_plus_13pct"
+            "evasion_plus_20pct",
+            "rangedDamageMultiplier_plus_20pct",
+            "actionSpeedMultiplier_plus_20pct",
+            "accuracy_plus_20pct",
+            "criticalRate_plus_20pct"
         ]
     },
     {
         "id": "decorated",
         "name": "可愛くデコった",
         "skillIds": [
-            "healing_plus_13pct",
-            "magic_plus_13pct",
-            "magicDamageMultiplier_plus_13pct",
+            "healing_plus_20pct",
+            "magic_plus_20pct",
+            "magicDamageMultiplier_plus_20pct",
             "magic_resistance_4_5"
         ]
     },
@@ -57,11 +57,11 @@
         "id": "gorgeous",
         "name": "煌びやかな",
         "skillIds": [
-            "physicalAttack_plus_13pct",
-            "magic_plus_13pct",
-            "accuracy_plus_13pct",
-            "criticalRate_plus_13pct",
-            "actionSpeedMultiplier_plus_13pct"
+            "physicalAttack_plus_20pct",
+            "magic_plus_20pct",
+            "accuracy_plus_20pct",
+            "criticalRate_plus_20pct",
+            "actionSpeedMultiplier_plus_20pct"
         ]
     },
     {
@@ -78,7 +78,7 @@
         "name": "果てなき",
         "skillIds": [
             "maxHP_plus_20",
-            "healing_plus_13pct",
+            "healing_plus_20pct",
             "physical_resistance_4_5",
             "magic_resistance_4_5"
         ]
@@ -87,22 +87,22 @@
         "id": "beyond-the-night",
         "name": "夜の向こうの",
         "skillIds": [
-            "accuracy_plus_13pct",
-            "evasion_plus_13pct",
-            "actionSpeedMultiplier_plus_13pct",
-            "criticalRate_plus_13pct",
-            "meleeDamageMultiplier_plus_13pct"
+            "accuracy_plus_20pct",
+            "evasion_plus_20pct",
+            "actionSpeedMultiplier_plus_20pct",
+            "criticalRate_plus_20pct",
+            "meleeDamageMultiplier_plus_20pct"
         ]
     },
     {
         "id": "transient",
         "name": "流転の",
         "skillIds": [
-            "physicalDamageMultiplier_plus_13pct",
-            "magicDamageMultiplier_plus_13pct",
-            "actionSpeedMultiplier_plus_13pct",
-            "rangedDamageMultiplier_plus_13pct",
-            "meleeDamageMultiplier_plus_13pct"
+            "physicalDamageMultiplier_plus_20pct",
+            "magicDamageMultiplier_plus_20pct",
+            "actionSpeedMultiplier_plus_20pct",
+            "rangedDamageMultiplier_plus_20pct",
+            "meleeDamageMultiplier_plus_20pct"
         ]
     }
 ]

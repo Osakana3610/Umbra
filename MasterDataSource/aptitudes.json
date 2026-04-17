@@ -2,81 +2,177 @@
     {
         "id": "swordsmanship",
         "name": "剣術の心得",
-        "passiveSkillIds": ["swordEquipmentBattleStatFlatMultiplier_140pct", "physicalAttack_plus_13pct", "accuracy_plus_13pct", "criticalRate_plus_12pct", "magicResistanceMultiplier_plus_6pct"]
+        "passiveSkillIds": [
+            "swordEquipmentBattleStatFlatMultiplier_140pct",
+            "physicalAttack_plus_20pct",
+            "accuracy_plus_20pct",
+            "criticalRate_plus_20pct",
+            "magicResistanceMultiplier_plus_6pct"
+        ]
     },
     {
         "id": "samurai_heart",
         "name": "武士の心",
-        "passiveSkillIds": ["katanaEquipmentBattleStatFlatMultiplier_140pct", "physicalAttack_plus_13pct", "criticalRate_plus_12pct", "criticalDamageMultiplier_plus_12pct", "magicDefense_plus_12pct"]
+        "passiveSkillIds": [
+            "katanaEquipmentBattleStatFlatMultiplier_140pct",
+            "physicalAttack_plus_20pct",
+            "criticalRate_plus_20pct",
+            "criticalDamageMultiplier_plus_20pct",
+            "magicDefense_plus_20pct"
+        ]
     },
     {
         "id": "ranged",
         "name": "狩人の教え",
-        "passiveSkillIds": ["bowEquipmentBattleStatFlatMultiplier_140pct", "accuracy_plus_13pct", "criticalRate_plus_12pct", "criticalDamageMultiplier_plus_12pct", "magicResistanceMultiplier_plus_6pct"]
+        "passiveSkillIds": [
+            "bowEquipmentBattleStatFlatMultiplier_140pct",
+            "accuracy_plus_20pct",
+            "criticalRate_plus_20pct",
+            "criticalDamageMultiplier_plus_20pct",
+            "magicResistanceMultiplier_plus_6pct"
+        ]
     },
     {
         "id": "martial_spirit",
         "name": "武道の精神",
-        "passiveSkillIds": ["unarmed_physical_attack_plus_50pct", "physicalDefense_plus_13pct", "actionSpeedMultiplier_plus_13pct", "magicResistanceMultiplier_plus_6pct", "evasion_plus_12pct"]
+        "passiveSkillIds": [
+            "unarmed_physical_attack_plus_50pct",
+            "physicalDefense_plus_20pct",
+            "actionSpeedMultiplier_plus_20pct",
+            "magicResistanceMultiplier_plus_6pct",
+            "evasion_plus_20pct"
+        ]
     },
     {
         "id": "healer",
         "name": "慈愛の思い",
-        "passiveSkillIds": ["healing_plus_13pct", "magic_plus_12pct", "magicDefense_plus_12pct", "magicResistanceMultiplier_plus_6pct", "actionSpeedMultiplier_plus_10pct"]
+        "passiveSkillIds": [
+            "healing_plus_20pct",
+            "magic_plus_20pct",
+            "magicDefense_plus_20pct",
+            "magicResistanceMultiplier_plus_6pct",
+            "actionSpeedMultiplier_plus_10pct"
+        ]
     },
     {
         "id": "crimson_gift",
         "name": "紅蓮の才能",
-        "passiveSkillIds": ["fire_power_plus_50pct", "magic_plus_12pct", "magicDamageMultiplier_plus_10pct", "fire_resistance_4_5", "actionSpeedMultiplier_plus_10pct"]
+        "passiveSkillIds": [
+            "fire_power_plus_50pct",
+            "magic_plus_20pct",
+            "magicDamageMultiplier_plus_10pct",
+            "fire_resistance_4_5",
+            "actionSpeedMultiplier_plus_10pct"
+        ]
     },
     {
         "id": "ice_dominion",
         "name": "氷上の統治者",
-        "passiveSkillIds": ["ice_power_plus_50pct", "magic_plus_12pct", "magicDamageMultiplier_plus_10pct", "magicResistanceMultiplier_plus_8pct", "physicalDefense_plus_12pct"]
+        "passiveSkillIds": [
+            "ice_power_plus_50pct",
+            "magic_plus_20pct",
+            "magicDamageMultiplier_plus_10pct",
+            "magicResistanceMultiplier_plus_8pct",
+            "physicalDefense_plus_20pct"
+        ]
     },
     {
         "id": "volt_mastery",
         "name": "電雷自在",
-        "passiveSkillIds": ["lightning_power_plus_50pct", "magic_plus_12pct", "magicDamageMultiplier_plus_10pct", "actionSpeedMultiplier_plus_13pct", "accuracy_plus_8pct"]
+        "passiveSkillIds": [
+            "lightning_power_plus_50pct",
+            "magic_plus_20pct",
+            "magicDamageMultiplier_plus_10pct",
+            "actionSpeedMultiplier_plus_20pct",
+            "accuracy_plus_10pct"
+        ]
     },
     {
         "id": "ruin_esoterica",
         "name": "破滅の秘術",
-        "passiveSkillIds": ["nuclear_power_plus_50pct", "magic_plus_12pct", "magicDamageMultiplier_plus_10pct", "physicalResistanceMultiplier_plus_8pct", "physicalDefense_plus_12pct"]
+        "passiveSkillIds": [
+            "nuclear_power_plus_50pct",
+            "magic_plus_20pct",
+            "magicDamageMultiplier_plus_10pct",
+            "physicalResistanceMultiplier_plus_8pct",
+            "physicalDefense_plus_20pct"
+        ]
     },
     {
         "id": "hex_affinity",
         "name": "呪詛呪怨",
-        "passiveSkillIds": ["onHit_curse_25pct", "ailmentInflictionChanceMultiplier_140pct", "damageMultiplierAgainstAilingTarget_150pct", "magic_plus_12pct", "magicResistanceMultiplier_plus_8pct"]
+        "passiveSkillIds": [
+            "onHit_curse_25pct",
+            "ailmentInflictionChanceMultiplier_140pct",
+            "damageMultiplierAgainstAilingTarget_150pct",
+            "magic_plus_20pct",
+            "magicResistanceMultiplier_plus_8pct"
+        ]
     },
     {
         "id": "growth",
         "name": "成長が早い",
-        "passiveSkillIds": ["experienceGainMultiplier_plus_50pct", "goldGainMultiplier_plus_30pct", "physicalAttack_plus_12pct", "magic_plus_12pct", "actionSpeedMultiplier_plus_10pct"]
+        "passiveSkillIds": [
+            "experienceGainMultiplier_plus_50pct",
+            "goldGainMultiplier_plus_30pct",
+            "physicalAttack_plus_20pct",
+            "magic_plus_20pct",
+            "actionSpeedMultiplier_plus_10pct"
+        ]
     },
     {
         "id": "might",
         "name": "タフな身体",
-        "passiveSkillIds": ["defenseEquipmentBattleStatFlatMultiplier_135pct", "physicalResistanceMultiplier_plus_6pct", "magicResistanceMultiplier_plus_6pct", "breathResistanceMultiplier_plus_6pct", "physicalDefense_plus_12pct"]
+        "passiveSkillIds": [
+            "defenseEquipmentBattleStatFlatMultiplier_135pct",
+            "physicalResistanceMultiplier_plus_6pct",
+            "magicResistanceMultiplier_plus_6pct",
+            "breathResistanceMultiplier_plus_6pct",
+            "physicalDefense_plus_20pct"
+        ]
     },
     {
         "id": "gale_talent",
         "name": "疾風怒濤",
-        "passiveSkillIds": ["turnOneActionSpeedMultiplier_150pct", "actionSpeedMultiplier_plus_13pct", "evasion_plus_13pct", "accuracy_plus_12pct", "physicalAttack_plus_8pct"]
+        "passiveSkillIds": [
+            "turnOneActionSpeedMultiplier_150pct",
+            "actionSpeedMultiplier_plus_20pct",
+            "evasion_plus_20pct",
+            "accuracy_plus_20pct",
+            "physicalAttack_plus_10pct"
+        ]
     },
     {
         "id": "fortune",
         "name": "運が良い",
-        "passiveSkillIds": ["criticalRate_plus_12pct", "criticalDamageMultiplier_plus_12pct", "accuracy_plus_12pct", "evasion_plus_12pct", "goldGainMultiplier_plus_30pct"]
+        "passiveSkillIds": [
+            "criticalRate_plus_20pct",
+            "criticalDamageMultiplier_plus_20pct",
+            "accuracy_plus_20pct",
+            "evasion_plus_20pct",
+            "goldGainMultiplier_plus_30pct"
+        ]
     },
     {
         "id": "bonbon",
         "name": "ボンボン",
-        "passiveSkillIds": ["goldGainMultiplier_plus_30pct", "physicalDefense_plus_12pct", "magicDefense_plus_12pct", "healing_plus_13pct", "magicResistanceMultiplier_plus_6pct"]
+        "passiveSkillIds": [
+            "goldGainMultiplier_plus_30pct",
+            "physicalDefense_plus_20pct",
+            "magicDefense_plus_20pct",
+            "healing_plus_20pct",
+            "magicResistanceMultiplier_plus_6pct"
+        ]
     },
     {
         "id": "adaptable_flow",
         "name": "変幻自在",
-        "passiveSkillIds": ["accuracy_plus_13pct", "evasion_plus_13pct", "actionSpeedMultiplier_plus_13pct", "physicalAttack_plus_12pct", "magic_plus_12pct"]
+        "passiveSkillIds": [
+            "accuracy_plus_20pct",
+            "evasion_plus_20pct",
+            "actionSpeedMultiplier_plus_20pct",
+            "physicalAttack_plus_20pct",
+            "magic_plus_20pct"
+        ]
     }
 ]

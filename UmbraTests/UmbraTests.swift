@@ -388,11 +388,11 @@ struct UmbraTests {
         ))
         #expect(status.battleStats == CharacterBattleStats(
             maxHP: 347,
-            physicalAttack: 47,
+            physicalAttack: 50,
             physicalDefense: 35,
             magic: 32,
             magicDefense: 29,
-            healing: 25,
+            healing: 26,
             accuracy: 9,
             evasion: 5,
             attackCount: 1,
@@ -408,13 +408,13 @@ struct UmbraTests {
             meleeDamageMultiplier: 1.0,
             rangedDamageMultiplier: 1.0,
             actionSpeedMultiplier: 1.0,
-            physicalResistanceMultiplier: 1.0,
+            physicalResistanceMultiplier: 0.8,
             magicResistanceMultiplier: 0.94,
             breathResistanceMultiplier: 1.0
         ))
         #expect(status.canUseBreath == false)
         #expect(status.spellIds.isEmpty)
-        #expect(status.interruptKinds == [.counter])
+        #expect(status.interruptKinds.isEmpty)
         #expect(status.skillIds.count == Set(status.skillIds).count)
     }
 
@@ -461,18 +461,18 @@ struct UmbraTests {
             named: ["炎", "氷", "電撃", "魔法バフ"],
             in: masterData
         )))
-        #expect(spellcastingStatus.battleStats.magic == 155)
+        #expect(spellcastingStatus.battleStats.magic == 149)
         #expect(spellcastingStatus.skillIds.count == Set(spellcastingStatus.skillIds).count)
 
         #expect(breathStatus.canUseBreath)
-        #expect(breathStatus.interruptKinds == [.counter, .pursuit])
+        #expect(breathStatus.interruptKinds == [.counter])
         #expect(breathStatus.battleStats.breathPower == 60)
         #expect(breathStatus.battleDerivedStats == CharacterBattleDerivedStats(
             physicalDamageMultiplier: 1.0,
             attackMagicMultiplier: 1.0,
             healingMultiplier: 1.0,
             spellDamageMultiplier: 1.0,
-            criticalDamageMultiplier: 1.0,
+            criticalDamageMultiplier: 1.1,
             meleeDamageMultiplier: 1.0,
             rangedDamageMultiplier: 1.1,
             actionSpeedMultiplier: 1.1,
@@ -4869,6 +4869,7 @@ struct UmbraTests {
                 MasterData.Enemy(
                     id: 1,
                     name: "微経験値敵",
+                    imageAssetName: nil,
                     enemyRace: .monster,
                     jobId: 1,
                     baseStats: battleBaseStats(),
@@ -5841,6 +5842,7 @@ struct UmbraTests {
                 MasterData.Enemy(
                     id: 1,
                     name: "ウルフ",
+                    imageAssetName: nil,
                     enemyRace: templateEnemy.enemyRace,
                     jobId: templateEnemy.jobId,
                     baseStats: templateEnemy.baseStats,
@@ -5854,6 +5856,7 @@ struct UmbraTests {
                 MasterData.Enemy(
                     id: 2,
                     name: "ウルフ",
+                    imageAssetName: nil,
                     enemyRace: templateEnemy.enemyRace,
                     jobId: templateEnemy.jobId,
                     baseStats: templateEnemy.baseStats,
@@ -5867,6 +5870,7 @@ struct UmbraTests {
                 MasterData.Enemy(
                     id: 3,
                     name: "スライム",
+                    imageAssetName: nil,
                     enemyRace: templateEnemy.enemyRace,
                     jobId: templateEnemy.jobId,
                     baseStats: templateEnemy.baseStats,
@@ -10339,6 +10343,7 @@ private func makeBattleTestMasterData(
             MasterData.Enemy(
                 id: 1,
                 name: "テスト敵",
+                imageAssetName: nil,
                 enemyRace: .monster,
                 jobId: 1,
                 baseStats: enemyBaseStats,
@@ -10443,6 +10448,7 @@ private func makeExplorationBattleTestMasterData(
             MasterData.Enemy(
                 id: 1,
                 name: "テスト敵",
+                imageAssetName: nil,
                 enemyRace: .monster,
                 jobId: 1,
                 baseStats: enemyBaseStats,

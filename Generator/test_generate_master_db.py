@@ -315,7 +315,7 @@ class BuildItemsTests(unittest.TestCase):
                     "physicalAttack": 1,
                     "accuracy": 1,
                 },
-                "skillIds": ["physicalDamageMultiplier_plus_6pct"],
+                "skillIds": ["physicalDamageMultiplier_plus_10pct"],
                 "rangeClass": "melee",
                 "normalDropTier": 1,
             },
@@ -339,7 +339,7 @@ class BuildItemsTests(unittest.TestCase):
         built = build_items(
             records,
             {
-                "physicalDamageMultiplier_plus_6pct": 42,
+                "physicalDamageMultiplier_plus_10pct": 42,
             },
         )
 
@@ -715,6 +715,56 @@ class GeneratedMasterDataOutputTests(unittest.TestCase):
                 self.assertEqual(effect["target"], target, skill_name)
                 self.assertEqual(effect["operation"], "pctAdd", skill_name)
                 self.assertAlmostEqual(effect["value"], -(value / 100), places=6, msg=skill_name)
+
+    def test_generated_output_standardizes_non_resistance_percentage_skill_ranges(self):
+        output_path = Path(__file__).resolve().parent / "Output" / "masterdata.json"
+        self.assertTrue(output_path.exists(), output_path)
+
+        master_data = json.loads(output_path.read_text())
+        allowed_values = [-30, -20, -10, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+        removed_values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13]
+        expected_targets = {
+            "最大HP": "maxHP",
+            "物理攻撃": "physicalAttack",
+            "物理防御": "physicalDefense",
+            "魔法": "magic",
+            "魔法防御": "magicDefense",
+            "回復": "healing",
+            "命中": "accuracy",
+            "回避": "evasion",
+            "必殺率": "criticalRate",
+            "ブレス威力": "breathPower",
+            "物理威力": "physicalDamageMultiplier",
+            "魔法威力": "magicDamageMultiplier",
+            "必殺時威力": "criticalDamageMultiplier",
+            "近接威力": "meleeDamageMultiplier",
+            "遠距離威力": "rangedDamageMultiplier",
+            "行動速度": "actionSpeedMultiplier",
+        }
+        skills_by_name = {entry["name"]: entry for entry in master_data["skills"]}
+
+        for label_prefix, target in expected_targets.items():
+            for value in allowed_values:
+                sign = "+" if value > 0 else "-"
+                skill_name = f"{label_prefix}{sign}{abs(value)}%"
+                skill = skills_by_name.get(skill_name)
+                self.assertIsNotNone(skill, skill_name)
+                self.assertEqual(len(skill["effects"]), 1, skill_name)
+                effect = skill["effects"][0]
+                self.assertEqual(effect["target"], target, skill_name)
+                self.assertEqual(effect["operation"], "pctAdd", skill_name)
+                self.assertAlmostEqual(effect["value"], value / 100, places=6, msg=skill_name)
+
+            for value in removed_values:
+                self.assertNotIn(f"{label_prefix}+{value}%", skills_by_name)
+                self.assertNotIn(f"{label_prefix}-{value}%", skills_by_name)
+
+        for value in [-30, -20, -10, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]:
+            sign = "+" if value > 0 else "-"
+            self.assertNotIn(f"攻撃回数{sign}{abs(value)}%", skills_by_name)
+
+        for skill_name in ["炎威力-30%", "炎威力+100%", "電撃威力+50%", "核攻撃威力+20%"]:
+            self.assertIn(skill_name, skills_by_name)
 
 
 if __name__ == "__main__":

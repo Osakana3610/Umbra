@@ -2860,1865 +2860,6 @@
         ]
     },
     {
-        "id": "maxHP_plus_1pct",
-        "name": "最大HP+1%",
-        "description": "HPの基本値が1%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "maxHP",
-                "operation": "pctAdd",
-                "value": 0.01
-            }
-        ]
-    },
-    {
-        "id": "maxHP_plus_2pct",
-        "name": "最大HP+2%",
-        "description": "HPの基本値が2%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "maxHP",
-                "operation": "pctAdd",
-                "value": 0.02
-            }
-        ]
-    },
-    {
-        "id": "maxHP_plus_3pct",
-        "name": "最大HP+3%",
-        "description": "HPの基本値が3%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "maxHP",
-                "operation": "pctAdd",
-                "value": 0.03
-            }
-        ]
-    },
-    {
-        "id": "maxHP_plus_4pct",
-        "name": "最大HP+4%",
-        "description": "HPの基本値が4%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "maxHP",
-                "operation": "pctAdd",
-                "value": 0.04
-            }
-        ]
-    },
-    {
-        "id": "maxHP_plus_5pct",
-        "name": "最大HP+5%",
-        "description": "HPの基本値が5%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "maxHP",
-                "operation": "pctAdd",
-                "value": 0.05
-            }
-        ]
-    },
-    {
-        "id": "maxHP_plus_6pct",
-        "name": "最大HP+6%",
-        "description": "HPの基本値が6%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "maxHP",
-                "operation": "pctAdd",
-                "value": 0.06
-            }
-        ]
-    },
-    {
-        "id": "maxHP_plus_7pct",
-        "name": "最大HP+7%",
-        "description": "HPの基本値が7%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "maxHP",
-                "operation": "pctAdd",
-                "value": 0.07
-            }
-        ]
-    },
-    {
-        "id": "maxHP_plus_8pct",
-        "name": "最大HP+8%",
-        "description": "HPの基本値が8%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "maxHP",
-                "operation": "pctAdd",
-                "value": 0.08
-            }
-        ]
-    },
-    {
-        "id": "maxHP_plus_9pct",
-        "name": "最大HP+9%",
-        "description": "HPの基本値が9%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "maxHP",
-                "operation": "pctAdd",
-                "value": 0.09
-            }
-        ]
-    },
-    {
-        "id": "maxHP_plus_10pct",
-        "name": "最大HP+10%",
-        "description": "HPの基本値が10%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "maxHP",
-                "operation": "pctAdd",
-                "value": 0.1
-            }
-        ]
-    },
-    {
-        "id": "maxHP_plus_11pct",
-        "name": "最大HP+11%",
-        "description": "HPの基本値が11%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "maxHP",
-                "operation": "pctAdd",
-                "value": 0.11
-            }
-        ]
-    },
-    {
-        "id": "maxHP_plus_12pct",
-        "name": "最大HP+12%",
-        "description": "HPの基本値が12%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "maxHP",
-                "operation": "pctAdd",
-                "value": 0.12
-            }
-        ]
-    },
-    {
-        "id": "maxHP_plus_13pct",
-        "name": "最大HP+13%",
-        "description": "HPの基本値が13%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "maxHP",
-                "operation": "pctAdd",
-                "value": 0.13
-            }
-        ]
-    },
-    {
-        "id": "physicalAttack_plus_1pct",
-        "name": "物理攻撃+1%",
-        "description": "物理攻撃の基本値が1%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "physicalAttack",
-                "operation": "pctAdd",
-                "value": 0.01
-            }
-        ]
-    },
-    {
-        "id": "physicalAttack_plus_2pct",
-        "name": "物理攻撃+2%",
-        "description": "物理攻撃の基本値が2%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "physicalAttack",
-                "operation": "pctAdd",
-                "value": 0.02
-            }
-        ]
-    },
-    {
-        "id": "physicalAttack_plus_3pct",
-        "name": "物理攻撃+3%",
-        "description": "物理攻撃の基本値が3%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "physicalAttack",
-                "operation": "pctAdd",
-                "value": 0.03
-            }
-        ]
-    },
-    {
-        "id": "physicalAttack_plus_4pct",
-        "name": "物理攻撃+4%",
-        "description": "物理攻撃の基本値が4%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "physicalAttack",
-                "operation": "pctAdd",
-                "value": 0.04
-            }
-        ]
-    },
-    {
-        "id": "physicalAttack_plus_5pct",
-        "name": "物理攻撃+5%",
-        "description": "物理攻撃の基本値が5%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "physicalAttack",
-                "operation": "pctAdd",
-                "value": 0.05
-            }
-        ]
-    },
-    {
-        "id": "physicalAttack_plus_6pct",
-        "name": "物理攻撃+6%",
-        "description": "物理攻撃の基本値が6%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "physicalAttack",
-                "operation": "pctAdd",
-                "value": 0.06
-            }
-        ]
-    },
-    {
-        "id": "physicalAttack_plus_7pct",
-        "name": "物理攻撃+7%",
-        "description": "物理攻撃の基本値が7%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "physicalAttack",
-                "operation": "pctAdd",
-                "value": 0.07
-            }
-        ]
-    },
-    {
-        "id": "physicalAttack_plus_8pct",
-        "name": "物理攻撃+8%",
-        "description": "物理攻撃の基本値が8%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "physicalAttack",
-                "operation": "pctAdd",
-                "value": 0.08
-            }
-        ]
-    },
-    {
-        "id": "physicalAttack_plus_9pct",
-        "name": "物理攻撃+9%",
-        "description": "物理攻撃の基本値が9%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "physicalAttack",
-                "operation": "pctAdd",
-                "value": 0.09
-            }
-        ]
-    },
-    {
-        "id": "physicalAttack_plus_10pct",
-        "name": "物理攻撃+10%",
-        "description": "物理攻撃の基本値が10%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "physicalAttack",
-                "operation": "pctAdd",
-                "value": 0.1
-            }
-        ]
-    },
-    {
-        "id": "physicalAttack_plus_11pct",
-        "name": "物理攻撃+11%",
-        "description": "物理攻撃の基本値が11%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "physicalAttack",
-                "operation": "pctAdd",
-                "value": 0.11
-            }
-        ]
-    },
-    {
-        "id": "physicalAttack_plus_12pct",
-        "name": "物理攻撃+12%",
-        "description": "物理攻撃の基本値が12%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "physicalAttack",
-                "operation": "pctAdd",
-                "value": 0.12
-            }
-        ]
-    },
-    {
-        "id": "physicalAttack_plus_13pct",
-        "name": "物理攻撃+13%",
-        "description": "物理攻撃の基本値が13%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "physicalAttack",
-                "operation": "pctAdd",
-                "value": 0.13
-            }
-        ]
-    },
-    {
-        "id": "physicalDefense_plus_1pct",
-        "name": "物理防御+1%",
-        "description": "物理防御の基本値が1%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "physicalDefense",
-                "operation": "pctAdd",
-                "value": 0.01
-            }
-        ]
-    },
-    {
-        "id": "physicalDefense_plus_2pct",
-        "name": "物理防御+2%",
-        "description": "物理防御の基本値が2%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "physicalDefense",
-                "operation": "pctAdd",
-                "value": 0.02
-            }
-        ]
-    },
-    {
-        "id": "physicalDefense_plus_3pct",
-        "name": "物理防御+3%",
-        "description": "物理防御の基本値が3%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "physicalDefense",
-                "operation": "pctAdd",
-                "value": 0.03
-            }
-        ]
-    },
-    {
-        "id": "physicalDefense_plus_4pct",
-        "name": "物理防御+4%",
-        "description": "物理防御の基本値が4%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "physicalDefense",
-                "operation": "pctAdd",
-                "value": 0.04
-            }
-        ]
-    },
-    {
-        "id": "physicalDefense_plus_5pct",
-        "name": "物理防御+5%",
-        "description": "物理防御の基本値が5%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "physicalDefense",
-                "operation": "pctAdd",
-                "value": 0.05
-            }
-        ]
-    },
-    {
-        "id": "physicalDefense_plus_6pct",
-        "name": "物理防御+6%",
-        "description": "物理防御の基本値が6%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "physicalDefense",
-                "operation": "pctAdd",
-                "value": 0.06
-            }
-        ]
-    },
-    {
-        "id": "physicalDefense_plus_7pct",
-        "name": "物理防御+7%",
-        "description": "物理防御の基本値が7%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "physicalDefense",
-                "operation": "pctAdd",
-                "value": 0.07
-            }
-        ]
-    },
-    {
-        "id": "physicalDefense_plus_8pct",
-        "name": "物理防御+8%",
-        "description": "物理防御の基本値が8%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "physicalDefense",
-                "operation": "pctAdd",
-                "value": 0.08
-            }
-        ]
-    },
-    {
-        "id": "physicalDefense_plus_9pct",
-        "name": "物理防御+9%",
-        "description": "物理防御の基本値が9%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "physicalDefense",
-                "operation": "pctAdd",
-                "value": 0.09
-            }
-        ]
-    },
-    {
-        "id": "physicalDefense_plus_10pct",
-        "name": "物理防御+10%",
-        "description": "物理防御の基本値が10%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "physicalDefense",
-                "operation": "pctAdd",
-                "value": 0.1
-            }
-        ]
-    },
-    {
-        "id": "physicalDefense_plus_11pct",
-        "name": "物理防御+11%",
-        "description": "物理防御の基本値が11%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "physicalDefense",
-                "operation": "pctAdd",
-                "value": 0.11
-            }
-        ]
-    },
-    {
-        "id": "physicalDefense_plus_12pct",
-        "name": "物理防御+12%",
-        "description": "物理防御の基本値が12%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "physicalDefense",
-                "operation": "pctAdd",
-                "value": 0.12
-            }
-        ]
-    },
-    {
-        "id": "physicalDefense_plus_13pct",
-        "name": "物理防御+13%",
-        "description": "物理防御の基本値が13%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "physicalDefense",
-                "operation": "pctAdd",
-                "value": 0.13
-            }
-        ]
-    },
-    {
-        "id": "magic_plus_1pct",
-        "name": "魔法+1%",
-        "description": "魔法の基本値が1%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "magic",
-                "operation": "pctAdd",
-                "value": 0.01
-            }
-        ]
-    },
-    {
-        "id": "magic_plus_2pct",
-        "name": "魔法+2%",
-        "description": "魔法の基本値が2%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "magic",
-                "operation": "pctAdd",
-                "value": 0.02
-            }
-        ]
-    },
-    {
-        "id": "magic_plus_3pct",
-        "name": "魔法+3%",
-        "description": "魔法の基本値が3%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "magic",
-                "operation": "pctAdd",
-                "value": 0.03
-            }
-        ]
-    },
-    {
-        "id": "magic_plus_4pct",
-        "name": "魔法+4%",
-        "description": "魔法の基本値が4%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "magic",
-                "operation": "pctAdd",
-                "value": 0.04
-            }
-        ]
-    },
-    {
-        "id": "magic_plus_5pct",
-        "name": "魔法+5%",
-        "description": "魔法の基本値が5%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "magic",
-                "operation": "pctAdd",
-                "value": 0.05
-            }
-        ]
-    },
-    {
-        "id": "magic_plus_6pct",
-        "name": "魔法+6%",
-        "description": "魔法の基本値が6%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "magic",
-                "operation": "pctAdd",
-                "value": 0.06
-            }
-        ]
-    },
-    {
-        "id": "magic_plus_7pct",
-        "name": "魔法+7%",
-        "description": "魔法の基本値が7%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "magic",
-                "operation": "pctAdd",
-                "value": 0.07
-            }
-        ]
-    },
-    {
-        "id": "magic_plus_8pct",
-        "name": "魔法+8%",
-        "description": "魔法の基本値が8%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "magic",
-                "operation": "pctAdd",
-                "value": 0.08
-            }
-        ]
-    },
-    {
-        "id": "magic_plus_9pct",
-        "name": "魔法+9%",
-        "description": "魔法の基本値が9%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "magic",
-                "operation": "pctAdd",
-                "value": 0.09
-            }
-        ]
-    },
-    {
-        "id": "magic_plus_10pct",
-        "name": "魔法+10%",
-        "description": "魔法の基本値が10%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "magic",
-                "operation": "pctAdd",
-                "value": 0.1
-            }
-        ]
-    },
-    {
-        "id": "magic_plus_11pct",
-        "name": "魔法+11%",
-        "description": "魔法の基本値が11%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "magic",
-                "operation": "pctAdd",
-                "value": 0.11
-            }
-        ]
-    },
-    {
-        "id": "magic_plus_12pct",
-        "name": "魔法+12%",
-        "description": "魔法の基本値が12%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "magic",
-                "operation": "pctAdd",
-                "value": 0.12
-            }
-        ]
-    },
-    {
-        "id": "magic_plus_13pct",
-        "name": "魔法+13%",
-        "description": "魔法の基本値が13%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "magic",
-                "operation": "pctAdd",
-                "value": 0.13
-            }
-        ]
-    },
-    {
-        "id": "magicDefense_plus_1pct",
-        "name": "魔法防御+1%",
-        "description": "魔法防御の基本値が1%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "magicDefense",
-                "operation": "pctAdd",
-                "value": 0.01
-            }
-        ]
-    },
-    {
-        "id": "magicDefense_plus_2pct",
-        "name": "魔法防御+2%",
-        "description": "魔法防御の基本値が2%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "magicDefense",
-                "operation": "pctAdd",
-                "value": 0.02
-            }
-        ]
-    },
-    {
-        "id": "magicDefense_plus_3pct",
-        "name": "魔法防御+3%",
-        "description": "魔法防御の基本値が3%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "magicDefense",
-                "operation": "pctAdd",
-                "value": 0.03
-            }
-        ]
-    },
-    {
-        "id": "magicDefense_plus_4pct",
-        "name": "魔法防御+4%",
-        "description": "魔法防御の基本値が4%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "magicDefense",
-                "operation": "pctAdd",
-                "value": 0.04
-            }
-        ]
-    },
-    {
-        "id": "magicDefense_plus_5pct",
-        "name": "魔法防御+5%",
-        "description": "魔法防御の基本値が5%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "magicDefense",
-                "operation": "pctAdd",
-                "value": 0.05
-            }
-        ]
-    },
-    {
-        "id": "magicDefense_plus_6pct",
-        "name": "魔法防御+6%",
-        "description": "魔法防御の基本値が6%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "magicDefense",
-                "operation": "pctAdd",
-                "value": 0.06
-            }
-        ]
-    },
-    {
-        "id": "magicDefense_plus_7pct",
-        "name": "魔法防御+7%",
-        "description": "魔法防御の基本値が7%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "magicDefense",
-                "operation": "pctAdd",
-                "value": 0.07
-            }
-        ]
-    },
-    {
-        "id": "magicDefense_plus_8pct",
-        "name": "魔法防御+8%",
-        "description": "魔法防御の基本値が8%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "magicDefense",
-                "operation": "pctAdd",
-                "value": 0.08
-            }
-        ]
-    },
-    {
-        "id": "magicDefense_plus_9pct",
-        "name": "魔法防御+9%",
-        "description": "魔法防御の基本値が9%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "magicDefense",
-                "operation": "pctAdd",
-                "value": 0.09
-            }
-        ]
-    },
-    {
-        "id": "magicDefense_plus_10pct",
-        "name": "魔法防御+10%",
-        "description": "魔法防御の基本値が10%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "magicDefense",
-                "operation": "pctAdd",
-                "value": 0.1
-            }
-        ]
-    },
-    {
-        "id": "magicDefense_plus_11pct",
-        "name": "魔法防御+11%",
-        "description": "魔法防御の基本値が11%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "magicDefense",
-                "operation": "pctAdd",
-                "value": 0.11
-            }
-        ]
-    },
-    {
-        "id": "magicDefense_plus_12pct",
-        "name": "魔法防御+12%",
-        "description": "魔法防御の基本値が12%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "magicDefense",
-                "operation": "pctAdd",
-                "value": 0.12
-            }
-        ]
-    },
-    {
-        "id": "magicDefense_plus_13pct",
-        "name": "魔法防御+13%",
-        "description": "魔法防御の基本値が13%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "magicDefense",
-                "operation": "pctAdd",
-                "value": 0.13
-            }
-        ]
-    },
-    {
-        "id": "healing_plus_1pct",
-        "name": "回復+1%",
-        "description": "回復の基本値が1%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "healing",
-                "operation": "pctAdd",
-                "value": 0.01
-            }
-        ]
-    },
-    {
-        "id": "healing_plus_2pct",
-        "name": "回復+2%",
-        "description": "回復の基本値が2%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "healing",
-                "operation": "pctAdd",
-                "value": 0.02
-            }
-        ]
-    },
-    {
-        "id": "healing_plus_3pct",
-        "name": "回復+3%",
-        "description": "回復の基本値が3%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "healing",
-                "operation": "pctAdd",
-                "value": 0.03
-            }
-        ]
-    },
-    {
-        "id": "healing_plus_4pct",
-        "name": "回復+4%",
-        "description": "回復の基本値が4%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "healing",
-                "operation": "pctAdd",
-                "value": 0.04
-            }
-        ]
-    },
-    {
-        "id": "healing_plus_5pct",
-        "name": "回復+5%",
-        "description": "回復の基本値が5%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "healing",
-                "operation": "pctAdd",
-                "value": 0.05
-            }
-        ]
-    },
-    {
-        "id": "healing_plus_6pct",
-        "name": "回復+6%",
-        "description": "回復の基本値が6%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "healing",
-                "operation": "pctAdd",
-                "value": 0.06
-            }
-        ]
-    },
-    {
-        "id": "healing_plus_7pct",
-        "name": "回復+7%",
-        "description": "回復の基本値が7%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "healing",
-                "operation": "pctAdd",
-                "value": 0.07
-            }
-        ]
-    },
-    {
-        "id": "healing_plus_8pct",
-        "name": "回復+8%",
-        "description": "回復の基本値が8%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "healing",
-                "operation": "pctAdd",
-                "value": 0.08
-            }
-        ]
-    },
-    {
-        "id": "healing_plus_9pct",
-        "name": "回復+9%",
-        "description": "回復の基本値が9%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "healing",
-                "operation": "pctAdd",
-                "value": 0.09
-            }
-        ]
-    },
-    {
-        "id": "healing_plus_10pct",
-        "name": "回復+10%",
-        "description": "回復の基本値が10%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "healing",
-                "operation": "pctAdd",
-                "value": 0.1
-            }
-        ]
-    },
-    {
-        "id": "healing_plus_11pct",
-        "name": "回復+11%",
-        "description": "回復の基本値が11%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "healing",
-                "operation": "pctAdd",
-                "value": 0.11
-            }
-        ]
-    },
-    {
-        "id": "healing_plus_12pct",
-        "name": "回復+12%",
-        "description": "回復の基本値が12%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "healing",
-                "operation": "pctAdd",
-                "value": 0.12
-            }
-        ]
-    },
-    {
-        "id": "healing_plus_13pct",
-        "name": "回復+13%",
-        "description": "回復の基本値が13%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "healing",
-                "operation": "pctAdd",
-                "value": 0.13
-            }
-        ]
-    },
-    {
-        "id": "accuracy_plus_1pct",
-        "name": "命中+1%",
-        "description": "命中の基本値が1%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "accuracy",
-                "operation": "pctAdd",
-                "value": 0.01
-            }
-        ]
-    },
-    {
-        "id": "accuracy_plus_2pct",
-        "name": "命中+2%",
-        "description": "命中の基本値が2%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "accuracy",
-                "operation": "pctAdd",
-                "value": 0.02
-            }
-        ]
-    },
-    {
-        "id": "accuracy_plus_3pct",
-        "name": "命中+3%",
-        "description": "命中の基本値が3%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "accuracy",
-                "operation": "pctAdd",
-                "value": 0.03
-            }
-        ]
-    },
-    {
-        "id": "accuracy_plus_4pct",
-        "name": "命中+4%",
-        "description": "命中の基本値が4%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "accuracy",
-                "operation": "pctAdd",
-                "value": 0.04
-            }
-        ]
-    },
-    {
-        "id": "accuracy_plus_5pct",
-        "name": "命中+5%",
-        "description": "命中の基本値が5%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "accuracy",
-                "operation": "pctAdd",
-                "value": 0.05
-            }
-        ]
-    },
-    {
-        "id": "accuracy_plus_6pct",
-        "name": "命中+6%",
-        "description": "命中の基本値が6%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "accuracy",
-                "operation": "pctAdd",
-                "value": 0.06
-            }
-        ]
-    },
-    {
-        "id": "accuracy_plus_7pct",
-        "name": "命中+7%",
-        "description": "命中の基本値が7%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "accuracy",
-                "operation": "pctAdd",
-                "value": 0.07
-            }
-        ]
-    },
-    {
-        "id": "accuracy_plus_8pct",
-        "name": "命中+8%",
-        "description": "命中の基本値が8%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "accuracy",
-                "operation": "pctAdd",
-                "value": 0.08
-            }
-        ]
-    },
-    {
-        "id": "accuracy_plus_9pct",
-        "name": "命中+9%",
-        "description": "命中の基本値が9%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "accuracy",
-                "operation": "pctAdd",
-                "value": 0.09
-            }
-        ]
-    },
-    {
-        "id": "accuracy_plus_10pct",
-        "name": "命中+10%",
-        "description": "命中の基本値が10%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "accuracy",
-                "operation": "pctAdd",
-                "value": 0.1
-            }
-        ]
-    },
-    {
-        "id": "accuracy_plus_11pct",
-        "name": "命中+11%",
-        "description": "命中の基本値が11%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "accuracy",
-                "operation": "pctAdd",
-                "value": 0.11
-            }
-        ]
-    },
-    {
-        "id": "accuracy_plus_12pct",
-        "name": "命中+12%",
-        "description": "命中の基本値が12%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "accuracy",
-                "operation": "pctAdd",
-                "value": 0.12
-            }
-        ]
-    },
-    {
-        "id": "accuracy_plus_13pct",
-        "name": "命中+13%",
-        "description": "命中の基本値が13%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "accuracy",
-                "operation": "pctAdd",
-                "value": 0.13
-            }
-        ]
-    },
-    {
-        "id": "evasion_plus_1pct",
-        "name": "回避+1%",
-        "description": "回避の基本値が1%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "evasion",
-                "operation": "pctAdd",
-                "value": 0.01
-            }
-        ]
-    },
-    {
-        "id": "evasion_plus_2pct",
-        "name": "回避+2%",
-        "description": "回避の基本値が2%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "evasion",
-                "operation": "pctAdd",
-                "value": 0.02
-            }
-        ]
-    },
-    {
-        "id": "evasion_plus_3pct",
-        "name": "回避+3%",
-        "description": "回避の基本値が3%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "evasion",
-                "operation": "pctAdd",
-                "value": 0.03
-            }
-        ]
-    },
-    {
-        "id": "evasion_plus_4pct",
-        "name": "回避+4%",
-        "description": "回避の基本値が4%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "evasion",
-                "operation": "pctAdd",
-                "value": 0.04
-            }
-        ]
-    },
-    {
-        "id": "evasion_plus_5pct",
-        "name": "回避+5%",
-        "description": "回避の基本値が5%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "evasion",
-                "operation": "pctAdd",
-                "value": 0.05
-            }
-        ]
-    },
-    {
-        "id": "evasion_plus_6pct",
-        "name": "回避+6%",
-        "description": "回避の基本値が6%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "evasion",
-                "operation": "pctAdd",
-                "value": 0.06
-            }
-        ]
-    },
-    {
-        "id": "evasion_plus_7pct",
-        "name": "回避+7%",
-        "description": "回避の基本値が7%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "evasion",
-                "operation": "pctAdd",
-                "value": 0.07
-            }
-        ]
-    },
-    {
-        "id": "evasion_plus_8pct",
-        "name": "回避+8%",
-        "description": "回避の基本値が8%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "evasion",
-                "operation": "pctAdd",
-                "value": 0.08
-            }
-        ]
-    },
-    {
-        "id": "evasion_plus_9pct",
-        "name": "回避+9%",
-        "description": "回避の基本値が9%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "evasion",
-                "operation": "pctAdd",
-                "value": 0.09
-            }
-        ]
-    },
-    {
-        "id": "evasion_plus_10pct",
-        "name": "回避+10%",
-        "description": "回避の基本値が10%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "evasion",
-                "operation": "pctAdd",
-                "value": 0.1
-            }
-        ]
-    },
-    {
-        "id": "evasion_plus_11pct",
-        "name": "回避+11%",
-        "description": "回避の基本値が11%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "evasion",
-                "operation": "pctAdd",
-                "value": 0.11
-            }
-        ]
-    },
-    {
-        "id": "evasion_plus_12pct",
-        "name": "回避+12%",
-        "description": "回避の基本値が12%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "evasion",
-                "operation": "pctAdd",
-                "value": 0.12
-            }
-        ]
-    },
-    {
-        "id": "evasion_plus_13pct",
-        "name": "回避+13%",
-        "description": "回避の基本値が13%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "evasion",
-                "operation": "pctAdd",
-                "value": 0.13
-            }
-        ]
-    },
-    {
-        "id": "attackCount_plus_1pct",
-        "name": "攻撃回数+1%",
-        "description": "攻撃回数の基本値が1%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "attackCount",
-                "operation": "pctAdd",
-                "value": 0.01
-            }
-        ]
-    },
-    {
-        "id": "attackCount_plus_2pct",
-        "name": "攻撃回数+2%",
-        "description": "攻撃回数の基本値が2%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "attackCount",
-                "operation": "pctAdd",
-                "value": 0.02
-            }
-        ]
-    },
-    {
-        "id": "attackCount_plus_3pct",
-        "name": "攻撃回数+3%",
-        "description": "攻撃回数の基本値が3%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "attackCount",
-                "operation": "pctAdd",
-                "value": 0.03
-            }
-        ]
-    },
-    {
-        "id": "attackCount_plus_4pct",
-        "name": "攻撃回数+4%",
-        "description": "攻撃回数の基本値が4%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "attackCount",
-                "operation": "pctAdd",
-                "value": 0.04
-            }
-        ]
-    },
-    {
-        "id": "attackCount_plus_5pct",
-        "name": "攻撃回数+5%",
-        "description": "攻撃回数の基本値が5%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "attackCount",
-                "operation": "pctAdd",
-                "value": 0.05
-            }
-        ]
-    },
-    {
-        "id": "attackCount_plus_6pct",
-        "name": "攻撃回数+6%",
-        "description": "攻撃回数の基本値が6%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "attackCount",
-                "operation": "pctAdd",
-                "value": 0.06
-            }
-        ]
-    },
-    {
-        "id": "attackCount_plus_7pct",
-        "name": "攻撃回数+7%",
-        "description": "攻撃回数の基本値が7%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "attackCount",
-                "operation": "pctAdd",
-                "value": 0.07
-            }
-        ]
-    },
-    {
-        "id": "attackCount_plus_8pct",
-        "name": "攻撃回数+8%",
-        "description": "攻撃回数の基本値が8%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "attackCount",
-                "operation": "pctAdd",
-                "value": 0.08
-            }
-        ]
-    },
-    {
-        "id": "attackCount_plus_9pct",
-        "name": "攻撃回数+9%",
-        "description": "攻撃回数の基本値が9%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "attackCount",
-                "operation": "pctAdd",
-                "value": 0.09
-            }
-        ]
-    },
-    {
-        "id": "attackCount_plus_10pct",
-        "name": "攻撃回数+10%",
-        "description": "攻撃回数の基本値が10%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "attackCount",
-                "operation": "pctAdd",
-                "value": 0.1
-            }
-        ]
-    },
-    {
-        "id": "attackCount_plus_11pct",
-        "name": "攻撃回数+11%",
-        "description": "攻撃回数の基本値が11%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "attackCount",
-                "operation": "pctAdd",
-                "value": 0.11
-            }
-        ]
-    },
-    {
-        "id": "attackCount_plus_12pct",
-        "name": "攻撃回数+12%",
-        "description": "攻撃回数の基本値が12%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "attackCount",
-                "operation": "pctAdd",
-                "value": 0.12
-            }
-        ]
-    },
-    {
-        "id": "attackCount_plus_13pct",
-        "name": "攻撃回数+13%",
-        "description": "攻撃回数の基本値が13%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "attackCount",
-                "operation": "pctAdd",
-                "value": 0.13
-            }
-        ]
-    },
-    {
-        "id": "criticalRate_plus_1pct",
-        "name": "必殺率+1%",
-        "description": "必殺率の基本値が1%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "criticalRate",
-                "operation": "pctAdd",
-                "value": 0.01
-            }
-        ]
-    },
-    {
-        "id": "criticalRate_plus_2pct",
-        "name": "必殺率+2%",
-        "description": "必殺率の基本値が2%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "criticalRate",
-                "operation": "pctAdd",
-                "value": 0.02
-            }
-        ]
-    },
-    {
-        "id": "criticalRate_plus_3pct",
-        "name": "必殺率+3%",
-        "description": "必殺率の基本値が3%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "criticalRate",
-                "operation": "pctAdd",
-                "value": 0.03
-            }
-        ]
-    },
-    {
-        "id": "criticalRate_plus_4pct",
-        "name": "必殺率+4%",
-        "description": "必殺率の基本値が4%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "criticalRate",
-                "operation": "pctAdd",
-                "value": 0.04
-            }
-        ]
-    },
-    {
-        "id": "criticalRate_plus_5pct",
-        "name": "必殺率+5%",
-        "description": "必殺率の基本値が5%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "criticalRate",
-                "operation": "pctAdd",
-                "value": 0.05
-            }
-        ]
-    },
-    {
-        "id": "criticalRate_plus_6pct",
-        "name": "必殺率+6%",
-        "description": "必殺率の基本値が6%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "criticalRate",
-                "operation": "pctAdd",
-                "value": 0.06
-            }
-        ]
-    },
-    {
-        "id": "criticalRate_plus_7pct",
-        "name": "必殺率+7%",
-        "description": "必殺率の基本値が7%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "criticalRate",
-                "operation": "pctAdd",
-                "value": 0.07
-            }
-        ]
-    },
-    {
-        "id": "criticalRate_plus_8pct",
-        "name": "必殺率+8%",
-        "description": "必殺率の基本値が8%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "criticalRate",
-                "operation": "pctAdd",
-                "value": 0.08
-            }
-        ]
-    },
-    {
-        "id": "criticalRate_plus_9pct",
-        "name": "必殺率+9%",
-        "description": "必殺率の基本値が9%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "criticalRate",
-                "operation": "pctAdd",
-                "value": 0.09
-            }
-        ]
-    },
-    {
-        "id": "criticalRate_plus_10pct",
-        "name": "必殺率+10%",
-        "description": "必殺率の基本値が10%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "criticalRate",
-                "operation": "pctAdd",
-                "value": 0.1
-            }
-        ]
-    },
-    {
-        "id": "criticalRate_plus_11pct",
-        "name": "必殺率+11%",
-        "description": "必殺率の基本値が11%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "criticalRate",
-                "operation": "pctAdd",
-                "value": 0.11
-            }
-        ]
-    },
-    {
-        "id": "criticalRate_plus_12pct",
-        "name": "必殺率+12%",
-        "description": "必殺率の基本値が12%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "criticalRate",
-                "operation": "pctAdd",
-                "value": 0.12
-            }
-        ]
-    },
-    {
-        "id": "criticalRate_plus_13pct",
-        "name": "必殺率+13%",
-        "description": "必殺率の基本値が13%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "criticalRate",
-                "operation": "pctAdd",
-                "value": 0.13
-            }
-        ]
-    },
-    {
-        "id": "breathPower_plus_1pct",
-        "name": "ブレス威力+1%",
-        "description": "ブレス威力の基本値が1%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "breathPower",
-                "operation": "pctAdd",
-                "value": 0.01
-            }
-        ]
-    },
-    {
-        "id": "breathPower_plus_2pct",
-        "name": "ブレス威力+2%",
-        "description": "ブレス威力の基本値が2%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "breathPower",
-                "operation": "pctAdd",
-                "value": 0.02
-            }
-        ]
-    },
-    {
-        "id": "breathPower_plus_3pct",
-        "name": "ブレス威力+3%",
-        "description": "ブレス威力の基本値が3%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "breathPower",
-                "operation": "pctAdd",
-                "value": 0.03
-            }
-        ]
-    },
-    {
-        "id": "breathPower_plus_4pct",
-        "name": "ブレス威力+4%",
-        "description": "ブレス威力の基本値が4%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "breathPower",
-                "operation": "pctAdd",
-                "value": 0.04
-            }
-        ]
-    },
-    {
-        "id": "breathPower_plus_5pct",
-        "name": "ブレス威力+5%",
-        "description": "ブレス威力の基本値が5%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "breathPower",
-                "operation": "pctAdd",
-                "value": 0.05
-            }
-        ]
-    },
-    {
-        "id": "breathPower_plus_6pct",
-        "name": "ブレス威力+6%",
-        "description": "ブレス威力の基本値が6%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "breathPower",
-                "operation": "pctAdd",
-                "value": 0.06
-            }
-        ]
-    },
-    {
-        "id": "breathPower_plus_7pct",
-        "name": "ブレス威力+7%",
-        "description": "ブレス威力の基本値が7%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "breathPower",
-                "operation": "pctAdd",
-                "value": 0.07
-            }
-        ]
-    },
-    {
-        "id": "breathPower_plus_8pct",
-        "name": "ブレス威力+8%",
-        "description": "ブレス威力の基本値が8%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "breathPower",
-                "operation": "pctAdd",
-                "value": 0.08
-            }
-        ]
-    },
-    {
-        "id": "breathPower_plus_9pct",
-        "name": "ブレス威力+9%",
-        "description": "ブレス威力の基本値が9%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "breathPower",
-                "operation": "pctAdd",
-                "value": 0.09
-            }
-        ]
-    },
-    {
-        "id": "breathPower_plus_10pct",
-        "name": "ブレス威力+10%",
-        "description": "ブレス威力の基本値が10%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "breathPower",
-                "operation": "pctAdd",
-                "value": 0.1
-            }
-        ]
-    },
-    {
-        "id": "breathPower_plus_11pct",
-        "name": "ブレス威力+11%",
-        "description": "ブレス威力の基本値が11%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "breathPower",
-                "operation": "pctAdd",
-                "value": 0.11
-            }
-        ]
-    },
-    {
-        "id": "breathPower_plus_12pct",
-        "name": "ブレス威力+12%",
-        "description": "ブレス威力の基本値が12%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "breathPower",
-                "operation": "pctAdd",
-                "value": 0.12
-            }
-        ]
-    },
-    {
-        "id": "breathPower_plus_13pct",
-        "name": "ブレス威力+13%",
-        "description": "ブレス威力の基本値が13%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "breathPower",
-                "operation": "pctAdd",
-                "value": 0.13
-            }
-        ]
-    },
-    {
         "id": "all_stat_multiplier_110",
         "name": "全戦闘能力値1.1倍",
         "description": "全戦闘能力値が1.1倍になる。個別の能力値補正の後で計算される。",
@@ -4825,1202 +2966,6 @@
             {
                 "kind": "allBattleStatMultiplier",
                 "value": 2.0
-            }
-        ]
-    },
-    {
-        "id": "unarmed_physical_attack_minus_30pct",
-        "name": "格闘物理攻撃-30%",
-        "description": "格闘時、物理攻撃の基本値が30%減少する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "physicalAttack",
-                "operation": "pctAdd",
-                "value": -0.3,
-                "condition": "unarmed"
-            }
-        ]
-    },
-    {
-        "id": "unarmed_physical_attack_minus_20pct",
-        "name": "格闘物理攻撃-20%",
-        "description": "格闘時、物理攻撃の基本値が20%減少する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "physicalAttack",
-                "operation": "pctAdd",
-                "value": -0.2,
-                "condition": "unarmed"
-            }
-        ]
-    },
-    {
-        "id": "unarmed_physical_attack_minus_10pct",
-        "name": "格闘物理攻撃-10%",
-        "description": "格闘時、物理攻撃の基本値が10%減少する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "physicalAttack",
-                "operation": "pctAdd",
-                "value": -0.1,
-                "condition": "unarmed"
-            }
-        ]
-    },
-    {
-        "id": "unarmed_physical_attack_plus_10pct",
-        "name": "格闘物理攻撃+10%",
-        "description": "格闘時、物理攻撃の基本値が10%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "physicalAttack",
-                "operation": "pctAdd",
-                "value": 0.1,
-                "condition": "unarmed"
-            }
-        ]
-    },
-    {
-        "id": "unarmed_physical_attack_plus_20pct",
-        "name": "格闘物理攻撃+20%",
-        "description": "格闘時、物理攻撃の基本値が20%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "physicalAttack",
-                "operation": "pctAdd",
-                "value": 0.2,
-                "condition": "unarmed"
-            }
-        ]
-    },
-    {
-        "id": "unarmed_physical_attack_plus_30pct",
-        "name": "格闘物理攻撃+30%",
-        "description": "格闘時、物理攻撃の基本値が30%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "physicalAttack",
-                "operation": "pctAdd",
-                "value": 0.3,
-                "condition": "unarmed"
-            }
-        ]
-    },
-    {
-        "id": "unarmed_physical_attack_plus_40pct",
-        "name": "格闘物理攻撃+40%",
-        "description": "格闘時、物理攻撃の基本値が40%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "physicalAttack",
-                "operation": "pctAdd",
-                "value": 0.4,
-                "condition": "unarmed"
-            }
-        ]
-    },
-    {
-        "id": "unarmed_physical_attack_plus_50pct",
-        "name": "格闘物理攻撃+50%",
-        "description": "格闘時、物理攻撃の基本値が50%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "physicalAttack",
-                "operation": "pctAdd",
-                "value": 0.5,
-                "condition": "unarmed"
-            }
-        ]
-    },
-    {
-        "id": "unarmed_physical_attack_plus_60pct",
-        "name": "格闘物理攻撃+60%",
-        "description": "格闘時、物理攻撃の基本値が60%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "physicalAttack",
-                "operation": "pctAdd",
-                "value": 0.6,
-                "condition": "unarmed"
-            }
-        ]
-    },
-    {
-        "id": "unarmed_physical_attack_plus_70pct",
-        "name": "格闘物理攻撃+70%",
-        "description": "格闘時、物理攻撃の基本値が70%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "physicalAttack",
-                "operation": "pctAdd",
-                "value": 0.7,
-                "condition": "unarmed"
-            }
-        ]
-    },
-    {
-        "id": "unarmed_physical_attack_plus_80pct",
-        "name": "格闘物理攻撃+80%",
-        "description": "格闘時、物理攻撃の基本値が80%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "physicalAttack",
-                "operation": "pctAdd",
-                "value": 0.8,
-                "condition": "unarmed"
-            }
-        ]
-    },
-    {
-        "id": "unarmed_physical_attack_plus_90pct",
-        "name": "格闘物理攻撃+90%",
-        "description": "格闘時、物理攻撃の基本値が90%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "physicalAttack",
-                "operation": "pctAdd",
-                "value": 0.9,
-                "condition": "unarmed"
-            }
-        ]
-    },
-    {
-        "id": "unarmed_physical_attack_plus_100pct",
-        "name": "格闘物理攻撃+100%",
-        "description": "格闘時、物理攻撃の基本値が100%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "physicalAttack",
-                "operation": "pctAdd",
-                "value": 1.0,
-                "condition": "unarmed"
-            }
-        ]
-    },
-    {
-        "id": "physicalDamageMultiplier_plus_1pct",
-        "name": "物理威力+1%",
-        "description": "物理攻撃の威力が1%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "physicalDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.01
-            }
-        ]
-    },
-    {
-        "id": "physicalDamageMultiplier_plus_2pct",
-        "name": "物理威力+2%",
-        "description": "物理攻撃の威力が2%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "physicalDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.02
-            }
-        ]
-    },
-    {
-        "id": "physicalDamageMultiplier_plus_3pct",
-        "name": "物理威力+3%",
-        "description": "物理攻撃の威力が3%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "physicalDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.03
-            }
-        ]
-    },
-    {
-        "id": "physicalDamageMultiplier_plus_4pct",
-        "name": "物理威力+4%",
-        "description": "物理攻撃の威力が4%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "physicalDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.04
-            }
-        ]
-    },
-    {
-        "id": "physicalDamageMultiplier_plus_5pct",
-        "name": "物理威力+5%",
-        "description": "物理攻撃の威力が5%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "physicalDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.05
-            }
-        ]
-    },
-    {
-        "id": "physicalDamageMultiplier_plus_6pct",
-        "name": "物理威力+6%",
-        "description": "物理攻撃の威力が6%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "physicalDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.06
-            }
-        ]
-    },
-    {
-        "id": "physicalDamageMultiplier_plus_7pct",
-        "name": "物理威力+7%",
-        "description": "物理攻撃の威力が7%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "physicalDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.07
-            }
-        ]
-    },
-    {
-        "id": "physicalDamageMultiplier_plus_8pct",
-        "name": "物理威力+8%",
-        "description": "物理攻撃の威力が8%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "physicalDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.08
-            }
-        ]
-    },
-    {
-        "id": "physicalDamageMultiplier_plus_9pct",
-        "name": "物理威力+9%",
-        "description": "物理攻撃の威力が9%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "physicalDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.09
-            }
-        ]
-    },
-    {
-        "id": "physicalDamageMultiplier_plus_10pct",
-        "name": "物理威力+10%",
-        "description": "物理攻撃の威力が10%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "physicalDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.1
-            }
-        ]
-    },
-    {
-        "id": "physicalDamageMultiplier_plus_11pct",
-        "name": "物理威力+11%",
-        "description": "物理攻撃の威力が11%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "physicalDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.11
-            }
-        ]
-    },
-    {
-        "id": "physicalDamageMultiplier_plus_12pct",
-        "name": "物理威力+12%",
-        "description": "物理攻撃の威力が12%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "physicalDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.12
-            }
-        ]
-    },
-    {
-        "id": "physicalDamageMultiplier_plus_13pct",
-        "name": "物理威力+13%",
-        "description": "物理攻撃の威力が13%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "physicalDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.13
-            }
-        ]
-    },
-    {
-        "id": "magicDamageMultiplier_plus_1pct",
-        "name": "魔法威力+1%",
-        "description": "攻撃魔法と回復魔法の威力が1%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "magicDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.01
-            }
-        ]
-    },
-    {
-        "id": "magicDamageMultiplier_plus_2pct",
-        "name": "魔法威力+2%",
-        "description": "攻撃魔法と回復魔法の威力が2%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "magicDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.02
-            }
-        ]
-    },
-    {
-        "id": "magicDamageMultiplier_plus_3pct",
-        "name": "魔法威力+3%",
-        "description": "攻撃魔法と回復魔法の威力が3%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "magicDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.03
-            }
-        ]
-    },
-    {
-        "id": "magicDamageMultiplier_plus_4pct",
-        "name": "魔法威力+4%",
-        "description": "攻撃魔法と回復魔法の威力が4%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "magicDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.04
-            }
-        ]
-    },
-    {
-        "id": "magicDamageMultiplier_plus_5pct",
-        "name": "魔法威力+5%",
-        "description": "攻撃魔法と回復魔法の威力が5%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "magicDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.05
-            }
-        ]
-    },
-    {
-        "id": "magicDamageMultiplier_plus_6pct",
-        "name": "魔法威力+6%",
-        "description": "攻撃魔法と回復魔法の威力が6%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "magicDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.06
-            }
-        ]
-    },
-    {
-        "id": "magicDamageMultiplier_plus_7pct",
-        "name": "魔法威力+7%",
-        "description": "攻撃魔法と回復魔法の威力が7%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "magicDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.07
-            }
-        ]
-    },
-    {
-        "id": "magicDamageMultiplier_plus_8pct",
-        "name": "魔法威力+8%",
-        "description": "攻撃魔法と回復魔法の威力が8%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "magicDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.08
-            }
-        ]
-    },
-    {
-        "id": "magicDamageMultiplier_plus_9pct",
-        "name": "魔法威力+9%",
-        "description": "攻撃魔法と回復魔法の威力が9%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "magicDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.09
-            }
-        ]
-    },
-    {
-        "id": "magicDamageMultiplier_plus_10pct",
-        "name": "魔法威力+10%",
-        "description": "攻撃魔法と回復魔法の威力が10%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "magicDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.1
-            }
-        ]
-    },
-    {
-        "id": "magicDamageMultiplier_plus_11pct",
-        "name": "魔法威力+11%",
-        "description": "攻撃魔法と回復魔法の威力が11%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "magicDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.11
-            }
-        ]
-    },
-    {
-        "id": "magicDamageMultiplier_plus_12pct",
-        "name": "魔法威力+12%",
-        "description": "攻撃魔法と回復魔法の威力が12%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "magicDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.12
-            }
-        ]
-    },
-    {
-        "id": "magicDamageMultiplier_plus_13pct",
-        "name": "魔法威力+13%",
-        "description": "攻撃魔法と回復魔法の威力が13%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "magicDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.13
-            }
-        ]
-    },
-    {
-        "id": "criticalDamageMultiplier_plus_1pct",
-        "name": "必殺時威力+1%",
-        "description": "必殺時の威力が1%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "criticalDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.01
-            }
-        ]
-    },
-    {
-        "id": "criticalDamageMultiplier_plus_2pct",
-        "name": "必殺時威力+2%",
-        "description": "必殺時の威力が2%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "criticalDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.02
-            }
-        ]
-    },
-    {
-        "id": "criticalDamageMultiplier_plus_3pct",
-        "name": "必殺時威力+3%",
-        "description": "必殺時の威力が3%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "criticalDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.03
-            }
-        ]
-    },
-    {
-        "id": "criticalDamageMultiplier_plus_4pct",
-        "name": "必殺時威力+4%",
-        "description": "必殺時の威力が4%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "criticalDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.04
-            }
-        ]
-    },
-    {
-        "id": "criticalDamageMultiplier_plus_5pct",
-        "name": "必殺時威力+5%",
-        "description": "必殺時の威力が5%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "criticalDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.05
-            }
-        ]
-    },
-    {
-        "id": "criticalDamageMultiplier_plus_6pct",
-        "name": "必殺時威力+6%",
-        "description": "必殺時の威力が6%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "criticalDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.06
-            }
-        ]
-    },
-    {
-        "id": "criticalDamageMultiplier_plus_7pct",
-        "name": "必殺時威力+7%",
-        "description": "必殺時の威力が7%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "criticalDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.07
-            }
-        ]
-    },
-    {
-        "id": "criticalDamageMultiplier_plus_8pct",
-        "name": "必殺時威力+8%",
-        "description": "必殺時の威力が8%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "criticalDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.08
-            }
-        ]
-    },
-    {
-        "id": "criticalDamageMultiplier_plus_9pct",
-        "name": "必殺時威力+9%",
-        "description": "必殺時の威力が9%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "criticalDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.09
-            }
-        ]
-    },
-    {
-        "id": "criticalDamageMultiplier_plus_10pct",
-        "name": "必殺時威力+10%",
-        "description": "必殺時の威力が10%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "criticalDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.1
-            }
-        ]
-    },
-    {
-        "id": "criticalDamageMultiplier_plus_11pct",
-        "name": "必殺時威力+11%",
-        "description": "必殺時の威力が11%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "criticalDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.11
-            }
-        ]
-    },
-    {
-        "id": "criticalDamageMultiplier_plus_12pct",
-        "name": "必殺時威力+12%",
-        "description": "必殺時の威力が12%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "criticalDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.12
-            }
-        ]
-    },
-    {
-        "id": "criticalDamageMultiplier_plus_13pct",
-        "name": "必殺時威力+13%",
-        "description": "必殺時の威力が13%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "criticalDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.13
-            }
-        ]
-    },
-    {
-        "id": "meleeDamageMultiplier_plus_1pct",
-        "name": "近接威力+1%",
-        "description": "近接攻撃の威力が1%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "meleeDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.01
-            }
-        ]
-    },
-    {
-        "id": "meleeDamageMultiplier_plus_2pct",
-        "name": "近接威力+2%",
-        "description": "近接攻撃の威力が2%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "meleeDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.02
-            }
-        ]
-    },
-    {
-        "id": "meleeDamageMultiplier_plus_3pct",
-        "name": "近接威力+3%",
-        "description": "近接攻撃の威力が3%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "meleeDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.03
-            }
-        ]
-    },
-    {
-        "id": "meleeDamageMultiplier_plus_4pct",
-        "name": "近接威力+4%",
-        "description": "近接攻撃の威力が4%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "meleeDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.04
-            }
-        ]
-    },
-    {
-        "id": "meleeDamageMultiplier_plus_5pct",
-        "name": "近接威力+5%",
-        "description": "近接攻撃の威力が5%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "meleeDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.05
-            }
-        ]
-    },
-    {
-        "id": "meleeDamageMultiplier_plus_6pct",
-        "name": "近接威力+6%",
-        "description": "近接攻撃の威力が6%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "meleeDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.06
-            }
-        ]
-    },
-    {
-        "id": "meleeDamageMultiplier_plus_7pct",
-        "name": "近接威力+7%",
-        "description": "近接攻撃の威力が7%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "meleeDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.07
-            }
-        ]
-    },
-    {
-        "id": "meleeDamageMultiplier_plus_8pct",
-        "name": "近接威力+8%",
-        "description": "近接攻撃の威力が8%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "meleeDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.08
-            }
-        ]
-    },
-    {
-        "id": "meleeDamageMultiplier_plus_9pct",
-        "name": "近接威力+9%",
-        "description": "近接攻撃の威力が9%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "meleeDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.09
-            }
-        ]
-    },
-    {
-        "id": "meleeDamageMultiplier_plus_10pct",
-        "name": "近接威力+10%",
-        "description": "近接攻撃の威力が10%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "meleeDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.1
-            }
-        ]
-    },
-    {
-        "id": "meleeDamageMultiplier_plus_11pct",
-        "name": "近接威力+11%",
-        "description": "近接攻撃の威力が11%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "meleeDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.11
-            }
-        ]
-    },
-    {
-        "id": "meleeDamageMultiplier_plus_12pct",
-        "name": "近接威力+12%",
-        "description": "近接攻撃の威力が12%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "meleeDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.12
-            }
-        ]
-    },
-    {
-        "id": "meleeDamageMultiplier_plus_13pct",
-        "name": "近接威力+13%",
-        "description": "近接攻撃の威力が13%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "meleeDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.13
-            }
-        ]
-    },
-    {
-        "id": "rangedDamageMultiplier_plus_1pct",
-        "name": "遠距離威力+1%",
-        "description": "遠距離攻撃の威力が1%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "rangedDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.01
-            }
-        ]
-    },
-    {
-        "id": "rangedDamageMultiplier_plus_2pct",
-        "name": "遠距離威力+2%",
-        "description": "遠距離攻撃の威力が2%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "rangedDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.02
-            }
-        ]
-    },
-    {
-        "id": "rangedDamageMultiplier_plus_3pct",
-        "name": "遠距離威力+3%",
-        "description": "遠距離攻撃の威力が3%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "rangedDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.03
-            }
-        ]
-    },
-    {
-        "id": "rangedDamageMultiplier_plus_4pct",
-        "name": "遠距離威力+4%",
-        "description": "遠距離攻撃の威力が4%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "rangedDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.04
-            }
-        ]
-    },
-    {
-        "id": "rangedDamageMultiplier_plus_5pct",
-        "name": "遠距離威力+5%",
-        "description": "遠距離攻撃の威力が5%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "rangedDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.05
-            }
-        ]
-    },
-    {
-        "id": "rangedDamageMultiplier_plus_6pct",
-        "name": "遠距離威力+6%",
-        "description": "遠距離攻撃の威力が6%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "rangedDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.06
-            }
-        ]
-    },
-    {
-        "id": "rangedDamageMultiplier_plus_7pct",
-        "name": "遠距離威力+7%",
-        "description": "遠距離攻撃の威力が7%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "rangedDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.07
-            }
-        ]
-    },
-    {
-        "id": "rangedDamageMultiplier_plus_8pct",
-        "name": "遠距離威力+8%",
-        "description": "遠距離攻撃の威力が8%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "rangedDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.08
-            }
-        ]
-    },
-    {
-        "id": "rangedDamageMultiplier_plus_9pct",
-        "name": "遠距離威力+9%",
-        "description": "遠距離攻撃の威力が9%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "rangedDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.09
-            }
-        ]
-    },
-    {
-        "id": "rangedDamageMultiplier_plus_10pct",
-        "name": "遠距離威力+10%",
-        "description": "遠距離攻撃の威力が10%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "rangedDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.1
-            }
-        ]
-    },
-    {
-        "id": "rangedDamageMultiplier_plus_11pct",
-        "name": "遠距離威力+11%",
-        "description": "遠距離攻撃の威力が11%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "rangedDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.11
-            }
-        ]
-    },
-    {
-        "id": "rangedDamageMultiplier_plus_12pct",
-        "name": "遠距離威力+12%",
-        "description": "遠距離攻撃の威力が12%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "rangedDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.12
-            }
-        ]
-    },
-    {
-        "id": "rangedDamageMultiplier_plus_13pct",
-        "name": "遠距離威力+13%",
-        "description": "遠距離攻撃の威力が13%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "rangedDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.13
-            }
-        ]
-    },
-    {
-        "id": "actionSpeedMultiplier_plus_1pct",
-        "name": "行動速度+1%",
-        "description": "行動速度が1%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "actionSpeedMultiplier",
-                "operation": "pctAdd",
-                "value": 0.01
-            }
-        ]
-    },
-    {
-        "id": "actionSpeedMultiplier_plus_2pct",
-        "name": "行動速度+2%",
-        "description": "行動速度が2%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "actionSpeedMultiplier",
-                "operation": "pctAdd",
-                "value": 0.02
-            }
-        ]
-    },
-    {
-        "id": "actionSpeedMultiplier_plus_3pct",
-        "name": "行動速度+3%",
-        "description": "行動速度が3%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "actionSpeedMultiplier",
-                "operation": "pctAdd",
-                "value": 0.03
-            }
-        ]
-    },
-    {
-        "id": "actionSpeedMultiplier_plus_4pct",
-        "name": "行動速度+4%",
-        "description": "行動速度が4%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "actionSpeedMultiplier",
-                "operation": "pctAdd",
-                "value": 0.04
-            }
-        ]
-    },
-    {
-        "id": "actionSpeedMultiplier_plus_5pct",
-        "name": "行動速度+5%",
-        "description": "行動速度が5%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "actionSpeedMultiplier",
-                "operation": "pctAdd",
-                "value": 0.05
-            }
-        ]
-    },
-    {
-        "id": "actionSpeedMultiplier_plus_6pct",
-        "name": "行動速度+6%",
-        "description": "行動速度が6%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "actionSpeedMultiplier",
-                "operation": "pctAdd",
-                "value": 0.06
-            }
-        ]
-    },
-    {
-        "id": "actionSpeedMultiplier_plus_7pct",
-        "name": "行動速度+7%",
-        "description": "行動速度が7%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "actionSpeedMultiplier",
-                "operation": "pctAdd",
-                "value": 0.07
-            }
-        ]
-    },
-    {
-        "id": "actionSpeedMultiplier_plus_8pct",
-        "name": "行動速度+8%",
-        "description": "行動速度が8%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "actionSpeedMultiplier",
-                "operation": "pctAdd",
-                "value": 0.08
-            }
-        ]
-    },
-    {
-        "id": "actionSpeedMultiplier_plus_9pct",
-        "name": "行動速度+9%",
-        "description": "行動速度が9%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "actionSpeedMultiplier",
-                "operation": "pctAdd",
-                "value": 0.09
-            }
-        ]
-    },
-    {
-        "id": "actionSpeedMultiplier_plus_10pct",
-        "name": "行動速度+10%",
-        "description": "行動速度が10%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "actionSpeedMultiplier",
-                "operation": "pctAdd",
-                "value": 0.1
-            }
-        ]
-    },
-    {
-        "id": "actionSpeedMultiplier_plus_11pct",
-        "name": "行動速度+11%",
-        "description": "行動速度が11%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "actionSpeedMultiplier",
-                "operation": "pctAdd",
-                "value": 0.11
-            }
-        ]
-    },
-    {
-        "id": "actionSpeedMultiplier_plus_12pct",
-        "name": "行動速度+12%",
-        "description": "行動速度が12%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "actionSpeedMultiplier",
-                "operation": "pctAdd",
-                "value": 0.12
-            }
-        ]
-    },
-    {
-        "id": "actionSpeedMultiplier_plus_13pct",
-        "name": "行動速度+13%",
-        "description": "行動速度が13%上昇する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "actionSpeedMultiplier",
-                "operation": "pctAdd",
-                "value": 0.13
             }
         ]
     },
@@ -8498,45 +5443,6 @@
         ]
     },
     {
-        "id": "evasion_plus_20pct",
-        "name": "回避+20%",
-        "description": "回避の基本値が20%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "evasion",
-                "operation": "pctAdd",
-                "value": 0.2
-            }
-        ]
-    },
-    {
-        "id": "accuracy_plus_20pct",
-        "name": "命中+20%",
-        "description": "命中の基本値が20%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "accuracy",
-                "operation": "pctAdd",
-                "value": 0.2
-            }
-        ]
-    },
-    {
-        "id": "accuracy_minus_10pct",
-        "name": "命中-10%",
-        "description": "命中の基本値が10%減少する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "accuracy",
-                "operation": "pctAdd",
-                "value": -0.1
-            }
-        ]
-    },
-    {
         "id": "criticalRate_plus_30",
         "name": "必殺率+30",
         "description": "必殺率の基本値が30増加する。",
@@ -8576,84 +5482,6 @@
         ]
     },
     {
-        "id": "meleeDamageMultiplier_plus_30pct",
-        "name": "近接威力+30%",
-        "description": "近接攻撃の威力が30%増加する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "meleeDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.3
-            }
-        ]
-    },
-    {
-        "id": "meleeDamageMultiplier_plus_50pct",
-        "name": "近接威力+50%",
-        "description": "近接攻撃の威力が50%増加する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "meleeDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.5
-            }
-        ]
-    },
-    {
-        "id": "rangedDamageMultiplier_plus_30pct",
-        "name": "遠距離威力+30%",
-        "description": "遠距離攻撃の威力が30%増加する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "rangedDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.3
-            }
-        ]
-    },
-    {
-        "id": "physicalDamageMultiplier_plus_50pct",
-        "name": "物理威力+50%",
-        "description": "物理攻撃の威力が50%増加する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "physicalDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.5
-            }
-        ]
-    },
-    {
-        "id": "criticalDamageMultiplier_plus_30pct",
-        "name": "必殺時威力+30%",
-        "description": "必殺時の威力が30%増加する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "criticalDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.3
-            }
-        ]
-    },
-    {
-        "id": "criticalDamageMultiplier_plus_100pct",
-        "name": "必殺時威力+100%",
-        "description": "必殺時の威力が100%増加する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "criticalDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 1.0
-            }
-        ]
-    },
-    {
         "id": "physical_resistance_3_4",
         "name": "物理耐性3/4",
         "description": "受ける物理ダメージが3/4になる。",
@@ -8676,32 +5504,6 @@
                 "target": "breathResistanceMultiplier",
                 "operation": "mul",
                 "value": 0.01
-            }
-        ]
-    },
-    {
-        "id": "maxHP_minus_50pct",
-        "name": "最大HP-50%",
-        "description": "最大HPの基本値が50%減少する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "maxHP",
-                "operation": "pctAdd",
-                "value": -0.5
-            }
-        ]
-    },
-    {
-        "id": "actionSpeedMultiplier_minus_50pct",
-        "name": "行動速度-50%",
-        "description": "行動速度が50%減少する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "actionSpeedMultiplier",
-                "operation": "pctAdd",
-                "value": -0.5
             }
         ]
     },
@@ -9002,14 +5804,13 @@
         ]
     },
     {
-        "id": "job_knight_aegis",
-        "name": "アイギス",
-        "description": "護衛で引き受けた攻撃の被ダメージをさらに減らす。",
+        "id": "job_knight_counter",
+        "name": "反撃",
+        "description": "反撃の発生資格を付与する。",
         "effects": [
             {
-                "kind": "defenseRule",
-                "target": "guardedDamageTakenMultiplier",
-                "value": 0.75
+                "kind": "interruptGrant",
+                "interruptKind": "counter"
             }
         ]
     },
@@ -9038,19 +5839,13 @@
         ]
     },
     {
-        "id": "job_swordsman_shura",
-        "name": "修羅",
-        "description": "再攻撃の発動率と威力を強化する。",
+        "id": "job_swordsman_extra_attack",
+        "name": "再攻撃",
+        "description": "再攻撃の発生資格を付与する。",
         "effects": [
             {
-                "kind": "actionRule",
-                "target": "extraAttackChance",
-                "value": 0.5
-            },
-            {
-                "kind": "actionRule",
-                "target": "extraAttackDamageMultiplier",
-                "value": 0.75
+                "kind": "interruptGrant",
+                "interruptKind": "extraAttack"
             }
         ]
     },
@@ -9128,19 +5923,6 @@
         ]
     },
     {
-        "id": "job_mage_magic_damage_multiplier_plus_30pct",
-        "name": "魔法威力+30%",
-        "description": "魔法の威力が30%増加する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "magicDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.3
-            }
-        ]
-    },
-    {
         "id": "job_mage_magic_reflux",
         "name": "魔力還流",
         "description": "通常攻撃命中時に攻撃魔法の使用回数を回復する。",
@@ -9189,19 +5971,13 @@
         ]
     },
     {
-        "id": "job_hunter_follow_up",
-        "name": "追い打ち",
-        "description": "追撃の発動率と威力を強化する。",
+        "id": "job_hunter_pursuit",
+        "name": "追撃",
+        "description": "追撃の発生資格を付与する。",
         "effects": [
             {
-                "kind": "actionRule",
-                "target": "pursuitChance",
-                "value": 0.5
-            },
-            {
-                "kind": "actionRule",
-                "target": "pursuitDamageMultiplier",
-                "value": 0.75
+                "kind": "interruptGrant",
+                "interruptKind": "pursuit"
             }
         ]
     },
@@ -9226,19 +6002,6 @@
                 "kind": "actionRule",
                 "target": "carryOverRemainingHitsOnKill",
                 "value": 1
-            }
-        ]
-    },
-    {
-        "id": "job_ninja_critical_damage_multiplier_plus_50pct",
-        "name": "必殺時威力+50%",
-        "description": "必殺時の威力が50%増加する。",
-        "effects": [
-            {
-                "kind": "battleDerivedModifier",
-                "target": "criticalDamageMultiplier",
-                "operation": "pctAdd",
-                "value": 0.5
             }
         ]
     },
@@ -9554,19 +6317,6 @@
             {
                 "kind": "multiHitFalloffModifier",
                 "value": 0.0
-            }
-        ]
-    },
-    {
-        "id": "job_swordsaint_accuracy_plus_30pct",
-        "name": "命中+30%",
-        "description": "命中の基本値が30%増加する。固定値加算の後で計算される。",
-        "effects": [
-            {
-                "kind": "battleStatModifier",
-                "target": "accuracy",
-                "operation": "pctAdd",
-                "value": 0.3
             }
         ]
     },
@@ -10081,6 +6831,2931 @@
                 "target": "goldGainMultiplier",
                 "operation": "pctAdd",
                 "value": 0.3
+            }
+        ]
+    },
+    {
+        "id": "maxHP_minus_30pct",
+        "name": "最大HP-30%",
+        "description": "HPの基本値が30%減少する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "maxHP",
+                "operation": "pctAdd",
+                "value": -0.3
+            }
+        ]
+    },
+    {
+        "id": "maxHP_minus_20pct",
+        "name": "最大HP-20%",
+        "description": "HPの基本値が20%減少する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "maxHP",
+                "operation": "pctAdd",
+                "value": -0.2
+            }
+        ]
+    },
+    {
+        "id": "maxHP_minus_10pct",
+        "name": "最大HP-10%",
+        "description": "HPの基本値が10%減少する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "maxHP",
+                "operation": "pctAdd",
+                "value": -0.1
+            }
+        ]
+    },
+    {
+        "id": "maxHP_plus_10pct",
+        "name": "最大HP+10%",
+        "description": "HPの基本値が10%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "maxHP",
+                "operation": "pctAdd",
+                "value": 0.1
+            }
+        ]
+    },
+    {
+        "id": "maxHP_plus_20pct",
+        "name": "最大HP+20%",
+        "description": "HPの基本値が20%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "maxHP",
+                "operation": "pctAdd",
+                "value": 0.2
+            }
+        ]
+    },
+    {
+        "id": "maxHP_plus_30pct",
+        "name": "最大HP+30%",
+        "description": "HPの基本値が30%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "maxHP",
+                "operation": "pctAdd",
+                "value": 0.3
+            }
+        ]
+    },
+    {
+        "id": "maxHP_plus_40pct",
+        "name": "最大HP+40%",
+        "description": "HPの基本値が40%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "maxHP",
+                "operation": "pctAdd",
+                "value": 0.4
+            }
+        ]
+    },
+    {
+        "id": "maxHP_plus_50pct",
+        "name": "最大HP+50%",
+        "description": "HPの基本値が50%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "maxHP",
+                "operation": "pctAdd",
+                "value": 0.5
+            }
+        ]
+    },
+    {
+        "id": "maxHP_plus_60pct",
+        "name": "最大HP+60%",
+        "description": "HPの基本値が60%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "maxHP",
+                "operation": "pctAdd",
+                "value": 0.6
+            }
+        ]
+    },
+    {
+        "id": "maxHP_plus_70pct",
+        "name": "最大HP+70%",
+        "description": "HPの基本値が70%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "maxHP",
+                "operation": "pctAdd",
+                "value": 0.7
+            }
+        ]
+    },
+    {
+        "id": "maxHP_plus_80pct",
+        "name": "最大HP+80%",
+        "description": "HPの基本値が80%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "maxHP",
+                "operation": "pctAdd",
+                "value": 0.8
+            }
+        ]
+    },
+    {
+        "id": "maxHP_plus_90pct",
+        "name": "最大HP+90%",
+        "description": "HPの基本値が90%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "maxHP",
+                "operation": "pctAdd",
+                "value": 0.9
+            }
+        ]
+    },
+    {
+        "id": "maxHP_plus_100pct",
+        "name": "最大HP+100%",
+        "description": "HPの基本値が100%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "maxHP",
+                "operation": "pctAdd",
+                "value": 1.0
+            }
+        ]
+    },
+    {
+        "id": "physicalAttack_minus_30pct",
+        "name": "物理攻撃-30%",
+        "description": "物理攻撃の基本値が30%減少する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "physicalAttack",
+                "operation": "pctAdd",
+                "value": -0.3
+            }
+        ]
+    },
+    {
+        "id": "physicalAttack_minus_20pct",
+        "name": "物理攻撃-20%",
+        "description": "物理攻撃の基本値が20%減少する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "physicalAttack",
+                "operation": "pctAdd",
+                "value": -0.2
+            }
+        ]
+    },
+    {
+        "id": "physicalAttack_minus_10pct",
+        "name": "物理攻撃-10%",
+        "description": "物理攻撃の基本値が10%減少する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "physicalAttack",
+                "operation": "pctAdd",
+                "value": -0.1
+            }
+        ]
+    },
+    {
+        "id": "physicalAttack_plus_10pct",
+        "name": "物理攻撃+10%",
+        "description": "物理攻撃の基本値が10%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "physicalAttack",
+                "operation": "pctAdd",
+                "value": 0.1
+            }
+        ]
+    },
+    {
+        "id": "physicalAttack_plus_20pct",
+        "name": "物理攻撃+20%",
+        "description": "物理攻撃の基本値が20%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "physicalAttack",
+                "operation": "pctAdd",
+                "value": 0.2
+            }
+        ]
+    },
+    {
+        "id": "physicalAttack_plus_30pct",
+        "name": "物理攻撃+30%",
+        "description": "物理攻撃の基本値が30%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "physicalAttack",
+                "operation": "pctAdd",
+                "value": 0.3
+            }
+        ]
+    },
+    {
+        "id": "physicalAttack_plus_40pct",
+        "name": "物理攻撃+40%",
+        "description": "物理攻撃の基本値が40%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "physicalAttack",
+                "operation": "pctAdd",
+                "value": 0.4
+            }
+        ]
+    },
+    {
+        "id": "physicalAttack_plus_50pct",
+        "name": "物理攻撃+50%",
+        "description": "物理攻撃の基本値が50%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "physicalAttack",
+                "operation": "pctAdd",
+                "value": 0.5
+            }
+        ]
+    },
+    {
+        "id": "physicalAttack_plus_60pct",
+        "name": "物理攻撃+60%",
+        "description": "物理攻撃の基本値が60%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "physicalAttack",
+                "operation": "pctAdd",
+                "value": 0.6
+            }
+        ]
+    },
+    {
+        "id": "physicalAttack_plus_70pct",
+        "name": "物理攻撃+70%",
+        "description": "物理攻撃の基本値が70%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "physicalAttack",
+                "operation": "pctAdd",
+                "value": 0.7
+            }
+        ]
+    },
+    {
+        "id": "physicalAttack_plus_80pct",
+        "name": "物理攻撃+80%",
+        "description": "物理攻撃の基本値が80%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "physicalAttack",
+                "operation": "pctAdd",
+                "value": 0.8
+            }
+        ]
+    },
+    {
+        "id": "physicalAttack_plus_90pct",
+        "name": "物理攻撃+90%",
+        "description": "物理攻撃の基本値が90%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "physicalAttack",
+                "operation": "pctAdd",
+                "value": 0.9
+            }
+        ]
+    },
+    {
+        "id": "physicalAttack_plus_100pct",
+        "name": "物理攻撃+100%",
+        "description": "物理攻撃の基本値が100%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "physicalAttack",
+                "operation": "pctAdd",
+                "value": 1.0
+            }
+        ]
+    },
+    {
+        "id": "unarmed_physical_attack_minus_30pct",
+        "name": "格闘物理攻撃-30%",
+        "description": "素手の時に物理攻撃の基本値が30%減少する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "physicalAttack",
+                "operation": "pctAdd",
+                "value": -0.3,
+                "condition": "unarmed"
+            }
+        ]
+    },
+    {
+        "id": "unarmed_physical_attack_minus_20pct",
+        "name": "格闘物理攻撃-20%",
+        "description": "素手の時に物理攻撃の基本値が20%減少する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "physicalAttack",
+                "operation": "pctAdd",
+                "value": -0.2,
+                "condition": "unarmed"
+            }
+        ]
+    },
+    {
+        "id": "unarmed_physical_attack_minus_10pct",
+        "name": "格闘物理攻撃-10%",
+        "description": "素手の時に物理攻撃の基本値が10%減少する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "physicalAttack",
+                "operation": "pctAdd",
+                "value": -0.1,
+                "condition": "unarmed"
+            }
+        ]
+    },
+    {
+        "id": "unarmed_physical_attack_plus_10pct",
+        "name": "格闘物理攻撃+10%",
+        "description": "素手の時に物理攻撃の基本値が10%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "physicalAttack",
+                "operation": "pctAdd",
+                "value": 0.1,
+                "condition": "unarmed"
+            }
+        ]
+    },
+    {
+        "id": "unarmed_physical_attack_plus_20pct",
+        "name": "格闘物理攻撃+20%",
+        "description": "素手の時に物理攻撃の基本値が20%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "physicalAttack",
+                "operation": "pctAdd",
+                "value": 0.2,
+                "condition": "unarmed"
+            }
+        ]
+    },
+    {
+        "id": "unarmed_physical_attack_plus_30pct",
+        "name": "格闘物理攻撃+30%",
+        "description": "素手の時に物理攻撃の基本値が30%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "physicalAttack",
+                "operation": "pctAdd",
+                "value": 0.3,
+                "condition": "unarmed"
+            }
+        ]
+    },
+    {
+        "id": "unarmed_physical_attack_plus_40pct",
+        "name": "格闘物理攻撃+40%",
+        "description": "素手の時に物理攻撃の基本値が40%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "physicalAttack",
+                "operation": "pctAdd",
+                "value": 0.4,
+                "condition": "unarmed"
+            }
+        ]
+    },
+    {
+        "id": "unarmed_physical_attack_plus_50pct",
+        "name": "格闘物理攻撃+50%",
+        "description": "素手の時に物理攻撃の基本値が50%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "physicalAttack",
+                "operation": "pctAdd",
+                "value": 0.5,
+                "condition": "unarmed"
+            }
+        ]
+    },
+    {
+        "id": "unarmed_physical_attack_plus_60pct",
+        "name": "格闘物理攻撃+60%",
+        "description": "素手の時に物理攻撃の基本値が60%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "physicalAttack",
+                "operation": "pctAdd",
+                "value": 0.6,
+                "condition": "unarmed"
+            }
+        ]
+    },
+    {
+        "id": "unarmed_physical_attack_plus_70pct",
+        "name": "格闘物理攻撃+70%",
+        "description": "素手の時に物理攻撃の基本値が70%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "physicalAttack",
+                "operation": "pctAdd",
+                "value": 0.7,
+                "condition": "unarmed"
+            }
+        ]
+    },
+    {
+        "id": "unarmed_physical_attack_plus_80pct",
+        "name": "格闘物理攻撃+80%",
+        "description": "素手の時に物理攻撃の基本値が80%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "physicalAttack",
+                "operation": "pctAdd",
+                "value": 0.8,
+                "condition": "unarmed"
+            }
+        ]
+    },
+    {
+        "id": "unarmed_physical_attack_plus_90pct",
+        "name": "格闘物理攻撃+90%",
+        "description": "素手の時に物理攻撃の基本値が90%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "physicalAttack",
+                "operation": "pctAdd",
+                "value": 0.9,
+                "condition": "unarmed"
+            }
+        ]
+    },
+    {
+        "id": "unarmed_physical_attack_plus_100pct",
+        "name": "格闘物理攻撃+100%",
+        "description": "素手の時に物理攻撃の基本値が100%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "physicalAttack",
+                "operation": "pctAdd",
+                "value": 1.0,
+                "condition": "unarmed"
+            }
+        ]
+    },
+    {
+        "id": "physicalDefense_minus_30pct",
+        "name": "物理防御-30%",
+        "description": "物理防御の基本値が30%減少する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "physicalDefense",
+                "operation": "pctAdd",
+                "value": -0.3
+            }
+        ]
+    },
+    {
+        "id": "physicalDefense_minus_20pct",
+        "name": "物理防御-20%",
+        "description": "物理防御の基本値が20%減少する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "physicalDefense",
+                "operation": "pctAdd",
+                "value": -0.2
+            }
+        ]
+    },
+    {
+        "id": "physicalDefense_minus_10pct",
+        "name": "物理防御-10%",
+        "description": "物理防御の基本値が10%減少する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "physicalDefense",
+                "operation": "pctAdd",
+                "value": -0.1
+            }
+        ]
+    },
+    {
+        "id": "physicalDefense_plus_10pct",
+        "name": "物理防御+10%",
+        "description": "物理防御の基本値が10%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "physicalDefense",
+                "operation": "pctAdd",
+                "value": 0.1
+            }
+        ]
+    },
+    {
+        "id": "physicalDefense_plus_20pct",
+        "name": "物理防御+20%",
+        "description": "物理防御の基本値が20%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "physicalDefense",
+                "operation": "pctAdd",
+                "value": 0.2
+            }
+        ]
+    },
+    {
+        "id": "physicalDefense_plus_30pct",
+        "name": "物理防御+30%",
+        "description": "物理防御の基本値が30%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "physicalDefense",
+                "operation": "pctAdd",
+                "value": 0.3
+            }
+        ]
+    },
+    {
+        "id": "physicalDefense_plus_40pct",
+        "name": "物理防御+40%",
+        "description": "物理防御の基本値が40%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "physicalDefense",
+                "operation": "pctAdd",
+                "value": 0.4
+            }
+        ]
+    },
+    {
+        "id": "physicalDefense_plus_50pct",
+        "name": "物理防御+50%",
+        "description": "物理防御の基本値が50%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "physicalDefense",
+                "operation": "pctAdd",
+                "value": 0.5
+            }
+        ]
+    },
+    {
+        "id": "physicalDefense_plus_60pct",
+        "name": "物理防御+60%",
+        "description": "物理防御の基本値が60%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "physicalDefense",
+                "operation": "pctAdd",
+                "value": 0.6
+            }
+        ]
+    },
+    {
+        "id": "physicalDefense_plus_70pct",
+        "name": "物理防御+70%",
+        "description": "物理防御の基本値が70%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "physicalDefense",
+                "operation": "pctAdd",
+                "value": 0.7
+            }
+        ]
+    },
+    {
+        "id": "physicalDefense_plus_80pct",
+        "name": "物理防御+80%",
+        "description": "物理防御の基本値が80%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "physicalDefense",
+                "operation": "pctAdd",
+                "value": 0.8
+            }
+        ]
+    },
+    {
+        "id": "physicalDefense_plus_90pct",
+        "name": "物理防御+90%",
+        "description": "物理防御の基本値が90%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "physicalDefense",
+                "operation": "pctAdd",
+                "value": 0.9
+            }
+        ]
+    },
+    {
+        "id": "physicalDefense_plus_100pct",
+        "name": "物理防御+100%",
+        "description": "物理防御の基本値が100%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "physicalDefense",
+                "operation": "pctAdd",
+                "value": 1.0
+            }
+        ]
+    },
+    {
+        "id": "magic_minus_30pct",
+        "name": "魔法-30%",
+        "description": "魔法の基本値が30%減少する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "magic",
+                "operation": "pctAdd",
+                "value": -0.3
+            }
+        ]
+    },
+    {
+        "id": "magic_minus_20pct",
+        "name": "魔法-20%",
+        "description": "魔法の基本値が20%減少する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "magic",
+                "operation": "pctAdd",
+                "value": -0.2
+            }
+        ]
+    },
+    {
+        "id": "magic_minus_10pct",
+        "name": "魔法-10%",
+        "description": "魔法の基本値が10%減少する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "magic",
+                "operation": "pctAdd",
+                "value": -0.1
+            }
+        ]
+    },
+    {
+        "id": "magic_plus_10pct",
+        "name": "魔法+10%",
+        "description": "魔法の基本値が10%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "magic",
+                "operation": "pctAdd",
+                "value": 0.1
+            }
+        ]
+    },
+    {
+        "id": "magic_plus_20pct",
+        "name": "魔法+20%",
+        "description": "魔法の基本値が20%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "magic",
+                "operation": "pctAdd",
+                "value": 0.2
+            }
+        ]
+    },
+    {
+        "id": "magic_plus_30pct",
+        "name": "魔法+30%",
+        "description": "魔法の基本値が30%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "magic",
+                "operation": "pctAdd",
+                "value": 0.3
+            }
+        ]
+    },
+    {
+        "id": "magic_plus_40pct",
+        "name": "魔法+40%",
+        "description": "魔法の基本値が40%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "magic",
+                "operation": "pctAdd",
+                "value": 0.4
+            }
+        ]
+    },
+    {
+        "id": "magic_plus_50pct",
+        "name": "魔法+50%",
+        "description": "魔法の基本値が50%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "magic",
+                "operation": "pctAdd",
+                "value": 0.5
+            }
+        ]
+    },
+    {
+        "id": "magic_plus_60pct",
+        "name": "魔法+60%",
+        "description": "魔法の基本値が60%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "magic",
+                "operation": "pctAdd",
+                "value": 0.6
+            }
+        ]
+    },
+    {
+        "id": "magic_plus_70pct",
+        "name": "魔法+70%",
+        "description": "魔法の基本値が70%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "magic",
+                "operation": "pctAdd",
+                "value": 0.7
+            }
+        ]
+    },
+    {
+        "id": "magic_plus_80pct",
+        "name": "魔法+80%",
+        "description": "魔法の基本値が80%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "magic",
+                "operation": "pctAdd",
+                "value": 0.8
+            }
+        ]
+    },
+    {
+        "id": "magic_plus_90pct",
+        "name": "魔法+90%",
+        "description": "魔法の基本値が90%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "magic",
+                "operation": "pctAdd",
+                "value": 0.9
+            }
+        ]
+    },
+    {
+        "id": "magic_plus_100pct",
+        "name": "魔法+100%",
+        "description": "魔法の基本値が100%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "magic",
+                "operation": "pctAdd",
+                "value": 1.0
+            }
+        ]
+    },
+    {
+        "id": "magicDefense_minus_30pct",
+        "name": "魔法防御-30%",
+        "description": "魔法防御の基本値が30%減少する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "magicDefense",
+                "operation": "pctAdd",
+                "value": -0.3
+            }
+        ]
+    },
+    {
+        "id": "magicDefense_minus_20pct",
+        "name": "魔法防御-20%",
+        "description": "魔法防御の基本値が20%減少する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "magicDefense",
+                "operation": "pctAdd",
+                "value": -0.2
+            }
+        ]
+    },
+    {
+        "id": "magicDefense_minus_10pct",
+        "name": "魔法防御-10%",
+        "description": "魔法防御の基本値が10%減少する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "magicDefense",
+                "operation": "pctAdd",
+                "value": -0.1
+            }
+        ]
+    },
+    {
+        "id": "magicDefense_plus_10pct",
+        "name": "魔法防御+10%",
+        "description": "魔法防御の基本値が10%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "magicDefense",
+                "operation": "pctAdd",
+                "value": 0.1
+            }
+        ]
+    },
+    {
+        "id": "magicDefense_plus_20pct",
+        "name": "魔法防御+20%",
+        "description": "魔法防御の基本値が20%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "magicDefense",
+                "operation": "pctAdd",
+                "value": 0.2
+            }
+        ]
+    },
+    {
+        "id": "magicDefense_plus_30pct",
+        "name": "魔法防御+30%",
+        "description": "魔法防御の基本値が30%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "magicDefense",
+                "operation": "pctAdd",
+                "value": 0.3
+            }
+        ]
+    },
+    {
+        "id": "magicDefense_plus_40pct",
+        "name": "魔法防御+40%",
+        "description": "魔法防御の基本値が40%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "magicDefense",
+                "operation": "pctAdd",
+                "value": 0.4
+            }
+        ]
+    },
+    {
+        "id": "magicDefense_plus_50pct",
+        "name": "魔法防御+50%",
+        "description": "魔法防御の基本値が50%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "magicDefense",
+                "operation": "pctAdd",
+                "value": 0.5
+            }
+        ]
+    },
+    {
+        "id": "magicDefense_plus_60pct",
+        "name": "魔法防御+60%",
+        "description": "魔法防御の基本値が60%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "magicDefense",
+                "operation": "pctAdd",
+                "value": 0.6
+            }
+        ]
+    },
+    {
+        "id": "magicDefense_plus_70pct",
+        "name": "魔法防御+70%",
+        "description": "魔法防御の基本値が70%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "magicDefense",
+                "operation": "pctAdd",
+                "value": 0.7
+            }
+        ]
+    },
+    {
+        "id": "magicDefense_plus_80pct",
+        "name": "魔法防御+80%",
+        "description": "魔法防御の基本値が80%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "magicDefense",
+                "operation": "pctAdd",
+                "value": 0.8
+            }
+        ]
+    },
+    {
+        "id": "magicDefense_plus_90pct",
+        "name": "魔法防御+90%",
+        "description": "魔法防御の基本値が90%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "magicDefense",
+                "operation": "pctAdd",
+                "value": 0.9
+            }
+        ]
+    },
+    {
+        "id": "magicDefense_plus_100pct",
+        "name": "魔法防御+100%",
+        "description": "魔法防御の基本値が100%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "magicDefense",
+                "operation": "pctAdd",
+                "value": 1.0
+            }
+        ]
+    },
+    {
+        "id": "healing_minus_30pct",
+        "name": "回復-30%",
+        "description": "回復の基本値が30%減少する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "healing",
+                "operation": "pctAdd",
+                "value": -0.3
+            }
+        ]
+    },
+    {
+        "id": "healing_minus_20pct",
+        "name": "回復-20%",
+        "description": "回復の基本値が20%減少する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "healing",
+                "operation": "pctAdd",
+                "value": -0.2
+            }
+        ]
+    },
+    {
+        "id": "healing_minus_10pct",
+        "name": "回復-10%",
+        "description": "回復の基本値が10%減少する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "healing",
+                "operation": "pctAdd",
+                "value": -0.1
+            }
+        ]
+    },
+    {
+        "id": "healing_plus_10pct",
+        "name": "回復+10%",
+        "description": "回復の基本値が10%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "healing",
+                "operation": "pctAdd",
+                "value": 0.1
+            }
+        ]
+    },
+    {
+        "id": "healing_plus_20pct",
+        "name": "回復+20%",
+        "description": "回復の基本値が20%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "healing",
+                "operation": "pctAdd",
+                "value": 0.2
+            }
+        ]
+    },
+    {
+        "id": "healing_plus_30pct",
+        "name": "回復+30%",
+        "description": "回復の基本値が30%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "healing",
+                "operation": "pctAdd",
+                "value": 0.3
+            }
+        ]
+    },
+    {
+        "id": "healing_plus_40pct",
+        "name": "回復+40%",
+        "description": "回復の基本値が40%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "healing",
+                "operation": "pctAdd",
+                "value": 0.4
+            }
+        ]
+    },
+    {
+        "id": "healing_plus_50pct",
+        "name": "回復+50%",
+        "description": "回復の基本値が50%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "healing",
+                "operation": "pctAdd",
+                "value": 0.5
+            }
+        ]
+    },
+    {
+        "id": "healing_plus_60pct",
+        "name": "回復+60%",
+        "description": "回復の基本値が60%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "healing",
+                "operation": "pctAdd",
+                "value": 0.6
+            }
+        ]
+    },
+    {
+        "id": "healing_plus_70pct",
+        "name": "回復+70%",
+        "description": "回復の基本値が70%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "healing",
+                "operation": "pctAdd",
+                "value": 0.7
+            }
+        ]
+    },
+    {
+        "id": "healing_plus_80pct",
+        "name": "回復+80%",
+        "description": "回復の基本値が80%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "healing",
+                "operation": "pctAdd",
+                "value": 0.8
+            }
+        ]
+    },
+    {
+        "id": "healing_plus_90pct",
+        "name": "回復+90%",
+        "description": "回復の基本値が90%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "healing",
+                "operation": "pctAdd",
+                "value": 0.9
+            }
+        ]
+    },
+    {
+        "id": "healing_plus_100pct",
+        "name": "回復+100%",
+        "description": "回復の基本値が100%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "healing",
+                "operation": "pctAdd",
+                "value": 1.0
+            }
+        ]
+    },
+    {
+        "id": "accuracy_minus_30pct",
+        "name": "命中-30%",
+        "description": "命中の基本値が30%減少する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "accuracy",
+                "operation": "pctAdd",
+                "value": -0.3
+            }
+        ]
+    },
+    {
+        "id": "accuracy_minus_20pct",
+        "name": "命中-20%",
+        "description": "命中の基本値が20%減少する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "accuracy",
+                "operation": "pctAdd",
+                "value": -0.2
+            }
+        ]
+    },
+    {
+        "id": "accuracy_minus_10pct",
+        "name": "命中-10%",
+        "description": "命中の基本値が10%減少する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "accuracy",
+                "operation": "pctAdd",
+                "value": -0.1
+            }
+        ]
+    },
+    {
+        "id": "accuracy_plus_10pct",
+        "name": "命中+10%",
+        "description": "命中の基本値が10%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "accuracy",
+                "operation": "pctAdd",
+                "value": 0.1
+            }
+        ]
+    },
+    {
+        "id": "accuracy_plus_20pct",
+        "name": "命中+20%",
+        "description": "命中の基本値が20%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "accuracy",
+                "operation": "pctAdd",
+                "value": 0.2
+            }
+        ]
+    },
+    {
+        "id": "accuracy_plus_30pct",
+        "name": "命中+30%",
+        "description": "命中の基本値が30%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "accuracy",
+                "operation": "pctAdd",
+                "value": 0.3
+            }
+        ]
+    },
+    {
+        "id": "job_swordsaint_accuracy_plus_30pct",
+        "name": "命中+30%",
+        "description": "命中の基本値が30%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "accuracy",
+                "operation": "pctAdd",
+                "value": 0.3
+            }
+        ]
+    },
+    {
+        "id": "accuracy_plus_40pct",
+        "name": "命中+40%",
+        "description": "命中の基本値が40%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "accuracy",
+                "operation": "pctAdd",
+                "value": 0.4
+            }
+        ]
+    },
+    {
+        "id": "accuracy_plus_50pct",
+        "name": "命中+50%",
+        "description": "命中の基本値が50%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "accuracy",
+                "operation": "pctAdd",
+                "value": 0.5
+            }
+        ]
+    },
+    {
+        "id": "accuracy_plus_60pct",
+        "name": "命中+60%",
+        "description": "命中の基本値が60%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "accuracy",
+                "operation": "pctAdd",
+                "value": 0.6
+            }
+        ]
+    },
+    {
+        "id": "accuracy_plus_70pct",
+        "name": "命中+70%",
+        "description": "命中の基本値が70%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "accuracy",
+                "operation": "pctAdd",
+                "value": 0.7
+            }
+        ]
+    },
+    {
+        "id": "accuracy_plus_80pct",
+        "name": "命中+80%",
+        "description": "命中の基本値が80%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "accuracy",
+                "operation": "pctAdd",
+                "value": 0.8
+            }
+        ]
+    },
+    {
+        "id": "accuracy_plus_90pct",
+        "name": "命中+90%",
+        "description": "命中の基本値が90%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "accuracy",
+                "operation": "pctAdd",
+                "value": 0.9
+            }
+        ]
+    },
+    {
+        "id": "accuracy_plus_100pct",
+        "name": "命中+100%",
+        "description": "命中の基本値が100%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "accuracy",
+                "operation": "pctAdd",
+                "value": 1.0
+            }
+        ]
+    },
+    {
+        "id": "evasion_minus_30pct",
+        "name": "回避-30%",
+        "description": "回避の基本値が30%減少する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "evasion",
+                "operation": "pctAdd",
+                "value": -0.3
+            }
+        ]
+    },
+    {
+        "id": "evasion_minus_20pct",
+        "name": "回避-20%",
+        "description": "回避の基本値が20%減少する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "evasion",
+                "operation": "pctAdd",
+                "value": -0.2
+            }
+        ]
+    },
+    {
+        "id": "evasion_minus_10pct",
+        "name": "回避-10%",
+        "description": "回避の基本値が10%減少する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "evasion",
+                "operation": "pctAdd",
+                "value": -0.1
+            }
+        ]
+    },
+    {
+        "id": "evasion_plus_10pct",
+        "name": "回避+10%",
+        "description": "回避の基本値が10%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "evasion",
+                "operation": "pctAdd",
+                "value": 0.1
+            }
+        ]
+    },
+    {
+        "id": "evasion_plus_20pct",
+        "name": "回避+20%",
+        "description": "回避の基本値が20%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "evasion",
+                "operation": "pctAdd",
+                "value": 0.2
+            }
+        ]
+    },
+    {
+        "id": "evasion_plus_30pct",
+        "name": "回避+30%",
+        "description": "回避の基本値が30%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "evasion",
+                "operation": "pctAdd",
+                "value": 0.3
+            }
+        ]
+    },
+    {
+        "id": "evasion_plus_40pct",
+        "name": "回避+40%",
+        "description": "回避の基本値が40%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "evasion",
+                "operation": "pctAdd",
+                "value": 0.4
+            }
+        ]
+    },
+    {
+        "id": "evasion_plus_50pct",
+        "name": "回避+50%",
+        "description": "回避の基本値が50%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "evasion",
+                "operation": "pctAdd",
+                "value": 0.5
+            }
+        ]
+    },
+    {
+        "id": "evasion_plus_60pct",
+        "name": "回避+60%",
+        "description": "回避の基本値が60%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "evasion",
+                "operation": "pctAdd",
+                "value": 0.6
+            }
+        ]
+    },
+    {
+        "id": "evasion_plus_70pct",
+        "name": "回避+70%",
+        "description": "回避の基本値が70%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "evasion",
+                "operation": "pctAdd",
+                "value": 0.7
+            }
+        ]
+    },
+    {
+        "id": "evasion_plus_80pct",
+        "name": "回避+80%",
+        "description": "回避の基本値が80%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "evasion",
+                "operation": "pctAdd",
+                "value": 0.8
+            }
+        ]
+    },
+    {
+        "id": "evasion_plus_90pct",
+        "name": "回避+90%",
+        "description": "回避の基本値が90%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "evasion",
+                "operation": "pctAdd",
+                "value": 0.9
+            }
+        ]
+    },
+    {
+        "id": "evasion_plus_100pct",
+        "name": "回避+100%",
+        "description": "回避の基本値が100%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "evasion",
+                "operation": "pctAdd",
+                "value": 1.0
+            }
+        ]
+    },
+    {
+        "id": "criticalRate_minus_30pct",
+        "name": "必殺率-30%",
+        "description": "必殺率の基本値が30%減少する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "criticalRate",
+                "operation": "pctAdd",
+                "value": -0.3
+            }
+        ]
+    },
+    {
+        "id": "criticalRate_minus_20pct",
+        "name": "必殺率-20%",
+        "description": "必殺率の基本値が20%減少する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "criticalRate",
+                "operation": "pctAdd",
+                "value": -0.2
+            }
+        ]
+    },
+    {
+        "id": "criticalRate_minus_10pct",
+        "name": "必殺率-10%",
+        "description": "必殺率の基本値が10%減少する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "criticalRate",
+                "operation": "pctAdd",
+                "value": -0.1
+            }
+        ]
+    },
+    {
+        "id": "criticalRate_plus_10pct",
+        "name": "必殺率+10%",
+        "description": "必殺率の基本値が10%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "criticalRate",
+                "operation": "pctAdd",
+                "value": 0.1
+            }
+        ]
+    },
+    {
+        "id": "criticalRate_plus_20pct",
+        "name": "必殺率+20%",
+        "description": "必殺率の基本値が20%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "criticalRate",
+                "operation": "pctAdd",
+                "value": 0.2
+            }
+        ]
+    },
+    {
+        "id": "criticalRate_plus_30pct",
+        "name": "必殺率+30%",
+        "description": "必殺率の基本値が30%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "criticalRate",
+                "operation": "pctAdd",
+                "value": 0.3
+            }
+        ]
+    },
+    {
+        "id": "criticalRate_plus_40pct",
+        "name": "必殺率+40%",
+        "description": "必殺率の基本値が40%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "criticalRate",
+                "operation": "pctAdd",
+                "value": 0.4
+            }
+        ]
+    },
+    {
+        "id": "criticalRate_plus_50pct",
+        "name": "必殺率+50%",
+        "description": "必殺率の基本値が50%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "criticalRate",
+                "operation": "pctAdd",
+                "value": 0.5
+            }
+        ]
+    },
+    {
+        "id": "criticalRate_plus_60pct",
+        "name": "必殺率+60%",
+        "description": "必殺率の基本値が60%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "criticalRate",
+                "operation": "pctAdd",
+                "value": 0.6
+            }
+        ]
+    },
+    {
+        "id": "criticalRate_plus_70pct",
+        "name": "必殺率+70%",
+        "description": "必殺率の基本値が70%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "criticalRate",
+                "operation": "pctAdd",
+                "value": 0.7
+            }
+        ]
+    },
+    {
+        "id": "criticalRate_plus_80pct",
+        "name": "必殺率+80%",
+        "description": "必殺率の基本値が80%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "criticalRate",
+                "operation": "pctAdd",
+                "value": 0.8
+            }
+        ]
+    },
+    {
+        "id": "criticalRate_plus_90pct",
+        "name": "必殺率+90%",
+        "description": "必殺率の基本値が90%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "criticalRate",
+                "operation": "pctAdd",
+                "value": 0.9
+            }
+        ]
+    },
+    {
+        "id": "criticalRate_plus_100pct",
+        "name": "必殺率+100%",
+        "description": "必殺率の基本値が100%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "criticalRate",
+                "operation": "pctAdd",
+                "value": 1.0
+            }
+        ]
+    },
+    {
+        "id": "breathPower_minus_30pct",
+        "name": "ブレス威力-30%",
+        "description": "ブレス威力の基本値が30%減少する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "breathPower",
+                "operation": "pctAdd",
+                "value": -0.3
+            }
+        ]
+    },
+    {
+        "id": "breathPower_minus_20pct",
+        "name": "ブレス威力-20%",
+        "description": "ブレス威力の基本値が20%減少する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "breathPower",
+                "operation": "pctAdd",
+                "value": -0.2
+            }
+        ]
+    },
+    {
+        "id": "breathPower_minus_10pct",
+        "name": "ブレス威力-10%",
+        "description": "ブレス威力の基本値が10%減少する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "breathPower",
+                "operation": "pctAdd",
+                "value": -0.1
+            }
+        ]
+    },
+    {
+        "id": "breathPower_plus_10pct",
+        "name": "ブレス威力+10%",
+        "description": "ブレス威力の基本値が10%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "breathPower",
+                "operation": "pctAdd",
+                "value": 0.1
+            }
+        ]
+    },
+    {
+        "id": "breathPower_plus_20pct",
+        "name": "ブレス威力+20%",
+        "description": "ブレス威力の基本値が20%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "breathPower",
+                "operation": "pctAdd",
+                "value": 0.2
+            }
+        ]
+    },
+    {
+        "id": "breathPower_plus_30pct",
+        "name": "ブレス威力+30%",
+        "description": "ブレス威力の基本値が30%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "breathPower",
+                "operation": "pctAdd",
+                "value": 0.3
+            }
+        ]
+    },
+    {
+        "id": "breathPower_plus_40pct",
+        "name": "ブレス威力+40%",
+        "description": "ブレス威力の基本値が40%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "breathPower",
+                "operation": "pctAdd",
+                "value": 0.4
+            }
+        ]
+    },
+    {
+        "id": "breathPower_plus_50pct",
+        "name": "ブレス威力+50%",
+        "description": "ブレス威力の基本値が50%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "breathPower",
+                "operation": "pctAdd",
+                "value": 0.5
+            }
+        ]
+    },
+    {
+        "id": "breathPower_plus_60pct",
+        "name": "ブレス威力+60%",
+        "description": "ブレス威力の基本値が60%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "breathPower",
+                "operation": "pctAdd",
+                "value": 0.6
+            }
+        ]
+    },
+    {
+        "id": "breathPower_plus_70pct",
+        "name": "ブレス威力+70%",
+        "description": "ブレス威力の基本値が70%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "breathPower",
+                "operation": "pctAdd",
+                "value": 0.7
+            }
+        ]
+    },
+    {
+        "id": "breathPower_plus_80pct",
+        "name": "ブレス威力+80%",
+        "description": "ブレス威力の基本値が80%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "breathPower",
+                "operation": "pctAdd",
+                "value": 0.8
+            }
+        ]
+    },
+    {
+        "id": "breathPower_plus_90pct",
+        "name": "ブレス威力+90%",
+        "description": "ブレス威力の基本値が90%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "breathPower",
+                "operation": "pctAdd",
+                "value": 0.9
+            }
+        ]
+    },
+    {
+        "id": "breathPower_plus_100pct",
+        "name": "ブレス威力+100%",
+        "description": "ブレス威力の基本値が100%増加する。固定値加算の後で計算される。",
+        "effects": [
+            {
+                "kind": "battleStatModifier",
+                "target": "breathPower",
+                "operation": "pctAdd",
+                "value": 1.0
+            }
+        ]
+    },
+    {
+        "id": "physicalDamageMultiplier_minus_30pct",
+        "name": "物理威力-30%",
+        "description": "物理威力が30%減少する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "physicalDamageMultiplier",
+                "operation": "pctAdd",
+                "value": -0.3
+            }
+        ]
+    },
+    {
+        "id": "physicalDamageMultiplier_minus_20pct",
+        "name": "物理威力-20%",
+        "description": "物理威力が20%減少する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "physicalDamageMultiplier",
+                "operation": "pctAdd",
+                "value": -0.2
+            }
+        ]
+    },
+    {
+        "id": "physicalDamageMultiplier_minus_10pct",
+        "name": "物理威力-10%",
+        "description": "物理威力が10%減少する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "physicalDamageMultiplier",
+                "operation": "pctAdd",
+                "value": -0.1
+            }
+        ]
+    },
+    {
+        "id": "physicalDamageMultiplier_plus_10pct",
+        "name": "物理威力+10%",
+        "description": "物理威力が10%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "physicalDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.1
+            }
+        ]
+    },
+    {
+        "id": "physicalDamageMultiplier_plus_20pct",
+        "name": "物理威力+20%",
+        "description": "物理威力が20%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "physicalDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.2
+            }
+        ]
+    },
+    {
+        "id": "physicalDamageMultiplier_plus_30pct",
+        "name": "物理威力+30%",
+        "description": "物理威力が30%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "physicalDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.3
+            }
+        ]
+    },
+    {
+        "id": "physicalDamageMultiplier_plus_40pct",
+        "name": "物理威力+40%",
+        "description": "物理威力が40%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "physicalDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.4
+            }
+        ]
+    },
+    {
+        "id": "physicalDamageMultiplier_plus_50pct",
+        "name": "物理威力+50%",
+        "description": "物理威力が50%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "physicalDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.5
+            }
+        ]
+    },
+    {
+        "id": "physicalDamageMultiplier_plus_60pct",
+        "name": "物理威力+60%",
+        "description": "物理威力が60%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "physicalDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.6
+            }
+        ]
+    },
+    {
+        "id": "physicalDamageMultiplier_plus_70pct",
+        "name": "物理威力+70%",
+        "description": "物理威力が70%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "physicalDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.7
+            }
+        ]
+    },
+    {
+        "id": "physicalDamageMultiplier_plus_80pct",
+        "name": "物理威力+80%",
+        "description": "物理威力が80%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "physicalDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.8
+            }
+        ]
+    },
+    {
+        "id": "physicalDamageMultiplier_plus_90pct",
+        "name": "物理威力+90%",
+        "description": "物理威力が90%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "physicalDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.9
+            }
+        ]
+    },
+    {
+        "id": "physicalDamageMultiplier_plus_100pct",
+        "name": "物理威力+100%",
+        "description": "物理威力が100%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "physicalDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 1.0
+            }
+        ]
+    },
+    {
+        "id": "magicDamageMultiplier_minus_30pct",
+        "name": "魔法威力-30%",
+        "description": "魔法威力が30%減少する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "magicDamageMultiplier",
+                "operation": "pctAdd",
+                "value": -0.3
+            }
+        ]
+    },
+    {
+        "id": "magicDamageMultiplier_minus_20pct",
+        "name": "魔法威力-20%",
+        "description": "魔法威力が20%減少する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "magicDamageMultiplier",
+                "operation": "pctAdd",
+                "value": -0.2
+            }
+        ]
+    },
+    {
+        "id": "magicDamageMultiplier_minus_10pct",
+        "name": "魔法威力-10%",
+        "description": "魔法威力が10%減少する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "magicDamageMultiplier",
+                "operation": "pctAdd",
+                "value": -0.1
+            }
+        ]
+    },
+    {
+        "id": "magicDamageMultiplier_plus_10pct",
+        "name": "魔法威力+10%",
+        "description": "魔法威力が10%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "magicDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.1
+            }
+        ]
+    },
+    {
+        "id": "magicDamageMultiplier_plus_20pct",
+        "name": "魔法威力+20%",
+        "description": "魔法威力が20%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "magicDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.2
+            }
+        ]
+    },
+    {
+        "id": "magicDamageMultiplier_plus_30pct",
+        "name": "魔法威力+30%",
+        "description": "魔法威力が30%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "magicDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.3
+            }
+        ]
+    },
+    {
+        "id": "job_mage_magic_damage_multiplier_plus_30pct",
+        "name": "魔法威力+30%",
+        "description": "魔法威力が30%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "magicDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.3
+            }
+        ]
+    },
+    {
+        "id": "magicDamageMultiplier_plus_40pct",
+        "name": "魔法威力+40%",
+        "description": "魔法威力が40%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "magicDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.4
+            }
+        ]
+    },
+    {
+        "id": "magicDamageMultiplier_plus_50pct",
+        "name": "魔法威力+50%",
+        "description": "魔法威力が50%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "magicDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.5
+            }
+        ]
+    },
+    {
+        "id": "magicDamageMultiplier_plus_60pct",
+        "name": "魔法威力+60%",
+        "description": "魔法威力が60%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "magicDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.6
+            }
+        ]
+    },
+    {
+        "id": "magicDamageMultiplier_plus_70pct",
+        "name": "魔法威力+70%",
+        "description": "魔法威力が70%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "magicDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.7
+            }
+        ]
+    },
+    {
+        "id": "magicDamageMultiplier_plus_80pct",
+        "name": "魔法威力+80%",
+        "description": "魔法威力が80%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "magicDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.8
+            }
+        ]
+    },
+    {
+        "id": "magicDamageMultiplier_plus_90pct",
+        "name": "魔法威力+90%",
+        "description": "魔法威力が90%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "magicDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.9
+            }
+        ]
+    },
+    {
+        "id": "magicDamageMultiplier_plus_100pct",
+        "name": "魔法威力+100%",
+        "description": "魔法威力が100%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "magicDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 1.0
+            }
+        ]
+    },
+    {
+        "id": "criticalDamageMultiplier_minus_30pct",
+        "name": "必殺時威力-30%",
+        "description": "必殺時威力が30%減少する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "criticalDamageMultiplier",
+                "operation": "pctAdd",
+                "value": -0.3
+            }
+        ]
+    },
+    {
+        "id": "criticalDamageMultiplier_minus_20pct",
+        "name": "必殺時威力-20%",
+        "description": "必殺時威力が20%減少する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "criticalDamageMultiplier",
+                "operation": "pctAdd",
+                "value": -0.2
+            }
+        ]
+    },
+    {
+        "id": "criticalDamageMultiplier_minus_10pct",
+        "name": "必殺時威力-10%",
+        "description": "必殺時威力が10%減少する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "criticalDamageMultiplier",
+                "operation": "pctAdd",
+                "value": -0.1
+            }
+        ]
+    },
+    {
+        "id": "criticalDamageMultiplier_plus_10pct",
+        "name": "必殺時威力+10%",
+        "description": "必殺時威力が10%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "criticalDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.1
+            }
+        ]
+    },
+    {
+        "id": "criticalDamageMultiplier_plus_20pct",
+        "name": "必殺時威力+20%",
+        "description": "必殺時威力が20%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "criticalDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.2
+            }
+        ]
+    },
+    {
+        "id": "criticalDamageMultiplier_plus_30pct",
+        "name": "必殺時威力+30%",
+        "description": "必殺時威力が30%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "criticalDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.3
+            }
+        ]
+    },
+    {
+        "id": "criticalDamageMultiplier_plus_40pct",
+        "name": "必殺時威力+40%",
+        "description": "必殺時威力が40%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "criticalDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.4
+            }
+        ]
+    },
+    {
+        "id": "criticalDamageMultiplier_plus_50pct",
+        "name": "必殺時威力+50%",
+        "description": "必殺時威力が50%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "criticalDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.5
+            }
+        ]
+    },
+    {
+        "id": "job_ninja_critical_damage_multiplier_plus_50pct",
+        "name": "必殺時威力+50%",
+        "description": "必殺時威力が50%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "criticalDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.5
+            }
+        ]
+    },
+    {
+        "id": "criticalDamageMultiplier_plus_60pct",
+        "name": "必殺時威力+60%",
+        "description": "必殺時威力が60%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "criticalDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.6
+            }
+        ]
+    },
+    {
+        "id": "criticalDamageMultiplier_plus_70pct",
+        "name": "必殺時威力+70%",
+        "description": "必殺時威力が70%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "criticalDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.7
+            }
+        ]
+    },
+    {
+        "id": "criticalDamageMultiplier_plus_80pct",
+        "name": "必殺時威力+80%",
+        "description": "必殺時威力が80%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "criticalDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.8
+            }
+        ]
+    },
+    {
+        "id": "criticalDamageMultiplier_plus_90pct",
+        "name": "必殺時威力+90%",
+        "description": "必殺時威力が90%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "criticalDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.9
+            }
+        ]
+    },
+    {
+        "id": "criticalDamageMultiplier_plus_100pct",
+        "name": "必殺時威力+100%",
+        "description": "必殺時威力が100%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "criticalDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 1.0
+            }
+        ]
+    },
+    {
+        "id": "meleeDamageMultiplier_minus_30pct",
+        "name": "近接威力-30%",
+        "description": "近接威力が30%減少する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "meleeDamageMultiplier",
+                "operation": "pctAdd",
+                "value": -0.3
+            }
+        ]
+    },
+    {
+        "id": "meleeDamageMultiplier_minus_20pct",
+        "name": "近接威力-20%",
+        "description": "近接威力が20%減少する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "meleeDamageMultiplier",
+                "operation": "pctAdd",
+                "value": -0.2
+            }
+        ]
+    },
+    {
+        "id": "meleeDamageMultiplier_minus_10pct",
+        "name": "近接威力-10%",
+        "description": "近接威力が10%減少する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "meleeDamageMultiplier",
+                "operation": "pctAdd",
+                "value": -0.1
+            }
+        ]
+    },
+    {
+        "id": "meleeDamageMultiplier_plus_10pct",
+        "name": "近接威力+10%",
+        "description": "近接威力が10%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "meleeDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.1
+            }
+        ]
+    },
+    {
+        "id": "meleeDamageMultiplier_plus_20pct",
+        "name": "近接威力+20%",
+        "description": "近接威力が20%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "meleeDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.2
+            }
+        ]
+    },
+    {
+        "id": "meleeDamageMultiplier_plus_30pct",
+        "name": "近接威力+30%",
+        "description": "近接威力が30%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "meleeDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.3
+            }
+        ]
+    },
+    {
+        "id": "meleeDamageMultiplier_plus_40pct",
+        "name": "近接威力+40%",
+        "description": "近接威力が40%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "meleeDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.4
+            }
+        ]
+    },
+    {
+        "id": "meleeDamageMultiplier_plus_50pct",
+        "name": "近接威力+50%",
+        "description": "近接威力が50%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "meleeDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.5
+            }
+        ]
+    },
+    {
+        "id": "meleeDamageMultiplier_plus_60pct",
+        "name": "近接威力+60%",
+        "description": "近接威力が60%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "meleeDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.6
+            }
+        ]
+    },
+    {
+        "id": "meleeDamageMultiplier_plus_70pct",
+        "name": "近接威力+70%",
+        "description": "近接威力が70%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "meleeDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.7
+            }
+        ]
+    },
+    {
+        "id": "meleeDamageMultiplier_plus_80pct",
+        "name": "近接威力+80%",
+        "description": "近接威力が80%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "meleeDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.8
+            }
+        ]
+    },
+    {
+        "id": "meleeDamageMultiplier_plus_90pct",
+        "name": "近接威力+90%",
+        "description": "近接威力が90%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "meleeDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.9
+            }
+        ]
+    },
+    {
+        "id": "meleeDamageMultiplier_plus_100pct",
+        "name": "近接威力+100%",
+        "description": "近接威力が100%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "meleeDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 1.0
+            }
+        ]
+    },
+    {
+        "id": "rangedDamageMultiplier_minus_30pct",
+        "name": "遠距離威力-30%",
+        "description": "遠距離威力が30%減少する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "rangedDamageMultiplier",
+                "operation": "pctAdd",
+                "value": -0.3
+            }
+        ]
+    },
+    {
+        "id": "rangedDamageMultiplier_minus_20pct",
+        "name": "遠距離威力-20%",
+        "description": "遠距離威力が20%減少する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "rangedDamageMultiplier",
+                "operation": "pctAdd",
+                "value": -0.2
+            }
+        ]
+    },
+    {
+        "id": "rangedDamageMultiplier_minus_10pct",
+        "name": "遠距離威力-10%",
+        "description": "遠距離威力が10%減少する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "rangedDamageMultiplier",
+                "operation": "pctAdd",
+                "value": -0.1
+            }
+        ]
+    },
+    {
+        "id": "rangedDamageMultiplier_plus_10pct",
+        "name": "遠距離威力+10%",
+        "description": "遠距離威力が10%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "rangedDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.1
+            }
+        ]
+    },
+    {
+        "id": "rangedDamageMultiplier_plus_20pct",
+        "name": "遠距離威力+20%",
+        "description": "遠距離威力が20%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "rangedDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.2
+            }
+        ]
+    },
+    {
+        "id": "rangedDamageMultiplier_plus_30pct",
+        "name": "遠距離威力+30%",
+        "description": "遠距離威力が30%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "rangedDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.3
+            }
+        ]
+    },
+    {
+        "id": "rangedDamageMultiplier_plus_40pct",
+        "name": "遠距離威力+40%",
+        "description": "遠距離威力が40%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "rangedDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.4
+            }
+        ]
+    },
+    {
+        "id": "rangedDamageMultiplier_plus_50pct",
+        "name": "遠距離威力+50%",
+        "description": "遠距離威力が50%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "rangedDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.5
+            }
+        ]
+    },
+    {
+        "id": "rangedDamageMultiplier_plus_60pct",
+        "name": "遠距離威力+60%",
+        "description": "遠距離威力が60%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "rangedDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.6
+            }
+        ]
+    },
+    {
+        "id": "rangedDamageMultiplier_plus_70pct",
+        "name": "遠距離威力+70%",
+        "description": "遠距離威力が70%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "rangedDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.7
+            }
+        ]
+    },
+    {
+        "id": "rangedDamageMultiplier_plus_80pct",
+        "name": "遠距離威力+80%",
+        "description": "遠距離威力が80%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "rangedDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.8
+            }
+        ]
+    },
+    {
+        "id": "rangedDamageMultiplier_plus_90pct",
+        "name": "遠距離威力+90%",
+        "description": "遠距離威力が90%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "rangedDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 0.9
+            }
+        ]
+    },
+    {
+        "id": "rangedDamageMultiplier_plus_100pct",
+        "name": "遠距離威力+100%",
+        "description": "遠距離威力が100%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "rangedDamageMultiplier",
+                "operation": "pctAdd",
+                "value": 1.0
+            }
+        ]
+    },
+    {
+        "id": "actionSpeedMultiplier_minus_30pct",
+        "name": "行動速度-30%",
+        "description": "行動速度が30%減少する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "actionSpeedMultiplier",
+                "operation": "pctAdd",
+                "value": -0.3
+            }
+        ]
+    },
+    {
+        "id": "actionSpeedMultiplier_minus_20pct",
+        "name": "行動速度-20%",
+        "description": "行動速度が20%減少する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "actionSpeedMultiplier",
+                "operation": "pctAdd",
+                "value": -0.2
+            }
+        ]
+    },
+    {
+        "id": "actionSpeedMultiplier_minus_10pct",
+        "name": "行動速度-10%",
+        "description": "行動速度が10%減少する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "actionSpeedMultiplier",
+                "operation": "pctAdd",
+                "value": -0.1
+            }
+        ]
+    },
+    {
+        "id": "actionSpeedMultiplier_plus_10pct",
+        "name": "行動速度+10%",
+        "description": "行動速度が10%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "actionSpeedMultiplier",
+                "operation": "pctAdd",
+                "value": 0.1
+            }
+        ]
+    },
+    {
+        "id": "actionSpeedMultiplier_plus_20pct",
+        "name": "行動速度+20%",
+        "description": "行動速度が20%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "actionSpeedMultiplier",
+                "operation": "pctAdd",
+                "value": 0.2
+            }
+        ]
+    },
+    {
+        "id": "actionSpeedMultiplier_plus_30pct",
+        "name": "行動速度+30%",
+        "description": "行動速度が30%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "actionSpeedMultiplier",
+                "operation": "pctAdd",
+                "value": 0.3
+            }
+        ]
+    },
+    {
+        "id": "actionSpeedMultiplier_plus_40pct",
+        "name": "行動速度+40%",
+        "description": "行動速度が40%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "actionSpeedMultiplier",
+                "operation": "pctAdd",
+                "value": 0.4
+            }
+        ]
+    },
+    {
+        "id": "actionSpeedMultiplier_plus_50pct",
+        "name": "行動速度+50%",
+        "description": "行動速度が50%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "actionSpeedMultiplier",
+                "operation": "pctAdd",
+                "value": 0.5
+            }
+        ]
+    },
+    {
+        "id": "actionSpeedMultiplier_plus_60pct",
+        "name": "行動速度+60%",
+        "description": "行動速度が60%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "actionSpeedMultiplier",
+                "operation": "pctAdd",
+                "value": 0.6
+            }
+        ]
+    },
+    {
+        "id": "actionSpeedMultiplier_plus_70pct",
+        "name": "行動速度+70%",
+        "description": "行動速度が70%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "actionSpeedMultiplier",
+                "operation": "pctAdd",
+                "value": 0.7
+            }
+        ]
+    },
+    {
+        "id": "actionSpeedMultiplier_plus_80pct",
+        "name": "行動速度+80%",
+        "description": "行動速度が80%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "actionSpeedMultiplier",
+                "operation": "pctAdd",
+                "value": 0.8
+            }
+        ]
+    },
+    {
+        "id": "actionSpeedMultiplier_plus_90pct",
+        "name": "行動速度+90%",
+        "description": "行動速度が90%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "actionSpeedMultiplier",
+                "operation": "pctAdd",
+                "value": 0.9
+            }
+        ]
+    },
+    {
+        "id": "actionSpeedMultiplier_plus_100pct",
+        "name": "行動速度+100%",
+        "description": "行動速度が100%増加する。",
+        "effects": [
+            {
+                "kind": "battleDerivedModifier",
+                "target": "actionSpeedMultiplier",
+                "operation": "pctAdd",
+                "value": 1.0
             }
         ]
     }

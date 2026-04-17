@@ -20,14 +20,14 @@
             "equipmentCapacity_plus_1",
             "maxHP_plus_10pct",
             "physicalDefense_plus_10pct",
-            "counter",
+            "physical_resistance_4_5",
             "defendDamageTakenMultiplier_1_3",
             "armorEquipmentBattleStatFlatMultiplier_150pct"
         ],
         "levelSkillIds": [
             "job_knight_guard",
             "job_knight_iron_wall",
-            "job_knight_aegis"
+            "job_knight_counter"
         ]
     },
     {
@@ -52,13 +52,13 @@
             "meleeDamageMultiplier_plus_10pct",
             "criticalDamageMultiplier_plus_10pct",
             "accuracy_plus_10pct",
-            "extra_attack",
+            "criticalRate_plus_10",
             "lowHPMeleeDamageMultiplier_150pct"
         ],
         "levelSkillIds": [
             "job_swordsman_fierce_strike",
             "job_swordsman_mind_eye",
-            "job_swordsman_shura"
+            "job_swordsman_extra_attack"
         ]
     },
     {
@@ -175,14 +175,14 @@
             "rangedDamageMultiplier_plus_10pct",
             "actionSpeedMultiplier_plus_10pct",
             "accuracy_plus_10pct",
-            "pursuit",
+            "criticalDamageMultiplier_plus_10pct",
             "criticalRate_plus_10",
             "lowHPTargetRangedDamageMultiplier_120pct"
         ],
         "levelSkillIds": [
             "job_hunter_rapid_fire",
             "job_hunter_sniping",
-            "job_hunter_follow_up"
+            "job_hunter_pursuit"
         ]
     },
     {
@@ -337,7 +337,7 @@
             "evasion_plus_10pct",
             "accuracy_plus_20pct",
             "criticalRate_plus_20",
-            "pursuit",
+            "magic_buff_access",
             "experienceGainMultiplier_minus_50pct"
         ],
         "levelSkillIds": [
@@ -460,8 +460,8 @@
             "allyPhysicalDamageMultiplier_1_10",
             "allyMagicDamageMultiplier_1_10",
             "experienceGainMultiplier_1_20",
-            "maxHP_minus_50pct",
-            "actionSpeedMultiplier_minus_50pct",
+            "maxHP_minus_30pct",
+            "actionSpeedMultiplier_minus_30pct",
             "receivedHealingMultiplier_20pct"
         ],
         "levelSkillIds": [

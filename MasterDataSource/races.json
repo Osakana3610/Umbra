@@ -16,7 +16,7 @@
             "maxHP_plus_10pct",
             "physicalDefense_plus_10pct",
             "magicDefense_plus_10pct",
-            "healing_plus_5pct",
+            "healing_plus_10pct",
             "accuracy_plus_10pct"
         ],
         "levelSkillIds": [
@@ -63,8 +63,8 @@
             "luck": 4
         },
         "passiveSkillIds": [
-            "magic_plus_3pct",
-            "healing_plus_5pct",
+            "magic_plus_10pct",
+            "healing_plus_10pct",
             "magicDefense_plus_10pct",
             "evasion_plus_10pct",
             "accuracy_plus_10pct"
@@ -167,7 +167,7 @@
             "maxHP_plus_10pct",
             "physical_resistance_4_5",
             "physicalDefense_plus_10pct",
-            "healing_plus_5pct",
+            "healing_plus_10pct",
             "counter"
         ],
         "levelSkillIds": [
@@ -217,7 +217,7 @@
             "physicalDamageMultiplier_plus_10pct",
             "pursuit",
             "maxHP_plus_10pct",
-            "healing_plus_5pct",
+            "healing_plus_10pct",
             "evasion_plus_10pct"
         ],
         "levelSkillIds": [
@@ -264,8 +264,8 @@
             "luck": 6
         },
         "passiveSkillIds": [
-            "magic_plus_3pct",
-            "magicDamageMultiplier_plus_3pct",
+            "magic_plus_10pct",
+            "magicDamageMultiplier_plus_10pct",
             "accuracy_plus_10pct",
             "evasion_plus_10pct",
             "actionSpeedMultiplier_plus_10pct"
@@ -290,10 +290,10 @@
         },
         "passiveSkillIds": [
             "magicDefense_plus_10pct",
-            "healing_plus_5pct",
+            "healing_plus_10pct",
             "accuracy_plus_10pct",
             "physical_resistance_4_5",
-            "magic_plus_3pct"
+            "magic_plus_10pct"
         ],
         "levelSkillIds": [
             "race_medusa_stone_gaze",
@@ -314,8 +314,8 @@
             "luck": 9
         },
         "passiveSkillIds": [
-            "magic_plus_5pct",
-            "magicDamageMultiplier_plus_5pct",
+            "magic_plus_10pct",
+            "magicDamageMultiplier_plus_10pct",
             "accuracy_plus_10pct",
             "criticalRate_plus_10",
             "actionSpeedMultiplier_plus_10pct"
