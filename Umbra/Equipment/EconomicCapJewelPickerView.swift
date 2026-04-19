@@ -16,7 +16,7 @@ struct EconomicCapJewelPickerView: View {
     @State private var loadError: String?
     @State private var searchText = ""
     @State private var selectedJewel: EconomicCapJewelSelection?
-    @State private var presentedItemDetail: EconomicCapJewelPickerPresentedItemDetail?
+    @State private var presentedItemDetail: ItemDetailSheetPresentation?
 
     var body: some View {
         List {
@@ -73,21 +73,7 @@ struct EconomicCapJewelPickerView: View {
                 .disabled(selectedJewel == nil || equipmentStore.isMutating)
             }
         }
-        .sheet(item: $presentedItemDetail) { presentedItemDetail in
-            NavigationStack {
-                ItemDetailView(
-                    itemID: presentedItemDetail.itemID,
-                    masterData: masterData
-                )
-                .toolbar {
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Button("閉じる") {
-                            self.presentedItemDetail = nil
-                        }
-                    }
-                }
-            }
-        }
+        .itemDetailSheet(item: $presentedItemDetail, masterData: masterData)
         .task {
             do {
                 try equipmentStore.loadIfNeeded(masterData: masterData)
@@ -103,9 +89,7 @@ struct EconomicCapJewelPickerView: View {
     }
 
     private var inventoryItems: [EquipmentCachedItem] {
-        equipmentStore.orderedSectionKeys.flatMap { sectionKey in
-            equipmentStore.inventoryItemsBySection[sectionKey] ?? []
-        }
+        equipmentStore.displayOrderedInventoryItems
     }
 
     private var cappedJewelSections: [ShopEnhancementSection] {
@@ -117,7 +101,7 @@ struct EconomicCapJewelPickerView: View {
             masterData: masterData
         ) { item in
             item.category == .jewel
-                && ShopCatalog.purchasePrice(
+                && ShopPricingCalculator.purchasePrice(
                     for: item.itemID,
                     masterData: masterData
                 ) == EconomyPricing.maximumEconomicPrice
@@ -171,20 +155,12 @@ struct EconomicCapJewelPickerView: View {
                 }
 
                 ShopItemDetailButton(itemID: row.itemID) { itemID in
-                    presentedItemDetail = EconomicCapJewelPickerPresentedItemDetail(itemID: itemID)
+                    presentedItemDetail = ItemDetailSheetPresentation(itemID: itemID)
                 }
             }
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-    }
-}
-
-private struct EconomicCapJewelPickerPresentedItemDetail: Identifiable {
-    let itemID: CompositeItemID
-
-    var id: String {
-        itemID.stableKey
     }
 }
 

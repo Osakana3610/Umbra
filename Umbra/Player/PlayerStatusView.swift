@@ -1,4 +1,6 @@
 // Renders the shared bottom status bar for player-wide state across the tab shell.
+// The view refreshes time continuously while reading roster-backed currency state so every top-level
+// screen can show one consistent player footer without owning its own timer.
 
 import SwiftUI
 
@@ -9,6 +11,8 @@ struct PlayerStatusView: View {
 
     var body: some View {
         TimelineView(.periodic(from: .now, by: 1.0)) { context in
+            // A periodic timeline keeps the clock live without pushing timer state into the roster
+            // store or parent views.
             if showsChrome {
                 statusContent(for: context.date)
                     .background(.regularMaterial)

@@ -5,7 +5,7 @@ import Observation
 
 @MainActor
 @Observable
-final class MasterDataStore {
+final class MasterDataLoadStore {
     enum Phase {
         case idle
         case loading
@@ -55,7 +55,7 @@ final class MasterDataStore {
         do {
             phase = .loaded(try loader.load())
         } catch {
-            phase = .failed(Self.errorMessage(for: error))
+            phase = .failed(UserFacingErrorMessage.resolve(error))
         }
     }
 
@@ -67,13 +67,4 @@ final class MasterDataStore {
         return false
     }
 
-    private static func errorMessage(for error: Error) -> String {
-        if let localizedError = error as? LocalizedError,
-           let description = localizedError.errorDescription,
-           !description.isEmpty {
-            return description
-        }
-
-        return String(describing: error)
-    }
 }

@@ -4,7 +4,7 @@ import Foundation
 
 nonisolated enum CharacterDerivedStatsCalculator {
     private static let levelExponent = 1.0
-    private static let defaultEquipmentAggregation = EquipmentAggregation(
+    private static let defaultEquipmentResolution = EquipmentResolution(
         baseStats: CharacterBaseStats(
             vitality: 0,
             strength: 0,
@@ -65,9 +65,9 @@ nonisolated enum CharacterDerivedStatsCalculator {
     }
 
     static func status(for character: CharacterRecord, masterData: MasterData) -> CharacterStatus? {
-        let equipmentAggregation = (try? EquipmentAggregator(masterData: masterData).aggregate(
+        let equipmentResolution = (try? EquipmentResolver(masterData: masterData).resolve(
             equippedItemStacks: character.equippedItemStacks
-        )) ?? defaultEquipmentAggregation
+        )) ?? defaultEquipmentResolution
 
         return status(
             raceId: character.raceId,
@@ -76,7 +76,7 @@ nonisolated enum CharacterDerivedStatsCalculator {
             aptitudeId: character.aptitudeId,
             level: character.level,
             masterData: masterData,
-            equipmentAggregation: equipmentAggregation
+            equipmentResolution: equipmentResolution
         )
     }
 
@@ -123,7 +123,7 @@ nonisolated enum CharacterDerivedStatsCalculator {
         aptitudeId: Int = 0,
         level: Int,
         masterData: MasterData,
-        equipmentAggregation: EquipmentAggregation = defaultEquipmentAggregation
+        equipmentResolution: EquipmentResolution = defaultEquipmentResolution
     ) -> CharacterStatus? {
         guard let race = masterData.races.first(where: { $0.id == raceId }),
               let currentJob = masterData.jobs.first(where: { $0.id == currentJobId }) else {
@@ -138,12 +138,12 @@ nonisolated enum CharacterDerivedStatsCalculator {
         // Equipment contributes directly to base stats and active skills before job coefficients
         // are applied, so derived battle values always reflect the fully equipped build.
         let effectiveBaseStats = CharacterBaseStats(
-            vitality: race.baseStats.vitality + equipmentAggregation.baseStats.vitality,
-            strength: race.baseStats.strength + equipmentAggregation.baseStats.strength,
-            mind: race.baseStats.mind + equipmentAggregation.baseStats.mind,
-            intelligence: race.baseStats.intelligence + equipmentAggregation.baseStats.intelligence,
-            agility: race.baseStats.agility + equipmentAggregation.baseStats.agility,
-            luck: race.baseStats.luck + equipmentAggregation.baseStats.luck
+            vitality: race.baseStats.vitality + equipmentResolution.baseStats.vitality,
+            strength: race.baseStats.strength + equipmentResolution.baseStats.strength,
+            mind: race.baseStats.mind + equipmentResolution.baseStats.mind,
+            intelligence: race.baseStats.intelligence + equipmentResolution.baseStats.intelligence,
+            agility: race.baseStats.agility + equipmentResolution.baseStats.agility,
+            luck: race.baseStats.luck + equipmentResolution.baseStats.luck
         )
         let activeSkillIds = activeSkillIds(
             racePassiveSkillIds: race.passiveSkillIds,
@@ -153,7 +153,7 @@ nonisolated enum CharacterDerivedStatsCalculator {
             currentJobLevelSkillIds: currentJob.levelSkillIds,
             aptitudePassiveSkillIds: aptitude?.passiveSkillIds ?? [],
             level: level,
-            additionalSkillIds: equipmentAggregation.itemSkillIDs
+            additionalSkillIds: equipmentResolution.itemSkillIDs
         )
 
         return status(
@@ -162,13 +162,13 @@ nonisolated enum CharacterDerivedStatsCalculator {
             level: level,
             skillIds: activeSkillIds,
             masterData: masterData,
-            equipmentBattleStats: equipmentAggregation.battleStats,
-            armorEquipmentBattleStats: equipmentAggregation.armorBattleStats,
-            equipmentBattleStatsByCategory: equipmentAggregation.categoryBattleStats,
-            isUnarmed: equipmentAggregation.isUnarmed,
-            hasMeleeWeapon: equipmentAggregation.hasMeleeWeapon,
-            hasRangedWeapon: equipmentAggregation.hasRangedWeapon,
-            weaponRangeClass: equipmentAggregation.weaponRangeClass
+            equipmentBattleStats: equipmentResolution.battleStats,
+            armorEquipmentBattleStats: equipmentResolution.armorBattleStats,
+            equipmentBattleStatsByCategory: equipmentResolution.categoryBattleStats,
+            isUnarmed: equipmentResolution.isUnarmed,
+            hasMeleeWeapon: equipmentResolution.hasMeleeWeapon,
+            hasRangedWeapon: equipmentResolution.hasRangedWeapon,
+            weaponRangeClass: equipmentResolution.weaponRangeClass
         )
     }
 
@@ -178,13 +178,13 @@ nonisolated enum CharacterDerivedStatsCalculator {
         level: Int,
         skillIds: [Int],
         masterData: MasterData,
-        equipmentBattleStats: CharacterBattleStats = defaultEquipmentAggregation.battleStats,
-        armorEquipmentBattleStats: CharacterBattleStats = defaultEquipmentAggregation.armorBattleStats,
-        equipmentBattleStatsByCategory: [ItemCategory: CharacterBattleStats] = defaultEquipmentAggregation.categoryBattleStats,
-        isUnarmed: Bool = defaultEquipmentAggregation.isUnarmed,
-        hasMeleeWeapon: Bool = defaultEquipmentAggregation.hasMeleeWeapon,
-        hasRangedWeapon: Bool = defaultEquipmentAggregation.hasRangedWeapon,
-        weaponRangeClass: ItemRangeClass = defaultEquipmentAggregation.weaponRangeClass
+        equipmentBattleStats: CharacterBattleStats = defaultEquipmentResolution.battleStats,
+        armorEquipmentBattleStats: CharacterBattleStats = defaultEquipmentResolution.armorBattleStats,
+        equipmentBattleStatsByCategory: [ItemCategory: CharacterBattleStats] = defaultEquipmentResolution.categoryBattleStats,
+        isUnarmed: Bool = defaultEquipmentResolution.isUnarmed,
+        hasMeleeWeapon: Bool = defaultEquipmentResolution.hasMeleeWeapon,
+        hasRangedWeapon: Bool = defaultEquipmentResolution.hasRangedWeapon,
+        weaponRangeClass: ItemRangeClass = defaultEquipmentResolution.weaponRangeClass
     ) -> CharacterStatus? {
         guard let currentJob = masterData.jobs.first(where: { $0.id == jobId }) else {
             return nil

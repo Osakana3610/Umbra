@@ -6,11 +6,11 @@ import SwiftUI
 struct OtherMenuView: View {
     let masterData: MasterData
     let persistentContainer: NSPersistentContainer
-    let guildService: GuildService
+    let inventoryService: InventoryManagementService
     let equipmentStore: EquipmentInventoryStore
     let explorationStore: ExplorationStore
 
-    @AppStorage(ExplorationLogRetentionLimit.userDefaultsKey)
+    @AppStorage(ExplorationLogRetentionRepository.userDefaultsKey)
     // Persist the user's retention choice at the view boundary so the exploration store can stay
     // focused on pruning logic rather than settings storage.
     private var explorationLogRetentionCount = ExplorationLogRetentionLimit.defaultValue.rawValue
@@ -49,7 +49,7 @@ struct OtherMenuView: View {
                     DebugMenuView(
                         masterData: masterData,
                         persistentContainer: persistentContainer,
-                        guildService: guildService,
+                        inventoryService: inventoryService,
                         equipmentStore: equipmentStore
                     )
                     .navigationTitle("デバッグ")

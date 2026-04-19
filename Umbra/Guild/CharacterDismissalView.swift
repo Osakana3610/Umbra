@@ -8,7 +8,7 @@ struct CharacterDismissalView: View {
     let partyStore: PartyStore
     let equipmentStore: EquipmentInventoryStore
     let explorationStore: ExplorationStore
-    let guildService: GuildService
+    let rosterService: GuildRosterService
 
     @State private var pendingDismissalCharacterId: Int?
     @State private var isDeleting = false
@@ -114,7 +114,7 @@ struct CharacterDismissalView: View {
             }
 
             do {
-                try await guildService.deleteCharacter(characterId: character.characterId)
+                try await rosterService.deleteCharacter(characterId: character.characterId)
                 // Dismissal can reshape party membership and shared inventory, so refresh all three
                 // views from persistence after the mutation commits.
                 rosterStore.refreshFromPersistence()

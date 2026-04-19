@@ -2,12 +2,13 @@
 
 import Foundation
 import Observation
+import SwiftUI
 
 @MainActor
 @Observable
 final class EquipmentInventoryStore {
-    private let coreDataStore: GuildCoreDataStore
-    private let service: GuildService
+    private let coreDataRepository: GuildCoreDataRepository
+    private let service: EquipmentMutationService
     private let equipmentStatusNotificationService: EquipmentStatusNotificationService
 
     private var itemsByID: [Int: MasterData.Item] = [:]
@@ -22,12 +23,16 @@ final class EquipmentInventoryStore {
     private(set) var inventoryItemsBySection: [EquipmentSectionKey: [EquipmentCachedItem]] = [:]
     private(set) var orderedSectionKeys: [EquipmentSectionKey] = []
 
+    var displayOrderedInventoryItems: [EquipmentCachedItem] {
+        orderedSectionKeys.flatMap { inventoryItemsBySection[$0] ?? [] }
+    }
+
     init(
-        coreDataStore: GuildCoreDataStore,
-        service: GuildService,
+        coreDataRepository: GuildCoreDataRepository,
+        service: EquipmentMutationService,
         equipmentStatusNotificationService: EquipmentStatusNotificationService
     ) {
-        self.coreDataStore = coreDataStore
+        self.coreDataRepository = coreDataRepository
         self.service = service
         self.equipmentStatusNotificationService = equipmentStatusNotificationService
     }
@@ -43,7 +48,7 @@ final class EquipmentInventoryStore {
     func reload(masterData: MasterData) throws {
         configure(masterData: masterData)
 
-        let inventoryStacks = try coreDataStore.loadInventoryStacks()
+        let inventoryStacks = try coreDataRepository.loadInventoryStacks()
         var groupedInventory: [EquipmentSectionKey: [EquipmentCachedItem]] = [:]
         var newSectionKeyByItemID: [CompositeItemID: EquipmentSectionKey] = [:]
 
@@ -205,7 +210,7 @@ final class EquipmentInventoryStore {
                     after: afterStatus
                 )
             } catch {
-                lastOperationError = Self.errorMessage(for: error)
+                lastOperationError = UserFacingErrorMessage.resolve(error)
             }
         }
     }
@@ -252,7 +257,7 @@ final class EquipmentInventoryStore {
                     after: afterStatus
                 )
             } catch {
-                lastOperationError = Self.errorMessage(for: error)
+                lastOperationError = UserFacingErrorMessage.resolve(error)
             }
         }
     }
@@ -307,7 +312,7 @@ final class EquipmentInventoryStore {
                     synchronizeCharacter(updatedCharacter, masterData: masterData)
                 }
             } catch {
-                lastOperationError = Self.errorMessage(for: error)
+                lastOperationError = UserFacingErrorMessage.resolve(error)
             }
         }
     }
@@ -575,15 +580,6 @@ final class EquipmentInventoryStore {
         }
     }
 
-    private static func errorMessage(for error: Error) -> String {
-        if let localizedError = error as? LocalizedError,
-           let description = localizedError.errorDescription,
-           !description.isEmpty {
-            return description
-        }
-
-        return String(describing: error)
-    }
 }
 
 struct EquipmentSectionRows: Identifiable, Equatable {
@@ -682,4 +678,34 @@ enum EquipmentDisplayRow: Identifiable, Equatable {
             item
         }
     }
+}
+
+protocol EquipmentSectionIndexable {
+    var key: EquipmentSectionKey { get }
+}
+
+extension EquipmentSectionRows: EquipmentSectionIndexable {}
+extension ShopEnhancementSection: EquipmentSectionIndexable {}
+
+extension View {
+    @ViewBuilder
+    func equipmentSectionIndexVisibility() -> some View {
+        if #available(iOS 26.0, *) {
+            listSectionIndexVisibility(.visible)
+        } else {
+            self
+        }
+    }
+}
+
+@available(iOS 26.0, *)
+func equipmentSectionIndexLabel<Section: EquipmentSectionIndexable>(
+    for section: Section,
+    in sections: [Section]
+) -> Text? {
+    guard sections.first(where: { $0.key.category == section.key.category })?.key == section.key else {
+        return nil
+    }
+
+    return Text(section.key.indexLabel)
 }

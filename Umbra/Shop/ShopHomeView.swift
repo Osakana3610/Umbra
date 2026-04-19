@@ -1,4 +1,6 @@
-// Hosts the store tab's equipment access and item trading screens.
+// Hosts the store tab's top-level navigation and the trading flows reachable from it.
+// Keeps the in-game shop menu structure in one place so equipment changes, buy/sell,
+// enhancement, and stock-management entry points stay ordered consistently.
 
 import SwiftUI
 
@@ -191,7 +193,7 @@ private struct ShopTradingView: View {
     @State private var itemFilter = ItemBrowserFilter()
     @State private var searchText = ""
     @State private var loadError: String?
-    @State private var presentedItemDetail: TradePresentedItemDetail?
+    @State private var presentedItemDetail: ItemDetailSheetPresentation?
     @State private var presentedPurchaseSheet: PresentedPurchaseSheet?
     @State private var presentedSaleSheet: PresentedSaleSheet?
 
@@ -210,21 +212,7 @@ private struct ShopTradingView: View {
                     }
                 }
             }
-            .sheet(item: $presentedItemDetail) { presentedItemDetail in
-                NavigationStack {
-                    ItemDetailView(
-                        itemID: presentedItemDetail.itemID,
-                        masterData: masterData
-                    )
-                    .toolbar {
-                        ToolbarItem(placement: .topBarTrailing) {
-                            Button("閉じる") {
-                                self.presentedItemDetail = nil
-                            }
-                        }
-                    }
-                }
-            }
+            .itemDetailSheet(item: $presentedItemDetail, masterData: masterData)
             .sheet(item: $presentedPurchaseSheet) { presentedPurchaseSheet in
                 NavigationStack {
                     ShopPurchaseSheet(
@@ -250,6 +238,8 @@ private struct ShopTradingView: View {
             }
             .task {
                 do {
+                    // The trading screen derives filters and row affordances from both stores, so
+                    // load them together before presenting either buy or sell content.
                     try equipmentStore.loadIfNeeded(masterData: masterData)
                     try shopStore.loadIfNeeded(masterData: masterData)
                     loadError = nil
@@ -327,9 +317,9 @@ private struct ShopTradingView: View {
         }
     }
 
-    private var currentFilterCatalog: ItemBrowserFilterCatalog {
+    private var currentFilterCatalog: ItemBrowserFilterOptions {
         let itemIDs = sourceItems.map(\.itemID)
-        return ItemBrowserFilterCatalog(itemIDs: itemIDs, masterData: masterData)
+        return ItemBrowserFilterOptions(itemIDs: itemIDs, masterData: masterData)
     }
 
     private var sourceItems: [EquipmentCachedItem] {
@@ -342,6 +332,8 @@ private struct ShopTradingView: View {
     }
 
     private var visibleSections: [TradeSection] {
+        // Filtering is applied after section grouping so the section index only exposes buckets that
+        // still have visible rows.
         sourceSectionKeys.compactMap { key in
             let rows = (sourceItemsBySection[key] ?? []).filter(matchesFilters)
             guard !rows.isEmpty else {
@@ -381,7 +373,7 @@ private struct ShopTradingView: View {
         return true
     }
 
-    private func emptyStateMessage(filterCatalog: ItemBrowserFilterCatalog) -> String {
+    private func emptyStateMessage(filterCatalog: ItemBrowserFilterOptions) -> String {
         if !trimmedSearchText.isEmpty || itemFilter.isActive(in: filterCatalog) {
             return mode == .buy
                 ? "検索条件またはフィルター条件に一致する商店在庫はありません。"
@@ -401,6 +393,8 @@ private struct ShopTradingView: View {
     ) -> some View {
         if showsSectionIndex {
             if #available(iOS 26.0, *) {
+                // The section index is only available on the newer list implementation, so keep the
+                // fallback path structurally identical and vary only the index decoration.
                 Section(section.key.title) {
                     tradeRows(for: section)
                 }
@@ -425,7 +419,7 @@ private struct ShopTradingView: View {
             return true
         }
 
-        return (rosterStore.playerState?.gold ?? 0) >= ShopCatalog.purchasePrice(
+        return (rosterStore.playerState?.gold ?? 0) >= ShopPricingCalculator.purchasePrice(
             for: item.itemID,
             masterData: masterData
         )
@@ -470,7 +464,7 @@ private struct ShopTradingView: View {
                 presentedSaleSheet = PresentedSaleSheet(item: selectedItem)
             },
             onShowDetail: { itemID in
-                presentedItemDetail = TradePresentedItemDetail(itemID: itemID)
+                presentedItemDetail = ItemDetailSheetPresentation(itemID: itemID)
             }
         )
     }
@@ -547,10 +541,10 @@ private struct ShopTradeItemRow: View {
     }
 
     private var detailText: String {
-        let sellPrice = ShopCatalog.sellPrice(for: item.itemID, masterData: masterData)
+        let sellPrice = ShopPricingCalculator.sellPrice(for: item.itemID, masterData: masterData)
         switch mode {
         case .buy:
-            let purchasePrice = ShopCatalog.purchasePrice(for: item.itemID, masterData: masterData)
+            let purchasePrice = ShopPricingCalculator.purchasePrice(for: item.itemID, masterData: masterData)
             return "在庫 \(item.quantity.formatted()) / 購入 \(purchasePrice.formatted())G / 売却 \(sellPrice.formatted())G"
         case .sell:
             return "所持 \(item.quantity.formatted()) / 売却 \(sellPrice.formatted())G"
@@ -618,7 +612,7 @@ private struct ShopPurchaseSheet: View {
     }
 
     private var unitPurchasePrice: Int {
-        ShopCatalog.purchasePrice(for: item.itemID, masterData: masterData)
+        ShopPricingCalculator.purchasePrice(for: item.itemID, masterData: masterData)
     }
 
     private var allPurchasePrice: Int {
@@ -677,7 +671,7 @@ private struct ShopSaleSheet: View {
     }
 
     private var unitSellPrice: Int {
-        ShopCatalog.sellPrice(for: item.itemID, masterData: masterData)
+        ShopPricingCalculator.sellPrice(for: item.itemID, masterData: masterData)
     }
 
     private var allSellPrice: Int {
@@ -714,11 +708,3 @@ private struct TradeSection: Identifiable {
 }
 
 extension TradeSection: EquipmentSectionIndexable {}
-
-private struct TradePresentedItemDetail: Identifiable {
-    let itemID: CompositeItemID
-
-    var id: String {
-        itemID.stableKey
-    }
-}

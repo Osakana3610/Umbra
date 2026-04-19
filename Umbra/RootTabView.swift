@@ -15,7 +15,7 @@ struct RootTabView: View {
     let explorationStore: ExplorationStore
     let itemDropNotificationService: ItemDropNotificationService
     let equipmentStatusNotificationService: EquipmentStatusNotificationService
-    let guildService: GuildService
+    let guildServices: GuildServices
 
     var body: some View {
         let tabView = TabView {
@@ -38,7 +38,7 @@ struct RootTabView: View {
                     partyStore: partyStore,
                     equipmentStore: equipmentStore,
                     explorationStore: explorationStore,
-                    guildService: guildService
+                    rosterService: guildServices.roster
                 )
             }
             .tabItem {
@@ -74,7 +74,7 @@ struct RootTabView: View {
                 OtherMenuView(
                     masterData: masterData,
                     persistentContainer: persistenceController.container,
-                    guildService: guildService,
+                    inventoryService: guildServices.inventory,
                     equipmentStore: equipmentStore,
                     explorationStore: explorationStore
                 )

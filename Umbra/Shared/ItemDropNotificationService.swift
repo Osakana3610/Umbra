@@ -21,14 +21,14 @@ final class ItemDropNotificationService {
         }
     }
 
-    private let masterDataStore: MasterDataStore
+    private let masterDataStore: MasterDataLoadStore
     private let userDefaults: UserDefaults
     private let maxNotificationCount = 20
 
     private(set) var droppedItems: [DroppedItemNotification] = []
 
     init(
-        masterDataStore: MasterDataStore,
+        masterDataStore: MasterDataLoadStore,
         userDefaults: UserDefaults = .standard
     ) {
         self.masterDataStore = masterDataStore
@@ -49,7 +49,7 @@ final class ItemDropNotificationService {
             for reward in batch.dropRewards
             where reward.itemID.isValidEquipmentIdentity
                 && itemsById[reward.itemID.baseItemId] != nil
-                && ItemDropNotificationSettings.allowsNotification(
+                && ItemDropNotificationSettingsRepository.allowsNotification(
                     for: reward.itemID,
                     rarity: itemsById[reward.itemID.baseItemId]?.rarity ?? .normal,
                     userDefaults: userDefaults
@@ -80,5 +80,80 @@ final class ItemDropNotificationService {
 
     func clear() {
         droppedItems.removeAll()
+    }
+}
+
+nonisolated enum ItemDropNotificationSettingsRepository {
+    static let showsNormalRarityItemsKey = "itemDropNotification.showsNormalRarityItems"
+    private static let titleKeyPrefix = "itemDropNotification.title."
+    private static let superRareKeyPrefix = "itemDropNotification.superRare."
+
+    static func showsNormalRarityItems(
+        userDefaults: UserDefaults = .standard
+    ) -> Bool {
+        userDefaults.object(forKey: showsNormalRarityItemsKey) as? Bool ?? true
+    }
+
+    static func setShowsNormalRarityItems(
+        _ isEnabled: Bool,
+        userDefaults: UserDefaults = .standard
+    ) {
+        userDefaults.set(isEnabled, forKey: showsNormalRarityItemsKey)
+    }
+
+    static func isTitleEnabled(
+        _ titleId: Int,
+        userDefaults: UserDefaults = .standard
+    ) -> Bool {
+        userDefaults.object(forKey: titleKey(for: titleId)) as? Bool ?? true
+    }
+
+    static func setTitleEnabled(
+        _ isEnabled: Bool,
+        titleId: Int,
+        userDefaults: UserDefaults = .standard
+    ) {
+        userDefaults.set(isEnabled, forKey: titleKey(for: titleId))
+    }
+
+    static func isSuperRareEnabled(
+        _ superRareId: Int,
+        userDefaults: UserDefaults = .standard
+    ) -> Bool {
+        userDefaults.object(forKey: superRareKey(for: superRareId)) as? Bool ?? true
+    }
+
+    static func setSuperRareEnabled(
+        _ isEnabled: Bool,
+        superRareId: Int,
+        userDefaults: UserDefaults = .standard
+    ) {
+        userDefaults.set(isEnabled, forKey: superRareKey(for: superRareId))
+    }
+
+    static func allowsNotification(
+        for itemID: CompositeItemID,
+        rarity: ItemRarity,
+        userDefaults: UserDefaults = .standard
+    ) -> Bool {
+        guard rarity != .normal || showsNormalRarityItems(userDefaults: userDefaults) else {
+            return false
+        }
+
+        // Both base and jewel affixes are checked, so disabling any attached title or super-rare
+        // suppresses the combined equipment notification.
+        let titleIDs = Set([itemID.baseTitleId, itemID.jewelTitleId].filter { $0 > 0 })
+        let superRareIDs = Set([itemID.baseSuperRareId, itemID.jewelSuperRareId].filter { $0 > 0 })
+
+        return titleIDs.allSatisfy { isTitleEnabled($0, userDefaults: userDefaults) }
+            && superRareIDs.allSatisfy { isSuperRareEnabled($0, userDefaults: userDefaults) }
+    }
+
+    private static func titleKey(for titleId: Int) -> String {
+        "\(titleKeyPrefix)\(titleId)"
+    }
+
+    private static func superRareKey(for superRareId: Int) -> String {
+        "\(superRareKeyPrefix)\(superRareId)"
     }
 }

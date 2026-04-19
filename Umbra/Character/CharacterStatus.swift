@@ -1,4 +1,7 @@
-// Represents a character's fully derived runtime status and combat capabilities.
+// Represents a character's fully derived combat and rule state after job, level, and equipment
+// resolution have been applied.
+// Call sites read this as an immutable snapshot during battle, exploration, and UI calculations so
+// repeated lookups do not need to recompute modifiers from master data.
 
 nonisolated struct CharacterStatus: Equatable, Sendable {
     let baseStats: CharacterBaseStats
@@ -53,6 +56,8 @@ nonisolated struct CharacterStatus: Equatable, Sendable {
         partyModifiersByTarget[target] ?? 1.0
     }
 
+    // Rule dictionaries retain every applicable contribution for a target so callers can apply the
+    // rule-specific reduction they need, such as max-only or multiplicative stacking.
     func defenseRuleValues(for target: String) -> [Double] {
         defenseRuleValuesByTarget[target] ?? []
     }
@@ -189,6 +194,7 @@ nonisolated struct CharacterBattleDerivedStats: Equatable, Sendable {
     let magicResistanceMultiplier: Double
     let breathResistanceMultiplier: Double
 
+    // The baseline represents an actor with no derived modifiers from skills, equipment, or rules.
     static let baseline = CharacterBattleDerivedStats(
         physicalDamageMultiplier: 1.0,
         attackMagicMultiplier: 1.0,

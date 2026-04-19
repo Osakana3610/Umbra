@@ -8,7 +8,7 @@ struct GuildHomeView: View {
     let partyStore: PartyStore
     let equipmentStore: EquipmentInventoryStore
     let explorationStore: ExplorationStore
-    let guildService: GuildService
+    let rosterService: GuildRosterService
     @State private var presentedCharacter: CharacterRecord?
 
     var body: some View {
@@ -96,7 +96,7 @@ struct GuildHomeView: View {
                             partyStore: partyStore,
                             equipmentStore: equipmentStore,
                             explorationStore: explorationStore,
-                            guildService: guildService
+                            rosterService: rosterService
                         )
                     }
                 }

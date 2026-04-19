@@ -10,7 +10,7 @@ struct GuildRosterSnapshot: Sendable {
 }
 
 @MainActor
-final class GuildCoreDataStore {
+final class GuildCoreDataRepository {
     private let container: NSPersistentContainer
 
     init(container: NSPersistentContainer) {

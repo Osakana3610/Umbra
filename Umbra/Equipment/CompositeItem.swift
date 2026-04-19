@@ -1,4 +1,6 @@
-// Defines stack-based item identities shared by inventory, equipment, and battle code.
+// Defines the canonical identity for equipment items across inventory, loadout, and reward flows.
+// A composite item keeps the base item plus optional title, super-rare, and jewel parts together so
+// every persistence layer can refer to one stable value instead of parallel columns.
 
 import Foundation
 
@@ -63,6 +65,8 @@ nonisolated struct CompositeItemID: Codable, Equatable, Hashable, Sendable {
     }
 
     var rawValue: String {
+        // Persist the full identity in a stable positional format so the same key can be reused for
+        // Core Data storage, view identity, and deterministic sorting.
         [
             baseSuperRareId,
             baseTitleId,
@@ -84,6 +88,8 @@ nonisolated struct CompositeItemID: Codable, Equatable, Hashable, Sendable {
     }
 
     func isOrdered(before other: CompositeItemID) -> Bool {
+        // Base item identity sorts first so derived variants stay grouped under the same equipment
+        // family before title and jewel refinements break ties.
         if baseItemId != other.baseItemId {
             return baseItemId < other.baseItemId
         }
@@ -141,6 +147,8 @@ extension Array where Element == CompositeItemStack {
             )
 
             if countsByID[stack.itemID] == nil {
+                // Preserve first-seen order for equivalent stacks so callers can merge duplicates
+                // without unexpectedly reshuffling already ordered collections.
                 orderedIDs.append(stack.itemID)
             }
             countsByID[stack.itemID, default: 0] += stack.count

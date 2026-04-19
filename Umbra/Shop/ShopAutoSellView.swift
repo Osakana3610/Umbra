@@ -1,4 +1,6 @@
-// Manages configured auto-sell targets and lets players add new ones from current inventory.
+// Manages the list of identities configured for auto-sell and the picker used to add new targets.
+// The screen combines player inventory, shop stock, and saved auto-sell flags so the player can
+// see both current ownership and whether one identity is already routed into automatic selling.
 
 import SwiftUI
 
@@ -11,7 +13,7 @@ struct ShopAutoSellView: View {
     @State private var loadError: String?
     @State private var itemFilter = ItemBrowserFilter()
     @State private var searchText = ""
-    @State private var presentedItemDetail: AutoSellPresentedItemDetail?
+    @State private var presentedItemDetail: ItemDetailSheetPresentation?
     @State private var isPresentingInventoryPicker = false
 
     private let nameResolver: EquipmentDisplayNameResolver
@@ -117,21 +119,7 @@ struct ShopAutoSellView: View {
                 }
             }
         }
-        .sheet(item: $presentedItemDetail) { presentedItemDetail in
-            NavigationStack {
-                ItemDetailView(
-                    itemID: presentedItemDetail.itemID,
-                    masterData: masterData
-                )
-                .toolbar {
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Button("閉じる") {
-                            self.presentedItemDetail = nil
-                        }
-                    }
-                }
-            }
-        }
+        .itemDetailSheet(item: $presentedItemDetail, masterData: masterData)
         .sheet(isPresented: $isPresentingInventoryPicker) {
             NavigationStack {
                 ShopAutoSellInventoryPickerView(
@@ -144,6 +132,8 @@ struct ShopAutoSellView: View {
         }
         .task {
             do {
+                // This screen renders both owned counts and shop counts for the same identity, so it
+                // depends on both caches being warm before the list is meaningful.
                 try equipmentStore.loadIfNeeded(masterData: masterData)
                 try shopStore.loadIfNeeded(masterData: masterData)
                 loadError = nil
@@ -163,18 +153,16 @@ struct ShopAutoSellView: View {
 
     private var configuredCandidates: [AutoSellCandidate] {
         let inventoryCounts = Dictionary(
-            uniqueKeysWithValues: equipmentStore.orderedSectionKeys.flatMap { sectionKey in
-                (equipmentStore.inventoryItemsBySection[sectionKey] ?? []).map { ($0.itemID, $0.quantity) }
-            }
+            uniqueKeysWithValues: equipmentStore.displayOrderedInventoryItems.map { ($0.itemID, $0.quantity) }
         )
         let shopCounts = Dictionary(
-            uniqueKeysWithValues: shopStore.orderedSectionKeys.flatMap { sectionKey in
-                (shopStore.shopItemsBySection[sectionKey] ?? []).map { ($0.itemID, $0.quantity) }
-            }
+            uniqueKeysWithValues: shopStore.displayOrderedShopItems.map { ($0.itemID, $0.quantity) }
         )
         return autoSellItemIDs
             .sorted { $0.isOrdered(before: $1) }
             .compactMap { itemID in
+            // Auto-sell is configured per item identity, not per concrete stack, so the summary pulls
+            // together counts from every currently owned location for that one identity.
             guard let item = masterData.items.first(where: { $0.id == itemID.baseItemId }) else {
                 return nil
             }
@@ -222,6 +210,7 @@ struct ShopAutoSellView: View {
     }
 
     private var visibleSections: [AutoSellSection] {
+        // Group after filtering so the section index reflects only currently visible candidates.
         let grouped = Dictionary(grouping: visibleCandidates, by: \.sectionKey)
         return grouped.keys
             .sorted(by: EquipmentSectionKey.isOrderedBefore)
@@ -235,8 +224,8 @@ struct ShopAutoSellView: View {
             }
     }
 
-    private var currentFilterCatalog: ItemBrowserFilterCatalog {
-        ItemBrowserFilterCatalog(
+    private var currentFilterCatalog: ItemBrowserFilterOptions {
+        ItemBrowserFilterOptions(
             itemIDs: configuredCandidates.map(\.itemID),
             masterData: masterData
         )
@@ -260,7 +249,7 @@ struct ShopAutoSellView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
 
             ShopItemDetailButton(itemID: candidate.itemID) { itemID in
-                presentedItemDetail = AutoSellPresentedItemDetail(itemID: itemID)
+                presentedItemDetail = ItemDetailSheetPresentation(itemID: itemID)
             }
         }
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
@@ -286,7 +275,7 @@ private struct ShopAutoSellInventoryPickerView: View {
     @State private var itemFilter = ItemBrowserFilter()
     @State private var searchText = ""
     @State private var selectedItemIDs = Set<CompositeItemID>()
-    @State private var presentedItemDetail: AutoSellPresentedItemDetail?
+    @State private var presentedItemDetail: ItemDetailSheetPresentation?
 
     var body: some View {
         List {
@@ -324,6 +313,8 @@ private struct ShopAutoSellInventoryPickerView: View {
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 Button {
+                    // The picker only stages identities locally; persistence is updated once when the
+                    // player confirms so partial selections never leak into player state.
                     shopStore.configureAutoSell(
                         itemIDs: selectedItemIDs,
                         masterData: masterData,
@@ -348,27 +339,14 @@ private struct ShopAutoSellInventoryPickerView: View {
                 }
             }
         }
-        .sheet(item: $presentedItemDetail) { presentedItemDetail in
-            NavigationStack {
-                ItemDetailView(
-                    itemID: presentedItemDetail.itemID,
-                    masterData: masterData
-                )
-                .toolbar {
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Button("閉じる") {
-                            self.presentedItemDetail = nil
-                        }
-                    }
-                }
-            }
-        }
+        .itemDetailSheet(item: $presentedItemDetail, masterData: masterData)
     }
 
     private var availableCandidates: [AutoSellCandidate] {
         let configuredItemIDs = rosterStore.playerState?.autoSellItemIDs ?? []
-        return equipmentStore.orderedSectionKeys
-            .flatMap { equipmentStore.inventoryItemsBySection[$0] ?? [] }
+        return equipmentStore.displayOrderedInventoryItems
+            // The picker only offers identities that are still in player inventory and not already
+            // configured for auto-sell.
             .filter { configuredItemIDs.contains($0.itemID) == false }
             .map { item in
                 AutoSellCandidate(
@@ -380,8 +358,8 @@ private struct ShopAutoSellInventoryPickerView: View {
             }
     }
 
-    private var filterCatalog: ItemBrowserFilterCatalog {
-        ItemBrowserFilterCatalog(
+    private var filterCatalog: ItemBrowserFilterOptions {
+        ItemBrowserFilterOptions(
             itemIDs: availableCandidates.map(\.itemID),
             masterData: masterData
         )
@@ -429,6 +407,8 @@ private struct ShopAutoSellInventoryPickerView: View {
     ) -> some View {
         HStack(alignment: .center, spacing: 12) {
             Button {
+                // Selection is identity-based, so tapping any visible row toggles the whole item
+                // identity rather than one concrete stack instance.
                 if selectedItemIDs.contains(candidate.itemID) {
                     selectedItemIDs.remove(candidate.itemID)
                 } else {
@@ -454,7 +434,7 @@ private struct ShopAutoSellInventoryPickerView: View {
             .buttonStyle(.plain)
 
             ShopItemDetailButton(itemID: candidate.itemID) { itemID in
-                presentedItemDetail = AutoSellPresentedItemDetail(itemID: itemID)
+                presentedItemDetail = ItemDetailSheetPresentation(itemID: itemID)
             }
         }
     }
@@ -489,11 +469,3 @@ private struct AutoSellSection: Identifiable {
 }
 
 extension AutoSellSection: EquipmentSectionIndexable {}
-
-private struct AutoSellPresentedItemDetail: Identifiable {
-    let itemID: CompositeItemID
-
-    var id: String {
-        itemID.stableKey
-    }
-}

@@ -1,4 +1,6 @@
 // Presents a debug-only gallery of race icons and job portraits for asset verification.
+// The screen intentionally shows only assets that currently resolve in the app bundle so missing job
+// portraits stand out immediately while keeping the gallery compact.
 
 import SwiftUI
 
@@ -26,6 +28,8 @@ struct DebugCharacterImageGalleryView: View {
         masterData.jobs.flatMap { job in
             PortraitGender.allCases.compactMap { gender in
                 let assetName = job.portraitAssetName(for: gender)
+                // Skip unresolved assets so the debug gallery highlights only real bundle entries and
+                // does not flood the layout with placeholder cards.
                 guard UIImage(named: assetName) != nil else {
                     return nil
                 }

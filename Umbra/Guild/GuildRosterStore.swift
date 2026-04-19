@@ -6,8 +6,8 @@ import Observation
 @MainActor
 @Observable
 final class GuildRosterStore {
-    private let coreDataStore: GuildCoreDataStore
-    private let service: GuildService
+    private let coreDataRepository: GuildCoreDataRepository
+    private let service: GuildRosterService
 
     private(set) var phase: StoreLoadPhase
     private(set) var playerState: PlayerState?
@@ -20,11 +20,11 @@ final class GuildRosterStore {
     private(set) var lastHireMessage: String?
 
     init(
-        coreDataStore: GuildCoreDataStore,
-        service: GuildService,
+        coreDataRepository: GuildCoreDataRepository,
+        service: GuildRosterService,
         phase: StoreLoadPhase = .idle
     ) {
-        self.coreDataStore = coreDataStore
+        self.coreDataRepository = coreDataRepository
         self.service = service
         self.phase = phase
         playerState = nil
@@ -60,11 +60,11 @@ final class GuildRosterStore {
         lastHireMessage = nil
 
         do {
-            let snapshot = try coreDataStore.loadRosterSnapshot()
+            let snapshot = try coreDataRepository.loadRosterSnapshot()
             applySnapshot(snapshot)
             phase = .loaded
         } catch {
-            phase = .failed(Self.errorMessage(for: error))
+            phase = .failed(UserFacingErrorMessage.resolve(error))
         }
     }
 
@@ -77,11 +77,11 @@ final class GuildRosterStore {
         do {
             // This path bypasses the cached snapshot and forces a fresh Core Data read so adventure
             // rewards and background updates can be reflected without rebuilding the whole store.
-            let snapshot = try coreDataStore.loadFreshRosterSnapshot()
+            let snapshot = try coreDataRepository.loadFreshRosterSnapshot()
             applySnapshot(snapshot)
             lastOperationError = nil
         } catch {
-            lastOperationError = Self.errorMessage(for: error)
+            lastOperationError = UserFacingErrorMessage.resolve(error)
         }
     }
 
@@ -111,7 +111,7 @@ final class GuildRosterStore {
             replaceCharacter(result.character)
             lastHireMessage = "\(result.character.name)を雇用しました！"
         } catch {
-            lastOperationError = Self.errorMessage(for: error)
+            lastOperationError = UserFacingErrorMessage.resolve(error)
         }
     }
 
@@ -138,7 +138,7 @@ final class GuildRosterStore {
             )
             applySnapshot(snapshot)
         } catch {
-            lastOperationError = Self.errorMessage(for: error)
+            lastOperationError = UserFacingErrorMessage.resolve(error)
         }
     }
 
@@ -155,7 +155,7 @@ final class GuildRosterStore {
             let snapshot = try service.reviveAllDefeated(masterData: masterData)
             applySnapshot(snapshot)
         } catch {
-            lastOperationError = Self.errorMessage(for: error)
+            lastOperationError = UserFacingErrorMessage.resolve(error)
         }
     }
 
@@ -178,7 +178,7 @@ final class GuildRosterStore {
             )
             replaceCharacter(character)
         } catch {
-            lastOperationError = Self.errorMessage(for: error)
+            lastOperationError = UserFacingErrorMessage.resolve(error)
         }
     }
 
@@ -197,7 +197,7 @@ final class GuildRosterStore {
             let snapshot = try service.setAutoReviveDefeatedCharactersEnabled(isEnabled)
             applySnapshot(snapshot)
         } catch {
-            lastOperationError = Self.errorMessage(for: error)
+            lastOperationError = UserFacingErrorMessage.resolve(error)
         }
     }
 
@@ -222,7 +222,7 @@ final class GuildRosterStore {
             )
             self.playerState = playerState
         } catch {
-            lastOperationError = Self.errorMessage(for: error)
+            lastOperationError = UserFacingErrorMessage.resolve(error)
         }
     }
 
@@ -247,7 +247,7 @@ final class GuildRosterStore {
                 )
                 replaceCharacter(character)
             } catch {
-                lastOperationError = Self.errorMessage(for: error)
+                lastOperationError = UserFacingErrorMessage.resolve(error)
             }
         }
     }
@@ -275,7 +275,7 @@ final class GuildRosterStore {
                 )
                 replaceCharacter(character)
             } catch {
-                lastOperationError = Self.errorMessage(for: error)
+                lastOperationError = UserFacingErrorMessage.resolve(error)
             }
         }
     }
@@ -310,13 +310,4 @@ final class GuildRosterStore {
         )
     }
 
-    private static func errorMessage(for error: Error) -> String {
-        if let localizedError = error as? LocalizedError,
-           let description = localizedError.errorDescription,
-           !description.isEmpty {
-            return description
-        }
-
-        return String(describing: error)
-    }
 }

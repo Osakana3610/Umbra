@@ -1,8 +1,8 @@
-// Aggregates equipped composite items into stat and skill inputs for runtime battle resolution.
+// Resolves equipped composite items into derived stat and skill inputs for runtime battle logic.
 
 import Foundation
 
-nonisolated enum EquipmentAggregationError: LocalizedError, Equatable {
+nonisolated enum EquipmentResolverError: LocalizedError, Equatable {
     case invalidJewelItem(Int)
 
     var errorDescription: String? {
@@ -13,7 +13,7 @@ nonisolated enum EquipmentAggregationError: LocalizedError, Equatable {
     }
 }
 
-nonisolated struct EquipmentAggregation: Equatable, Sendable {
+nonisolated struct EquipmentResolution: Equatable, Sendable {
     let baseStats: CharacterBaseStats
     let battleStats: CharacterBattleStats
     let armorBattleStats: CharacterBattleStats
@@ -25,7 +25,7 @@ nonisolated struct EquipmentAggregation: Equatable, Sendable {
     let weaponRangeClass: ItemRangeClass
 }
 
-nonisolated struct EquipmentAggregator {
+nonisolated struct EquipmentResolver {
     private let itemsByID: [Int: MasterData.Item]
     private let titlesByID: [Int: MasterData.Title]
     private let superRaresByID: [Int: MasterData.SuperRare]
@@ -36,7 +36,7 @@ nonisolated struct EquipmentAggregator {
         superRaresByID = Dictionary(uniqueKeysWithValues: masterData.superRares.map { ($0.id, $0) })
     }
 
-    func aggregate(equippedItemStacks: [CompositeItemStack]) throws -> EquipmentAggregation {
+    func resolve(equippedItemStacks: [CompositeItemStack]) throws -> EquipmentResolution {
         var baseStats = CharacterBaseStats(
             vitality: 0,
             strength: 0,
@@ -127,7 +127,7 @@ nonisolated struct EquipmentAggregator {
             }
         }
 
-        return EquipmentAggregation(
+        return EquipmentResolution(
             baseStats: baseStats,
             battleStats: battleStats,
             armorBattleStats: armorBattleStats,
@@ -151,7 +151,7 @@ nonisolated struct EquipmentAggregator {
     ) throws -> ResolvedItemContribution {
         let item = itemsByID[itemId]!
         if !includeSuperRareSkills && item.category != .jewel {
-            throw EquipmentAggregationError.invalidJewelItem(itemId)
+            throw EquipmentResolverError.invalidJewelItem(itemId)
         }
 
         // Titles scale only battle stats, while super-rares contribute only extra skills and

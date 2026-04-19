@@ -1,4 +1,7 @@
-// Defines a shared, data-driven item filter used by equipment and reward lists.
+// Defines the shared item-filter model and filter sheet used across equipment, shop, and reward
+// browsers.
+// The filter stores hidden categories and titles rather than visible ones so "show all" remains the
+// zero state and new catalog entries automatically appear until the player explicitly hides them.
 
 import SwiftUI
 
@@ -13,11 +16,11 @@ struct ItemBrowserFilter: Equatable {
         showsOnlySuperRare = false
     }
 
-    mutating func hideAllCategories(using catalog: ItemBrowserFilterCatalog) {
+    mutating func hideAllCategories(using catalog: ItemBrowserFilterOptions) {
         hiddenCategories = Set(catalog.categories)
     }
 
-    mutating func hideAllTitles(using catalog: ItemBrowserFilterCatalog) {
+    mutating func hideAllTitles(using catalog: ItemBrowserFilterOptions) {
         hiddenTitleIDs = Set(catalog.titles.map(\.id))
     }
 
@@ -32,17 +35,19 @@ struct ItemBrowserFilter: Equatable {
             return false
         }
 
+        // Items remain visible when any attached title is still allowed, which lets mixed identities
+        // survive title filtering as long as one side matches.
         return itemID.titleIDs.contains { hiddenTitleIDs.contains($0) == false }
     }
 
-    func isActive(in catalog: ItemBrowserFilterCatalog) -> Bool {
+    func isActive(in catalog: ItemBrowserFilterOptions) -> Bool {
         showsOnlySuperRare
             || hiddenCategories.isDisjoint(with: Set(catalog.categories)) == false
             || hiddenTitleIDs.isDisjoint(with: Set(catalog.titles.map(\.id))) == false
     }
 }
 
-struct ItemBrowserFilterCatalog: Equatable {
+struct ItemBrowserFilterOptions: Equatable {
     struct TitleEntry: Identifiable, Equatable {
         let id: Int
         let label: String
@@ -61,6 +66,8 @@ struct ItemBrowserFilterCatalog: Equatable {
         categories = Set(uniqueItemIDs.compactMap { itemsByID[$0.baseItemId]?.category })
             .sorted { $0.sortOrder < $1.sortOrder }
 
+        // Title options intentionally come from master data rather than the current identities so the
+        // same sheet can reveal and re-enable titles that are temporarily absent from the list.
         titles = masterData.titles.map { title in
             TitleEntry(
                 id: title.id,
@@ -75,7 +82,7 @@ struct ItemBrowserFilterCatalog: Equatable {
 }
 
 struct ItemBrowserFilterButton: View {
-    let catalog: ItemBrowserFilterCatalog
+    let catalog: ItemBrowserFilterOptions
     @Binding var filter: ItemBrowserFilter
 
     @State private var isPresented = false
@@ -99,7 +106,7 @@ struct ItemBrowserFilterButton: View {
 }
 
 private struct ItemBrowserFilterSheet: View {
-    let catalog: ItemBrowserFilterCatalog
+    let catalog: ItemBrowserFilterOptions
     @Binding var filter: ItemBrowserFilter
 
     @Environment(\.dismiss) private var dismiss
@@ -161,6 +168,8 @@ private struct ItemBrowserFilterSheet: View {
         Binding(
             get: { filter.hiddenCategories.contains(category) == false },
             set: { isVisible in
+                // The filter keeps the hidden set as source of truth, so bindings translate the UI's
+                // visible-state toggles back into insert/remove operations.
                 if isVisible {
                     filter.hiddenCategories.remove(category)
                 } else {

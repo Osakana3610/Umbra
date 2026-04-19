@@ -1,4 +1,6 @@
 // Presents read-only enemy details using a character-detail style layout.
+// The screen resolves enemy stats at a selectable level and links related master-data entities so
+// monster-book browsing can answer most questions without leaving the detail flow.
 
 import SwiftUI
 
@@ -138,6 +140,8 @@ struct MonsterBookEnemyDetailView: View {
             return nil
         }
 
+        // Enemy status is derived live from the selected level so the same detail screen can inspect
+        // the full appearance range without precomputing every level.
         return CharacterDerivedStatsCalculator.status(
             for: enemy,
             level: selectedLevel,
@@ -151,6 +155,8 @@ struct MonsterBookEnemyDetailView: View {
         case .job(let job):
             JobDetailView(job: job, masterData: masterData)
         case .item(let itemID):
+            // Reuse the same item detail sheet shown elsewhere so enemy drops and inventory items are
+            // described consistently.
             ItemDetailView(itemID: itemID, masterData: masterData)
         }
     }

@@ -31,7 +31,7 @@ struct ConfiguredRunStart: Sendable {
 @MainActor
 @Observable
 final class ExplorationStore {
-    private let coreDataStore: ExplorationCoreDataStore
+    private let coreDataRepository: ExplorationCoreDataRepository
     private let service: ExplorationSessionService
     private let itemDropNotificationService: ItemDropNotificationService
     private let rosterStore: GuildRosterStore?
@@ -52,18 +52,18 @@ final class ExplorationStore {
     }
 
     init(
-        coreDataStore: ExplorationCoreDataStore,
+        coreDataRepository: ExplorationCoreDataRepository,
         itemDropNotificationService: ItemDropNotificationService,
         rosterStore: GuildRosterStore? = nil,
         equipmentStore: EquipmentInventoryStore? = nil,
         shopStore: ShopInventoryStore? = nil
     ) {
-        self.coreDataStore = coreDataStore
+        self.coreDataRepository = coreDataRepository
         self.itemDropNotificationService = itemDropNotificationService
         self.rosterStore = rosterStore
         self.equipmentStore = equipmentStore
         self.shopStore = shopStore
-        service = ExplorationSessionService(coreDataStore: coreDataStore)
+        service = ExplorationSessionService(coreDataRepository: coreDataRepository)
     }
 
     func loadIfNeeded(masterData: MasterData) async {
@@ -80,12 +80,12 @@ final class ExplorationStore {
 
         do {
             applySnapshot(
-                try await coreDataStore.loadSnapshot(),
+                try await coreDataRepository.loadSnapshot(),
                 masterData: masterData
             )
             scheduleCompletedRunRetentionPrune(using: masterData)
         } catch {
-            lastOperationError = Self.errorMessage(for: error)
+            lastOperationError = UserFacingErrorMessage.resolve(error)
         }
     }
 
@@ -127,7 +127,7 @@ final class ExplorationStore {
             itemDropNotificationService.publish(batches: snapshot.dropNotificationBatches)
             return (snapshot.didApplyRewards, snapshot.appliedInventoryCounts)
         } catch {
-            lastOperationError = Self.errorMessage(for: error)
+            lastOperationError = UserFacingErrorMessage.resolve(error)
             return (false, [:])
         }
     }
@@ -172,21 +172,21 @@ final class ExplorationStore {
 
     func recordBackgroundedAt(
         _ date: Date,
-        guildService: GuildService
+        partyService: PartyManagementService
     ) {
         do {
-            try guildService.recordBackgroundedAt(date)
+            try partyService.recordBackgroundedAt(date)
             rosterStore?.refreshFromPersistence()
             lastOperationError = nil
         } catch {
-            lastOperationError = Self.errorMessage(for: error)
+            lastOperationError = UserFacingErrorMessage.resolve(error)
         }
     }
 
     func resumeBackgroundProgress(
         reopenedAt: Date,
         partyStore: PartyStore,
-        guildService: GuildService,
+        partyService: PartyManagementService,
         masterData: MasterData
     ) async {
         guard !isResumingAutomaticRuns else {
@@ -210,7 +210,7 @@ final class ExplorationStore {
         }
 
         do {
-            try guildService.queueAutomaticRunsForResume(
+            try partyService.queueAutomaticRunsForResume(
                 reopenedAt: reopenedAt,
                 partyStatusesById: Dictionary(
                     uniqueKeysWithValues: partyStore.parties.map { ($0.partyId, status(for: $0.partyId)) }
@@ -220,7 +220,7 @@ final class ExplorationStore {
             rosterStore?.refreshFromPersistence()
             partyStore.reload()
         } catch {
-            lastOperationError = Self.errorMessage(for: error)
+            lastOperationError = UserFacingErrorMessage.resolve(error)
             return
         }
 
@@ -231,7 +231,7 @@ final class ExplorationStore {
         ) {
             // Automatic runs are consumed sequentially so each completion can update persisted
             // HP, rewards, and unlock state before the next queued sortie is started.
-            await startRun(
+                await startRun(
                 partyId: pendingRun.partyId,
                 labyrinthId: pendingRun.labyrinthId,
                 selectedDifficultyTitleId: pendingRun.selectedDifficultyTitleId,
@@ -242,21 +242,21 @@ final class ExplorationStore {
             if let error = lastOperationError {
                 firstResumeError = firstResumeError ?? error
                 do {
-                    try guildService.clearPendingAutomaticRuns(partyId: pendingRun.partyId)
+                    try partyService.clearPendingAutomaticRuns(partyId: pendingRun.partyId)
                     partyStore.reload()
                     lastOperationError = nil
                     continue
                 } catch {
-                    lastOperationError = Self.errorMessage(for: error)
+                    lastOperationError = UserFacingErrorMessage.resolve(error)
                     return
                 }
             }
 
             do {
-                try guildService.consumePendingAutomaticRun(partyId: pendingRun.partyId)
+                try partyService.consumePendingAutomaticRun(partyId: pendingRun.partyId)
                 partyStore.reload()
             } catch {
-                lastOperationError = Self.errorMessage(for: error)
+                lastOperationError = UserFacingErrorMessage.resolve(error)
                 return
             }
 
@@ -287,12 +287,12 @@ final class ExplorationStore {
         partyRunId: Int
     ) async -> RunSessionRecord? {
         do {
-            return try await coreDataStore.loadRunDetail(
+            return try await coreDataRepository.loadRunDetail(
                 partyId: partyId,
                 partyRunId: partyRunId
             )
         } catch {
-            lastOperationError = Self.errorMessage(for: error)
+            lastOperationError = UserFacingErrorMessage.resolve(error)
             return nil
         }
     }
@@ -331,7 +331,7 @@ final class ExplorationStore {
             applySnapshot(try await operation(), masterData: masterData)
             rosterStore?.refreshFromPersistence()
         } catch {
-            lastOperationError = Self.errorMessage(for: error)
+            lastOperationError = UserFacingErrorMessage.resolve(error)
         }
     }
 
@@ -383,11 +383,11 @@ final class ExplorationStore {
             do {
                 // Retention pruning reloads only when rows were actually deleted, avoiding an
                 // unnecessary full snapshot rebuild on every refresh.
-                guard try await self.coreDataStore.pruneCompletedRunsExceedingRetentionLimit() else {
+                guard try await self.coreDataRepository.pruneCompletedRunsExceedingRetentionLimit() else {
                     return
                 }
 
-                let snapshot = try await self.coreDataStore.loadSnapshot()
+                let snapshot = try await self.coreDataRepository.loadSnapshot()
                 guard !Task.isCancelled else {
                     return
                 }
@@ -455,13 +455,4 @@ final class ExplorationStore {
         return nil
     }
 
-    private static func errorMessage(for error: Error) -> String {
-        if let localizedError = error as? LocalizedError,
-           let description = localizedError.errorDescription,
-           !description.isEmpty {
-            return description
-        }
-
-        return String(describing: error)
-    }
 }

@@ -1,4 +1,7 @@
-// Publishes overlay notifications for character status changes caused by equipping items.
+// Publishes overlay notifications describing how a character's resolved status changed after an
+// equipment mutation.
+// The service emits formatted deltas rather than raw snapshots because the overlay is meant to show
+// only what changed, not restate the entire character sheet after every equip action.
 
 import Foundation
 import Observation
@@ -88,6 +91,8 @@ final class EquipmentStatusNotificationService {
 
         var lines: [String] = []
 
+        // Preserve a stable grouping order so the overlay stays easy to scan across repeated equip
+        // actions.
         appendIntDifferences(
             from: beforeStatus.baseStats,
             to: afterStatus.baseStats,
@@ -134,6 +139,8 @@ final class EquipmentStatusNotificationService {
         into lines: inout [String]
     ) {
         for descriptor in descriptors {
+            // Derived multipliers are displayed as rounded percentages because that matches how the
+            // rest of the UI explains multiplier-style effects to the player.
             let beforeValue = Int((beforeStats[keyPath: descriptor.keyPath] * 100).rounded())
             let afterValue = Int((afterStats[keyPath: descriptor.keyPath] * 100).rounded())
             let delta = afterValue - beforeValue

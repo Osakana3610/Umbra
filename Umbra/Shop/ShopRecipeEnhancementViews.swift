@@ -1,4 +1,6 @@
-// Presents recipe-based enhancement placeholders while still exposing owned and equipped item usage.
+// Presents the recipe-based enhancement browsers while recipes are not yet implemented.
+// The view still exposes the candidate inventory and equipped rows so future enhancement flows can
+// reuse the same browsing and filtering structure without redesigning the screen.
 
 import SwiftUI
 
@@ -43,7 +45,7 @@ private struct ShopRecipeEnhancementBrowserView: View {
 
     @State private var itemFilter = ItemBrowserFilter()
     @State private var loadError: String?
-    @State private var presentedItemDetail: PresentedRecipeEnhancementItemDetail?
+    @State private var presentedItemDetail: ItemDetailSheetPresentation?
 
     var body: some View {
         List {
@@ -104,21 +106,7 @@ private struct ShopRecipeEnhancementBrowserView: View {
                 }
             }
         }
-        .sheet(item: $presentedItemDetail) { presentedItemDetail in
-            NavigationStack {
-                ItemDetailView(
-                    itemID: presentedItemDetail.itemID,
-                    masterData: masterData
-                )
-                .toolbar {
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Button("閉じる") {
-                            self.presentedItemDetail = nil
-                        }
-                    }
-                }
-            }
-        }
+        .itemDetailSheet(item: $presentedItemDetail, masterData: masterData)
         .task {
             do {
                 try equipmentStore.loadIfNeeded(masterData: masterData)
@@ -130,17 +118,17 @@ private struct ShopRecipeEnhancementBrowserView: View {
     }
 
     private var inventoryItems: [EquipmentCachedItem] {
-        equipmentStore.orderedSectionKeys.flatMap { sectionKey in
-            equipmentStore.inventoryItemsBySection[sectionKey] ?? []
-        }
+        equipmentStore.displayOrderedInventoryItems
     }
 
     private var currentErrorMessage: String? {
         loadError ?? equipmentStore.lastOperationError
     }
 
-    private var currentFilterCatalog: ItemBrowserFilterCatalog {
-        ItemBrowserFilterCatalog(
+    private var currentFilterCatalog: ItemBrowserFilterOptions {
+        ItemBrowserFilterOptions(
+            // Recipe enhancement can eventually consume both inventory items and currently equipped
+            // items, so the filter catalog is built from both sources now.
             itemIDs: inventoryItems.map(\.itemID) + rosterStore.characters.flatMap { character in
                 character.orderedEquippedItemStacks.map(\.itemID)
             },
@@ -170,39 +158,8 @@ private struct ShopRecipeEnhancementBrowserView: View {
     private func itemRow(
         for row: ShopEnhancementRow
     ) -> some View {
-        switch row {
-        case .inventory(let item):
-            HStack(alignment: .center, spacing: 12) {
-                ShopEnhancementInventorySummaryContent(
-                    item: item
-                )
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-                ShopItemDetailButton(itemID: item.itemID) { itemID in
-                    presentedItemDetail = PresentedRecipeEnhancementItemDetail(itemID: itemID)
-                }
-            }
-        case .equipped(let item, _, let characterName, let portraitAssetName):
-            HStack(alignment: .center, spacing: 12) {
-                ShopEnhancementEquippedRowContent(
-                    item: item,
-                    characterName: characterName,
-                    portraitAssetName: portraitAssetName
-                )
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-                ShopItemDetailButton(itemID: item.itemID) { itemID in
-                    presentedItemDetail = PresentedRecipeEnhancementItemDetail(itemID: itemID)
-                }
-            }
+        ShopEnhancementDetailRow(row: row) { itemID in
+            presentedItemDetail = ItemDetailSheetPresentation(itemID: itemID)
         }
-    }
-}
-
-private struct PresentedRecipeEnhancementItemDetail: Identifiable {
-    let itemID: CompositeItemID
-
-    var id: String {
-        itemID.stableKey
     }
 }

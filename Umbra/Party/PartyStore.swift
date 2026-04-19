@@ -6,8 +6,8 @@ import Observation
 @MainActor
 @Observable
 final class PartyStore {
-    private let coreDataStore: GuildCoreDataStore
-    private let service: GuildService
+    private let coreDataRepository: GuildCoreDataRepository
+    private let service: PartyManagementService
 
     private(set) var phase: StoreLoadPhase
     private(set) var parties: [PartyRecord]
@@ -16,11 +16,11 @@ final class PartyStore {
     private(set) var lastOperationError: String?
 
     init(
-        coreDataStore: GuildCoreDataStore,
-        service: GuildService,
+        coreDataRepository: GuildCoreDataRepository,
+        service: PartyManagementService,
         phase: StoreLoadPhase = .idle
     ) {
-        self.coreDataStore = coreDataStore
+        self.coreDataRepository = coreDataRepository
         self.service = service
         self.phase = phase
         parties = []
@@ -49,10 +49,10 @@ final class PartyStore {
         lastOperationError = nil
 
         do {
-            applyParties(try coreDataStore.loadParties())
+            applyParties(try coreDataRepository.loadParties())
             phase = .loaded
         } catch {
-            phase = .failed(Self.errorMessage(for: error))
+            phase = .failed(UserFacingErrorMessage.resolve(error))
         }
     }
 
@@ -80,7 +80,7 @@ final class PartyStore {
                 applyParties(try service.unlockParty())
             }
         } catch {
-            lastOperationError = Self.errorMessage(for: error)
+            lastOperationError = UserFacingErrorMessage.resolve(error)
         }
     }
 
@@ -96,7 +96,7 @@ final class PartyStore {
         do {
             applyParties(try service.renameParty(partyId: partyId, name: name))
         } catch {
-            lastOperationError = Self.errorMessage(for: error)
+            lastOperationError = UserFacingErrorMessage.resolve(error)
         }
     }
 
@@ -133,7 +133,7 @@ final class PartyStore {
                 )
             } catch {
                 applyParties(previousParties)
-                lastOperationError = Self.errorMessage(for: error)
+                lastOperationError = UserFacingErrorMessage.resolve(error)
             }
         }
     }
@@ -162,7 +162,7 @@ final class PartyStore {
                     )
                 )
             } catch {
-                lastOperationError = Self.errorMessage(for: error)
+                lastOperationError = UserFacingErrorMessage.resolve(error)
             }
         }
     }
@@ -189,7 +189,7 @@ final class PartyStore {
                     )
                 )
             } catch {
-                lastOperationError = Self.errorMessage(for: error)
+                lastOperationError = UserFacingErrorMessage.resolve(error)
             }
         }
     }
@@ -223,7 +223,7 @@ final class PartyStore {
                 )
             } catch {
                 applyParties(previousParties)
-                lastOperationError = Self.errorMessage(for: error)
+                lastOperationError = UserFacingErrorMessage.resolve(error)
             }
         }
     }
@@ -255,7 +255,7 @@ final class PartyStore {
                     )
                 )
             } catch {
-                lastOperationError = Self.errorMessage(for: error)
+                lastOperationError = UserFacingErrorMessage.resolve(error)
             }
         }
     }
@@ -290,13 +290,4 @@ final class PartyStore {
         return remainingMembers
     }
 
-    private static func errorMessage(for error: Error) -> String {
-        if let localizedError = error as? LocalizedError,
-           let description = localizedError.errorDescription,
-           !description.isEmpty {
-            return description
-        }
-
-        return String(describing: error)
-    }
 }

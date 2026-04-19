@@ -1,4 +1,6 @@
-// Shows a reusable detail sheet for one composite equipment item and its stat contributions.
+// Shows the resolved details for one composite equipment identity.
+// The view presents the final display name, optional title and jewel parts, resolved stat deltas,
+// and granted skills so the player can inspect the exact result of one equipment stack.
 
 import SwiftUI
 
@@ -136,7 +138,7 @@ private struct ItemDetailSnapshot {
         let titlesByID = Dictionary(uniqueKeysWithValues: masterData.titles.map { ($0.id, $0) })
         let superRaresByID = Dictionary(uniqueKeysWithValues: masterData.superRares.map { ($0.id, $0) })
         let skillsByID = Dictionary(uniqueKeysWithValues: masterData.skills.map { ($0.id, $0) })
-        let aggregation = try? EquipmentAggregator(masterData: masterData).aggregate(
+        let resolution = try? EquipmentResolver(masterData: masterData).resolve(
             equippedItemStacks: [CompositeItemStack(itemID: itemID, count: 1)]
         )
 
@@ -165,10 +167,12 @@ private struct ItemDetailSnapshot {
 
         var baseLines: [StatLine] = []
         var battleLines: [StatLine] = []
-        if let aggregation {
-            Self.appendBaseStatLines(from: aggregation.baseStats, to: &baseLines)
-            Self.appendBattleStatLines(from: aggregation.battleStats, to: &battleLines)
-            skills = aggregation.itemSkillIDs.compactMap { skillsByID[$0] }
+        if let resolution {
+            // Reuse the full equipment resolver so the detail sheet matches the same stat rules used
+            // by equipment screens and battle calculations.
+            Self.appendBaseStatLines(from: resolution.baseStats, to: &baseLines)
+            Self.appendBattleStatLines(from: resolution.battleStats, to: &battleLines)
+            skills = resolution.itemSkillIDs.compactMap { skillsByID[$0] }
         } else {
             skills = []
         }

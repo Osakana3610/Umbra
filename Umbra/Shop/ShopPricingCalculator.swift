@@ -1,17 +1,19 @@
-// Defines the store's initial stock and temporary buy/sell pricing rules.
+// Calculates shop-facing purchase, sellback, and stock-organization values.
 
 import Foundation
 
-enum ShopCatalog {
-    static let sellbackRate = 0.05
-    static let superRareValueMultiplier = 2.0
-    static let stockOrganizationBundleSize = 99
-
+enum ShopInventoryLoader {
     static func initialInventory(masterData: MasterData) -> [CompositeItemStack] {
         masterData.items
             .map { CompositeItemStack(itemID: .baseItem(itemId: $0.id), count: 1) }
             .sorted { $0.itemID.isOrdered(before: $1.itemID) }
     }
+}
+
+enum ShopPricingCalculator {
+    static let sellbackRate = 0.05
+    static let superRareValueMultiplier = 2.0
+    static let stockOrganizationBundleSize = 99
 
     static func purchasePrice(
         for itemID: CompositeItemID,

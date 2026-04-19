@@ -5,7 +5,7 @@ import SwiftUI
 struct ItemDropNotificationSettingsView: View {
     let masterData: MasterData
 
-    @AppStorage("itemDropNotification.showsNormalRarityItems")
+    @AppStorage(ItemDropNotificationSettingsRepository.showsNormalRarityItemsKey)
     // Keep the coarse rarity toggle in AppStorage alongside the per-title and per-super-rare
     // filters so the overlay can read everything directly from UserDefaults-backed settings.
     private var showsNormalRarityItems = true
@@ -28,8 +28,8 @@ struct ItemDropNotificationSettingsView: View {
                         isOn: Binding(
                             // These toggles talk directly to UserDefaults-backed helpers so the
                             // overlay filter applies immediately without an intermediate store.
-                            get: { ItemDropNotificationSettings.isTitleEnabled(title.id) },
-                            set: { ItemDropNotificationSettings.setTitleEnabled($0, titleId: title.id) }
+                            get: { ItemDropNotificationSettingsRepository.isTitleEnabled(title.id) },
+                            set: { ItemDropNotificationSettingsRepository.setTitleEnabled($0, titleId: title.id) }
                         )
                     )
                 }
@@ -42,8 +42,8 @@ struct ItemDropNotificationSettingsView: View {
                         isOn: Binding(
                             // Super-rare filters are independent from title filters; both must
                             // pass for a notification to be shown.
-                            get: { ItemDropNotificationSettings.isSuperRareEnabled(superRare.id) },
-                            set: { ItemDropNotificationSettings.setSuperRareEnabled($0, superRareId: superRare.id) }
+                            get: { ItemDropNotificationSettingsRepository.isSuperRareEnabled(superRare.id) },
+                            set: { ItemDropNotificationSettingsRepository.setSuperRareEnabled($0, superRareId: superRare.id) }
                         )
                     )
                 }

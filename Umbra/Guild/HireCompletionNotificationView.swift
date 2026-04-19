@@ -1,4 +1,6 @@
-// Renders the top capsule notification shown after guild hiring completes.
+// Renders the transient capsule notification shown after guild hiring completes.
+// The view owns its own entrance and dismissal motion so the caller only needs to provide the
+// message text and remove the notification when dismissal is requested.
 
 import SwiftUI
 
@@ -60,6 +62,8 @@ struct HireCompletionNotificationView: View {
                 dragOffset = min(value.translation.height, 0)
             }
             .onEnded { value in
+                // Only upward drags dismiss the capsule; downward movement just previews the drag so
+                // the banner does not interfere with normal top-edge interactions.
                 if value.translation.height < -36 || value.predictedEndTranslation.height < -72 {
                     dismissAnimated()
                 } else {
@@ -95,6 +99,7 @@ struct HireCompletionNotificationView: View {
             return 0
         }
 
+        // Reduce Motion keeps the banner in place and relies on opacity only.
         return accessibilityReduceMotion ? 0 : -72
     }
 

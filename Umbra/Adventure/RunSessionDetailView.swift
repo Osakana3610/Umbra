@@ -237,8 +237,8 @@ struct RunSessionDetailView: View {
 
     private func dropRewardCatalog(
         for completion: RunCompletionRecord?
-    ) -> ItemBrowserFilterCatalog {
-        ItemBrowserFilterCatalog(
+    ) -> ItemBrowserFilterOptions {
+        ItemBrowserFilterOptions(
             itemIDs: completion?.dropRewards.map(\.itemID) ?? [],
             masterData: masterData
         )

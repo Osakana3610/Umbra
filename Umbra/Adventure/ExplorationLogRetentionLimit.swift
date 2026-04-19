@@ -13,7 +13,6 @@ nonisolated enum ExplorationLogRetentionLimit: Int, CaseIterable, Identifiable {
     case count900 = 900
     case count1000 = 1_000
 
-    static let userDefaultsKey = "explorationLogRetentionCount"
     static let defaultValue: Self = .count300
 
     var id: Int { rawValue }
@@ -21,11 +20,16 @@ nonisolated enum ExplorationLogRetentionLimit: Int, CaseIterable, Identifiable {
     var title: String {
         "\(rawValue)件"
     }
+}
+
+nonisolated enum ExplorationLogRetentionRepository {
+    static let userDefaultsKey = "explorationLogRetentionCount"
 
     static func configuredCount(
         userDefaults: UserDefaults = .standard
     ) -> Int {
         let configuredCount = userDefaults.object(forKey: userDefaultsKey) as? Int
-        return configuredCount.map { max($0, count200.rawValue) } ?? defaultValue.rawValue
+        return configuredCount.map { max($0, ExplorationLogRetentionLimit.count200.rawValue) }
+            ?? ExplorationLogRetentionLimit.defaultValue.rawValue
     }
 }

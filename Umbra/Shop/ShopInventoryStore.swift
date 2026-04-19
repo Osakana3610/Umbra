@@ -1,4 +1,6 @@
-// Owns shop stock state and coordinates buy/sell operations with roster and inventory refreshes.
+// Owns the observable shop stock cache used by the store UI.
+// Wraps shop mutations so roster gold, player inventory, and shop inventory stay synchronized
+// without forcing every screen to reload from persistence after each operation.
 
 import Foundation
 import Observation
@@ -6,7 +8,7 @@ import Observation
 @MainActor
 @Observable
 final class ShopInventoryStore {
-    private let service: GuildService
+    private let service: ShopTradingService
 
     private var itemsByID: [Int: MasterData.Item] = [:]
     private var nameResolver: EquipmentDisplayNameResolver?
@@ -18,7 +20,11 @@ final class ShopInventoryStore {
     private(set) var shopItemsBySection: [EquipmentSectionKey: [EquipmentCachedItem]] = [:]
     private(set) var orderedSectionKeys: [EquipmentSectionKey] = []
 
-    init(service: GuildService) {
+    var displayOrderedShopItems: [EquipmentCachedItem] {
+        orderedSectionKeys.flatMap { shopItemsBySection[$0] ?? [] }
+    }
+
+    init(service: ShopTradingService) {
         self.service = service
     }
 
@@ -62,6 +68,8 @@ final class ShopInventoryStore {
 
         configure(masterData: masterData)
 
+        // The store updates its in-memory section cache incrementally after successful mutations so
+        // the UI reflects the change immediately without a full reload from Core Data.
         for (itemID, count) in itemCounts where count != 0 {
             if count > 0 {
                 incrementInventory(itemID: itemID, by: count)
@@ -92,11 +100,13 @@ final class ShopInventoryStore {
                 try loadIfNeeded(masterData: masterData)
                 try equipmentStore.loadIfNeeded(masterData: masterData)
                 try service.buyShopItem(itemID: itemID, count: count, masterData: masterData)
+                // Refresh persistent player state first, then mirror the same delta into both cached
+                // inventories so every visible screen stays in sync with one mutation.
                 rosterStore.refreshFromPersistence()
                 equipmentStore.applyInventoryChanges([itemID: count], masterData: masterData)
                 applyInventoryChanges([itemID: -count], masterData: masterData)
             } catch {
-                lastOperationError = Self.errorMessage(for: error)
+                lastOperationError = UserFacingErrorMessage.resolve(error)
             }
         }
     }
@@ -126,7 +136,7 @@ final class ShopInventoryStore {
                 equipmentStore.applyInventoryChanges([itemID: -count], masterData: masterData)
                 applyInventoryChanges([itemID: count], masterData: masterData)
             } catch {
-                lastOperationError = Self.errorMessage(for: error)
+                lastOperationError = UserFacingErrorMessage.resolve(error)
             }
         }
     }
@@ -154,11 +164,11 @@ final class ShopInventoryStore {
                 )
                 rosterStore.refreshFromPersistence()
                 applyInventoryChanges(
-                    [itemID: -ShopCatalog.stockOrganizationBundleSize],
+                    [itemID: -ShopPricingCalculator.stockOrganizationBundleSize],
                     masterData: masterData
                 )
             } catch {
-                lastOperationError = Self.errorMessage(for: error)
+                lastOperationError = UserFacingErrorMessage.resolve(error)
             }
         }
     }
@@ -185,6 +195,8 @@ final class ShopInventoryStore {
                 let movedCounts = Dictionary(
                     uniqueKeysWithValues: itemIDs.map { ($0, equipmentStore.inventoryQuantity(for: $0)) }
                 )
+                // Auto-sell moves every owned stack for the selected identities into the shop at once,
+                // so capture those counts before the service mutates persistence.
                 _ = try service.configureAutoSell(
                     itemIDs: itemIDs,
                     masterData: masterData
@@ -196,12 +208,14 @@ final class ShopInventoryStore {
                 )
                 applyInventoryChanges(movedCounts, masterData: masterData)
             } catch {
-                lastOperationError = Self.errorMessage(for: error)
+                lastOperationError = UserFacingErrorMessage.resolve(error)
             }
         }
     }
 
     private func configure(masterData: MasterData) {
+        // These lookup tables are stable for one master-data snapshot, so build them lazily and reuse
+        // them across incremental cache updates.
         if itemsByID.isEmpty {
             itemsByID = Dictionary(uniqueKeysWithValues: masterData.items.map { ($0.id, $0) })
         }
@@ -241,6 +255,8 @@ final class ShopInventoryStore {
         if let index = items.firstIndex(where: { $0.itemID == itemID }) {
             items[index].quantity += amount
         } else {
+            // New identities must be inserted in sorted order because section rows are rendered
+            // directly from the cached arrays.
             insert(cachedItem(for: itemID, quantity: amount), into: &items)
             sectionKeyByItemID[itemID] = sectionKey
             if orderedSectionKeys.contains(sectionKey) == false {
@@ -273,6 +289,8 @@ final class ShopInventoryStore {
         sectionKeyByItemID.removeValue(forKey: itemID)
 
         if items.isEmpty {
+            // Prune empty sections immediately so the section index and visible headers do not leave
+            // behind empty buckets after a trade.
             shopItemsBySection.removeValue(forKey: sectionKey)
             orderedSectionKeys.removeAll { $0 == sectionKey }
         } else {
@@ -291,13 +309,4 @@ final class ShopInventoryStore {
         }
     }
 
-    private static func errorMessage(for error: Error) -> String {
-        if let localizedError = error as? LocalizedError,
-           let description = localizedError.errorDescription,
-           !description.isEmpty {
-            return description
-        }
-
-        return String(describing: error)
-    }
 }

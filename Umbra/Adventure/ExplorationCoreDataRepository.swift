@@ -3,7 +3,7 @@
 import CoreData
 import Foundation
 
-actor ExplorationCoreDataStore {
+actor ExplorationCoreDataRepository {
     private let container: NSPersistentContainer
 
     init(container: NSPersistentContainer) {
@@ -341,7 +341,7 @@ nonisolated private enum ExplorationCoreDataBridge {
     static func pruneCompletedRunsExceedingRetentionLimit(
         in context: NSManagedObjectContext
     ) throws -> Bool {
-        let retentionCount = ExplorationLogRetentionLimit.configuredCount()
+        let retentionCount = ExplorationLogRetentionRepository.configuredCount()
         let request = NSFetchRequest<NSManagedObjectID>(entityName: "RunSessionEntity")
         request.resultType = .managedObjectIDResultType
         request.predicate = NSPredicate(format: "completedAt != nil")

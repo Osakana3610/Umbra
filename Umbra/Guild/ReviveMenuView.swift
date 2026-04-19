@@ -1,4 +1,7 @@
-// Lists defeated characters, supports individual or bulk revival, and controls automatic revival on return.
+// Lists defeated characters, exposes individual and bulk revival actions, and controls the guild's
+// automatic-revival preference.
+// The screen reads directly from roster state so manual revives and the return-time toggle stay in
+// one place instead of being split across character detail and player settings views.
 
 import SwiftUI
 
@@ -55,6 +58,8 @@ struct ReviveMenuView: View {
                             rosterStore.playerState?.autoReviveDefeatedCharacters ?? false
                         },
                         set: { isEnabled in
+                            // Persist the guild-wide preference immediately; the actual mass revive
+                            // still happens later when the return flow resolves.
                             rosterStore.setAutoReviveDefeatedCharactersEnabled(isEnabled)
                         }
                     )
@@ -86,6 +91,7 @@ struct ReviveMenuView: View {
     }
 
     private var defeatedCharacters: [CharacterRecord] {
+        // Treat zero HP as the single defeated-state source of truth for this menu.
         rosterStore.characters.filter { $0.currentHP == 0 }
     }
 }

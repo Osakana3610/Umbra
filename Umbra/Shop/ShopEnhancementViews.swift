@@ -1,4 +1,6 @@
-// Builds and renders enhancement item rows that combine owned stacks with equipped usage across characters.
+// Builds the mixed inventory and equipped-item rows used by enhancement-related screens.
+// These helpers keep one consistent section ordering while still showing whether an identity is in
+// shared inventory or currently equipped by a specific character.
 
 import SwiftUI
 
@@ -105,12 +107,16 @@ enum ShopEnhancementRow: Identifiable {
                 rows.append(.inventory(item: inventoryItem))
 
                 if let matchedRows = equippedRowsByItemID[inventoryItem.itemID] {
+                    // When inventory and equipped rows share the same identity, keep them adjacent so
+                    // the player can compare available stock with who is already wearing it.
                     rows.append(contentsOf: matchedRows)
                     matchedItemIDs.insert(inventoryItem.itemID)
                 }
             }
 
             for equippedRow in equippedSectionRows where !matchedItemIDs.contains(equippedRow.itemID) {
+                // Equipped-only identities still need deterministic placement inside the section even
+                // when no matching inventory row exists.
                 if let index = rows.firstIndex(where: { Self.isOrderedBefore(equippedRow, than: $0) }) {
                     rows.insert(equippedRow, at: index)
                 } else {
@@ -145,6 +151,8 @@ enum ShopEnhancementRow: Identifiable {
 
         return switch (lhs, rhs) {
         case (.inventory, .equipped):
+            // Show shared inventory before equipped rows when identities tie so the mutation entry
+            // point starts from the fungible stack first.
             true
         case (.equipped, .inventory):
             false
@@ -192,8 +200,41 @@ struct ShopEnhancementEquippedRowContent: View {
     }
 
     private var detailText: String {
+        // A quantity suffix is only meaningful for duplicated equipped identities; single equipped
+        // items read better as a plain owner label.
         item.quantity > 1
             ? "装備中：\(characterName) x\(item.quantity)"
             : "装備中：\(characterName)"
+    }
+}
+
+struct ShopEnhancementRowSummaryContent: View {
+    let row: ShopEnhancementRow
+
+    var body: some View {
+        switch row {
+        case .inventory(let item):
+            ShopEnhancementInventorySummaryContent(item: item)
+        case .equipped(let item, _, let characterName, let portraitAssetName):
+            ShopEnhancementEquippedRowContent(
+                item: item,
+                characterName: characterName,
+                portraitAssetName: portraitAssetName
+            )
+        }
+    }
+}
+
+struct ShopEnhancementDetailRow: View {
+    let row: ShopEnhancementRow
+    let onShowDetail: (CompositeItemID) -> Void
+
+    var body: some View {
+        HStack(alignment: .center, spacing: 12) {
+            ShopEnhancementRowSummaryContent(row: row)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            ShopItemDetailButton(itemID: row.itemID, onShowDetail: onShowDetail)
+        }
     }
 }

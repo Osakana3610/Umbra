@@ -9,7 +9,7 @@ struct DebugMenuView: View {
 
     let masterData: MasterData
     let persistentContainer: NSPersistentContainer
-    let guildService: GuildService
+    let inventoryService: InventoryManagementService
     let equipmentStore: EquipmentInventoryStore
 
     @State private var combinationCountPreset: DebugCombinationCountPreset = .tenThousand
@@ -37,8 +37,8 @@ struct DebugMenuView: View {
         )
     }
 
-    private var guildCoreDataStore: GuildCoreDataStore {
-        GuildCoreDataStore(container: persistentContainer)
+    private var guildCoreDataRepository: GuildCoreDataRepository {
+        GuildCoreDataRepository(container: persistentContainer)
     }
 
     private var isBusy: Bool {
@@ -233,7 +233,7 @@ struct DebugMenuView: View {
                 return
             }
 
-            try guildService.addInventoryStacks(batch.inventoryStacks, masterData: masterData)
+            try inventoryService.addInventoryStacks(batch.inventoryStacks, masterData: masterData)
             if equipmentStore.isLoaded {
                 equipmentStore.applyInventoryChanges(
                     Dictionary(
@@ -289,9 +289,9 @@ struct DebugMenuView: View {
         errorMessage = nil
 
         do {
-            var snapshot = try guildCoreDataStore.loadRosterSnapshot()
+            var snapshot = try guildCoreDataRepository.loadRosterSnapshot()
             snapshot.playerState.gold += Self.debugGoldIncrement
-            try guildCoreDataStore.saveRosterSnapshot(snapshot)
+            try guildCoreDataRepository.saveRosterSnapshot(snapshot)
             resultMessage = "\(Self.debugGoldIncrement.formatted())G を追加しました。現在 \(snapshot.playerState.gold.formatted())G です。"
         } catch {
             errorMessage = error.localizedDescription
@@ -343,216 +343,5 @@ struct DebugMenuView: View {
         let timestamp = formatter.string(from: Date())
             .replacingOccurrences(of: ":", with: "-")
         return "UmbraUserData-\(timestamp)"
-    }
-}
-
-enum DebugCombinationCountPreset: String, CaseIterable, Identifiable {
-    case tenThousand
-    case fiftyThousand
-    case custom
-
-    var id: String { rawValue }
-
-    var title: String {
-        switch self {
-        case .tenThousand:
-            "1万"
-        case .fiftyThousand:
-            "5万"
-        case .custom:
-            "任意"
-        }
-    }
-
-    func resolveValue(customText: String) throws -> Int {
-        switch self {
-        case .tenThousand:
-            return 10_000
-        case .fiftyThousand:
-            return 50_000
-        case .custom:
-            guard let value = Int(customText), value > 0 else {
-                throw DebugMenuInputError.invalidCombinationCount
-            }
-            return value
-        }
-    }
-}
-
-enum DebugStackCountPreset: String, CaseIterable, Identifiable {
-    case one
-    case fifty
-    case ninetyNine
-    case custom
-
-    var id: String { rawValue }
-
-    var title: String {
-        switch self {
-        case .one:
-            "1"
-        case .fifty:
-            "50"
-        case .ninetyNine:
-            "99"
-        case .custom:
-            "任意"
-        }
-    }
-
-    func resolveValue(customText: String) throws -> Int {
-        switch self {
-        case .one:
-            return 1
-        case .fifty:
-            return 50
-        case .ninetyNine:
-            return 99
-        case .custom:
-            guard let value = Int(customText), value > 0 else {
-                throw DebugMenuInputError.invalidStackCount
-            }
-            return value
-        }
-    }
-}
-
-enum DebugMenuInputError: LocalizedError {
-    case invalidCombinationCount
-    case invalidStackCount
-
-    var errorDescription: String? {
-        switch self {
-        case .invalidCombinationCount:
-            "組み合わせ数は1以上で入力してください。"
-        case .invalidStackCount:
-            "スタック数は1以上で入力してください。"
-        }
-    }
-}
-
-struct DebugGeneratedInventoryBatch: Sendable {
-    let inventoryStacks: [CompositeItemStack]
-    let generatedCombinationCount: Int
-}
-
-struct DebugItemBatchGenerator: Sendable {
-    private let baseItemIDs: [Int]
-    private let jewelItemIDs: [Int]
-    private let titleIDs: [Int]
-    private let superRareIDs: [Int]
-
-    init(masterData: MasterData) {
-        baseItemIDs = masterData.items
-            .filter { $0.category != .jewel }
-            .map(\.id)
-        jewelItemIDs = masterData.items
-            .filter { $0.category == .jewel }
-            .map(\.id)
-        titleIDs = masterData.titles.map(\.id)
-        superRareIDs = masterData.superRares.map(\.id)
-    }
-
-    var titleOnlyCombinationCount: Int {
-        baseItemIDs.count * titleIDs.count
-    }
-
-    var superRareAndTitleCombinationCount: Int {
-        baseItemIDs.count * superRareIDs.count * titleIDs.count
-    }
-
-    var jewelEnhancedCombinationCount: Int {
-        baseItemIDs.count
-            * superRareIDs.count
-            * titleIDs.count
-            * jewelItemIDs.count
-            * superRareIDs.count
-            * titleIDs.count
-    }
-
-    var totalCombinationCount: Int {
-        titleOnlyCombinationCount + superRareAndTitleCombinationCount + jewelEnhancedCombinationCount
-    }
-
-    func generate(
-        requestedCombinationCount: Int,
-        stackCount: Int
-    ) -> DebugGeneratedInventoryBatch {
-        guard requestedCombinationCount > 0, stackCount > 0 else {
-            return DebugGeneratedInventoryBatch(inventoryStacks: [], generatedCombinationCount: 0)
-        }
-
-        var inventoryStacks: [CompositeItemStack] = []
-        inventoryStacks.reserveCapacity(min(requestedCombinationCount, totalCombinationCount))
-
-        func append(_ itemID: CompositeItemID) -> Bool {
-            inventoryStacks.append(CompositeItemStack(itemID: itemID, count: stackCount))
-            return inventoryStacks.count == requestedCombinationCount
-        }
-
-        // The loops deliberately exhaust lower-complexity combinations first so the generated test
-        // data remains predictable for smaller requested sample sizes.
-        for baseItemID in baseItemIDs {
-            for titleID in titleIDs {
-                if append(CompositeItemID.baseItem(itemId: baseItemID, titleId: titleID)) {
-                    return DebugGeneratedInventoryBatch(
-                        inventoryStacks: inventoryStacks,
-                        generatedCombinationCount: inventoryStacks.count
-                    )
-                }
-            }
-        }
-
-        for baseItemID in baseItemIDs {
-            for superRareID in superRareIDs {
-                for titleID in titleIDs {
-                    if append(
-                        CompositeItemID.baseItem(
-                            itemId: baseItemID,
-                            titleId: titleID,
-                            superRareId: superRareID
-                        )
-                    ) {
-                        return DebugGeneratedInventoryBatch(
-                            inventoryStacks: inventoryStacks,
-                            generatedCombinationCount: inventoryStacks.count
-                        )
-                    }
-                }
-            }
-        }
-
-        for baseItemID in baseItemIDs {
-            for baseSuperRareID in superRareIDs {
-                for baseTitleID in titleIDs {
-                    for jewelItemID in jewelItemIDs {
-                        for jewelSuperRareID in superRareIDs {
-                            for jewelTitleID in titleIDs {
-                                if append(
-                                    CompositeItemID(
-                                        baseSuperRareId: baseSuperRareID,
-                                        baseTitleId: baseTitleID,
-                                        baseItemId: baseItemID,
-                                        jewelSuperRareId: jewelSuperRareID,
-                                        jewelTitleId: jewelTitleID,
-                                        jewelItemId: jewelItemID
-                                    )
-                                ) {
-                                    return DebugGeneratedInventoryBatch(
-                                        inventoryStacks: inventoryStacks,
-                                        generatedCombinationCount: inventoryStacks.count
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        return DebugGeneratedInventoryBatch(
-            inventoryStacks: inventoryStacks,
-            generatedCombinationCount: inventoryStacks.count
-        )
     }
 }

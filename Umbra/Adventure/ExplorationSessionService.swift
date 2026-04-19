@@ -13,12 +13,12 @@ nonisolated private struct ResolvedRunProgress: Sendable {
 }
 
 final class ExplorationSessionService {
-    private let coreDataStore: ExplorationCoreDataStore
+    private let coreDataRepository: ExplorationCoreDataRepository
     nonisolated private static let catTicketRewardMultiplier = 2.0
     nonisolated private static let catTicketProgressIntervalMultiplier = 0.5
 
-    init(coreDataStore: ExplorationCoreDataStore) {
-        self.coreDataStore = coreDataStore
+    init(coreDataRepository: ExplorationCoreDataRepository) {
+        self.coreDataRepository = coreDataRepository
     }
 
     func startRun(
@@ -49,10 +49,10 @@ final class ExplorationSessionService {
         masterData: MasterData
     ) async throws -> ExplorationRunSnapshot {
         guard !runsToStart.isEmpty else {
-            return try await coreDataStore.loadSnapshot()
+            return try await coreDataRepository.loadSnapshot()
         }
 
-        var remainingCatTicketCount = try await coreDataStore.loadCatTicketCount()
+        var remainingCatTicketCount = try await coreDataRepository.loadCatTicketCount()
 
         for runStart in runsToStart {
             let appliesCatTicket: Bool
@@ -81,7 +81,7 @@ final class ExplorationSessionService {
                 masterData: masterData,
                 cachedStatuses: cachedStatuses
             )
-            try await coreDataStore.insertRun(
+            try await coreDataRepository.insertRun(
                 RunSessionRecord(
                     partyRunId: plannedSession.partyRunId,
                     partyId: plannedSession.partyId,
@@ -115,21 +115,21 @@ final class ExplorationSessionService {
             }
         }
 
-        return try await coreDataStore.loadSnapshot()
+        return try await coreDataRepository.loadSnapshot()
     }
 
     func refreshRuns(
         at currentDate: Date,
         masterData: MasterData
     ) async throws -> ExplorationRunSnapshot {
-        let progressContexts = try await coreDataStore.loadProgressContexts()
+        let progressContexts = try await coreDataRepository.loadProgressContexts()
         let resolvedProgress = try await Self.resolveProgress(
             progressContexts,
             at: currentDate,
             masterData: masterData
         )
 
-        let rewardApplication = try await coreDataStore.commitProgressUpdates(
+        let rewardApplication = try await coreDataRepository.commitProgressUpdates(
             resolvedProgress.updates.map { update in
                 (currentSession: update.currentSession, resolvedSession: update.resolvedSession)
             },
@@ -155,7 +155,7 @@ final class ExplorationSessionService {
             throw ExplorationError.invalidLabyrinth(labyrinthId: runStart.labyrinthId)
         }
 
-        let startContext = try await coreDataStore.loadStartContext(
+        let startContext = try await coreDataRepository.loadStartContext(
             partyId: runStart.partyId,
             labyrinthId: labyrinth.id,
             requestedDifficultyTitleId: runStart.selectedDifficultyTitleId,

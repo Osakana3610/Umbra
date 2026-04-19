@@ -1,4 +1,7 @@
-// Shares the shop's item row presentation so trading and management screens stay visually aligned.
+// Shares the shop's basic item-row presentation so trading, management, and enhancement screens stay
+// visually aligned.
+// Keeping the summary and detail affordance here avoids each shop flow reimplementing spacing,
+// emphasis rules, and accessibility labels for the same item identity.
 
 import SwiftUI
 
@@ -28,6 +31,8 @@ struct ShopItemDetailButton: View {
         Button {
             onShowDetail(itemID)
         } label: {
+            // A compact trailing affordance is reused across many dense list rows, so keep the tap
+            // target explicit even though the visual is icon-only.
             Image(systemName: "info.circle")
                 .font(.body)
                 .foregroundStyle(.tint)

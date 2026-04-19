@@ -49,7 +49,7 @@ struct AdventureHomeView: View {
                             }
                         )
                         .listRowSeparator(.hidden)
-                        .listRowInsets(EdgeInsets(top: 8, leading: 20, bottom: 0, trailing: 20))
+                        .listRowInsets(EdgeInsets(top: 8, leading: 20, bottom: 6, trailing: 20))
 
                         NavigationLink {
                             PartyDetailView(
@@ -70,7 +70,7 @@ struct AdventureHomeView: View {
                         }
                         .buttonStyle(.plain)
                         .accessibilityLabel("\(party.name)のメンバーを見る")
-                        .listRowInsets(EdgeInsets(top: 0, leading: 20, bottom: 6, trailing: 20))
+                        .listRowInsets(EdgeInsets(top: 2, leading: 20, bottom: 6, trailing: 20))
 
                         if let run = status.activeRun ?? status.latestCompletedRun {
                             NavigationLink {
@@ -347,47 +347,22 @@ private struct AdventurePartyHeaderRow: View {
     let onStartRunWithoutCatTicket: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack(alignment: .center) {
-                ViewThatFits(in: .horizontal) {
-                    HStack(spacing: 12) {
-                        metricText("平均Lv", value: presentation.averageLevelText)
-                        metricText("生存", value: presentation.aliveMemberText)
-                        metricText("総HP", value: presentation.totalHPText)
-                    }
-
-                    VStack(alignment: .leading, spacing: 2) {
-                        HStack(spacing: 12) {
-                            metricText("平均Lv", value: presentation.averageLevelText)
-                            metricText("生存", value: presentation.aliveMemberText)
-                        }
-
-                        metricText("総HP", value: presentation.totalHPText)
-                    }
-                }
-                .font(.subheadline)
-                .monospacedDigit()
+        HStack(alignment: .center, spacing: 12) {
+            Text(party.name)
+                .font(.headline)
                 .foregroundStyle(.primary)
+                .lineLimit(1)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
-                SortieButton(
-                    title: presentation.actionTitle,
-                    isDisabled: presentation.actionDisabled,
-                    onStartRun: onStartRun,
-                    onStartRunWithCatTicket: onStartRunWithCatTicket,
-                    onStartRunWithoutCatTicket: onStartRunWithoutCatTicket
-                )
-            }
-
-            Text(party.name)
-                .font(.body)
-                .foregroundStyle(.primary)
+            SortieButton(
+                title: presentation.actionTitle,
+                isDisabled: presentation.actionDisabled,
+                onStartRun: onStartRun,
+                onStartRunWithCatTicket: onStartRunWithCatTicket,
+                onStartRunWithoutCatTicket: onStartRunWithoutCatTicket
+            )
+            .frame(height: 28)
         }
-    }
-
-    private func metricText(_ label: String, value: String) -> some View {
-        Text("\(label) \(value)")
-            .fixedSize(horizontal: true, vertical: true)
     }
 }
 
@@ -469,9 +444,6 @@ private struct AdventurePartyPresentation {
     let actionTitle: String
     let actionDisabled: Bool
     let logPrimaryStyle: HierarchicalShapeStyle
-    let averageLevelText: String
-    let aliveMemberText: String
-    let totalHPText: String
 
     init(
         party: PartyRecord,
@@ -489,16 +461,6 @@ private struct AdventurePartyPresentation {
         } else {
             displayedCurrentHPs = members.map(\.currentHP)
         }
-
-        if members.isEmpty {
-            averageLevelText = "--"
-        } else {
-            let averageLevel = Double(members.reduce(0) { $0 + $1.level }) / Double(members.count)
-            averageLevelText = averageLevel.formatted(.number.precision(.fractionLength(1)))
-        }
-
-        aliveMemberText = "\(displayedCurrentHPs.filter { $0 > 0 }.count)/\(party.memberCharacterIds.count)"
-        totalHPText = displayedCurrentHPs.reduce(0, +).formatted()
 
         if let activeRun = status.activeRun {
             let labyrinthName = masterData.labyrinths.first(where: { $0.id == activeRun.labyrinthId }).map { labyrinth in

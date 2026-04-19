@@ -6,7 +6,7 @@ struct ContentView: View {
     @Environment(\.scenePhase) private var scenePhase
 
     let persistenceController: PersistenceController
-    let masterDataStore: MasterDataStore
+    let masterDataStore: MasterDataLoadStore
     let rosterStore: GuildRosterStore
     let partyStore: PartyStore
     let equipmentStore: EquipmentInventoryStore
@@ -14,7 +14,7 @@ struct ContentView: View {
     let explorationStore: ExplorationStore
     let itemDropNotificationService: ItemDropNotificationService
     let equipmentStatusNotificationService: EquipmentStatusNotificationService
-    let guildService: GuildService
+    let guildServices: GuildServices
 
     var body: some View {
         Group {
@@ -54,7 +54,7 @@ struct ContentView: View {
                     explorationStore: explorationStore,
                     itemDropNotificationService: itemDropNotificationService,
                     equipmentStatusNotificationService: equipmentStatusNotificationService,
-                    guildService: guildService
+                    guildServices: guildServices
                 )
                 .task {
                     guard scenePhase == .active else {
@@ -66,7 +66,7 @@ struct ContentView: View {
                     await explorationStore.resumeBackgroundProgress(
                         reopenedAt: Date(),
                         partyStore: partyStore,
-                        guildService: guildService,
+                        partyService: guildServices.parties,
                         masterData: masterData
                     )
                 }
@@ -74,14 +74,14 @@ struct ContentView: View {
                     if newPhase != .active {
                         explorationStore.recordBackgroundedAt(
                             Date(),
-                            guildService: guildService
+                            partyService: guildServices.parties
                         )
                     } else {
                         Task {
                             await explorationStore.resumeBackgroundProgress(
                                 reopenedAt: Date(),
                                 partyStore: partyStore,
-                                guildService: guildService,
+                                partyService: guildServices.parties,
                                 masterData: masterData
                             )
                         }
@@ -102,39 +102,39 @@ struct ContentView: View {
 
 #Preview {
     let persistenceController = PersistenceController.preview
-    let guildCoreDataStore = GuildCoreDataStore(container: persistenceController.container)
-    let guildService = GuildService(
-        coreDataStore: guildCoreDataStore,
-        explorationCoreDataStore: ExplorationCoreDataStore(container: persistenceController.container)
+    let guildCoreDataRepository = GuildCoreDataRepository(container: persistenceController.container)
+    let guildServices = GuildServices(
+        coreDataRepository: guildCoreDataRepository,
+        explorationCoreDataRepository: ExplorationCoreDataRepository(container: persistenceController.container)
     )
-    let masterDataStore = MasterDataStore(phase: .loading)
+    let masterDataStore = MasterDataLoadStore(phase: .loading)
     let itemDropNotificationService = ItemDropNotificationService(masterDataStore: masterDataStore)
     let equipmentStatusNotificationService = EquipmentStatusNotificationService()
-    let rosterStore = GuildRosterStore(coreDataStore: guildCoreDataStore, service: guildService, phase: .loading)
+    let rosterStore = GuildRosterStore(coreDataRepository: guildCoreDataRepository, service: guildServices.roster, phase: .loading)
     return ContentView(
         persistenceController: persistenceController,
         masterDataStore: masterDataStore,
         rosterStore: rosterStore,
-        partyStore: PartyStore(coreDataStore: guildCoreDataStore, service: guildService, phase: .loading),
+        partyStore: PartyStore(coreDataRepository: guildCoreDataRepository, service: guildServices.parties, phase: .loading),
         equipmentStore: EquipmentInventoryStore(
-            coreDataStore: guildCoreDataStore,
-            service: guildService,
+            coreDataRepository: guildCoreDataRepository,
+            service: guildServices.equipment,
             equipmentStatusNotificationService: equipmentStatusNotificationService
         ),
-        shopStore: ShopInventoryStore(service: guildService),
+        shopStore: ShopInventoryStore(service: guildServices.shop),
         explorationStore: ExplorationStore(
-            coreDataStore: ExplorationCoreDataStore(container: persistenceController.container),
+            coreDataRepository: ExplorationCoreDataRepository(container: persistenceController.container),
             itemDropNotificationService: itemDropNotificationService,
             rosterStore: rosterStore,
             equipmentStore: EquipmentInventoryStore(
-                coreDataStore: guildCoreDataStore,
-                service: guildService,
+                coreDataRepository: guildCoreDataRepository,
+                service: guildServices.equipment,
                 equipmentStatusNotificationService: equipmentStatusNotificationService
             ),
-            shopStore: ShopInventoryStore(service: guildService)
+            shopStore: ShopInventoryStore(service: guildServices.shop)
         ),
         itemDropNotificationService: itemDropNotificationService,
         equipmentStatusNotificationService: equipmentStatusNotificationService,
-        guildService: guildService
+        guildServices: guildServices
     )
 }

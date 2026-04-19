@@ -1,4 +1,6 @@
-// Shares reusable helpers for master-data detail sheets.
+// Shares lookup tables and formatting helpers used by master-data detail sheets.
+// The resolver keeps repeated skill and spell lookups out of individual views so job, race, and
+// monster detail screens can render the same support content consistently.
 
 import SwiftUI
 
@@ -12,6 +14,7 @@ struct MasterDataDetailContentResolver {
     }
 
     func grantedSpellNames(for skill: MasterData.Skill) -> [String] {
+        // Only magic-access grant effects surface as extra spell names in detail sheets.
         skill.effects
             .filter { $0.kind == .magicAccess && $0.operation == "grant" }
             .flatMap(\.spellIds)
@@ -47,6 +50,8 @@ struct MasterDataSkillSectionView: View {
                     .foregroundStyle(.secondary)
             } else {
                 ForEach(skillIDs, id: \.self) { skillID in
+                    // Missing IDs are rendered explicitly so partial or stale master data still
+                    // produces a readable detail view instead of silently dropping rows.
                     if let skill = resolver.skillsByID[skillID] {
                         VStack(alignment: .leading, spacing: 6) {
                             Text(skill.name)

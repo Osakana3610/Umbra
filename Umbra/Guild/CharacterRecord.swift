@@ -1,4 +1,6 @@
-// Defines a hired character's persisted values and default auto-battle configuration.
+// Defines the persisted guild character record and the default auto-battle settings attached to it.
+// This model is the canonical save representation for a hired character, so it keeps only durable
+// values and derives transient combat state elsewhere from master data and equipment.
 
 import Foundation
 
@@ -20,6 +22,8 @@ nonisolated struct CharacterRecord: Identifiable, Equatable, Sendable {
     var id: Int { characterId }
 
     var orderedEquippedItemStacks: [CompositeItemStack] {
+        // Persisted stack order is not meaningful, so views and mutation code read a deterministic
+        // ordering when they need stable presentation or comparison.
         equippedItemStacks.sorted { $0.itemID.isOrdered(before: $1.itemID) }
     }
 
@@ -29,6 +33,7 @@ nonisolated struct CharacterRecord: Identifiable, Equatable, Sendable {
     }
 
     func maximumEquippedItemCount(masterData: MasterData) -> Int {
+        // Equip capacity is a base progression rule plus any derived equipment-capacity modifiers.
         let modifier = CharacterDerivedStatsCalculator
             .status(for: self, masterData: masterData)?
             .equipmentCapacityModifier ?? 0
@@ -64,6 +69,8 @@ nonisolated struct CharacterAutoBattleSettings: Equatable, Sendable {
     var priority: [BattleActionKind]
 
     static let `default` = CharacterAutoBattleSettings(
+        // Defaults favor non-basic actions first so freshly hired characters still exercise spells
+        // and breath attacks when they have them.
         rates: .default,
         priority: [.breath, .recoverySpell, .attackSpell, .attack]
     )

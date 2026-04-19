@@ -5,8 +5,8 @@ import SwiftUI
 @main
 struct UmbraApp: App {
     let persistenceController: PersistenceController
-    let guildService: GuildService
-    @State private var masterDataStore: MasterDataStore
+    let guildServices: GuildServices
+    @State private var masterDataStore: MasterDataLoadStore
     @State private var rosterStore: GuildRosterStore
     @State private var partyStore: PartyStore
     @State private var equipmentStore: EquipmentInventoryStore
@@ -19,47 +19,47 @@ struct UmbraApp: App {
         // Construct the persistence-backed services once here so every tab observes the same
         // long-lived store graph.
         let persistenceController = PersistenceController.shared
-        let guildCoreDataStore = GuildCoreDataStore(container: persistenceController.container)
-        let explorationCoreDataStore = ExplorationCoreDataStore(container: persistenceController.container)
-        let masterDataStore = MasterDataStore()
+        let guildCoreDataRepository = GuildCoreDataRepository(container: persistenceController.container)
+        let explorationCoreDataRepository = ExplorationCoreDataRepository(container: persistenceController.container)
+        let masterDataStore = MasterDataLoadStore()
         let itemDropNotificationService = ItemDropNotificationService(masterDataStore: masterDataStore)
         let equipmentStatusNotificationService = EquipmentStatusNotificationService()
-        let guildService = GuildService(
-            coreDataStore: guildCoreDataStore,
-            explorationCoreDataStore: explorationCoreDataStore
+        let guildServices = GuildServices(
+            coreDataRepository: guildCoreDataRepository,
+            explorationCoreDataRepository: explorationCoreDataRepository
         )
         self.persistenceController = persistenceController
-        self.guildService = guildService
+        self.guildServices = guildServices
         _masterDataStore = State(initialValue: masterDataStore)
         _rosterStore = State(
             initialValue: GuildRosterStore(
-                coreDataStore: guildCoreDataStore,
-                service: guildService
+                coreDataRepository: guildCoreDataRepository,
+                service: guildServices.roster
             )
         )
         _partyStore = State(
             initialValue: PartyStore(
-                coreDataStore: guildCoreDataStore,
-                service: guildService
+                coreDataRepository: guildCoreDataRepository,
+                service: guildServices.parties
             )
         )
         _equipmentStore = State(
             initialValue: EquipmentInventoryStore(
-                coreDataStore: guildCoreDataStore,
-                service: guildService,
+                coreDataRepository: guildCoreDataRepository,
+                service: guildServices.equipment,
                 equipmentStatusNotificationService: equipmentStatusNotificationService
             )
         )
         _shopStore = State(
             initialValue: ShopInventoryStore(
-                service: guildService
+                service: guildServices.shop
             )
         )
         // Exploration and notification services are constructed once at app launch so background
         // resume and overlay state survive view re-composition.
         _explorationStore = State(
             initialValue: ExplorationStore(
-                coreDataStore: explorationCoreDataStore,
+                coreDataRepository: explorationCoreDataRepository,
                 itemDropNotificationService: itemDropNotificationService,
                 rosterStore: _rosterStore.wrappedValue,
                 equipmentStore: _equipmentStore.wrappedValue,
@@ -82,7 +82,7 @@ struct UmbraApp: App {
                 explorationStore: explorationStore,
                 itemDropNotificationService: itemDropNotificationService,
                 equipmentStatusNotificationService: equipmentStatusNotificationService,
-                guildService: guildService
+                guildServices: guildServices
             )
         }
     }

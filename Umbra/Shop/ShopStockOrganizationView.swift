@@ -1,4 +1,6 @@
-// Presents cat-ticket exchanges for exact 6-value shop stacks without aggregating across stacks.
+// Presents the stock-organization screen that converts large rare shop stacks into cat tickets.
+// The screen previews only stacks that are close enough to matter so the player can focus on
+// exchange-ready stock instead of every low-count item in the shop inventory.
 
 import SwiftUI
 
@@ -10,7 +12,7 @@ struct ShopStockOrganizationView: View {
     let shopStore: ShopInventoryStore
 
     @State private var loadError: String?
-    @State private var presentedItemDetail: StockOrganizationPresentedItemDetail?
+    @State private var presentedItemDetail: ItemDetailSheetPresentation?
 
     init(
         masterData: MasterData,
@@ -73,21 +75,7 @@ struct ShopStockOrganizationView: View {
         .playerStatusContentInsetAware()
         .navigationTitle("在庫整理")
         .navigationBarTitleDisplayMode(.inline)
-        .sheet(item: $presentedItemDetail) { presentedItemDetail in
-            NavigationStack {
-                ItemDetailView(
-                    itemID: presentedItemDetail.itemID,
-                    masterData: masterData
-                )
-                .toolbar {
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Button("閉じる") {
-                            self.presentedItemDetail = nil
-                        }
-                    }
-                }
-            }
-        }
+        .itemDetailSheet(item: $presentedItemDetail, masterData: masterData)
         .task {
             do {
                 try shopStore.loadIfNeeded(masterData: masterData)
@@ -103,20 +91,20 @@ struct ShopStockOrganizationView: View {
     }
 
     private var rows: [StockOrganizationRow] {
-        shopStore.orderedSectionKeys
-            .flatMap { sectionKey in
-                (shopStore.shopItemsBySection[sectionKey] ?? []).compactMap { item in
+        shopStore.displayOrderedShopItems.compactMap { item in
                     guard item.rarity != .normal,
                           let baseItem = masterData.items.first(where: { $0.id == item.itemID.baseItemId }) else {
                         return nil
                     }
 
-                    let availableExchangeCount = item.quantity / ShopCatalog.stockOrganizationBundleSize
-                    let remainder = item.quantity % ShopCatalog.stockOrganizationBundleSize
+                    let availableExchangeCount = item.quantity / ShopPricingCalculator.stockOrganizationBundleSize
+                    let remainder = item.quantity % ShopPricingCalculator.stockOrganizationBundleSize
                     let remainingCount = availableExchangeCount == 0
-                        ? ShopCatalog.stockOrganizationBundleSize - item.quantity
+                        ? ShopPricingCalculator.stockOrganizationBundleSize - item.quantity
                         : remainder
 
+                    // Preview only near-threshold stacks so the list acts as a progress view toward
+                    // the 99-item exchange instead of duplicating the entire shop inventory browser.
                     guard item.quantity >= Self.previewThreshold else {
                         return nil
                     }
@@ -126,7 +114,7 @@ struct ShopStockOrganizationView: View {
                         itemID: item.itemID,
                         summaryText: [
                             "\(item.rarity.displayName) / 在庫 \(item.quantity)個",
-                            "交換 \(ShopCatalog.stockOrganizationTicketCount(for: baseItem.basePrice))枚",
+                            "交換 \(ShopPricingCalculator.stockOrganizationTicketCount(for: baseItem.basePrice))枚",
                             availableExchangeCount > 0
                                 ? "交換可能 \(availableExchangeCount)回 / 余り \(remainder)個"
                                 : "あと \(remainingCount)個"
@@ -134,7 +122,6 @@ struct ShopStockOrganizationView: View {
                         availableExchangeCount: availableExchangeCount
                     )
                 }
-            }
     }
 
     private var sections: [StockOrganizationSection] {
@@ -163,6 +150,8 @@ struct ShopStockOrganizationView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
 
                 Button(shopStore.isMutating ? "整理中..." : "99個整理する") {
+                    // One tap performs exactly one 99-item conversion even when the stack could be
+                    // exchanged multiple times, which keeps the mutation explicit.
                     shopStore.organize(
                         itemID: row.itemID,
                         masterData: masterData,
@@ -173,7 +162,7 @@ struct ShopStockOrganizationView: View {
             }
 
             ShopItemDetailButton(itemID: row.itemID) { itemID in
-                presentedItemDetail = StockOrganizationPresentedItemDetail(itemID: itemID)
+                presentedItemDetail = ItemDetailSheetPresentation(itemID: itemID)
             }
         }
     }
@@ -200,11 +189,3 @@ private struct StockOrganizationSection: Identifiable {
 }
 
 extension StockOrganizationSection: EquipmentSectionIndexable {}
-
-private struct StockOrganizationPresentedItemDetail: Identifiable {
-    let itemID: CompositeItemID
-
-    var id: String {
-        itemID.stableKey
-    }
-}

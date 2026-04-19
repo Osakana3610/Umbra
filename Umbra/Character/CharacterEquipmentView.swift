@@ -11,7 +11,7 @@ struct CharacterEquipmentView: View {
     @State private var itemFilter = ItemBrowserFilter()
     @State private var searchText = ""
     @State private var loadError: String?
-    @State private var presentedItemDetail: PresentedItemDetail?
+    @State private var presentedItemDetail: ItemDetailSheetPresentation?
 
     var body: some View {
         Group {
@@ -43,7 +43,7 @@ struct CharacterEquipmentView: View {
                                         )
                                     },
                                     onShowDetail: {
-                                        presentedItemDetail = PresentedItemDetail(itemID: item.itemID)
+                                        presentedItemDetail = ItemDetailSheetPresentation(itemID: item.itemID)
                                     }
                                 )
                                 .equatable()
@@ -94,7 +94,7 @@ struct CharacterEquipmentView: View {
                                             )
                                         },
                                         onShowDetail: { itemID in
-                                            presentedItemDetail = PresentedItemDetail(itemID: itemID)
+                                            presentedItemDetail = ItemDetailSheetPresentation(itemID: itemID)
                                         }
                                     )
                                 }
@@ -123,7 +123,7 @@ struct CharacterEquipmentView: View {
                                             )
                                         },
                                         onShowDetail: { itemID in
-                                            presentedItemDetail = PresentedItemDetail(itemID: itemID)
+                                            presentedItemDetail = ItemDetailSheetPresentation(itemID: itemID)
                                         }
                                     )
                                 }
@@ -156,21 +156,7 @@ struct CharacterEquipmentView: View {
                         }
                     }
                 }
-                .sheet(item: $presentedItemDetail) { presentedItemDetail in
-                    NavigationStack {
-                        ItemDetailView(
-                            itemID: presentedItemDetail.itemID,
-                            masterData: masterData
-                        )
-                        .toolbar {
-                            ToolbarItem(placement: .topBarTrailing) {
-                                Button("閉じる") {
-                                    self.presentedItemDetail = nil
-                                }
-                            }
-                        }
-                    }
-                }
+                .itemDetailSheet(item: $presentedItemDetail, masterData: masterData)
                 .task(id: character.id) {
                     do {
                         try equipmentStore.loadIfNeeded(masterData: masterData)
@@ -204,7 +190,7 @@ struct CharacterEquipmentView: View {
     }
 
     private func hasFilteredInventoryResults(
-        filterCatalog: ItemBrowserFilterCatalog
+        filterCatalog: ItemBrowserFilterOptions
     ) -> Bool {
         isSearching || itemFilter.isActive(in: filterCatalog)
     }
@@ -241,11 +227,11 @@ struct CharacterEquipmentView: View {
         }
     }
 
-    private func filterCatalog(for character: CharacterRecord) -> ItemBrowserFilterCatalog {
+    private func filterCatalog(for character: CharacterRecord) -> ItemBrowserFilterOptions {
         let itemIDs = equipmentStore.mergedSections(for: character.characterId)
             .flatMap(\.rows)
             .map { $0.cachedItem.itemID }
-        return ItemBrowserFilterCatalog(
+        return ItemBrowserFilterOptions(
             itemIDs: itemIDs,
             masterData: masterData
         )
@@ -468,13 +454,5 @@ private struct EquippedItemRow: View, Equatable {
             .buttonStyle(.plain)
             .accessibilityLabel("アイテム詳細")
         }
-    }
-}
-
-private struct PresentedItemDetail: Identifiable {
-    let itemID: CompositeItemID
-
-    var id: String {
-        itemID.stableKey
     }
 }
