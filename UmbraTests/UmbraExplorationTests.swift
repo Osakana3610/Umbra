@@ -463,6 +463,103 @@ struct UmbraExplorationTests {
     }
 
     @Test
+    func startingRunCombinesRewardPctAddsAdditively() async throws {
+        let container = PersistenceController(inMemory: true).container
+        let guildCoreDataRepository = GuildCoreDataRepository(container: container)
+        let explorationCoreDataRepository = ExplorationCoreDataRepository(container: container)
+        let guildServices = GuildServices(
+            coreDataRepository: guildCoreDataRepository,
+            explorationCoreDataRepository: explorationCoreDataRepository
+        )
+        let explorationService = ExplorationSessionService(coreDataRepository: explorationCoreDataRepository)
+        let goldRewardSkill = MasterData.Skill(
+            id: 1,
+            name: "ゴールド+50%",
+            description: "取得ゴールドが50%増加する。",
+            effects: [
+                MasterData.SkillEffect(
+                    kind: .rewardMultiplier,
+                    target: "goldGainMultiplier",
+                    operation: "pctAdd",
+                    value: 0.5,
+                    spellIds: [],
+                    condition: nil,
+                    interruptKind: nil
+                )
+            ]
+        )
+        let bonusRewardSkill = MasterData.Skill(
+            id: 2,
+            name: "報酬上乗せ",
+            description: "取得ゴールドが30%、レア倍率が10%増加する。",
+            effects: [
+                MasterData.SkillEffect(
+                    kind: .rewardMultiplier,
+                    target: "goldGainMultiplier",
+                    operation: "pctAdd",
+                    value: 0.3,
+                    spellIds: [],
+                    condition: nil,
+                    interruptKind: nil
+                ),
+                MasterData.SkillEffect(
+                    kind: .rewardMultiplier,
+                    target: "rareDropMultiplier",
+                    operation: "pctAdd",
+                    value: 0.1,
+                    spellIds: [],
+                    condition: nil,
+                    interruptKind: nil
+                )
+            ]
+        )
+        let masterData = makeExplorationBattleTestMasterData(
+            skills: [goldRewardSkill, bonusRewardSkill],
+            allyBaseStats: battleBaseStats(vitality: 100, strength: 100, agility: 100),
+            allyRaceSkillIds: [goldRewardSkill.id, bonusRewardSkill.id],
+            enemyBaseStats: battleBaseStats(vitality: 1),
+            labyrinths: [
+                MasterData.Labyrinth(
+                    id: 1,
+                    name: "報酬迷宮",
+                    progressIntervalSeconds: 10,
+                    floors: [
+                        MasterData.Floor(
+                            id: 1,
+                            floorNumber: 1,
+                            battleCount: 1,
+                            enemyCount: 1,
+                            encounters: [MasterData.Encounter(enemyId: 1, level: 1, weight: 1)],
+                            fixedBattle: nil
+                        )
+                    ]
+                )
+            ]
+        )
+
+        let character = try guildServices.roster.hireCharacter(
+            raceId: 1,
+            jobId: 1,
+            aptitudeId: 1,
+            masterData: masterData
+        ).character
+        _ = try await guildServices.parties.addCharacter(characterId: character.characterId, toParty: 1)
+
+        let snapshot = try await explorationService.startRun(
+            partyId: 1,
+            labyrinthId: 1,
+            selectedDifficultyTitleId: 1,
+            startedAt: Date(timeIntervalSinceReferenceDate: 301_000),
+            masterData: masterData
+        )
+        let startedRun = try #require(snapshot.runs.first)
+
+        #expect(startedRun.goldMultiplier == 1.8)
+        #expect(startedRun.rareDropMultiplier == 1.1)
+        #expect(startedRun.memberExperienceMultipliers == [1.0])
+    }
+
+    @Test
     func startingRunRequiringCatTicketFailsWhenPlayerHasNone() async throws {
         let container = PersistenceController(inMemory: true).container
         let guildCoreDataRepository = GuildCoreDataRepository(container: container)

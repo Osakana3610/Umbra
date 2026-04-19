@@ -1111,8 +1111,12 @@ nonisolated extension ExplorationResolver {
         skillIds: [Int],
         skillTable: [Int: MasterData.Skill]
     ) -> Double {
+        var pctAdd = 0.0
         var multiplier = 1.0
-        for skillId in skillIds {
+
+        // Reward multipliers follow the same stacking rule as derived status snapshots so
+        // exploration planning and UI aggregation do not drift from battle-ready character data.
+        for skillId in Set(skillIds) {
             guard let skill = skillTable[skillId] else {
                 continue
             }
@@ -1124,7 +1128,7 @@ nonisolated extension ExplorationResolver {
 
                 switch effect.operation {
                 case "pctAdd":
-                    multiplier *= 1.0 + value
+                    pctAdd += value
                 case nil, "mul":
                     multiplier *= value
                 default:
@@ -1132,7 +1136,8 @@ nonisolated extension ExplorationResolver {
                 }
             }
         }
-        return multiplier
+
+        return max((1.0 + pctAdd) * multiplier, 0.0)
     }
 
     static func weightedRandomChoice<T>(

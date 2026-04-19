@@ -241,29 +241,6 @@ final class ExplorationSessionService {
             }
             return status
         }
-        func rewardMultiplier(for skillIds: [Int], target: String) -> Double {
-            Set(skillIds).reduce(into: 1.0) { partialResult, skillId in
-                guard let skill = skillTable[skillId] else {
-                    return
-                }
-
-                for effect in skill.effects where effect.kind == .rewardMultiplier && effect.target == target {
-                    guard let value = effect.value else {
-                        continue
-                    }
-                    // Run-start reward multipliers are baked into the stored session so later
-                    // progress refreshes do not have to recalculate them from mutable roster data.
-                    switch effect.operation {
-                    case "pctAdd":
-                        partialResult *= 1.0 + value
-                    case nil, "mul":
-                        partialResult *= value
-                    default:
-                        continue
-                    }
-                }
-            }
-        }
         func explorationRuleProduct(for skillIds: [Int], target: String) -> Double {
             Set(skillIds).reduce(into: 1.0) { partialResult, skillId in
                 guard let skill = skillTable[skillId] else {
@@ -315,9 +292,17 @@ final class ExplorationSessionService {
                     ? Self.catTicketProgressIntervalMultiplier
                     : 1.0
             ) * explorationRuleProduct(for: partyRewardSkillIds, target: "explorationTimeMultiplier"),
-            goldMultiplier: rewardMultiplier(for: partyRewardSkillIds, target: "goldGainMultiplier")
+            goldMultiplier: ExplorationResolver.rewardMultiplier(
+                target: "goldGainMultiplier",
+                skillIds: partyRewardSkillIds,
+                skillTable: skillTable
+            )
                 * (appliesCatTicket ? Self.catTicketRewardMultiplier : 1.0),
-            rareDropMultiplier: rewardMultiplier(for: partyRewardSkillIds, target: "rareDropMultiplier")
+            rareDropMultiplier: ExplorationResolver.rewardMultiplier(
+                target: "rareDropMultiplier",
+                skillIds: partyRewardSkillIds,
+                skillTable: skillTable
+            )
                 * (appliesCatTicket ? Self.catTicketRewardMultiplier : 1.0),
             partyAverageLuck: partyAverageLuck,
             latestBattleFloorNumber: nil,

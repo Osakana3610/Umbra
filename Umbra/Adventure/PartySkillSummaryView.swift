@@ -284,32 +284,11 @@ private struct PartySkillAggregation {
         skillIds: [Int],
         skillTable: [Int: MasterData.Skill]
     ) -> Double {
-        var multiplier = 1.0
-
-        // Party-wide totals deduplicate shared skills so one passive contributes once even when
-        // multiple members own it.
-        for skillId in Set(skillIds) {
-            guard let skill = skillTable[skillId] else {
-                continue
-            }
-
-            for effect in skill.effects where effect.kind == .rewardMultiplier && effect.target == target {
-                guard let value = effect.value else {
-                    continue
-                }
-
-                switch effect.operation {
-                case "pctAdd":
-                    multiplier *= 1.0 + value
-                case nil, "mul":
-                    multiplier *= value
-                default:
-                    continue
-                }
-            }
-        }
-
-        return multiplier
+        ExplorationResolver.rewardMultiplier(
+            target: target,
+            skillIds: skillIds,
+            skillTable: skillTable
+        )
     }
 }
 
