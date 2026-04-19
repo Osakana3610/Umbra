@@ -16,8 +16,13 @@ struct MasterDataDetailContentResolver {
     func grantedSpellNames(for skill: MasterData.Skill) -> [String] {
         // Only magic-access grant effects surface as extra spell names in detail sheets.
         skill.effects
-            .filter { $0.kind == .magicAccess && $0.operation == "grant" }
-            .flatMap(\.spellIds)
+            .flatMap { effect -> [Int] in
+                guard case let .magicAccess(operation, spellIds, _) = effect,
+                      operation == .grant else {
+                    return []
+                }
+                return spellIds
+            }
             .compactMap { spellsByID[$0]?.name }
     }
 }

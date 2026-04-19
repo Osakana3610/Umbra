@@ -13,11 +13,10 @@ struct UmbraNotificationTests {
     @Test
     func publishFormatsPartyPrefixedDisplayText() {
         let masterData = itemDropNotificationTestMasterData()
-        let masterDataStore = MasterDataLoadStore(phase: .loaded(masterData))
         let userDefaults = UserDefaults(suiteName: #function)!
         userDefaults.removePersistentDomain(forName: #function)
         let service = ItemDropNotificationService(
-            masterDataStore: masterDataStore,
+            masterData: masterData,
             userDefaults: userDefaults
         )
 
@@ -56,11 +55,11 @@ struct UmbraNotificationTests {
 
     @Test
     func clearRemovesPublishedNotifications() {
-        let masterDataStore = MasterDataLoadStore(phase: .loaded(itemDropNotificationTestMasterData()))
+        let masterData = itemDropNotificationTestMasterData()
         let userDefaults = UserDefaults(suiteName: #function)!
         userDefaults.removePersistentDomain(forName: #function)
         let service = ItemDropNotificationService(
-            masterDataStore: masterDataStore,
+            masterData: masterData,
             userDefaults: userDefaults
         )
 
@@ -85,12 +84,12 @@ struct UmbraNotificationTests {
 
     @Test
     func publishSkipsNotificationsForDisabledTitle() {
-        let masterDataStore = MasterDataLoadStore(phase: .loaded(itemDropNotificationTestMasterData()))
+        let masterData = itemDropNotificationTestMasterData()
         let userDefaults = UserDefaults(suiteName: #function)!
         userDefaults.removePersistentDomain(forName: #function)
         ItemDropNotificationSettingsRepository.setTitleEnabled(false, titleId: 1, userDefaults: userDefaults)
         let service = ItemDropNotificationService(
-            masterDataStore: masterDataStore,
+            masterData: masterData,
             userDefaults: userDefaults
         )
 
@@ -119,12 +118,12 @@ struct UmbraNotificationTests {
 
     @Test
     func publishSkipsNotificationsForDisabledSuperRare() {
-        let masterDataStore = MasterDataLoadStore(phase: .loaded(itemDropNotificationTestMasterData()))
+        let masterData = itemDropNotificationTestMasterData()
         let userDefaults = UserDefaults(suiteName: #function)!
         userDefaults.removePersistentDomain(forName: #function)
         ItemDropNotificationSettingsRepository.setSuperRareEnabled(false, superRareId: 1, userDefaults: userDefaults)
         let service = ItemDropNotificationService(
-            masterDataStore: masterDataStore,
+            masterData: masterData,
             userDefaults: userDefaults
         )
 
@@ -153,12 +152,12 @@ struct UmbraNotificationTests {
 
     @Test
     func publishSkipsNotificationsForIgnoredNormalRarityItems() {
-        let masterDataStore = MasterDataLoadStore(phase: .loaded(itemDropNotificationTestMasterData()))
+        let masterData = itemDropNotificationTestMasterData()
         let userDefaults = UserDefaults(suiteName: #function)!
         userDefaults.removePersistentDomain(forName: #function)
         ItemDropNotificationSettingsRepository.setShowsNormalRarityItems(false, userDefaults: userDefaults)
         let service = ItemDropNotificationService(
-            masterDataStore: masterDataStore,
+            masterData: masterData,
             userDefaults: userDefaults
         )
 

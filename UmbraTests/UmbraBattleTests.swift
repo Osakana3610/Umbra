@@ -257,15 +257,7 @@ struct UmbraBattleTests {
             name: "反撃",
             description: "反撃する。",
             effects: [
-                MasterData.SkillEffect(
-                    kind: .interruptGrant,
-                    target: nil,
-                    operation: nil,
-                    value: nil,
-                    spellIds: [],
-                    condition: nil,
-                    interruptKind: .counter
-                )
+                MasterData.SkillEffect.interruptGrant(interruptKind: .counter, condition: nil)
             ]
         )
         let masterData = makeBattleTestMasterData(
@@ -327,15 +319,7 @@ struct UmbraBattleTests {
             name: "火球習得",
             description: "火球を習得する。",
             effects: [
-                MasterData.SkillEffect(
-                    kind: .magicAccess,
-                    target: nil,
-                    operation: "grant",
-                    value: nil,
-                    spellIds: [fireSpell.id],
-                    condition: nil,
-                    interruptKind: nil
-                )
+                MasterData.SkillEffect.magicAccess(operation: .grant, spellIds: [fireSpell.id], condition: nil)
             ]
         )
         let fireBoostSkill = MasterData.Skill(
@@ -343,15 +327,7 @@ struct UmbraBattleTests {
             name: "火球強化",
             description: "火球を強化する。",
             effects: [
-                MasterData.SkillEffect(
-                    kind: .battleDerivedModifier,
-                    target: "spellDamageMultiplier",
-                    operation: "mul",
-                    value: 1.5,
-                    spellIds: [fireSpell.id],
-                    condition: nil,
-                    interruptKind: nil
-                )
+                MasterData.SkillEffect.battleDerivedModifier(target: .spellDamageMultiplier, operation: .mul, value: 1.5, spellIds: [fireSpell.id], condition: nil)
             ]
         )
         let fireResistanceSkill = MasterData.Skill(
@@ -359,15 +335,7 @@ struct UmbraBattleTests {
             name: "火球耐性",
             description: "火球を軽減する。",
             effects: [
-                MasterData.SkillEffect(
-                    kind: .battleDerivedModifier,
-                    target: "magicResistanceMultiplier",
-                    operation: "mul",
-                    value: 0.5,
-                    spellIds: [fireSpell.id],
-                    condition: nil,
-                    interruptKind: nil
-                )
+                MasterData.SkillEffect.battleDerivedModifier(target: .magicResistanceMultiplier, operation: .mul, value: 0.5, spellIds: [fireSpell.id], condition: nil)
             ]
         )
         let masterData = makeBattleTestMasterData(
@@ -446,15 +414,7 @@ struct UmbraBattleTests {
             name: "眠り玉習得",
             description: "眠り玉を習得する。",
             effects: [
-                MasterData.SkillEffect(
-                    kind: .magicAccess,
-                    target: nil,
-                    operation: "grant",
-                    value: nil,
-                    spellIds: [sleepSpell.id],
-                    condition: nil,
-                    interruptKind: nil
-                )
+                MasterData.SkillEffect.magicAccess(operation: .grant, spellIds: [sleepSpell.id], condition: nil)
             ]
         )
         let masterData = makeBattleTestMasterData(
@@ -539,15 +499,7 @@ struct UmbraBattleTests {
             name: "眠り玉習得",
             description: "眠り玉を習得する。",
             effects: [
-                MasterData.SkillEffect(
-                    kind: .magicAccess,
-                    target: nil,
-                    operation: "grant",
-                    value: nil,
-                    spellIds: [sleepSpell.id],
-                    condition: nil,
-                    interruptKind: nil
-                )
+                MasterData.SkillEffect.magicAccess(operation: .grant, spellIds: [sleepSpell.id], condition: nil)
             ]
         )
         let masterData = makeBattleTestMasterData(
@@ -793,15 +745,7 @@ struct UmbraBattleTests {
             name: "ヒール習得",
             description: "ヒールを習得する。",
             effects: [
-                MasterData.SkillEffect(
-                    kind: .magicAccess,
-                    target: nil,
-                    operation: "grant",
-                    value: nil,
-                    spellIds: [healSpell.id],
-                    condition: nil,
-                    interruptKind: nil
-                )
+                MasterData.SkillEffect.magicAccess(operation: .grant, spellIds: [healSpell.id], condition: nil)
             ]
         )
         let masterData = makeBattleTestMasterData(
@@ -942,15 +886,7 @@ struct UmbraBattleTests {
             name: "ヒール習得",
             description: "ヒールを習得する。",
             effects: [
-                MasterData.SkillEffect(
-                    kind: .magicAccess,
-                    target: nil,
-                    operation: "grant",
-                    value: nil,
-                    spellIds: [healSpell.id],
-                    condition: nil,
-                    interruptKind: nil
-                )
+                MasterData.SkillEffect.magicAccess(operation: .grant, spellIds: [healSpell.id], condition: nil)
             ]
         )
         let masterData = makeBattleTestMasterData(
@@ -1091,15 +1027,7 @@ struct UmbraBattleTests {
             name: "魔力支配",
             description: "味方全体の回復威力を30%上げる。",
             effects: [
-                MasterData.SkillEffect(
-                    kind: .partyModifier,
-                    target: "allyHealingMultiplier",
-                    operation: "pctAdd",
-                    value: 0.3,
-                    spellIds: [],
-                    condition: nil,
-                    interruptKind: nil
-                )
+                MasterData.SkillEffect.partyModifier(target: .allyHealingMultiplier, operation: .pctAdd, value: 0.3, condition: nil)
             ]
         )
         let masterData = makeBattleTestMasterData(
@@ -2271,8 +2199,8 @@ struct UmbraBattleTests {
             ),
             spellIds: [attackSpell.id],
             actionRuleValuesByTarget: [
-                "attackSpellCanCritical": [1],
-                "repeatAttackSpellOnCritical": [1]
+                .attackSpellCanCritical: [1],
+                .repeatAttackSpellOnCritical: [1]
             ]
         )
 
@@ -2324,15 +2252,7 @@ struct UmbraBattleTests {
             name: "火球習得",
             description: "火球を習得する。",
             effects: [
-                MasterData.SkillEffect(
-                    kind: .magicAccess,
-                    target: nil,
-                    operation: "grant",
-                    value: nil,
-                    spellIds: [attackSpell.id],
-                    condition: nil,
-                    interruptKind: nil
-                )
+                MasterData.SkillEffect.magicAccess(operation: .grant, spellIds: [attackSpell.id], condition: nil)
             ]
         )
         let masterData = makeBattleTestMasterData(
@@ -2559,15 +2479,7 @@ struct UmbraBattleTests {
             name: "眠り玉習得",
             description: "眠り玉を習得する。",
             effects: [
-                MasterData.SkillEffect(
-                    kind: .magicAccess,
-                    target: nil,
-                    operation: "grant",
-                    value: nil,
-                    spellIds: [sleepSpell.id],
-                    condition: nil,
-                    interruptKind: nil
-                )
+                MasterData.SkillEffect.magicAccess(operation: .grant, spellIds: [sleepSpell.id], condition: nil)
             ]
         )
         let masterData = makeBattleTestMasterData(
@@ -2920,15 +2832,7 @@ struct UmbraBattleTests {
             name: "眠り玉習得",
             description: "眠り玉を習得する。",
             effects: [
-                MasterData.SkillEffect(
-                    kind: .magicAccess,
-                    target: nil,
-                    operation: "grant",
-                    value: nil,
-                    spellIds: [sleepSpell.id],
-                    condition: nil,
-                    interruptKind: nil
-                )
+                MasterData.SkillEffect.magicAccess(operation: .grant, spellIds: [sleepSpell.id], condition: nil)
             ]
         )
         let masterData = makeBattleTestMasterData(
@@ -3049,15 +2953,7 @@ struct UmbraBattleTests {
             name: "ブレス",
             description: "ブレスを使う。",
             effects: [
-                MasterData.SkillEffect(
-                    kind: .breathAccess,
-                    target: nil,
-                    operation: nil,
-                    value: nil,
-                    spellIds: [],
-                    condition: nil,
-                    interruptKind: nil
-                )
+                MasterData.SkillEffect.breathAccess
             ]
         )
         let masterData = makeBattleTestMasterData(
@@ -3340,7 +3236,7 @@ struct UmbraBattleTests {
                 criticalRate: 0,
                 breathPower: 0
             ),
-            actionRuleValuesByTarget: ["randomizeNormalActionOrder": [1]]
+            actionRuleValuesByTarget: [.randomizeNormalActionOrder: [1]]
         )
         let fastStatus = makeBattleTestStatus(
             baseStats: battleCharacterBaseStats(agility: 1_000),
@@ -3459,7 +3355,7 @@ struct UmbraBattleTests {
                 criticalRate: 0,
                 breathPower: 0
             ),
-            actionRuleValuesByTarget: ["normalAttackHitsRandomAdditionalTarget": [1]]
+            actionRuleValuesByTarget: [.normalAttackHitsRandomAdditionalTarget: [1]]
         )
 
         let result = try SingleBattleResolver.resolve(
@@ -3511,7 +3407,7 @@ struct UmbraBattleTests {
                 criticalRate: 0,
                 breathPower: 0
             ),
-            actionRuleValuesByTarget: ["carryOverRemainingHitsOnKill": [1]]
+            actionRuleValuesByTarget: [.carryOverRemainingHitsOnKill: [1]]
         )
 
         let result = try SingleBattleResolver.resolve(
@@ -3567,7 +3463,7 @@ struct UmbraBattleTests {
                 breathPower: 20
             ),
             canUseBreath: true,
-            actionRuleValuesByTarget: ["normalAttackAfterBreath": [1]]
+            actionRuleValuesByTarget: [.normalAttackAfterBreath: [1]]
         )
 
         let result = try SingleBattleResolver.resolve(
@@ -3694,7 +3590,7 @@ struct UmbraBattleTests {
                 criticalRate: 0,
                 breathPower: 0
             ),
-            combatRuleValuesByTarget: ["startTurnSelfCurrentHPLossPct": [0.5]]
+            combatRuleValuesByTarget: [.startTurnSelfCurrentHPLossPct: [0.5]]
         )
 
         let result = try SingleBattleResolver.resolve(
@@ -3743,7 +3639,7 @@ struct UmbraBattleTests {
                 criticalRate: 0,
                 breathPower: 0
             ),
-            hitRuleValuesByTarget: ["damageVarianceWidthMultiplier": [2.0]]
+            hitRuleValuesByTarget: [.damageVarianceWidthMultiplier: [2.0]]
         )
         let baselineStatus = makeBattleTestStatus(
             baseStats: battleCharacterBaseStats(agility: 1_000),
@@ -3812,8 +3708,8 @@ struct UmbraBattleTests {
                 breathPower: 0
             ),
             hitRuleValuesByTarget: [
-                "hitDamageLuckyChance": [1.0],
-                "hitDamageLuckyMultiplier": [2.0]
+                .hitDamageLuckyChance: [1.0],
+                .hitDamageLuckyMultiplier: [2.0]
             ]
         )
         let baselineStatus = makeBattleTestStatus(
@@ -3898,8 +3794,8 @@ struct UmbraBattleTests {
             ),
             spellIds: [attackSpell.id],
             hitRuleValuesByTarget: [
-                "hitDamageUnluckyChance": [1.0],
-                "hitDamageUnluckyMultiplier": [0.5]
+                .hitDamageUnluckyChance: [1.0],
+                .hitDamageUnluckyMultiplier: [0.5]
             ]
         )
         let baselineStatus = makeBattleTestStatus(
@@ -4141,15 +4037,7 @@ struct UmbraBattleTests {
             name: "反撃",
             description: "反撃する。",
             effects: [
-                MasterData.SkillEffect(
-                    kind: .interruptGrant,
-                    target: nil,
-                    operation: nil,
-                    value: nil,
-                    spellIds: [],
-                    condition: nil,
-                    interruptKind: .counter
-                )
+                MasterData.SkillEffect.interruptGrant(interruptKind: .counter, condition: nil)
             ]
         )
         let masterData = makeBattleTestMasterData(
@@ -4427,15 +4315,7 @@ struct UmbraBattleTests {
             name: "反撃",
             description: "反撃する。",
             effects: [
-                MasterData.SkillEffect(
-                    kind: .interruptGrant,
-                    target: nil,
-                    operation: nil,
-                    value: nil,
-                    spellIds: [],
-                    condition: nil,
-                    interruptKind: .counter
-                )
+                MasterData.SkillEffect.interruptGrant(interruptKind: .counter, condition: nil)
             ]
         )
         let masterData = makeBattleTestMasterData(
@@ -4541,15 +4421,7 @@ struct UmbraBattleTests {
             name: "ブレス",
             description: "ブレスを使う。",
             effects: [
-                MasterData.SkillEffect(
-                    kind: .breathAccess,
-                    target: nil,
-                    operation: nil,
-                    value: nil,
-                    spellIds: [],
-                    condition: nil,
-                    interruptKind: nil
-                )
+                MasterData.SkillEffect.breathAccess
             ]
         )
         let masterData = makeBattleTestMasterData(
@@ -4661,15 +4533,7 @@ struct UmbraBattleTests {
             name: "ファイアストーム習得",
             description: "ファイアストームを習得する。",
             effects: [
-                MasterData.SkillEffect(
-                    kind: .magicAccess,
-                    target: nil,
-                    operation: "grant",
-                    value: nil,
-                    spellIds: [attackSpell.id],
-                    condition: nil,
-                    interruptKind: nil
-                )
+                MasterData.SkillEffect.magicAccess(operation: .grant, spellIds: [attackSpell.id], condition: nil)
             ]
         )
         let masterData = makeBattleTestMasterData(
@@ -4957,15 +4821,7 @@ struct UmbraBattleTests {
             name: "眠り玉習得",
             description: "眠り玉を習得する。",
             effects: [
-                MasterData.SkillEffect(
-                    kind: .magicAccess,
-                    target: nil,
-                    operation: "grant",
-                    value: nil,
-                    spellIds: [sleepSpell.id],
-                    condition: nil,
-                    interruptKind: nil
-                )
+                MasterData.SkillEffect.magicAccess(operation: .grant, spellIds: [sleepSpell.id], condition: nil)
             ]
         )
         let masterData = makeBattleTestMasterData(
@@ -5117,7 +4973,7 @@ struct UmbraBattleTests {
             targetSide: .ally,
             targetCount: 0,
             multiplier: 1.5,
-            effectTarget: "physicalDamage"
+            effectTarget: .physicalDamage
         )
         let physicalBarrierSpell = MasterData.Spell(
             id: 2,
@@ -5127,22 +4983,14 @@ struct UmbraBattleTests {
             targetSide: .ally,
             targetCount: 0,
             multiplier: 0.5,
-            effectTarget: "physicalDamageTaken"
+            effectTarget: .physicalDamageTaken
         )
         let attackBuffSkill = MasterData.Skill(
             id: 1,
             name: "攻撃バフ習得",
             description: "攻撃バフを習得する。",
             effects: [
-                MasterData.SkillEffect(
-                    kind: .magicAccess,
-                    target: nil,
-                    operation: "grant",
-                    value: nil,
-                    spellIds: [attackBuffSpell.id],
-                    condition: nil,
-                    interruptKind: nil
-                )
+                MasterData.SkillEffect.magicAccess(operation: .grant, spellIds: [attackBuffSpell.id], condition: nil)
             ]
         )
         let barrierSkill = MasterData.Skill(
@@ -5150,15 +4998,7 @@ struct UmbraBattleTests {
             name: "物理バリア習得",
             description: "物理バリアを習得する。",
             effects: [
-                MasterData.SkillEffect(
-                    kind: .magicAccess,
-                    target: nil,
-                    operation: "grant",
-                    value: nil,
-                    spellIds: [physicalBarrierSpell.id],
-                    condition: nil,
-                    interruptKind: nil
-                )
+                MasterData.SkillEffect.magicAccess(operation: .grant, spellIds: [physicalBarrierSpell.id], condition: nil)
             ]
         )
         let masterData = makeBattleTestMasterData(
@@ -5275,7 +5115,7 @@ struct UmbraBattleTests {
             targetSide: .ally,
             targetCount: 0,
             multiplier: 1.5,
-            effectTarget: "physicalDamage"
+            effectTarget: .physicalDamage
         )
         let masterData = makeBattleTestMasterData(
             spells: [attackBuffSpell],
@@ -5377,7 +5217,7 @@ struct UmbraBattleTests {
             targetSide: .ally,
             targetCount: 0,
             multiplier: 1.5,
-            effectTarget: "magicDamage"
+            effectTarget: .magicDamage
         )
         let masterData = makeBattleTestMasterData(
             spells: [damageSpell, magicBuffSpell],
@@ -5477,22 +5317,14 @@ struct UmbraBattleTests {
             targetSide: .ally,
             targetCount: 0,
             multiplier: 0.5,
-            effectTarget: "physicalDamageTaken"
+            effectTarget: .physicalDamageTaken
         )
         let barrierAccessSkill = MasterData.Skill(
             id: 1,
             name: "物理バリア習得",
             description: "物理バリアを習得する。",
             effects: [
-                MasterData.SkillEffect(
-                    kind: .magicAccess,
-                    target: nil,
-                    operation: "grant",
-                    value: nil,
-                    spellIds: [physicalBarrierSpell.id],
-                    condition: nil,
-                    interruptKind: nil
-                )
+                MasterData.SkillEffect.magicAccess(operation: .grant, spellIds: [physicalBarrierSpell.id], condition: nil)
             ]
         )
         let masterData = makeBattleTestMasterData(
@@ -5576,22 +5408,14 @@ struct UmbraBattleTests {
             targetSide: .ally,
             targetCount: 0,
             multiplier: 0.5,
-            effectTarget: "physicalDamageTaken"
+            effectTarget: .physicalDamageTaken
         )
         let barrierAccessSkill = MasterData.Skill(
             id: 1,
             name: "物理バリア習得",
             description: "物理バリアを習得する。",
             effects: [
-                MasterData.SkillEffect(
-                    kind: .magicAccess,
-                    target: nil,
-                    operation: "grant",
-                    value: nil,
-                    spellIds: [physicalBarrierSpell.id],
-                    condition: nil,
-                    interruptKind: nil
-                )
+                MasterData.SkillEffect.magicAccess(operation: .grant, spellIds: [physicalBarrierSpell.id], condition: nil)
             ]
         )
         let masterData = makeBattleTestMasterData(
@@ -5623,8 +5447,8 @@ struct UmbraBattleTests {
                 breathPower: 0
             ),
             actionRuleValuesByTarget: [
-                "normalAttackBreakPhysicalBarrierOnHit": [1],
-                "normalAttackIgnorePhysicalDefensePct": [0.3]
+                .normalAttackBreakPhysicalBarrierOnHit: [1],
+                .normalAttackIgnorePhysicalDefensePct: [0.3]
             ]
         )
 
@@ -5675,22 +5499,14 @@ struct UmbraBattleTests {
             targetSide: .ally,
             targetCount: 0,
             multiplier: 0.5,
-            effectTarget: "magicDamageTaken"
+            effectTarget: .magicDamageTaken
         )
         let barrierAccessSkill = MasterData.Skill(
             id: 1,
             name: "魔法バリア習得",
             description: "魔法バリアを習得する。",
             effects: [
-                MasterData.SkillEffect(
-                    kind: .magicAccess,
-                    target: nil,
-                    operation: "grant",
-                    value: nil,
-                    spellIds: [magicBarrierSpell.id],
-                    condition: nil,
-                    interruptKind: nil
-                )
+                MasterData.SkillEffect.magicAccess(operation: .grant, spellIds: [magicBarrierSpell.id], condition: nil)
             ]
         )
         let attackSpell = MasterData.Spell(

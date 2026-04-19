@@ -1,0 +1,5 @@
+.DS_Store
+UserInterfaceState.xcuserstate
+Umbra.xcodeproj/xcuserdata/
+*.xcworkspace/xcuserdata/
+Umbra/MasterData/GeneratedMasterData.swift

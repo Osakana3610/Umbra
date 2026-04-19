@@ -17,8 +17,8 @@ nonisolated struct CharacterStatus: Equatable, Sendable {
     let weaponRangeClass: ItemRangeClass
     let spellDamageMultipliersBySpellID: [Int: Double]
     let spellResistanceMultipliersBySpellID: [Int: Double]
-    let rewardMultipliersByTarget: [String: Double]
-    let partyModifiersByTarget: [String: Double]
+    let rewardMultipliersByTarget: [RewardMultiplierTarget: Double]
+    let partyModifiersByTarget: [PartyModifierTarget: Double]
     let onHitAilmentChanceByStatusID: [Int: Double]
     let contactAilmentChanceByStatusID: [Int: Double]
     let titleRollCountModifier: Int
@@ -26,15 +26,15 @@ nonisolated struct CharacterStatus: Equatable, Sendable {
     let normalDropJewelizeChance: Double
     let multiHitFalloffModifier: Double
     let hitRateFloor: Double
-    let defenseRuleValuesByTarget: [String: [Double]]
-    let recoveryRuleValuesByTarget: [String: [Double]]
-    let actionRuleValuesByTarget: [String: [Double]]
-    let reviveRuleValuesByTarget: [String: [Double]]
-    let combatRuleValuesByTarget: [String: [Double]]
-    let rewardRuleValuesByTarget: [String: [Double]]
-    let equipmentRuleValuesByTarget: [String: [Double]]
-    let explorationRuleValuesByTarget: [String: [Double]]
-    let hitRuleValuesByTarget: [String: [Double]]
+    let defenseRuleValuesByTarget: [DefenseRuleTarget: [Double]]
+    let recoveryRuleValuesByTarget: [RecoveryRuleTarget: [Double]]
+    let actionRuleValuesByTarget: [ActionRuleTarget: [Double]]
+    let reviveRuleValuesByTarget: [ReviveRuleTarget: [Double]]
+    let combatRuleValuesByTarget: [CombatRuleTarget: [Double]]
+    let rewardRuleValuesByTarget: [RewardRuleTarget: [Double]]
+    let equipmentRuleValuesByTarget: [EquipmentRuleTarget: [Double]]
+    let explorationRuleValuesByTarget: [ExplorationRuleTarget: [Double]]
+    let hitRuleValuesByTarget: [HitRuleTarget: [Double]]
 
     var maxHP: Int {
         battleStats.maxHP
@@ -48,113 +48,113 @@ nonisolated struct CharacterStatus: Equatable, Sendable {
         spellResistanceMultipliersBySpellID[spellID] ?? 1.0
     }
 
-    func rewardMultiplier(for target: String) -> Double {
+    func rewardMultiplier(for target: RewardMultiplierTarget) -> Double {
         rewardMultipliersByTarget[target] ?? 1.0
     }
 
-    func partyModifier(for target: String) -> Double {
+    func partyModifier(for target: PartyModifierTarget) -> Double {
         partyModifiersByTarget[target] ?? 1.0
     }
 
     // Rule dictionaries retain every applicable contribution for a target so callers can apply the
     // rule-specific reduction they need, such as max-only or multiplicative stacking.
-    func defenseRuleValues(for target: String) -> [Double] {
+    func defenseRuleValues(for target: DefenseRuleTarget) -> [Double] {
         defenseRuleValuesByTarget[target] ?? []
     }
 
-    func defenseRuleMaxValue(for target: String) -> Double? {
+    func defenseRuleMaxValue(for target: DefenseRuleTarget) -> Double? {
         defenseRuleValues(for: target).max()
     }
 
-    func defenseRuleProduct(for target: String) -> Double {
+    func defenseRuleProduct(for target: DefenseRuleTarget) -> Double {
         defenseRuleValues(for: target).reduce(1.0, *)
     }
 
-    func recoveryRuleValues(for target: String) -> [Double] {
+    func recoveryRuleValues(for target: RecoveryRuleTarget) -> [Double] {
         recoveryRuleValuesByTarget[target] ?? []
     }
 
-    func recoveryRuleMaxValue(for target: String) -> Double? {
+    func recoveryRuleMaxValue(for target: RecoveryRuleTarget) -> Double? {
         recoveryRuleValues(for: target).max()
     }
 
-    func recoveryRuleProduct(for target: String) -> Double {
+    func recoveryRuleProduct(for target: RecoveryRuleTarget) -> Double {
         recoveryRuleValues(for: target).reduce(1.0, *)
     }
 
-    func actionRuleValues(for target: String) -> [Double] {
+    func actionRuleValues(for target: ActionRuleTarget) -> [Double] {
         actionRuleValuesByTarget[target] ?? []
     }
 
-    func actionRuleMaxValue(for target: String) -> Double? {
+    func actionRuleMaxValue(for target: ActionRuleTarget) -> Double? {
         actionRuleValues(for: target).max()
     }
 
-    func actionRuleProduct(for target: String) -> Double {
+    func actionRuleProduct(for target: ActionRuleTarget) -> Double {
         actionRuleValues(for: target).reduce(1.0, *)
     }
 
-    func reviveRuleValues(for target: String) -> [Double] {
+    func reviveRuleValues(for target: ReviveRuleTarget) -> [Double] {
         reviveRuleValuesByTarget[target] ?? []
     }
 
-    func reviveRuleMaxValue(for target: String) -> Double? {
+    func reviveRuleMaxValue(for target: ReviveRuleTarget) -> Double? {
         reviveRuleValues(for: target).max()
     }
 
-    func combatRuleValues(for target: String) -> [Double] {
+    func combatRuleValues(for target: CombatRuleTarget) -> [Double] {
         combatRuleValuesByTarget[target] ?? []
     }
 
-    func combatRuleMaxValue(for target: String) -> Double? {
+    func combatRuleMaxValue(for target: CombatRuleTarget) -> Double? {
         combatRuleValues(for: target).max()
     }
 
-    func combatRuleProduct(for target: String) -> Double {
+    func combatRuleProduct(for target: CombatRuleTarget) -> Double {
         combatRuleValues(for: target).reduce(1.0, *)
     }
 
-    func rewardRuleValues(for target: String) -> [Double] {
+    func rewardRuleValues(for target: RewardRuleTarget) -> [Double] {
         rewardRuleValuesByTarget[target] ?? []
     }
 
-    func rewardRuleMaxValue(for target: String) -> Double? {
+    func rewardRuleMaxValue(for target: RewardRuleTarget) -> Double? {
         rewardRuleValues(for: target).max()
     }
 
-    func equipmentRuleValues(for target: String) -> [Double] {
+    func equipmentRuleValues(for target: EquipmentRuleTarget) -> [Double] {
         equipmentRuleValuesByTarget[target] ?? []
     }
 
-    func equipmentRuleMaxValue(for target: String) -> Double? {
+    func equipmentRuleMaxValue(for target: EquipmentRuleTarget) -> Double? {
         equipmentRuleValues(for: target).max()
     }
 
-    func equipmentRuleProduct(for target: String) -> Double {
+    func equipmentRuleProduct(for target: EquipmentRuleTarget) -> Double {
         equipmentRuleValues(for: target).reduce(1.0, *)
     }
 
-    func explorationRuleValues(for target: String) -> [Double] {
+    func explorationRuleValues(for target: ExplorationRuleTarget) -> [Double] {
         explorationRuleValuesByTarget[target] ?? []
     }
 
-    func explorationRuleMaxValue(for target: String) -> Double? {
+    func explorationRuleMaxValue(for target: ExplorationRuleTarget) -> Double? {
         explorationRuleValues(for: target).max()
     }
 
-    func explorationRuleProduct(for target: String) -> Double {
+    func explorationRuleProduct(for target: ExplorationRuleTarget) -> Double {
         explorationRuleValues(for: target).reduce(1.0, *)
     }
 
-    func hitRuleValues(for target: String) -> [Double] {
+    func hitRuleValues(for target: HitRuleTarget) -> [Double] {
         hitRuleValuesByTarget[target] ?? []
     }
 
-    func hitRuleMaxValue(for target: String) -> Double? {
+    func hitRuleMaxValue(for target: HitRuleTarget) -> Double? {
         hitRuleValues(for: target).max()
     }
 
-    func hitRuleProduct(for target: String) -> Double {
+    func hitRuleProduct(for target: HitRuleTarget) -> Double {
         hitRuleValues(for: target).reduce(1.0, *)
     }
 }

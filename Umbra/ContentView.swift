@@ -6,7 +6,6 @@ struct ContentView: View {
     @Environment(\.scenePhase) private var scenePhase
 
     let persistenceController: PersistenceController
-    let masterDataStore: MasterDataLoadStore
     let rosterStore: GuildRosterStore
     let partyStore: PartyStore
     let equipmentStore: EquipmentInventoryStore
@@ -17,13 +16,13 @@ struct ContentView: View {
     let guildServices: GuildServices
 
     var body: some View {
+        let masterData = MasterData.current
+
         Group {
-            switch (masterDataStore.phase, rosterStore.phase, partyStore.phase) {
-            case (.idle, _, _), (.loading, _, _), (_, .idle, _), (_, .loading, _), (_, _, .idle), (_, _, .loading):
-                // The shell waits for master data, roster, and party state together because all
-                // three are required to construct the tab hierarchy coherently.
-                ProgressView("マスターデータを読み込み中")
-            case let (.failed(message), _, _), let (_, .failed(message), _), let (_, _, .failed(message)):
+            switch (rosterStore.phase, partyStore.phase) {
+            case (.idle, _), (.loading, _), (_, .idle), (_, .loading):
+                ProgressView("データを読み込み中")
+            case let (.failed(message), _), let (_, .failed(message)):
                 VStack(spacing: 16) {
                     ContentUnavailableView(
                         "読み込みに失敗しました",
@@ -32,18 +31,12 @@ struct ContentView: View {
                     )
 
                     Button("再読み込み") {
-                        Task {
-                            // Master data reload is async, while roster and party reload from local
-                            // persistence synchronously on the main actor.
-                            async let masterDataReload = masterDataStore.reload()
-                            rosterStore.reload()
-                            partyStore.reload()
-                            _ = await masterDataReload
-                        }
+                        rosterStore.reload()
+                        partyStore.reload()
                     }
                 }
                 .padding()
-            case let (.loaded(masterData), .loaded, .loaded):
+            case (.loaded, .loaded):
                 RootTabView(
                     masterData: masterData,
                     persistenceController: persistenceController,
@@ -90,12 +83,8 @@ struct ContentView: View {
             }
         }
         .task {
-            // Startup loads master data and local stores in parallel to minimize time spent on the
-            // initial loading screen.
-            async let masterDataLoad = masterDataStore.loadIfNeeded()
             rosterStore.loadIfNeeded()
             partyStore.loadIfNeeded()
-            _ = await masterDataLoad
         }
     }
 }
@@ -107,13 +96,11 @@ struct ContentView: View {
         coreDataRepository: guildCoreDataRepository,
         explorationCoreDataRepository: ExplorationCoreDataRepository(container: persistenceController.container)
     )
-    let masterDataStore = MasterDataLoadStore(phase: .loading)
-    let itemDropNotificationService = ItemDropNotificationService(masterDataStore: masterDataStore)
+    let itemDropNotificationService = ItemDropNotificationService(masterData: MasterData.current)
     let equipmentStatusNotificationService = EquipmentStatusNotificationService()
     let rosterStore = GuildRosterStore(coreDataRepository: guildCoreDataRepository, service: guildServices.roster, phase: .loading)
     return ContentView(
         persistenceController: persistenceController,
-        masterDataStore: masterDataStore,
         rosterStore: rosterStore,
         partyStore: PartyStore(coreDataRepository: guildCoreDataRepository, service: guildServices.parties, phase: .loading),
         equipmentStore: EquipmentInventoryStore(

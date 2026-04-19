@@ -1,6 +1,6 @@
 // Verifies foundational data and calculation behavior shared across the app.
-// This suite keeps master-data decoding, item filtering, and derived-stat expectations together so
-// core data-model regressions are caught before higher-level feature tests fail.
+// This suite keeps master-data availability, item filtering, and derived-stat expectations
+// together so core data-model regressions are caught before higher-level feature tests fail.
 
 import CoreData
 import Foundation
@@ -11,8 +11,8 @@ import Testing
 @MainActor
 struct UmbraCatalogAndStatsTests {
     @Test
-    func generatedMasterDataDecodes() throws {
-        let masterData = try loadGeneratedMasterData()
+    func generatedMasterDataIsAvailable() {
+        let masterData = currentMasterData()
 
         #expect(!masterData.races.isEmpty)
         #expect(!masterData.jobs.isEmpty)
@@ -23,8 +23,20 @@ struct UmbraCatalogAndStatsTests {
     }
 
     @Test
-    func recruitNamesDecodeByGender() throws {
-        let masterData = try loadGeneratedMasterData()
+    func appUsesGeneratedMasterData() {
+        let masterData = MasterData.current
+
+        #expect(!masterData.races.isEmpty)
+        #expect(!masterData.jobs.isEmpty)
+        #expect(!masterData.skills.isEmpty)
+        #expect(masterData.items.first?.name == "ショートソード")
+        #expect(masterData.titles.first(where: { $0.key == "rough" })?.id == 1)
+        #expect(masterData.labyrinths.first?.name == "草原")
+    }
+
+    @Test
+    func recruitNamesAreGroupedByGender() {
+        let masterData = currentMasterData()
 
         #expect(!masterData.recruitNames.male.isEmpty)
         #expect(!masterData.recruitNames.female.isEmpty)
@@ -33,7 +45,7 @@ struct UmbraCatalogAndStatsTests {
 
     @Test
     func itemBrowserFilterCatalogCollectsVisibleCategoriesAndTitles() throws {
-        let masterData = try loadGeneratedMasterData()
+        let masterData = currentMasterData()
         let roughTitleID = try #require(masterData.titles.first(where: { $0.key == "rough" })?.id)
         let untitledTitle = try #require(masterData.titles.first(where: { $0.key == "untitled" }))
         let swordID = try itemId(for: .sword, in: masterData)
@@ -63,7 +75,7 @@ struct UmbraCatalogAndStatsTests {
 
     @Test
     func itemBrowserFilterMatchesCategoryTitleAndSuperRareSelections() throws {
-        let masterData = try loadGeneratedMasterData()
+        let masterData = currentMasterData()
         let roughTitleID = try #require(masterData.titles.first(where: { $0.key == "rough" })?.id)
         let untitledTitleID = try #require(masterData.titles.first(where: { $0.key == "untitled" })?.id)
         let superRareID = try #require(masterData.superRares.first?.id)
@@ -161,7 +173,7 @@ struct UmbraCatalogAndStatsTests {
             coreDataRepository: guildCoreDataRepository,
             explorationCoreDataRepository: ExplorationCoreDataRepository(container: container)
         )
-        let masterData = try loadGeneratedMasterData()
+        let masterData = currentMasterData()
 
         let result = try guildServices.roster.hireCharacter(
             raceId: try #require(masterData.races.first?.id),
@@ -358,7 +370,7 @@ struct UmbraCatalogAndStatsTests {
 
     @Test
     func completeStatusCalculationBuildsBattleStatsAndCapabilities() throws {
-        let masterData = try loadGeneratedMasterData()
+        let masterData = currentMasterData()
         let character = CharacterRecord(
             characterId: 1,
             name: "テスト騎士",
@@ -417,7 +429,7 @@ struct UmbraCatalogAndStatsTests {
 
     @Test
     func completeStatusCalculationCollectsDerivedEffectsAndSpells() throws {
-        let masterData = try loadGeneratedMasterData()
+        let masterData = currentMasterData()
         let spellcastingCharacter = CharacterRecord(
             characterId: 1,
             name: "テスト魔導士",
@@ -480,7 +492,7 @@ struct UmbraCatalogAndStatsTests {
 
     @Test
     func completeStatusCalculationUsesHighestNormalDropJewelizeChance() throws {
-        let masterData = try loadGeneratedMasterData()
+        let masterData = currentMasterData()
         let character = CharacterRecord(
             characterId: 1,
             name: "テスト錬金術師",
@@ -517,15 +529,7 @@ struct UmbraCatalogAndStatsTests {
             name: "火球習得",
             description: "火球を習得する。",
             effects: [
-                MasterData.SkillEffect(
-                    kind: .magicAccess,
-                    target: nil,
-                    operation: "grant",
-                    value: nil,
-                    spellIds: [attackSpell.id],
-                    condition: nil,
-                    interruptKind: nil
-                )
+                MasterData.SkillEffect.magicAccess(operation: .grant, spellIds: [attackSpell.id], condition: nil)
             ]
         )
         let revokeSkill = MasterData.Skill(
@@ -533,15 +537,7 @@ struct UmbraCatalogAndStatsTests {
             name: "火球忘却",
             description: "火球を忘却する。",
             effects: [
-                MasterData.SkillEffect(
-                    kind: .magicAccess,
-                    target: nil,
-                    operation: "revoke",
-                    value: nil,
-                    spellIds: [attackSpell.id],
-                    condition: nil,
-                    interruptKind: nil
-                )
+                MasterData.SkillEffect.magicAccess(operation: .revoke, spellIds: [attackSpell.id], condition: nil)
             ]
         )
         let allStatSkill = MasterData.Skill(
@@ -549,15 +545,7 @@ struct UmbraCatalogAndStatsTests {
             name: "全能力強化",
             description: "全戦闘能力値が上昇する。",
             effects: [
-                MasterData.SkillEffect(
-                    kind: .allBattleStatMultiplier,
-                    target: nil,
-                    operation: nil,
-                    value: 1.5,
-                    spellIds: [],
-                    condition: nil,
-                    interruptKind: nil
-                )
+                MasterData.SkillEffect.allBattleStatMultiplier(value: 1.5)
             ]
         )
         let masterData = makeBattleTestMasterData(
@@ -594,15 +582,7 @@ struct UmbraCatalogAndStatsTests {
             name: "素手攻撃強化",
             description: "格闘状態のとき物理攻撃が増加する。",
             effects: [
-                MasterData.SkillEffect(
-                    kind: .battleStatModifier,
-                    target: "physicalAttack",
-                    operation: "pctAdd",
-                    value: 1.0,
-                    spellIds: [],
-                    condition: .unarmed,
-                    interruptKind: nil
-                )
+                MasterData.SkillEffect.battleStatModifier(target: .physicalAttack, operation: .pctAdd, value: 1.0, condition: .unarmed)
             ]
         )
         let masterData = makeBattleTestMasterData(
@@ -644,15 +624,7 @@ struct UmbraCatalogAndStatsTests {
             name: "職パッシブ攻撃補正",
             description: "物理攻撃を固定値強化する。",
             effects: [
-                MasterData.SkillEffect(
-                    kind: .battleStatModifier,
-                    target: "physicalAttack",
-                    operation: "flatAdd",
-                    value: 5,
-                    spellIds: [],
-                    condition: nil,
-                    interruptKind: nil
-                )
+                MasterData.SkillEffect.battleStatModifier(target: .physicalAttack, operation: .flatAdd, value: 5, condition: nil)
             ]
         )
         let levelSkill = MasterData.Skill(
@@ -660,15 +632,7 @@ struct UmbraCatalogAndStatsTests {
             name: "職レベル魔力補正",
             description: "魔力を固定値強化する。",
             effects: [
-                MasterData.SkillEffect(
-                    kind: .battleStatModifier,
-                    target: "magic",
-                    operation: "flatAdd",
-                    value: 7,
-                    spellIds: [],
-                    condition: nil,
-                    interruptKind: nil
-                )
+                MasterData.SkillEffect.battleStatModifier(target: .magic, operation: .flatAdd, value: 7, condition: nil)
             ]
         )
         let masterData = makeBattleTestMasterData(
@@ -693,7 +657,7 @@ struct UmbraCatalogAndStatsTests {
 
     @Test
     func equipmentResolutionKeepsBothWeaponRangesWhenMixed() throws {
-        let masterData = try loadGeneratedMasterData()
+        let masterData = currentMasterData()
         let meleeItemID = try #require(masterData.items.first(where: { $0.rangeClass == .melee })?.id)
         let rangedItemID = try #require(masterData.items.first(where: { $0.rangeClass == .ranged })?.id)
         let resolution = try EquipmentResolver(masterData: masterData).resolve(
@@ -705,6 +669,17 @@ struct UmbraCatalogAndStatsTests {
 
         #expect(resolution.hasMeleeWeapon)
         #expect(resolution.hasRangedWeapon)
+    }
+
+    @Test
+    func equipmentResolutionRejectsUnknownItemReference() throws {
+        let masterData = currentMasterData()
+
+        #expect(throws: EquipmentResolverError.unknownItem(99_999)) {
+            _ = try EquipmentResolver(masterData: masterData).resolve(
+                equippedItemStacks: [CompositeItemStack(itemID: .baseItem(itemId: 99_999), count: 1)]
+            )
+        }
     }
 
     @Test
@@ -797,15 +772,7 @@ struct UmbraCatalogAndStatsTests {
             name: "鎧固定値+50%",
             description: "鎧カテゴリ装備の固定値を強化する。",
             effects: [
-                MasterData.SkillEffect(
-                    kind: .equipmentRule,
-                    target: "armorEquipmentBattleStatFlatMultiplier",
-                    operation: nil,
-                    value: 1.5,
-                    spellIds: [],
-                    condition: nil,
-                    interruptKind: nil
-                )
+                MasterData.SkillEffect.equipmentRule(target: .armorEquipmentBattleStatFlatMultiplier, value: 1.5, condition: nil)
             ]
         )
         let masterData = makeBattleTestMasterData(
@@ -860,15 +827,7 @@ struct UmbraCatalogAndStatsTests {
             name: "剣固定値+40%",
             description: "剣カテゴリ装備の固定値を強化する。",
             effects: [
-                MasterData.SkillEffect(
-                    kind: .equipmentRule,
-                    target: "swordEquipmentBattleStatFlatMultiplier",
-                    operation: nil,
-                    value: 1.4,
-                    spellIds: [],
-                    condition: nil,
-                    interruptKind: nil
-                )
+                MasterData.SkillEffect.equipmentRule(target: .swordEquipmentBattleStatFlatMultiplier, value: 1.4, condition: nil)
             ]
         )
         let masterData = makeBattleTestMasterData(
@@ -937,15 +896,7 @@ struct UmbraCatalogAndStatsTests {
             name: "防具固定値+35%",
             description: "防具カテゴリ装備の固定値を強化する。",
             effects: [
-                MasterData.SkillEffect(
-                    kind: .equipmentRule,
-                    target: "defenseEquipmentBattleStatFlatMultiplier",
-                    operation: nil,
-                    value: 1.35,
-                    spellIds: [],
-                    condition: nil,
-                    interruptKind: nil
-                )
+                MasterData.SkillEffect.equipmentRule(target: .defenseEquipmentBattleStatFlatMultiplier, value: 1.35, condition: nil)
             ]
         )
         let masterData = makeBattleTestMasterData(
@@ -1057,15 +1008,7 @@ struct UmbraCatalogAndStatsTests {
             name: "魔法防御固定値+50%",
             description: "装備由来の魔法防御固定値を強化する。",
             effects: [
-                MasterData.SkillEffect(
-                    kind: .equipmentRule,
-                    target: "magicDefenseEquipmentFlatMultiplier",
-                    operation: nil,
-                    value: 1.5,
-                    spellIds: [],
-                    condition: nil,
-                    interruptKind: nil
-                )
+                MasterData.SkillEffect.equipmentRule(target: .magicDefenseEquipmentFlatMultiplier, value: 1.5, condition: nil)
             ]
         )
         let masterData = makeBattleTestMasterData(

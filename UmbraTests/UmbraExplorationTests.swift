@@ -19,8 +19,8 @@ struct UmbraExplorationTests {
             coreDataRepository: guildCoreDataRepository,
             explorationCoreDataRepository: ExplorationCoreDataRepository(container: container)
         )
-        let masterDataStore = MasterDataLoadStore()
-        let itemDropNotificationService = ItemDropNotificationService(masterDataStore: masterDataStore)
+        let masterData = currentMasterData()
+        let itemDropNotificationService = ItemDropNotificationService(masterData: masterData)
         let rosterStore = GuildRosterStore(
             coreDataRepository: guildCoreDataRepository,
             service: guildServices.roster,
@@ -31,7 +31,6 @@ struct UmbraExplorationTests {
             itemDropNotificationService: itemDropNotificationService,
             rosterStore: rosterStore
         )
-        let masterData = try loadGeneratedMasterData()
 
         let firstCharacter = try guildServices.roster.hireCharacter(
             raceId: try #require(masterData.races.first?.id),
@@ -85,8 +84,8 @@ struct UmbraExplorationTests {
             coreDataRepository: guildCoreDataRepository,
             explorationCoreDataRepository: explorationCoreDataRepository
         )
-        let masterDataStore = MasterDataLoadStore()
-        let itemDropNotificationService = ItemDropNotificationService(masterDataStore: masterDataStore)
+        let masterData = currentMasterData()
+        let itemDropNotificationService = ItemDropNotificationService(masterData: masterData)
         let rosterStore = GuildRosterStore(
             coreDataRepository: guildCoreDataRepository,
             service: guildServices.roster
@@ -96,7 +95,6 @@ struct UmbraExplorationTests {
             itemDropNotificationService: itemDropNotificationService,
             rosterStore: rosterStore
         )
-        let masterData = try loadGeneratedMasterData()
 
         let character = try guildServices.roster.hireCharacter(
             raceId: try #require(masterData.races.first?.id),
@@ -153,7 +151,7 @@ struct UmbraExplorationTests {
             explorationCoreDataRepository: explorationCoreDataRepository
         )
         let explorationService = ExplorationSessionService(coreDataRepository: explorationCoreDataRepository)
-        let masterData = try loadGeneratedMasterData()
+        let masterData = currentMasterData()
 
         let character = try guildServices.roster.hireCharacter(
             raceId: try #require(masterData.races.first?.id),
@@ -219,7 +217,7 @@ struct UmbraExplorationTests {
             explorationCoreDataRepository: explorationCoreDataRepository
         )
         let explorationService = ExplorationSessionService(coreDataRepository: explorationCoreDataRepository)
-        let masterData = try loadGeneratedMasterData()
+        let masterData = currentMasterData()
 
         let character = try guildServices.roster.hireCharacter(
             raceId: try #require(masterData.races.first?.id),
@@ -267,7 +265,7 @@ struct UmbraExplorationTests {
             explorationCoreDataRepository: explorationCoreDataRepository
         )
         let explorationService = ExplorationSessionService(coreDataRepository: explorationCoreDataRepository)
-        let masterData = try loadGeneratedMasterData()
+        let masterData = currentMasterData()
 
         let character = try guildServices.roster.hireCharacter(
             raceId: try #require(masterData.races.first?.id),
@@ -299,7 +297,7 @@ struct UmbraExplorationTests {
             explorationCoreDataRepository: explorationCoreDataRepository
         )
         let explorationService = ExplorationSessionService(coreDataRepository: explorationCoreDataRepository)
-        let masterData = try loadGeneratedMasterData()
+        let masterData = currentMasterData()
 
         let character = try guildServices.roster.hireCharacter(
             raceId: try #require(masterData.races.first?.id),
@@ -335,7 +333,7 @@ struct UmbraExplorationTests {
             explorationCoreDataRepository: explorationCoreDataRepository
         )
         let explorationService = ExplorationSessionService(coreDataRepository: explorationCoreDataRepository)
-        let masterData = try loadGeneratedMasterData()
+        let masterData = currentMasterData()
 
         let character = try guildServices.roster.hireCharacter(
             raceId: try #require(masterData.races.first?.id),
@@ -477,15 +475,7 @@ struct UmbraExplorationTests {
             name: "ゴールド+50%",
             description: "取得ゴールドが50%増加する。",
             effects: [
-                MasterData.SkillEffect(
-                    kind: .rewardMultiplier,
-                    target: "goldGainMultiplier",
-                    operation: "pctAdd",
-                    value: 0.5,
-                    spellIds: [],
-                    condition: nil,
-                    interruptKind: nil
-                )
+                MasterData.SkillEffect.rewardMultiplier(target: .goldGainMultiplier, operation: .pctAdd, value: 0.5, condition: nil)
             ]
         )
         let bonusRewardSkill = MasterData.Skill(
@@ -493,24 +483,8 @@ struct UmbraExplorationTests {
             name: "報酬上乗せ",
             description: "取得ゴールドが30%、レア倍率が10%増加する。",
             effects: [
-                MasterData.SkillEffect(
-                    kind: .rewardMultiplier,
-                    target: "goldGainMultiplier",
-                    operation: "pctAdd",
-                    value: 0.3,
-                    spellIds: [],
-                    condition: nil,
-                    interruptKind: nil
-                ),
-                MasterData.SkillEffect(
-                    kind: .rewardMultiplier,
-                    target: "rareDropMultiplier",
-                    operation: "pctAdd",
-                    value: 0.1,
-                    spellIds: [],
-                    condition: nil,
-                    interruptKind: nil
-                )
+                MasterData.SkillEffect.rewardMultiplier(target: .goldGainMultiplier, operation: .pctAdd, value: 0.3, condition: nil),
+                MasterData.SkillEffect.rewardMultiplier(target: .rareDropMultiplier, operation: .pctAdd, value: 0.1, condition: nil)
             ]
         )
         let masterData = makeExplorationBattleTestMasterData(
@@ -569,7 +543,7 @@ struct UmbraExplorationTests {
             explorationCoreDataRepository: explorationCoreDataRepository
         )
         let explorationService = ExplorationSessionService(coreDataRepository: explorationCoreDataRepository)
-        let masterData = try loadGeneratedMasterData()
+        let masterData = currentMasterData()
 
         let character = try guildServices.roster.hireCharacter(
             raceId: try #require(masterData.races.first?.id),
@@ -609,7 +583,7 @@ struct UmbraExplorationTests {
             explorationCoreDataRepository: explorationCoreDataRepository
         )
         let explorationService = ExplorationSessionService(coreDataRepository: explorationCoreDataRepository)
-        let masterData = try loadGeneratedMasterData()
+        let masterData = currentMasterData()
 
         let character = try guildServices.roster.hireCharacter(
             raceId: try #require(masterData.races.first?.id),
@@ -777,7 +751,7 @@ struct UmbraExplorationTests {
             explorationCoreDataRepository: explorationCoreDataRepository
         )
         let explorationService = ExplorationSessionService(coreDataRepository: explorationCoreDataRepository)
-        let masterData = try loadGeneratedMasterData()
+        let masterData = currentMasterData()
 
         let character = try guildServices.roster.hireCharacter(
             raceId: try #require(masterData.races.first?.id),
@@ -847,7 +821,7 @@ struct UmbraExplorationTests {
         let container = PersistenceController(inMemory: true).container
         let guildCoreDataRepository = GuildCoreDataRepository(container: container)
         let explorationCoreDataRepository = ExplorationCoreDataRepository(container: container)
-        let masterData = try loadGeneratedMasterData()
+        let masterData = currentMasterData()
         let inventoryItemID = CompositeItemID.baseItem(itemId: try itemId(for: .sword, in: masterData))
         let autoSellItemID = CompositeItemID.baseItem(itemId: try itemId(for: .armor, in: masterData))
         var rosterSnapshot = try guildCoreDataRepository.loadRosterSnapshot()
@@ -1017,7 +991,7 @@ struct UmbraExplorationTests {
             explorationCoreDataRepository: explorationCoreDataRepository
         )
         let explorationService = ExplorationSessionService(coreDataRepository: explorationCoreDataRepository)
-        let masterData = try loadGeneratedMasterData()
+        let masterData = currentMasterData()
 
         let character = try guildServices.roster.hireCharacter(
             raceId: try #require(masterData.races.first?.id),
@@ -1076,7 +1050,7 @@ struct UmbraExplorationTests {
             explorationCoreDataRepository: explorationCoreDataRepository
         )
         let explorationService = ExplorationSessionService(coreDataRepository: explorationCoreDataRepository)
-        let masterData = try loadGeneratedMasterData()
+        let masterData = currentMasterData()
 
         let character = try guildServices.roster.hireCharacter(
             raceId: try #require(masterData.races.first?.id),

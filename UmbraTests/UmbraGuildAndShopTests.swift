@@ -19,7 +19,7 @@ struct UmbraGuildAndShopTests {
             coreDataRepository: guildCoreDataRepository,
             explorationCoreDataRepository: ExplorationCoreDataRepository(container: container)
         )
-        let masterData = try loadGeneratedMasterData()
+        let masterData = currentMasterData()
         let baseItem = try #require(masterData.items.first(where: { $0.category != .jewel }))
         let jewelItem = try #require(masterData.items.first(where: { $0.category == .jewel }))
         let baseItemID = CompositeItemID.baseItem(itemId: baseItem.id)
@@ -87,7 +87,7 @@ struct UmbraGuildAndShopTests {
             coreDataRepository: guildCoreDataRepository,
             explorationCoreDataRepository: ExplorationCoreDataRepository(container: container)
         )
-        let masterData = try loadGeneratedMasterData()
+        let masterData = currentMasterData()
         let baseItemID = CompositeItemID.baseItem(itemId: try itemId(for: .sword, in: masterData))
         let jewelItemID = CompositeItemID.baseItem(itemId: try itemId(for: .jewel, in: masterData))
         let resultItemID = CompositeItemID(
@@ -130,7 +130,7 @@ struct UmbraGuildAndShopTests {
             coreDataRepository: guildCoreDataRepository,
             explorationCoreDataRepository: ExplorationCoreDataRepository(container: container)
         )
-        let masterData = try loadGeneratedMasterData()
+        let masterData = currentMasterData()
         let character = try guildServices.roster.hireCharacter(
             raceId: try #require(masterData.races.first?.id),
             jobId: try #require(masterData.jobs.first?.id),
@@ -218,7 +218,7 @@ struct UmbraGuildAndShopTests {
             coreDataRepository: guildCoreDataRepository,
             explorationCoreDataRepository: ExplorationCoreDataRepository(container: container)
         )
-        let masterData = try loadGeneratedMasterData()
+        let masterData = currentMasterData()
 
         let firstCharacter = try guildServices.roster.hireCharacter(
             raceId: try #require(masterData.races.first?.id),
@@ -275,23 +275,6 @@ struct UmbraGuildAndShopTests {
             coreDataRepository: guildCoreDataRepository,
             explorationCoreDataRepository: explorationCoreDataRepository
         )
-        let masterDataStore = MasterDataLoadStore()
-        let itemDropNotificationService = ItemDropNotificationService(masterDataStore: masterDataStore)
-        let rosterStore = GuildRosterStore(
-            coreDataRepository: guildCoreDataRepository,
-            service: guildServices.roster,
-            phase: .loaded
-        )
-        let partyStore = PartyStore(
-            coreDataRepository: guildCoreDataRepository,
-            service: guildServices.parties,
-            phase: .loaded
-        )
-        let explorationStore = ExplorationStore(
-            coreDataRepository: explorationCoreDataRepository,
-            itemDropNotificationService: itemDropNotificationService,
-            rosterStore: rosterStore
-        )
         let masterData = makeExplorationBattleTestMasterData(
             allyBaseStats: battleBaseStats(vitality: 10),
             enemyBaseStats: battleBaseStats(vitality: 1),
@@ -312,6 +295,22 @@ struct UmbraGuildAndShopTests {
                     ]
                 )
             ]
+        )
+        let itemDropNotificationService = ItemDropNotificationService(masterData: masterData)
+        let rosterStore = GuildRosterStore(
+            coreDataRepository: guildCoreDataRepository,
+            service: guildServices.roster,
+            phase: .loaded
+        )
+        let partyStore = PartyStore(
+            coreDataRepository: guildCoreDataRepository,
+            service: guildServices.parties,
+            phase: .loaded
+        )
+        let explorationStore = ExplorationStore(
+            coreDataRepository: explorationCoreDataRepository,
+            itemDropNotificationService: itemDropNotificationService,
+            rosterStore: rosterStore
         )
 
         rosterStore.reload()
@@ -443,23 +442,6 @@ struct UmbraGuildAndShopTests {
             coreDataRepository: guildCoreDataRepository,
             explorationCoreDataRepository: explorationCoreDataRepository
         )
-        let masterDataStore = MasterDataLoadStore()
-        let itemDropNotificationService = ItemDropNotificationService(masterDataStore: masterDataStore)
-        let rosterStore = GuildRosterStore(
-            coreDataRepository: guildCoreDataRepository,
-            service: guildServices.roster,
-            phase: .loaded
-        )
-        let partyStore = PartyStore(
-            coreDataRepository: guildCoreDataRepository,
-            service: guildServices.parties,
-            phase: .loaded
-        )
-        let explorationStore = ExplorationStore(
-            coreDataRepository: explorationCoreDataRepository,
-            itemDropNotificationService: itemDropNotificationService,
-            rosterStore: rosterStore
-        )
         let masterData = makeExplorationBattleTestMasterData(
             allyBaseStats: battleBaseStats(vitality: 10),
             enemyBaseStats: battleBaseStats(vitality: 1),
@@ -480,6 +462,22 @@ struct UmbraGuildAndShopTests {
                     ]
                 )
             ]
+        )
+        let itemDropNotificationService = ItemDropNotificationService(masterData: masterData)
+        let rosterStore = GuildRosterStore(
+            coreDataRepository: guildCoreDataRepository,
+            service: guildServices.roster,
+            phase: .loaded
+        )
+        let partyStore = PartyStore(
+            coreDataRepository: guildCoreDataRepository,
+            service: guildServices.parties,
+            phase: .loaded
+        )
+        let explorationStore = ExplorationStore(
+            coreDataRepository: explorationCoreDataRepository,
+            itemDropNotificationService: itemDropNotificationService,
+            rosterStore: rosterStore
         )
 
         rosterStore.reload()
@@ -612,23 +610,6 @@ struct UmbraGuildAndShopTests {
             coreDataRepository: guildCoreDataRepository,
             explorationCoreDataRepository: explorationCoreDataRepository
         )
-        let masterDataStore = MasterDataLoadStore()
-        let itemDropNotificationService = ItemDropNotificationService(masterDataStore: masterDataStore)
-        let rosterStore = GuildRosterStore(
-            coreDataRepository: guildCoreDataRepository,
-            service: guildServices.roster,
-            phase: .loaded
-        )
-        let partyStore = PartyStore(
-            coreDataRepository: guildCoreDataRepository,
-            service: guildServices.parties,
-            phase: .loaded
-        )
-        let explorationStore = ExplorationStore(
-            coreDataRepository: explorationCoreDataRepository,
-            itemDropNotificationService: itemDropNotificationService,
-            rosterStore: rosterStore
-        )
         let masterData = makeExplorationBattleTestMasterData(
             allyBaseStats: battleBaseStats(vitality: 10),
             enemyBaseStats: battleBaseStats(vitality: 1),
@@ -649,6 +630,22 @@ struct UmbraGuildAndShopTests {
                     ]
                 )
             ]
+        )
+        let itemDropNotificationService = ItemDropNotificationService(masterData: masterData)
+        let rosterStore = GuildRosterStore(
+            coreDataRepository: guildCoreDataRepository,
+            service: guildServices.roster,
+            phase: .loaded
+        )
+        let partyStore = PartyStore(
+            coreDataRepository: guildCoreDataRepository,
+            service: guildServices.parties,
+            phase: .loaded
+        )
+        let explorationStore = ExplorationStore(
+            coreDataRepository: explorationCoreDataRepository,
+            itemDropNotificationService: itemDropNotificationService,
+            rosterStore: rosterStore
         )
         var snapshot = try guildCoreDataRepository.loadRosterSnapshot()
         snapshot.playerState.gold = 10_000_000
@@ -732,7 +729,7 @@ struct UmbraGuildAndShopTests {
             coreDataRepository: guildCoreDataRepository,
             explorationCoreDataRepository: ExplorationCoreDataRepository(container: container)
         )
-        let masterData = try loadGeneratedMasterData()
+        let masterData = currentMasterData()
 
         let firstCharacter = try guildServices.roster.hireCharacter(
             raceId: try #require(masterData.races.first?.id),
@@ -775,7 +772,7 @@ struct UmbraGuildAndShopTests {
             coreDataRepository: guildCoreDataRepository,
             explorationCoreDataRepository: ExplorationCoreDataRepository(container: container)
         )
-        let masterData = try loadGeneratedMasterData()
+        let masterData = currentMasterData()
 
         let character = try guildServices.roster.hireCharacter(
             raceId: try #require(masterData.races.first?.id),
@@ -827,7 +824,7 @@ struct UmbraGuildAndShopTests {
             coreDataRepository: guildCoreDataRepository,
             explorationCoreDataRepository: ExplorationCoreDataRepository(container: container)
         )
-        let masterData = try loadGeneratedMasterData()
+        let masterData = currentMasterData()
 
         let character = try guildServices.roster.hireCharacter(
             raceId: try raceId(named: "人間", in: masterData),
@@ -866,7 +863,7 @@ struct UmbraGuildAndShopTests {
             coreDataRepository: guildCoreDataRepository,
             explorationCoreDataRepository: ExplorationCoreDataRepository(container: container)
         )
-        let masterData = try loadGeneratedMasterData()
+        let masterData = currentMasterData()
 
         let character = try guildServices.roster.hireCharacter(
             raceId: try #require(masterData.races.first?.id),
@@ -902,7 +899,7 @@ struct UmbraGuildAndShopTests {
             coreDataRepository: guildCoreDataRepository,
             explorationCoreDataRepository: ExplorationCoreDataRepository(container: container)
         )
-        let masterData = try loadGeneratedMasterData()
+        let masterData = currentMasterData()
 
         let overMaxCharacter = try guildServices.roster.hireCharacter(
             raceId: try raceId(named: "人間", in: masterData),
@@ -1044,15 +1041,7 @@ struct UmbraGuildAndShopTests {
                     name: "装備可能数-1",
                     description: "装備可能数を1減らす。",
                     effects: [
-                        MasterData.SkillEffect(
-                            kind: .equipmentCapacityModifier,
-                            target: nil,
-                            operation: nil,
-                            value: -1,
-                            spellIds: [],
-                            condition: nil,
-                            interruptKind: nil
-                        )
+                        MasterData.SkillEffect.equipmentCapacityModifier(value: -1)
                     ]
                 )
             ],
@@ -1112,7 +1101,7 @@ struct UmbraGuildAndShopTests {
             coreDataRepository: guildCoreDataRepository,
             explorationCoreDataRepository: ExplorationCoreDataRepository(container: container)
         )
-        let masterData = try loadGeneratedMasterData()
+        let masterData = currentMasterData()
 
         let character = try guildServices.roster.hireCharacter(
             raceId: try #require(masterData.races.first?.id),
@@ -1152,7 +1141,7 @@ struct UmbraGuildAndShopTests {
             coreDataRepository: guildCoreDataRepository,
             explorationCoreDataRepository: ExplorationCoreDataRepository(container: container)
         )
-        let masterData = try loadGeneratedMasterData()
+        let masterData = currentMasterData()
 
         let character = try guildServices.roster.hireCharacter(
             raceId: try raceId(named: "人間", in: masterData),
@@ -1193,7 +1182,7 @@ struct UmbraGuildAndShopTests {
             coreDataRepository: guildCoreDataRepository,
             explorationCoreDataRepository: ExplorationCoreDataRepository(container: container)
         )
-        let masterData = try loadGeneratedMasterData()
+        let masterData = currentMasterData()
         let compositeItemID = CompositeItemID(
             baseSuperRareId: try #require(masterData.superRares.first?.id),
             baseTitleId: try #require(masterData.titles.first?.id),
@@ -1224,7 +1213,7 @@ struct UmbraGuildAndShopTests {
             coreDataRepository: guildCoreDataRepository,
             explorationCoreDataRepository: ExplorationCoreDataRepository(container: container)
         )
-        let masterData = try loadGeneratedMasterData()
+        let masterData = currentMasterData()
         let itemID = CompositeItemID(
             baseSuperRareId: try #require(masterData.superRares.first?.id),
             baseTitleId: try #require(masterData.titles.first?.id),
@@ -1268,7 +1257,7 @@ struct UmbraGuildAndShopTests {
             coreDataRepository: guildCoreDataRepository,
             explorationCoreDataRepository: ExplorationCoreDataRepository(container: container)
         )
-        let masterData = try loadGeneratedMasterData()
+        let masterData = currentMasterData()
         let baseItem = try #require(masterData.items.first(where: { $0.rarity != .normal }))
         let itemID = CompositeItemID.baseItem(itemId: baseItem.id)
         var snapshot = try guildCoreDataRepository.loadRosterSnapshot()

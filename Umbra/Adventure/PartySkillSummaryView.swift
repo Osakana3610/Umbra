@@ -2,12 +2,6 @@
 
 import SwiftUI
 
-private enum PartySkillRewardTarget {
-    static let experience = "experienceGainMultiplier"
-    static let gold = "goldGainMultiplier"
-    static let rareDrop = "rareDropMultiplier"
-}
-
 struct PartySkillSummaryView: View {
     let partyId: Int
     let masterData: MasterData
@@ -44,7 +38,7 @@ struct PartySkillSummaryView: View {
                         }
 
                         PartySkillEntryListView(
-                            entries: aggregation.rewardEntries(for: PartySkillRewardTarget.experience)
+                            entries: aggregation.rewardEntries(for: .experienceGainMultiplier)
                         )
                     } header: {
                         Text("経験値倍率")
@@ -56,7 +50,7 @@ struct PartySkillSummaryView: View {
                         LabeledContent("合計倍率", value: multiplierText(aggregation.goldMultiplier))
 
                         PartySkillEntryListView(
-                            entries: aggregation.rewardEntries(for: PartySkillRewardTarget.gold)
+                            entries: aggregation.rewardEntries(for: .goldGainMultiplier)
                         )
                     }
 
@@ -70,7 +64,7 @@ struct PartySkillSummaryView: View {
                         LabeledContent("合計倍率", value: multiplierText(aggregation.rareDropMultiplier))
 
                         PartySkillEntryListView(
-                            entries: aggregation.rewardEntries(for: PartySkillRewardTarget.rareDrop)
+                            entries: aggregation.rewardEntries(for: .rareDropMultiplier)
                         )
                     }
 
@@ -124,7 +118,7 @@ struct PartySkillSummaryView: View {
             ExperienceMemberRow(
                 characterID: memberStatus.character.characterId,
                 characterName: memberStatus.character.name,
-                multiplier: memberStatus.status.rewardMultiplier(for: PartySkillRewardTarget.experience)
+                multiplier: memberStatus.status.rewardMultiplier(for: .experienceGainMultiplier)
             )
         }
     }
@@ -153,7 +147,7 @@ private struct ExperienceMemberRow: Identifiable {
 }
 
 private struct PartySkillAggregation {
-    let rewardEntriesByTarget: [String: [PartySkillEntry]]
+    let rewardEntriesByTarget: [RewardMultiplierTarget: [PartySkillEntry]]
     let goldMultiplier: Double
     let rareDropMultiplier: Double
     let titleRollCountEntries: [PartySkillEntry]
@@ -168,12 +162,12 @@ private struct PartySkillAggregation {
             skillsByID: skillsByID
         )
         goldMultiplier = Self.totalRewardMultiplier(
-            target: PartySkillRewardTarget.gold,
+            target: .goldGainMultiplier,
             memberStatuses: memberStatuses,
             skillsByID: skillsByID
         )
         rareDropMultiplier = Self.totalRewardMultiplier(
-            target: PartySkillRewardTarget.rareDrop,
+            target: .rareDropMultiplier,
             memberStatuses: memberStatuses,
             skillsByID: skillsByID
         )
@@ -181,7 +175,12 @@ private struct PartySkillAggregation {
             memberStatuses: memberStatuses,
             skillsByID: skillsByID,
             includeSkill: { skill in
-                skill.effects.contains { $0.kind == .titleRollCountModifier }
+                skill.effects.contains { effect in
+                    if case .titleRollCountModifier = effect {
+                        return true
+                    }
+                    return false
+                }
             }
         )
         titleRollCountModifier = Self.totalTitleRollCountModifier(
@@ -190,18 +189,18 @@ private struct PartySkillAggregation {
         )
     }
 
-    func rewardEntries(for target: String) -> [PartySkillEntry] {
+    func rewardEntries(for target: RewardMultiplierTarget) -> [PartySkillEntry] {
         rewardEntriesByTarget[target, default: []]
     }
 
     private static func rewardEntriesByTarget(
         memberStatuses: [PartyMemberStatus],
         skillsByID: [Int: MasterData.Skill]
-    ) -> [String: [PartySkillEntry]] {
+    ) -> [RewardMultiplierTarget: [PartySkillEntry]] {
         let targets = [
-            PartySkillRewardTarget.experience,
-            PartySkillRewardTarget.gold,
-            PartySkillRewardTarget.rareDrop,
+            RewardMultiplierTarget.experienceGainMultiplier,
+            .goldGainMultiplier,
+            .rareDropMultiplier,
         ]
 
         return targets.reduce(into: [:]) { partialResult, target in
@@ -210,7 +209,10 @@ private struct PartySkillAggregation {
                 skillsByID: skillsByID,
                 includeSkill: { skill in
                     skill.effects.contains { effect in
-                        effect.kind == .rewardMultiplier && effect.target == target
+                        if case let .rewardMultiplier(effectTarget, _, _, _) = effect {
+                            return effectTarget == target
+                        }
+                        return false
                     }
                 }
             )
@@ -218,7 +220,7 @@ private struct PartySkillAggregation {
     }
 
     private static func totalRewardMultiplier(
-        target: String,
+        target: RewardMultiplierTarget,
         memberStatuses: [PartyMemberStatus],
         skillsByID: [Int: MasterData.Skill]
     ) -> Double {
@@ -270,8 +272,8 @@ private struct PartySkillAggregation {
                 return
             }
 
-            for effect in skill.effects where effect.kind == .titleRollCountModifier {
-                guard let value = effect.value else {
+            for effect in skill.effects {
+                guard case let .titleRollCountModifier(value) = effect else {
                     continue
                 }
                 partialResult += Int(value.rounded())
@@ -280,7 +282,7 @@ private struct PartySkillAggregation {
     }
 
     private static func rewardMultiplier(
-        target: String,
+        target: RewardMultiplierTarget,
         skillIds: [Int],
         skillTable: [Int: MasterData.Skill]
     ) -> Double {

@@ -241,14 +241,15 @@ final class ExplorationSessionService {
             }
             return status
         }
-        func explorationRuleProduct(for skillIds: [Int], target: String) -> Double {
+        func explorationRuleProduct(for skillIds: [Int], target: ExplorationRuleTarget) -> Double {
             Set(skillIds).reduce(into: 1.0) { partialResult, skillId in
                 guard let skill = skillTable[skillId] else {
                     return
                 }
 
-                for effect in skill.effects where effect.kind == .explorationRule && effect.target == target {
-                    guard let value = effect.value else {
+                for effect in skill.effects {
+                    guard case let .explorationRule(effectTarget, value, _) = effect,
+                          effectTarget == target else {
                         continue
                     }
                     partialResult *= value
@@ -258,7 +259,7 @@ final class ExplorationSessionService {
 
         let partyRewardSkillIds = memberStatuses.flatMap(\.skillIds)
         let memberExperienceMultipliers = memberStatuses.map { status in
-            let baseMultiplier = status.rewardMultiplier(for: "experienceGainMultiplier")
+            let baseMultiplier = status.rewardMultiplier(for: .experienceGainMultiplier)
             return appliesCatTicket
                 ? baseMultiplier * Self.catTicketRewardMultiplier
                 : baseMultiplier
@@ -291,15 +292,15 @@ final class ExplorationSessionService {
                 appliesCatTicket
                     ? Self.catTicketProgressIntervalMultiplier
                     : 1.0
-            ) * explorationRuleProduct(for: partyRewardSkillIds, target: "explorationTimeMultiplier"),
+            ) * explorationRuleProduct(for: partyRewardSkillIds, target: .explorationTimeMultiplier),
             goldMultiplier: ExplorationResolver.rewardMultiplier(
-                target: "goldGainMultiplier",
+                target: .goldGainMultiplier,
                 skillIds: partyRewardSkillIds,
                 skillTable: skillTable
             )
                 * (appliesCatTicket ? Self.catTicketRewardMultiplier : 1.0),
             rareDropMultiplier: ExplorationResolver.rewardMultiplier(
-                target: "rareDropMultiplier",
+                target: .rareDropMultiplier,
                 skillIds: partyRewardSkillIds,
                 skillTable: skillTable
             )

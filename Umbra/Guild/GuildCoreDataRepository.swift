@@ -236,7 +236,7 @@ final class GuildCoreDataRepository {
             entity.recoverySpellRate = Int64(character.autoBattleSettings.rates.recoverySpell)
             entity.attackSpellRate = Int64(character.autoBattleSettings.rates.attackSpell)
             entity.actionPriorityRawValue = character.autoBattleSettings.priority
-                .map(\.rawValue)
+                .map { String($0.rawValue) }
                 .joined(separator: ",")
             setEquippedItemStacks(character.equippedItemStacks, on: entity)
         }
@@ -548,7 +548,7 @@ final class GuildCoreDataRepository {
     private func makeCharacterRecord(from entity: CharacterEntity) -> CharacterRecord {
         let parsedPriority = (entity.actionPriorityRawValue ?? "")
             .split(separator: ",")
-            .compactMap { BattleActionKind(rawValue: String($0)) }
+            .compactMap { Int($0).flatMap(BattleActionKind.init(rawValue:)) }
         // If persisted priority data drifts from the current enum set, fall back to the default
         // shape instead of constructing a partially invalid auto-battle configuration.
         let priority = parsedPriority.count == CharacterAutoBattleSettings.default.priority.count
@@ -600,7 +600,7 @@ final class GuildCoreDataRepository {
         entity.recoverySpellRate = Int64(character.autoBattleSettings.rates.recoverySpell)
         entity.attackSpellRate = Int64(character.autoBattleSettings.rates.attackSpell)
         entity.actionPriorityRawValue = character.autoBattleSettings.priority
-            .map(\.rawValue)
+            .map { String($0.rawValue) }
             .joined(separator: ",")
         setEquippedItemStacks(character.equippedItemStacks, on: entity)
     }

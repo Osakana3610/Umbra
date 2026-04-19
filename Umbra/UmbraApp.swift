@@ -6,7 +6,6 @@ import SwiftUI
 struct UmbraApp: App {
     let persistenceController: PersistenceController
     let guildServices: GuildServices
-    @State private var masterDataStore: MasterDataLoadStore
     @State private var rosterStore: GuildRosterStore
     @State private var partyStore: PartyStore
     @State private var equipmentStore: EquipmentInventoryStore
@@ -19,10 +18,10 @@ struct UmbraApp: App {
         // Construct the persistence-backed services once here so every tab observes the same
         // long-lived store graph.
         let persistenceController = PersistenceController.shared
+        let masterData = MasterData.current
         let guildCoreDataRepository = GuildCoreDataRepository(container: persistenceController.container)
         let explorationCoreDataRepository = ExplorationCoreDataRepository(container: persistenceController.container)
-        let masterDataStore = MasterDataLoadStore()
-        let itemDropNotificationService = ItemDropNotificationService(masterDataStore: masterDataStore)
+        let itemDropNotificationService = ItemDropNotificationService(masterData: masterData)
         let equipmentStatusNotificationService = EquipmentStatusNotificationService()
         let guildServices = GuildServices(
             coreDataRepository: guildCoreDataRepository,
@@ -30,7 +29,6 @@ struct UmbraApp: App {
         )
         self.persistenceController = persistenceController
         self.guildServices = guildServices
-        _masterDataStore = State(initialValue: masterDataStore)
         _rosterStore = State(
             initialValue: GuildRosterStore(
                 coreDataRepository: guildCoreDataRepository,
@@ -74,7 +72,6 @@ struct UmbraApp: App {
         WindowGroup {
             ContentView(
                 persistenceController: persistenceController,
-                masterDataStore: masterDataStore,
                 rosterStore: rosterStore,
                 partyStore: partyStore,
                 equipmentStore: equipmentStore,

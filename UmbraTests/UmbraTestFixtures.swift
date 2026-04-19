@@ -1,5 +1,5 @@
-// Defines the shared builders, generated-data loaders, and helper assertions used by the split
-// Umbra test suites.
+// Defines the shared builders, current-master-data accessors, and helper assertions used by the
+// split Umbra test suites.
 // Keeping these fixtures in one file lets behavior-focused suites stay short while still exercising
 // the same canonical test data and service setup paths.
 
@@ -32,25 +32,9 @@ func makeGuildServices(
     )
 }
 
-func loadGeneratedMasterData() throws -> MasterData {
-    // Tests can run either inside the app host bundle or directly from the test bundle, so the
-    // loader checks both locations before falling back to the generated file in the repo.
-    if let testHostPath = ProcessInfo.processInfo.environment["TEST_HOST"] {
-        let hostBundleURL = URL(fileURLWithPath: testHostPath).deletingLastPathComponent()
-        if let hostBundle = Bundle(url: hostBundleURL),
-           let fileURL = hostBundle.url(forResource: "masterdata", withExtension: "json") {
-            return try MasterDataLoader.load(fileURL: fileURL)
-        }
-    }
-
-    for bundle in [Bundle.main] + Bundle.allBundles + Bundle.allFrameworks {
-        if let fileURL = bundle.url(forResource: "masterdata", withExtension: "json") {
-            return try MasterDataLoader.load(fileURL: fileURL)
-        }
-    }
-
-    let fileURL = generatedMasterDataURL()
-    return try MasterDataLoader.load(fileURL: fileURL)
+@MainActor
+func currentMasterData() -> MasterData {
+    MasterData.current
 }
 
 func itemDropNotificationTestMasterData() -> MasterData {
@@ -178,12 +162,6 @@ func equipmentStatusNotificationTestStatus(
         explorationRuleValuesByTarget: [:],
         hitRuleValuesByTarget: [:]
     )
-}
-
-func generatedMasterDataURL() -> URL {
-    let testsDirectory = URL(fileURLWithPath: #filePath).deletingLastPathComponent()
-    let repositoryRoot = testsDirectory.deletingLastPathComponent()
-    return repositoryRoot.appending(path: "Generator/Output/masterdata.json")
 }
 
 @MainActor
@@ -442,13 +420,13 @@ func makeBattleTestStatus(
     weaponRangeClass: ItemRangeClass = .melee,
     spellDamageMultipliersBySpellID: [Int: Double] = [:],
     spellResistanceMultipliersBySpellID: [Int: Double] = [:],
-    recoveryRuleValuesByTarget: [String: [Double]] = [:],
-    actionRuleValuesByTarget: [String: [Double]] = [:],
-    reviveRuleValuesByTarget: [String: [Double]] = [:],
-    combatRuleValuesByTarget: [String: [Double]] = [:],
-    equipmentRuleValuesByTarget: [String: [Double]] = [:],
-    explorationRuleValuesByTarget: [String: [Double]] = [:],
-    hitRuleValuesByTarget: [String: [Double]] = [:]
+    recoveryRuleValuesByTarget: [RecoveryRuleTarget: [Double]] = [:],
+    actionRuleValuesByTarget: [ActionRuleTarget: [Double]] = [:],
+    reviveRuleValuesByTarget: [ReviveRuleTarget: [Double]] = [:],
+    combatRuleValuesByTarget: [CombatRuleTarget: [Double]] = [:],
+    equipmentRuleValuesByTarget: [EquipmentRuleTarget: [Double]] = [:],
+    explorationRuleValuesByTarget: [ExplorationRuleTarget: [Double]] = [:],
+    hitRuleValuesByTarget: [HitRuleTarget: [Double]] = [:]
 ) -> CharacterStatus {
     CharacterStatus(
         baseStats: baseStats,

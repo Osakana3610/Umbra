@@ -228,16 +228,16 @@ final class ShopInventoryStore {
         for itemID: CompositeItemID,
         quantity: Int
     ) -> EquipmentCachedItem {
-        let baseItem = itemsByID[itemID.baseItemId]!
+        let baseItem = itemsByID[itemID.baseItemId]
 
         return EquipmentCachedItem(
             itemID: itemID,
             stackKey: itemID.stableKey,
             equippedRowID: itemID.stableKey + "|shop",
             quantity: quantity,
-            displayName: nameResolver?.displayName(for: itemID) ?? baseItem.name,
-            category: baseItem.category,
-            rarity: baseItem.rarity
+            displayName: nameResolver?.displayName(for: itemID) ?? baseItem?.name ?? "不明なアイテム",
+            category: baseItem?.category ?? .misc,
+            rarity: baseItem?.rarity ?? .normal
         )
     }
 

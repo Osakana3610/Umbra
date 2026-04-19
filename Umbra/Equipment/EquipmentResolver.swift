@@ -4,11 +4,20 @@ import Foundation
 
 nonisolated enum EquipmentResolverError: LocalizedError, Equatable {
     case invalidJewelItem(Int)
+    case unknownItem(Int)
+    case unknownTitle(Int)
+    case unknownSuperRare(Int)
 
     var errorDescription: String? {
         switch self {
         case .invalidJewelItem(let itemId):
             "宝石ではないアイテムが宝石枠に設定されています: \(itemId)"
+        case .unknownItem(let itemId):
+            "存在しないアイテムが装備データに含まれています: \(itemId)"
+        case .unknownTitle(let titleId):
+            "存在しない称号が装備データに含まれています: \(titleId)"
+        case .unknownSuperRare(let superRareId):
+            "存在しないスーパーレアが装備データに含まれています: \(superRareId)"
         }
     }
 }
@@ -149,15 +158,34 @@ nonisolated struct EquipmentResolver {
         superRareId: Int,
         includeSuperRareSkills: Bool
     ) throws -> ResolvedItemContribution {
-        let item = itemsByID[itemId]!
+        guard let item = itemsByID[itemId] else {
+            throw EquipmentResolverError.unknownItem(itemId)
+        }
         if !includeSuperRareSkills && item.category != .jewel {
             throw EquipmentResolverError.invalidJewelItem(itemId)
         }
 
         // Titles scale only battle stats, while super-rares contribute only extra skills and
         // never alter the numeric stat payload directly.
-        let title = titleId > 0 ? titlesByID[titleId] : nil
-        let superRare = includeSuperRareSkills && superRareId > 0 ? superRaresByID[superRareId] : nil
+        let title: MasterData.Title?
+        if titleId > 0 {
+            guard let resolvedTitle = titlesByID[titleId] else {
+                throw EquipmentResolverError.unknownTitle(titleId)
+            }
+            title = resolvedTitle
+        } else {
+            title = nil
+        }
+
+        let superRare: MasterData.SuperRare?
+        if includeSuperRareSkills && superRareId > 0 {
+            guard let resolvedSuperRare = superRaresByID[superRareId] else {
+                throw EquipmentResolverError.unknownSuperRare(superRareId)
+            }
+            superRare = resolvedSuperRare
+        } else {
+            superRare = nil
+        }
 
         return ResolvedItemContribution(
             baseStats: CharacterBaseStats(

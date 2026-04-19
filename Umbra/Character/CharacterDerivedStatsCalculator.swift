@@ -209,7 +209,7 @@ nonisolated enum CharacterDerivedStatsCalculator {
 
         let battleStats = CharacterBattleStats(
             maxHP: battleStatValue(
-                target: "maxHP",
+                target: .maxHP,
                 baseInput: Double(baseStats.vitality),
                 level: level,
                 jobCoefficient: currentJob.coefficients.maxHP,
@@ -218,7 +218,7 @@ nonisolated enum CharacterDerivedStatsCalculator {
                 skillAdjustments: skillAdjustments
             ),
             physicalAttack: battleStatValue(
-                target: "physicalAttack",
+                target: .physicalAttack,
                 baseInput: Double(baseStats.strength),
                 level: level,
                 jobCoefficient: currentJob.coefficients.physicalAttack,
@@ -227,7 +227,7 @@ nonisolated enum CharacterDerivedStatsCalculator {
                 skillAdjustments: skillAdjustments
             ),
             physicalDefense: battleStatValue(
-                target: "physicalDefense",
+                target: .physicalDefense,
                 baseInput: average(baseStats.vitality, baseStats.strength),
                 level: level,
                 jobCoefficient: currentJob.coefficients.physicalDefense,
@@ -236,7 +236,7 @@ nonisolated enum CharacterDerivedStatsCalculator {
                 skillAdjustments: skillAdjustments
             ),
             magic: battleStatValue(
-                target: "magic",
+                target: .magic,
                 baseInput: Double(baseStats.intelligence),
                 level: level,
                 jobCoefficient: currentJob.coefficients.magic,
@@ -245,7 +245,7 @@ nonisolated enum CharacterDerivedStatsCalculator {
                 skillAdjustments: skillAdjustments
             ),
             magicDefense: battleStatValue(
-                target: "magicDefense",
+                target: .magicDefense,
                 baseInput: average(baseStats.intelligence, baseStats.mind),
                 level: level,
                 jobCoefficient: currentJob.coefficients.magicDefense,
@@ -254,7 +254,7 @@ nonisolated enum CharacterDerivedStatsCalculator {
                 skillAdjustments: skillAdjustments
             ),
             healing: battleStatValue(
-                target: "healing",
+                target: .healing,
                 baseInput: Double(baseStats.mind),
                 level: level,
                 jobCoefficient: currentJob.coefficients.healing,
@@ -263,7 +263,7 @@ nonisolated enum CharacterDerivedStatsCalculator {
                 skillAdjustments: skillAdjustments
             ),
             accuracy: battleStatValue(
-                target: "accuracy",
+                target: .accuracy,
                 baseInput: Double(baseStats.agility),
                 level: level,
                 jobCoefficient: currentJob.coefficients.accuracy,
@@ -272,7 +272,7 @@ nonisolated enum CharacterDerivedStatsCalculator {
                 skillAdjustments: skillAdjustments
             ),
             evasion: battleStatValue(
-                target: "evasion",
+                target: .evasion,
                 baseInput: Double(baseStats.agility),
                 level: level,
                 jobCoefficient: currentJob.coefficients.evasion,
@@ -281,7 +281,7 @@ nonisolated enum CharacterDerivedStatsCalculator {
                 skillAdjustments: skillAdjustments
             ),
             attackCount: battleStatValue(
-                target: "attackCount",
+                target: .attackCount,
                 baseInput: Double(baseStats.agility),
                 level: level,
                 jobCoefficient: currentJob.coefficients.attackCount,
@@ -290,7 +290,7 @@ nonisolated enum CharacterDerivedStatsCalculator {
                 skillAdjustments: skillAdjustments
             ),
             criticalRate: battleStatValue(
-                target: "criticalRate",
+                target: .criticalRate,
                 baseInput: Double(baseStats.agility),
                 level: level,
                 jobCoefficient: currentJob.coefficients.criticalRate,
@@ -299,7 +299,7 @@ nonisolated enum CharacterDerivedStatsCalculator {
                 skillAdjustments: skillAdjustments
             ),
             breathPower: battleStatValue(
-                target: "breathPower",
+                target: .breathPower,
                 baseInput: average(baseStats.vitality, baseStats.mind),
                 level: level,
                 jobCoefficient: currentJob.coefficients.breathPower,
@@ -311,52 +311,52 @@ nonisolated enum CharacterDerivedStatsCalculator {
 
         let battleDerivedStats = CharacterBattleDerivedStats(
             physicalDamageMultiplier: battleDerivedValue(
-                target: "physicalDamageMultiplier",
+                target: .physicalDamageMultiplier,
                 skillAdjustments: skillAdjustments
             ),
             attackMagicMultiplier: battleDerivedValue(
-                target: "magicDamageMultiplier",
+                target: .magicDamageMultiplier,
                 skillAdjustments: skillAdjustments
             ),
             spellDamageMultiplier: battleDerivedValue(
-                target: "spellDamageMultiplier",
+                target: .spellDamageMultiplier,
                 skillAdjustments: skillAdjustments
             ),
             criticalDamageMultiplier: battleDerivedValue(
-                target: "criticalDamageMultiplier",
+                target: .criticalDamageMultiplier,
                 skillAdjustments: skillAdjustments
             ),
             meleeDamageMultiplier: battleDerivedValue(
-                target: "meleeDamageMultiplier",
+                target: .meleeDamageMultiplier,
                 skillAdjustments: skillAdjustments
             ),
             rangedDamageMultiplier: battleDerivedValue(
-                target: "rangedDamageMultiplier",
+                target: .rangedDamageMultiplier,
                 skillAdjustments: skillAdjustments
             ),
             actionSpeedMultiplier: battleDerivedValue(
-                target: "actionSpeedMultiplier",
+                target: .actionSpeedMultiplier,
                 skillAdjustments: skillAdjustments
             ),
             physicalResistanceMultiplier: battleDerivedValue(
-                target: "physicalResistanceMultiplier",
+                target: .physicalResistanceMultiplier,
                 skillAdjustments: skillAdjustments
             ),
             magicResistanceMultiplier: battleDerivedValue(
-                target: "magicResistanceMultiplier",
+                target: .magicResistanceMultiplier,
                 skillAdjustments: skillAdjustments
             ),
             breathResistanceMultiplier: battleDerivedValue(
-                target: "breathResistanceMultiplier",
+                target: .breathResistanceMultiplier,
                 skillAdjustments: skillAdjustments
             )
         )
         let spellDamageMultipliersBySpellID = spellSpecificBattleDerivedValues(
-            target: "spellDamageMultiplier",
+            target: .spellDamageMultiplier,
             skillAdjustments: skillAdjustments
         )
         let spellResistanceMultipliersBySpellID = spellSpecificBattleDerivedValues(
-            target: "magicResistanceMultiplier",
+            target: .magicResistanceMultiplier,
             skillAdjustments: skillAdjustments
         )
 
@@ -408,10 +408,10 @@ nonisolated enum CharacterDerivedStatsCalculator {
         skillAdjustments: SkillAdjustments
     ) -> CharacterBattleStats {
         let magicDefenseMultiplier = skillAdjustments.equipmentRuleProduct(
-            for: "magicDefenseEquipmentFlatMultiplier"
+            for: .magicDefenseEquipmentFlatMultiplier
         )
         let defenseEquipmentMultiplier = skillAdjustments.equipmentRuleProduct(
-            for: "defenseEquipmentBattleStatFlatMultiplier"
+            for: .defenseEquipmentBattleStatFlatMultiplier
         )
         let categorizedBattleStats = equipmentBattleStatsByCategory.values.reduce(
             initialBattleStats()
@@ -470,10 +470,22 @@ nonisolated enum CharacterDerivedStatsCalculator {
         for category: ItemCategory,
         skillAdjustments: SkillAdjustments
     ) -> Double {
-        let multiplier = skillAdjustments.equipmentRuleProduct(
-            for: "\(category.rawValue)EquipmentBattleStatFlatMultiplier"
-        )
-        return multiplier
+        let target: EquipmentRuleTarget? = switch category {
+        case .sword:
+            .swordEquipmentBattleStatFlatMultiplier
+        case .katana:
+            .katanaEquipmentBattleStatFlatMultiplier
+        case .bow:
+            .bowEquipmentBattleStatFlatMultiplier
+        case .armor:
+            .armorEquipmentBattleStatFlatMultiplier
+        default:
+            nil
+        }
+        guard let target else {
+            return 1.0
+        }
+        return skillAdjustments.equipmentRuleProduct(for: target)
     }
 
     private static func scaledBattleStats(
@@ -657,7 +669,7 @@ nonisolated enum CharacterDerivedStatsCalculator {
     }
 
     private static func battleStatValue(
-        target: String,
+        target: BattleStatTarget,
         baseInput: Double,
         level: Int,
         jobCoefficient: Double,
@@ -684,11 +696,11 @@ nonisolated enum CharacterDerivedStatsCalculator {
         return clampedBattleStatValue(finalValue, target: target)
     }
 
-    private static func clampedBattleStatValue(_ value: Int, target: String) -> Int {
+    private static func clampedBattleStatValue(_ value: Int, target: BattleStatTarget) -> Int {
         switch target {
-        case "attackCount":
+        case .attackCount:
             max(value, 1)
-        case "criticalRate":
+        case .criticalRate:
             min(value, 75)
         default:
             value
@@ -696,7 +708,7 @@ nonisolated enum CharacterDerivedStatsCalculator {
     }
 
     private static func battleDerivedValue(
-        target: String,
+        target: BattleDerivedTarget,
         skillAdjustments: SkillAdjustments
     ) -> Double {
         let rawValue = (1.0 + skillAdjustments.battleDerivedPctAdds[target, default: 0.0])
@@ -705,7 +717,7 @@ nonisolated enum CharacterDerivedStatsCalculator {
     }
 
     private static func spellSpecificBattleDerivedValues(
-        target: String,
+        target: BattleDerivedTarget,
         skillAdjustments: SkillAdjustments
     ) -> [Int: Double] {
         let pctAdds = skillAdjustments.spellSpecificBattleDerivedPctAdds[target, default: [:]]
@@ -721,29 +733,14 @@ nonisolated enum CharacterDerivedStatsCalculator {
         }
     }
 
-    private static func multiplierValues(
-        pctAdds: [String: Double],
-        multipliers: [String: Double]
-    ) -> [String: Double] {
+    private static func multiplierValues<Key: Hashable>(
+        pctAdds: [Key: Double],
+        multipliers: [Key: Double]
+    ) -> [Key: Double] {
         let targets = Set(pctAdds.keys).union(multipliers.keys)
         return targets.reduce(into: [:]) { partialResult, target in
             let rawValue = (1.0 + pctAdds[target, default: 0.0]) * multipliers[target, default: 1.0]
             partialResult[target] = max(rawValue, 0.0)
-        }
-    }
-
-    static func ailmentStatusID(for key: String) -> Int? {
-        switch key {
-        case "sleep":
-            1
-        case "curse":
-            2
-        case "paralysis":
-            3
-        case "petrify":
-            4
-        default:
-            nil
         }
     }
 
@@ -753,17 +750,17 @@ nonisolated enum CharacterDerivedStatsCalculator {
 }
 
 nonisolated private struct SkillAdjustments {
-    var baseBattleStatMultipliers: [String: Double] = [:]
-    var battleStatFlatAdds: [String: Double] = [:]
-    var battleStatPctAdds: [String: Double] = [:]
-    var battleDerivedPctAdds: [String: Double] = [:]
-    var battleDerivedMultipliers: [String: Double] = [:]
-    var spellSpecificBattleDerivedPctAdds: [String: [Int: Double]] = [:]
-    var spellSpecificBattleDerivedMultipliers: [String: [Int: Double]] = [:]
-    var rewardPctAdds: [String: Double] = [:]
-    var rewardMultipliers: [String: Double] = [:]
-    var partyModifierPctAdds: [String: Double] = [:]
-    var partyModifierMultipliers: [String: Double] = [:]
+    var baseBattleStatMultipliers: [BattleStatTarget: Double] = [:]
+    var battleStatFlatAdds: [BattleStatTarget: Double] = [:]
+    var battleStatPctAdds: [BattleStatTarget: Double] = [:]
+    var battleDerivedPctAdds: [BattleDerivedTarget: Double] = [:]
+    var battleDerivedMultipliers: [BattleDerivedTarget: Double] = [:]
+    var spellSpecificBattleDerivedPctAdds: [BattleDerivedTarget: [Int: Double]] = [:]
+    var spellSpecificBattleDerivedMultipliers: [BattleDerivedTarget: [Int: Double]] = [:]
+    var rewardPctAdds: [RewardMultiplierTarget: Double] = [:]
+    var rewardMultipliers: [RewardMultiplierTarget: Double] = [:]
+    var partyModifierPctAdds: [PartyModifierTarget: Double] = [:]
+    var partyModifierMultipliers: [PartyModifierTarget: Double] = [:]
     var onHitAilmentChanceByStatusID: [Int: Double] = [:]
     var contactAilmentChanceByStatusID: [Int: Double] = [:]
     var titleRollCountModifier = 0
@@ -771,15 +768,15 @@ nonisolated private struct SkillAdjustments {
     var normalDropJewelizeChance = 0.0
     var multiHitFalloffModifier = 0.5
     var hitRateFloor = 0.10
-    var defenseRuleValuesByTarget: [String: [Double]] = [:]
-    var recoveryRuleValuesByTarget: [String: [Double]] = [:]
-    var actionRuleValuesByTarget: [String: [Double]] = [:]
-    var reviveRuleValuesByTarget: [String: [Double]] = [:]
-    var combatRuleValuesByTarget: [String: [Double]] = [:]
-    var rewardRuleValuesByTarget: [String: [Double]] = [:]
-    var equipmentRuleValuesByTarget: [String: [Double]] = [:]
-    var explorationRuleValuesByTarget: [String: [Double]] = [:]
-    var hitRuleValuesByTarget: [String: [Double]] = [:]
+    var defenseRuleValuesByTarget: [DefenseRuleTarget: [Double]] = [:]
+    var recoveryRuleValuesByTarget: [RecoveryRuleTarget: [Double]] = [:]
+    var actionRuleValuesByTarget: [ActionRuleTarget: [Double]] = [:]
+    var reviveRuleValuesByTarget: [ReviveRuleTarget: [Double]] = [:]
+    var combatRuleValuesByTarget: [CombatRuleTarget: [Double]] = [:]
+    var rewardRuleValuesByTarget: [RewardRuleTarget: [Double]] = [:]
+    var equipmentRuleValuesByTarget: [EquipmentRuleTarget: [Double]] = [:]
+    var explorationRuleValuesByTarget: [ExplorationRuleTarget: [Double]] = [:]
+    var hitRuleValuesByTarget: [HitRuleTarget: [Double]] = [:]
     var grantedSpellIds = Set<Int>()
     var revokedSpellIds = Set<Int>()
     var interruptKinds = Set<InterruptKind>()
@@ -787,37 +784,25 @@ nonisolated private struct SkillAdjustments {
     var allBattleStatMultiplier = 1.0
 
     mutating func apply(_ effect: MasterData.SkillEffect) {
-        switch effect.kind {
-        case .battleStatModifier:
-            guard let target = effect.target,
-                  let operation = effect.operation,
-                  let value = effect.value else {
-                return
-            }
-
+        switch effect {
+        case let .battleStatModifier(target, operation, value, _):
             switch operation {
-            case "flatAdd":
+            case .flatAdd:
                 battleStatFlatAdds[target, default: 0.0] += value
-            case "pctAdd":
+            case .pctAdd:
                 battleStatPctAdds[target, default: 0.0] += value
             default:
                 return
             }
-        case .battleDerivedModifier:
-            guard let target = effect.target,
-                  let operation = effect.operation,
-                  let value = effect.value else {
-                return
-            }
-
-            if !effect.spellIds.isEmpty {
+        case let .battleDerivedModifier(target, operation, value, spellIds, _):
+            if !spellIds.isEmpty {
                 // Some effects only modify a whitelisted spell set, so they bypass the generic
                 // derived-value buckets and accumulate into per-spell tables instead.
-                for spellID in effect.spellIds {
+                for spellID in spellIds {
                     switch operation {
-                    case "pctAdd":
+                    case .pctAdd:
                         spellSpecificBattleDerivedPctAdds[target, default: [:]][spellID, default: 0.0] += value
-                    case "mul":
+                    case .mul:
                         spellSpecificBattleDerivedMultipliers[target, default: [:]][spellID, default: 1.0] *= value
                     default:
                         return
@@ -827,198 +812,96 @@ nonisolated private struct SkillAdjustments {
             }
 
             switch operation {
-            case "pctAdd":
+            case .pctAdd:
                 battleDerivedPctAdds[target, default: 0.0] += value
-            case "mul":
+            case .mul:
                 battleDerivedMultipliers[target, default: 1.0] *= value
             default:
                 return
             }
-        case .allBattleStatMultiplier:
-            guard let value = effect.value else {
-                return
-            }
-
-            switch effect.operation {
-            case nil, "mul":
-                allBattleStatMultiplier *= value
-            case "pctAdd":
-                allBattleStatMultiplier *= 1.0 + value
-            default:
-                return
-            }
-        case .magicAccess:
-            guard let operation = effect.operation else {
-                return
-            }
-
+        case let .allBattleStatMultiplier(value):
+            allBattleStatMultiplier *= value
+        case let .magicAccess(operation, spellIds, _):
             switch operation {
-            case "grant":
-                grantedSpellIds.formUnion(effect.spellIds)
-            case "revoke":
-                revokedSpellIds.formUnion(effect.spellIds)
+            case .grant:
+                grantedSpellIds.formUnion(spellIds)
+            case .revoke:
+                revokedSpellIds.formUnion(spellIds)
             default:
                 return
             }
         case .breathAccess:
             canUseBreath = true
-        case .interruptGrant:
-            guard let interruptKind = effect.interruptKind else {
-                return
-            }
-
+        case let .interruptGrant(interruptKind, _):
             interruptKinds.insert(interruptKind)
-        case .baseBattleStatMultiplier:
-            guard let target = effect.target,
-                  let value = effect.value else {
-                return
-            }
-
-            switch effect.operation {
-            case nil, "mul":
-                baseBattleStatMultipliers[target, default: 1.0] *= value
-            case "pctAdd":
-                baseBattleStatMultipliers[target, default: 1.0] *= 1.0 + value
-            default:
-                return
-            }
-        case .rewardMultiplier:
-            guard let target = effect.target,
-                  let operation = effect.operation,
-                  let value = effect.value else {
-                return
-            }
-
+        case let .baseBattleStatMultiplier(target, value, _):
+            baseBattleStatMultipliers[target, default: 1.0] *= value
+        case let .rewardMultiplier(target, operation, value, _):
             switch operation {
-            case "pctAdd":
+            case .pctAdd:
                 rewardPctAdds[target, default: 0.0] += value
-            case "mul":
+            case .mul:
                 rewardMultipliers[target, default: 1.0] *= value
             default:
                 return
             }
-        case .partyModifier:
-            guard let target = effect.target,
-                  let operation = effect.operation,
-                  let value = effect.value else {
-                return
-            }
-
+        case let .partyModifier(target, operation, value, _):
             switch operation {
-            case "pctAdd":
+            case .pctAdd:
                 partyModifierPctAdds[target, default: 0.0] += value
-            case "mul":
+            case .mul:
                 partyModifierMultipliers[target, default: 1.0] *= value
             default:
                 return
             }
-        case .equipmentCapacityModifier:
-            guard let value = effect.value else {
-                return
-            }
+        case let .equipmentCapacityModifier(value):
             equipmentCapacityModifier += Int(value.rounded())
-        case .titleRollCountModifier:
-            guard let value = effect.value else {
-                return
-            }
+        case let .titleRollCountModifier(value):
             titleRollCountModifier += Int(value.rounded())
-        case .normalDropJewelize:
-            guard let value = effect.value else {
-                return
-            }
+        case let .normalDropJewelize(value):
             normalDropJewelizeChance = max(normalDropJewelizeChance, value)
-        case .onHitAilmentGrant:
-            guard let target = effect.target,
-                  let value = effect.value,
-                  let statusID = CharacterDerivedStatsCalculator.ailmentStatusID(for: target) else {
-                return
-            }
+        case let .onHitAilmentGrant(target, value):
+            let statusID = target.statusID
             onHitAilmentChanceByStatusID[statusID, default: 0.0] = min(
                 onHitAilmentChanceByStatusID[statusID, default: 0.0] + value,
                 1.0
             )
-        case .contactAilmentGrant:
-            guard let target = effect.target,
-                  let value = effect.value,
-                  let statusID = CharacterDerivedStatsCalculator.ailmentStatusID(for: target) else {
-                return
-            }
+        case let .contactAilmentGrant(target, value):
+            let statusID = target.statusID
             contactAilmentChanceByStatusID[statusID, default: 0.0] = min(
                 contactAilmentChanceByStatusID[statusID, default: 0.0] + value,
                 1.0
             )
-        case .multiHitFalloffModifier:
-            guard let value = effect.value else {
-                return
-            }
+        case let .multiHitFalloffModifier(value):
             multiHitFalloffModifier = min(multiHitFalloffModifier, value)
-        case .hitRateFloorModifier:
-            guard let value = effect.value else {
-                return
-            }
+        case let .hitRateFloorModifier(value):
             hitRateFloor = max(hitRateFloor, value)
-        case .defenseRule:
-            guard let target = effect.target,
-                  let value = effect.value else {
-                return
-            }
+        case let .defenseRule(target, value, _):
             defenseRuleValuesByTarget[target, default: []].append(value)
-        case .recoveryRule:
-            guard let target = effect.target,
-                  let value = effect.value else {
-                return
-            }
+        case let .recoveryRule(target, value, _):
             recoveryRuleValuesByTarget[target, default: []].append(value)
-        case .actionRule:
-            guard let target = effect.target,
-                  let value = effect.value else {
-                return
-            }
+        case let .actionRule(target, value, _):
             actionRuleValuesByTarget[target, default: []].append(value)
-        case .reviveRule:
-            guard let target = effect.target,
-                  let value = effect.value else {
-                return
-            }
+        case let .reviveRule(target, value, _):
             reviveRuleValuesByTarget[target, default: []].append(value)
-        case .combatRule:
-            guard let target = effect.target,
-                  let value = effect.value else {
-                return
-            }
+        case let .combatRule(target, value, _):
             combatRuleValuesByTarget[target, default: []].append(value)
-        case .rewardRule:
-            guard let target = effect.target,
-                  let value = effect.value else {
-                return
-            }
+        case let .rewardRule(target, value, _):
             rewardRuleValuesByTarget[target, default: []].append(value)
-        case .equipmentRule:
-            guard let target = effect.target,
-                  let value = effect.value else {
-                return
-            }
+        case let .equipmentRule(target, value, _):
             equipmentRuleValuesByTarget[target, default: []].append(value)
-        case .explorationRule:
-            guard let target = effect.target,
-                  let value = effect.value else {
-                return
-            }
+        case let .explorationRule(target, value, _):
             explorationRuleValuesByTarget[target, default: []].append(value)
-        case .hitRule:
-            guard let target = effect.target,
-                  let value = effect.value else {
-                return
-            }
+        case let .hitRule(target, value, _):
             hitRuleValuesByTarget[target, default: []].append(value)
         }
     }
 
-    func equipmentRuleValues(for target: String) -> [Double] {
+    func equipmentRuleValues(for target: EquipmentRuleTarget) -> [Double] {
         equipmentRuleValuesByTarget[target] ?? []
     }
 
-    func equipmentRuleProduct(for target: String) -> Double {
+    func equipmentRuleProduct(for target: EquipmentRuleTarget) -> Double {
         equipmentRuleValues(for: target).reduce(1.0, *)
     }
 }

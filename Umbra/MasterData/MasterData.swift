@@ -1,8 +1,8 @@
-// Defines the runtime schema loaded from the generated master-data bundle.
+// Defines the runtime schema used by the build-time generated master data.
 
 import Foundation
 
-nonisolated struct MasterData: Decodable, Sendable {
+nonisolated struct MasterData: Sendable {
     let metadata: Metadata
     let races: [Race]
     let jobs: [Job]
@@ -18,11 +18,11 @@ nonisolated struct MasterData: Decodable, Sendable {
 }
 
 extension MasterData {
-    nonisolated struct Metadata: Decodable, Sendable {
+    nonisolated struct Metadata: Sendable {
         let generator: String
     }
 
-    nonisolated struct BaseStats: Decodable, Sendable {
+    nonisolated struct BaseStats: Sendable {
         let vitality: Int
         let strength: Int
         let mind: Int
@@ -31,7 +31,7 @@ extension MasterData {
         let luck: Int
     }
 
-    nonisolated struct BattleStats: Decodable, Sendable {
+    nonisolated struct BattleStats: Sendable {
         let maxHP: Int
         let physicalAttack: Int
         let physicalDefense: Int
@@ -45,7 +45,7 @@ extension MasterData {
         let breathPower: Int
     }
 
-    nonisolated struct BattleStatCoefficients: Decodable, Sendable {
+    nonisolated struct BattleStatCoefficients: Sendable {
         let maxHP: Double
         let physicalAttack: Double
         let physicalDefense: Double
@@ -59,7 +59,7 @@ extension MasterData {
         let breathPower: Double
     }
 
-    nonisolated struct Race: Identifiable, Decodable, Sendable {
+    nonisolated struct Race: Identifiable, Sendable {
         let id: Int
         let key: String
         let name: String
@@ -70,7 +70,7 @@ extension MasterData {
         let levelSkillIds: [Int]
     }
 
-    nonisolated struct Job: Identifiable, Decodable, Sendable {
+    nonisolated struct Job: Identifiable, Sendable {
         let id: Int
         let key: String
         let name: String
@@ -81,18 +81,18 @@ extension MasterData {
         let jobChangeRequirement: JobChangeRequirement?
     }
 
-    nonisolated struct JobChangeRequirement: Decodable, Sendable {
+    nonisolated struct JobChangeRequirement: Sendable {
         let requiredCurrentJobId: Int
         let requiredLevel: Int
     }
 
-    nonisolated struct Aptitude: Identifiable, Decodable, Sendable {
+    nonisolated struct Aptitude: Identifiable, Sendable {
         let id: Int
         let name: String
         let passiveSkillIds: [Int]
     }
 
-    nonisolated struct Item: Identifiable, Decodable, Sendable {
+    nonisolated struct Item: Identifiable, Sendable {
         let id: Int
         let name: String
         let category: ItemCategory
@@ -105,7 +105,7 @@ extension MasterData {
         let normalDropTier: Int
     }
 
-    nonisolated struct Title: Identifiable, Decodable, Sendable {
+    nonisolated struct Title: Identifiable, Sendable {
         let id: Int
         let key: String
         let name: String
@@ -114,30 +114,113 @@ extension MasterData {
         let dropWeight: Int
     }
 
-    nonisolated struct SuperRare: Identifiable, Decodable, Sendable {
+    nonisolated struct SuperRare: Identifiable, Sendable {
         let id: Int
         let name: String
         let skillIds: [Int]
     }
 
-    nonisolated struct Skill: Identifiable, Decodable, Sendable {
+    nonisolated struct Skill: Identifiable, Sendable {
         let id: Int
         let name: String
         let description: String
         let effects: [SkillEffect]
     }
 
-    nonisolated struct SkillEffect: Decodable, Sendable {
-        let kind: SkillEffectKind
-        let target: String?
-        let operation: String?
-        let value: Double?
-        let spellIds: [Int]
-        let condition: SkillEffectCondition?
-        let interruptKind: InterruptKind?
+    nonisolated enum SkillEffect: Sendable {
+        case battleStatModifier(
+            target: BattleStatTarget,
+            operation: SkillEffectOperation,
+            value: Double,
+            condition: SkillEffectCondition?
+        )
+        case baseBattleStatMultiplier(
+            target: BattleStatTarget,
+            value: Double,
+            condition: SkillEffectCondition?
+        )
+        case battleDerivedModifier(
+            target: BattleDerivedTarget,
+            operation: SkillEffectOperation,
+            value: Double,
+            spellIds: [Int],
+            condition: SkillEffectCondition?
+        )
+        case partyModifier(
+            target: PartyModifierTarget,
+            operation: SkillEffectOperation,
+            value: Double,
+            condition: SkillEffectCondition?
+        )
+        case allBattleStatMultiplier(value: Double)
+        case rewardMultiplier(
+            target: RewardMultiplierTarget,
+            operation: SkillEffectOperation,
+            value: Double,
+            condition: SkillEffectCondition?
+        )
+        case equipmentCapacityModifier(value: Double)
+        case titleRollCountModifier(value: Double)
+        case normalDropJewelize(value: Double)
+        case magicAccess(
+            operation: SkillEffectOperation,
+            spellIds: [Int],
+            condition: SkillEffectCondition?
+        )
+        case onHitAilmentGrant(target: AilmentTarget, value: Double)
+        case contactAilmentGrant(target: AilmentTarget, value: Double)
+        case multiHitFalloffModifier(value: Double)
+        case hitRateFloorModifier(value: Double)
+        case breathAccess
+        case interruptGrant(interruptKind: InterruptKind, condition: SkillEffectCondition?)
+        case defenseRule(
+            target: DefenseRuleTarget,
+            value: Double,
+            condition: SkillEffectCondition?
+        )
+        case recoveryRule(
+            target: RecoveryRuleTarget,
+            value: Double,
+            condition: SkillEffectCondition?
+        )
+        case actionRule(
+            target: ActionRuleTarget,
+            value: Double,
+            condition: SkillEffectCondition?
+        )
+        case reviveRule(
+            target: ReviveRuleTarget,
+            value: Double,
+            condition: SkillEffectCondition?
+        )
+        case combatRule(
+            target: CombatRuleTarget,
+            value: Double,
+            condition: SkillEffectCondition?
+        )
+        case rewardRule(
+            target: RewardRuleTarget,
+            value: Double,
+            condition: SkillEffectCondition?
+        )
+        case equipmentRule(
+            target: EquipmentRuleTarget,
+            value: Double,
+            condition: SkillEffectCondition?
+        )
+        case explorationRule(
+            target: ExplorationRuleTarget,
+            value: Double,
+            condition: SkillEffectCondition?
+        )
+        case hitRule(
+            target: HitRuleTarget,
+            value: Double,
+            condition: SkillEffectCondition?
+        )
     }
 
-    nonisolated struct Spell: Identifiable, Decodable, Sendable {
+    nonisolated struct Spell: Identifiable, Sendable {
         let id: Int
         let name: String
         let category: SpellCategory
@@ -145,7 +228,7 @@ extension MasterData {
         let targetSide: TargetSide
         let targetCount: Int
         let multiplier: Double?
-        let effectTarget: String?
+        let effectTarget: SpellEffectTarget?
         let statusId: Int?
         let statusChance: Double?
 
@@ -157,7 +240,7 @@ extension MasterData {
             targetSide: TargetSide,
             targetCount: Int,
             multiplier: Double? = nil,
-            effectTarget: String? = nil,
+            effectTarget: SpellEffectTarget? = nil,
             statusId: Int? = nil,
             statusChance: Double? = nil
         ) {
@@ -174,13 +257,13 @@ extension MasterData {
         }
     }
 
-    nonisolated struct RecruitNames: Decodable, Sendable {
+    nonisolated struct RecruitNames: Sendable {
         let male: [String]
         let female: [String]
         let unisex: [String]
     }
 
-    nonisolated struct Enemy: Identifiable, Decodable, Sendable {
+    nonisolated struct Enemy: Identifiable, Sendable {
         let id: Int
         let name: String
         let imageAssetName: String?
@@ -195,21 +278,21 @@ extension MasterData {
         let actionPriority: [BattleActionKind]
     }
 
-    nonisolated struct ActionRates: Decodable, Sendable {
+    nonisolated struct ActionRates: Sendable {
         let breath: Int
         let attack: Int
         let recoverySpell: Int
         let attackSpell: Int
     }
 
-    nonisolated struct Labyrinth: Identifiable, Decodable, Sendable {
+    nonisolated struct Labyrinth: Identifiable, Sendable {
         let id: Int
         let name: String
         let progressIntervalSeconds: Int
         let floors: [Floor]
     }
 
-    nonisolated struct Floor: Identifiable, Decodable, Sendable {
+    nonisolated struct Floor: Identifiable, Sendable {
         let id: Int
         let floorNumber: Int
         let battleCount: Int
@@ -218,13 +301,13 @@ extension MasterData {
         let fixedBattle: [FixedBattle]?
     }
 
-    nonisolated struct Encounter: Decodable, Sendable {
+    nonisolated struct Encounter: Sendable {
         let enemyId: Int
         let level: Int
         let weight: Int
     }
 
-    nonisolated struct FixedBattle: Decodable, Sendable {
+    nonisolated struct FixedBattle: Sendable {
         let enemyId: Int
         let level: Int
     }
@@ -259,40 +342,9 @@ extension MasterData.Enemy {
             actionPriority: actionPriority
         )
     }
-
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case name
-        case imageAssetName
-        case enemyRace
-        case jobId
-        case baseStats
-        case goldBaseValue
-        case experienceBaseValue
-        case skillIds
-        case rareDropItemIds
-        case actionRates
-        case actionPriority
-    }
-
-    nonisolated init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.id = try container.decode(Int.self, forKey: .id)
-        self.name = try container.decode(String.self, forKey: .name)
-        self.imageAssetName = try container.decodeIfPresent(String.self, forKey: .imageAssetName)
-        self.enemyRace = try container.decode(EnemyRace.self, forKey: .enemyRace)
-        self.jobId = try container.decode(Int.self, forKey: .jobId)
-        self.baseStats = try container.decode(MasterData.BaseStats.self, forKey: .baseStats)
-        self.goldBaseValue = try container.decode(Int.self, forKey: .goldBaseValue)
-        self.experienceBaseValue = try container.decode(Int.self, forKey: .experienceBaseValue)
-        self.skillIds = try container.decode([Int].self, forKey: .skillIds)
-        self.rareDropItemIds = try container.decode([Int].self, forKey: .rareDropItemIds)
-        self.actionRates = try container.decode(MasterData.ActionRates.self, forKey: .actionRates)
-        self.actionPriority = try container.decode([BattleActionKind].self, forKey: .actionPriority)
-    }
 }
 
-nonisolated enum ItemCategory: String, Decodable, Sendable {
+nonisolated enum ItemCategory: Int, Sendable {
     case sword
     case katana
     case bow
@@ -306,7 +358,7 @@ nonisolated enum ItemCategory: String, Decodable, Sendable {
     case misc
 }
 
-nonisolated enum ItemRarity: String, Decodable, Sendable {
+nonisolated enum ItemRarity: Int, Sendable {
     case normal
     case uncommon
     case rare
@@ -314,57 +366,233 @@ nonisolated enum ItemRarity: String, Decodable, Sendable {
     case godfiend
 }
 
-nonisolated enum ItemRangeClass: String, Decodable, Sendable {
+nonisolated enum ItemRangeClass: Int, Sendable {
     case none
     case melee
     case ranged
 }
 
-nonisolated enum SkillEffectKind: String, Decodable, Sendable {
-    case battleStatModifier
-    case baseBattleStatMultiplier
-    case battleDerivedModifier
-    case partyModifier
-    case allBattleStatMultiplier
-    case rewardMultiplier
-    case equipmentCapacityModifier
-    case titleRollCountModifier
-    case normalDropJewelize
-    case magicAccess
-    case onHitAilmentGrant
-    case contactAilmentGrant
-    case multiHitFalloffModifier
-    case hitRateFloorModifier
-    case breathAccess
-    case interruptGrant
-    case defenseRule
-    case recoveryRule
-    case actionRule
-    case reviveRule
-    case combatRule
-    case rewardRule
-    case equipmentRule
-    case explorationRule
-    case hitRule
+nonisolated enum SkillEffectOperation: Int, Sendable {
+    case flatAdd
+    case pctAdd
+    case mul
+    case grant
+    case revoke
 }
 
-nonisolated enum SkillEffectCondition: String, Decodable, Sendable {
+nonisolated enum BattleStatTarget: Int, Sendable, Hashable {
+    case maxHP
+    case physicalAttack
+    case physicalDefense
+    case magic
+    case magicDefense
+    case healing
+    case accuracy
+    case evasion
+    case attackCount
+    case criticalRate
+    case breathPower
+}
+
+nonisolated enum BattleDerivedTarget: Int, Sendable, Hashable {
+    case physicalDamageMultiplier
+    case magicDamageMultiplier
+    case spellDamageMultiplier
+    case criticalDamageMultiplier
+    case meleeDamageMultiplier
+    case rangedDamageMultiplier
+    case actionSpeedMultiplier
+    case physicalResistanceMultiplier
+    case magicResistanceMultiplier
+    case breathResistanceMultiplier
+}
+
+nonisolated enum RewardMultiplierTarget: Int, Sendable, Hashable {
+    case experienceGainMultiplier
+    case goldGainMultiplier
+    case rareDropMultiplier
+}
+
+nonisolated enum PartyModifierTarget: Int, Sendable, Hashable {
+    case allyPhysicalDamageMultiplier
+    case allyMagicDamageMultiplier
+    case allyPhysicalDamageTakenMultiplier
+    case allyHealingMultiplier
+    case allyMagicDamageTakenMultiplier
+}
+
+nonisolated enum AilmentTarget: Int, Sendable, Hashable {
+    case sleep = 1
+    case curse = 2
+    case paralysis = 3
+    case petrify = 4
+
+    var statusID: Int {
+        rawValue
+    }
+}
+
+nonisolated enum DefenseRuleTarget: Int, Sendable, Hashable {
+    case defendDamageTakenMultiplier
+    case magicBarrierDamageTakenMultiplier
+}
+
+nonisolated enum RecoveryRuleTarget: Int, Sendable, Hashable {
+    case receivedHealingMultiplier
+    case cleanseExtraHealMultiplier
+    case lowHPReceivedHealingMultiplier
+    case recoverySpellBarrierByMaxHPRatio
+    case overhealToBarrierMultiplier
+    case healToFullAfterBattle
+    case defendPartyHealMultiplier
+    case defendPartyCleanseCount
+    case lifestealMultiplier
+    case healOnLowHPKillHPRatio
+}
+
+nonisolated enum ActionRuleTarget: Int, Sendable, Hashable {
+    case guardPhysicalActionChance
+    case normalAttackMeleeDamageMultiplier
+    case normalAttackCriticalRateAdd
+    case restoreRandomAttackSpellUsageOnNormalHit
+    case normalAttackRangedDamageMultiplier
+    case backRowNormalAttackCriticalDamageMultiplier
+    case carryOverRemainingHitsOnKill
+    case randomizeNormalActionOrder
+    case attackCountOneMeleeDamageMultiplier
+    case attackCountOneCriticalRateAdd
+    case attackCountOneCriticalDamageMultiplier
+    case normalAttackBaseDamageMultiplier
+    case repeatNormalAttackOnEvade
+    case extraActionOnLowHPKill
+    case chainNormalAttackOnLowHPKill
+    case normalAttackAfterBreath
+    case breathRepeatCount
+    case normalAttackOnEvadeChance
+    case repeatNormalAttackOnCritical
+    case pursuitAgainstLowHPTargetChance
+    case extraTurnAfterNormalActionOnTurnOne
+    case repeatAttackSpellOnAilingTarget
+    case attackSpellCanCritical
+    case repeatAttackSpellOnCritical
+    case firstNormalAttackPhysicalDamageMultiplier
+    case firstNormalAttackAccuracyPctAdd
+    case normalAttackBreakPhysicalBarrierOnHit
+    case normalAttackIgnorePhysicalDefensePct
+    case normalAttackHitsRandomAdditionalTarget
+    case normalAttackTargetingAllEnemiesChance
+    case extraAttackChance
+    case extraAttackDamageMultiplier
+    case pursuitChance
+    case pursuitDamageMultiplier
+}
+
+nonisolated enum ReviveRuleTarget: Int, Sendable, Hashable {
+    case reviveOnceOnFirstDefeatHPRatio
+    case defendReviveOneAlly
+    case surviveFirstDefeatAtHP1
+    case endTurnReviveChance
+    case endTurnReviveHPRatio
+}
+
+nonisolated enum CombatRuleTarget: Int, Sendable, Hashable {
+    case lowHPMeleeDamageMultiplier
+    case turnOneActionSpeedMultiplier
+    case lowHPTargetRangedDamageMultiplier
+    case ailmentInflictionChanceMultiplier
+    case damageMultiplierAgainstAilingTarget
+    case attackSpellDamagePctAddPerHit
+    case startTurnSelfCurrentHPLossPct
+    case lostHP10PctToMeleeDamagePctAdd
+    case elapsedTurnToPhysicalAttackPctAdd
+    case highestOffenseActionMultiplier
+    case physicalDamagePctAddOnDamageTaken
+    case lowHPPhysicalDamageMultiplier
+    case lowHPPhysicalResistanceMultiplier
+    case nextNormalAttackPhysicalDamageMultiplierAfterTakingDamage
+    case damageMultiplierAgainstPetrifiedTarget
+    case lowHPCriticalRateAdd
+    case criticalRateAgainstLowHPTargetAdd
+    case criticalDamageMultiplierAgainstLowHPTarget
+}
+
+nonisolated enum RewardRuleTarget: Int, Sendable, Hashable {
+    case goldPenaltyPerDamageTaken
+    case goldGainPctAddOnNormalKill
+}
+
+nonisolated enum EquipmentRuleTarget: Int, Sendable, Hashable {
+    case armorEquipmentBattleStatFlatMultiplier
+    case magicDefenseEquipmentFlatMultiplier
+    case swordEquipmentBattleStatFlatMultiplier
+    case katanaEquipmentBattleStatFlatMultiplier
+    case bowEquipmentBattleStatFlatMultiplier
+    case defenseEquipmentBattleStatFlatMultiplier
+}
+
+nonisolated enum ExplorationRuleTarget: Int, Sendable, Hashable {
+    case explorationTimeMultiplier
+}
+
+nonisolated enum HitRuleTarget: Int, Sendable, Hashable {
+    case damageVarianceWidthMultiplier
+    case hitDamageLuckyChance
+    case hitDamageLuckyMultiplier
+    case hitDamageUnluckyChance
+    case hitDamageUnluckyMultiplier
+}
+
+extension MasterData.SkillEffect {
+    nonisolated var condition: SkillEffectCondition? {
+        switch self {
+        case let .battleStatModifier(_, _, _, condition),
+             let .baseBattleStatMultiplier(_, _, condition),
+             let .battleDerivedModifier(_, _, _, _, condition),
+             let .partyModifier(_, _, _, condition),
+             let .rewardMultiplier(_, _, _, condition),
+             let .magicAccess(_, _, condition),
+             let .interruptGrant(_, condition),
+             let .defenseRule(_, _, condition),
+             let .recoveryRule(_, _, condition),
+             let .actionRule(_, _, condition),
+             let .reviveRule(_, _, condition),
+             let .combatRule(_, _, condition),
+             let .rewardRule(_, _, condition),
+             let .equipmentRule(_, _, condition),
+             let .explorationRule(_, _, condition),
+             let .hitRule(_, _, condition):
+            condition
+        case .allBattleStatMultiplier,
+             .equipmentCapacityModifier,
+             .titleRollCountModifier,
+             .normalDropJewelize,
+             .onHitAilmentGrant,
+             .contactAilmentGrant,
+             .multiHitFalloffModifier,
+             .hitRateFloorModifier,
+             .breathAccess:
+            nil
+        }
+    }
+}
+
+nonisolated enum SkillEffectCondition: Int, Sendable {
     case unarmed
 }
 
-nonisolated enum InterruptKind: String, Decodable, Sendable {
+nonisolated enum InterruptKind: Int, Sendable {
     case rescue
     case counter
     case extraAttack
     case pursuit
 }
 
-nonisolated enum SpellCategory: String, Decodable, Sendable {
+nonisolated enum SpellCategory: Int, Sendable {
     case attack
     case recovery
 }
 
-nonisolated enum SpellKind: String, Decodable, Sendable {
+nonisolated enum SpellKind: Int, Sendable {
     case damage
     case buff
     case heal
@@ -373,27 +601,38 @@ nonisolated enum SpellKind: String, Decodable, Sendable {
     case fullHeal
 }
 
-nonisolated enum TargetSide: String, Decodable, Sendable {
+nonisolated enum TargetSide: Int, Sendable {
     case ally
     case enemy
     case both
 }
 
-nonisolated enum EnemyRace: String, Decodable, Sendable {
+nonisolated enum EnemyRace: Int, Sendable {
     case dragon
     case monster
     case zombie
     case godfiend
 }
 
-nonisolated enum BattleActionKind: String, Decodable, Sendable {
+nonisolated enum BattleActionKind: Int, Sendable {
     case breath
     case attack
     case recoverySpell
     case attackSpell
 }
 
+nonisolated enum SpellEffectTarget: Int, Sendable {
+    case physicalDamage
+    case magicDamage
+    case physicalDamageTaken
+    case magicDamageTaken
+}
+
 extension MasterData {
+    nonisolated static var current: MasterData {
+        GeneratedMasterData.current
+    }
+
     nonisolated var explorationDifficultyTitles: [Title] {
         // Exploration difficulty is intentionally a small ordered subset of all titles: the
         // untitled baseline plus the next three stronger positive-multiplier titles.

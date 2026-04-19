@@ -21,23 +21,22 @@ final class ItemDropNotificationService {
         }
     }
 
-    private let masterDataStore: MasterDataLoadStore
+    private let masterData: MasterData
     private let userDefaults: UserDefaults
     private let maxNotificationCount = 20
 
     private(set) var droppedItems: [DroppedItemNotification] = []
 
     init(
-        masterDataStore: MasterDataLoadStore,
+        masterData: MasterData,
         userDefaults: UserDefaults = .standard
     ) {
-        self.masterDataStore = masterDataStore
+        self.masterData = masterData
         self.userDefaults = userDefaults
     }
 
     func publish(batches: [ExplorationDropNotificationBatch]) {
-        guard !batches.isEmpty,
-              let masterData = masterDataStore.masterData else {
+        guard !batches.isEmpty else {
             return
         }
 

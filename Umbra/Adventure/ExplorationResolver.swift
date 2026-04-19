@@ -528,12 +528,12 @@ nonisolated extension ExplorationResolver {
                 skillTable: skillTable
             ),
             goldPenaltyPerDamageTaken: rewardRuleTotal(
-                target: "goldPenaltyPerDamageTaken",
+                target: .goldPenaltyPerDamageTaken,
                 skillIds: uniqueSkillIDs,
                 skillTable: skillTable
             ),
             goldGainPctAddOnNormalKill: rewardRuleTotal(
-                target: "goldGainPctAddOnNormalKill",
+                target: .goldGainPctAddOnNormalKill,
                 skillIds: uniqueSkillIDs,
                 skillTable: skillTable
             ),
@@ -851,14 +851,20 @@ nonisolated extension ExplorationResolver {
             (title, Double(title.dropWeight))
         }
         func chooseTitle(for rollIndex: Int) -> MasterData.Title {
-            guard let title = weightedRandomChoice(
+            if let title = weightedRandomChoice(
                 from: weightedTitles,
                 rootSeed: rootSeed,
                 purpose: "drop:title:\(floorNumber):\(battleNumber):enemy:\(enemyIndex):drop:\(dropIndex):roll:\(rollIndex)"
-            ) else {
-                preconditionFailure("Title drop table must contain at least one positive-weight title.")
+            ) {
+                return title
             }
-            return title
+
+            return titles.max(by: { lhs, rhs in
+                if lhs.dropWeight != rhs.dropWeight {
+                    return lhs.dropWeight < rhs.dropWeight
+                }
+                return lhs.positiveMultiplier < rhs.positiveMultiplier
+            }) ?? titles[0]
         }
 
         var bestTitle = chooseTitle(for: 0)
@@ -898,8 +904,8 @@ nonisolated extension ExplorationResolver {
                 return
             }
 
-            for effect in skill.effects where effect.kind == .titleRollCountModifier {
-                guard let value = effect.value else {
+            for effect in skill.effects {
+                guard case let .titleRollCountModifier(value) = effect else {
                     continue
                 }
                 partialResult += Int(value.rounded())
@@ -916,8 +922,8 @@ nonisolated extension ExplorationResolver {
                 return
             }
 
-            for effect in skill.effects where effect.kind == .normalDropJewelize {
-                guard let value = effect.value else {
+            for effect in skill.effects {
+                guard case let .normalDropJewelize(value) = effect else {
                     continue
                 }
                 partialResult = max(partialResult, value)
@@ -926,7 +932,7 @@ nonisolated extension ExplorationResolver {
     }
 
     static func rewardRuleTotal(
-        target: String,
+        target: RewardRuleTarget,
         skillIds: Set<Int>,
         skillTable: [Int: MasterData.Skill]
     ) -> Double {
@@ -935,8 +941,9 @@ nonisolated extension ExplorationResolver {
                 return
             }
 
-            for effect in skill.effects where effect.kind == .rewardRule && effect.target == target {
-                guard let value = effect.value else {
+            for effect in skill.effects {
+                guard case let .rewardRule(effectTarget, value, _) = effect,
+                      effectTarget == target else {
                     continue
                 }
                 partialResult += value
@@ -1107,7 +1114,7 @@ nonisolated extension ExplorationResolver {
     }
 
     static func rewardMultiplier(
-        target: String,
+        target: RewardMultiplierTarget,
         skillIds: [Int],
         skillTable: [Int: MasterData.Skill]
     ) -> Double {
@@ -1121,15 +1128,16 @@ nonisolated extension ExplorationResolver {
                 continue
             }
 
-            for effect in skill.effects where effect.kind == .rewardMultiplier && effect.target == target {
-                guard let value = effect.value else {
+            for effect in skill.effects {
+                guard case let .rewardMultiplier(effectTarget, operation, value, _) = effect,
+                      effectTarget == target else {
                     continue
                 }
 
-                switch effect.operation {
-                case "pctAdd":
+                switch operation {
+                case .pctAdd:
                     pctAdd += value
-                case nil, "mul":
+                case .mul:
                     multiplier *= value
                 default:
                     continue

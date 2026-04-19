@@ -77,8 +77,8 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = B0E4430C2F76885F000D1989 /* Build configuration list for PBXNativeTarget "Umbra" */;
 			buildPhases = (
-				B0E442E22F76885E000D1989 /* Sources */,
 				B0E443132F768860000D1989 /* Generate Master Data */,
+				B0E442E22F76885E000D1989 /* Sources */,
 				B0E442E32F76885E000D1989 /* Frameworks */,
 				B0E442E42F76885E000D1989 /* Resources */,
 			);
@@ -101,7 +101,6 @@
 			buildConfigurationList = B0E4430F2F76885F000D1989 /* Build configuration list for PBXNativeTarget "UmbraTests" */;
 			buildPhases = (
 				B0E442F42F76885F000D1989 /* Sources */,
-				B0E443142F768860000D1989 /* Generate Master Data */,
 				B0E442F52F76885F000D1989 /* Frameworks */,
 				B0E442F62F76885F000D1989 /* Resources */,
 			);
@@ -191,31 +190,11 @@
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/masterdata.json",
+				"$(SRCROOT)/Umbra/MasterData/GeneratedMasterData.swift",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "/bin/sh \"$SRCROOT/Generator/run_master_generation.sh\" \"$SRCROOT\" \"$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH\"";
-		};
-		B0E443142F768860000D1989 /* Generate Master Data */ = {
-			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "Generate Master Data";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/masterdata.json",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "/bin/sh \"$SRCROOT/Generator/run_master_generation.sh\" \"$SRCROOT\" \"$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH\"";
+			shellScript = "/bin/sh \"$SRCROOT/../Umbra-MasterData/Generator/run_master_generation.sh\" \"$SRCROOT\" \"$SRCROOT/../Umbra-MasterData\"";
 		};
 /* End PBXShellScriptBuildPhase section */
 
