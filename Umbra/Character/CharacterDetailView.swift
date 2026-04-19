@@ -676,7 +676,6 @@ private struct CharacterStatusSectionsView: View {
         [
             ("物理威力倍率", percentageText(status.battleDerivedStats.physicalDamageMultiplier)),
             ("攻撃魔法威力倍率", percentageText(status.battleDerivedStats.attackMagicMultiplier)),
-            ("回復魔法威力倍率", percentageText(status.battleDerivedStats.healingMultiplier)),
             ("個別魔法威力倍率", percentageText(status.battleDerivedStats.spellDamageMultiplier)),
             ("必殺時威力倍率", percentageText(status.battleDerivedStats.criticalDamageMultiplier)),
             ("近接威力倍率", percentageText(status.battleDerivedStats.meleeDamageMultiplier)),

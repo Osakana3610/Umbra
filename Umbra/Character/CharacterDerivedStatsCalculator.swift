@@ -318,10 +318,6 @@ nonisolated enum CharacterDerivedStatsCalculator {
                 target: "magicDamageMultiplier",
                 skillAdjustments: skillAdjustments
             ),
-            healingMultiplier: battleDerivedValue(
-                target: "healingMultiplier",
-                skillAdjustments: skillAdjustments
-            ),
             spellDamageMultiplier: battleDerivedValue(
                 target: "spellDamageMultiplier",
                 skillAdjustments: skillAdjustments

@@ -508,7 +508,6 @@ nonisolated private struct BattleResolutionEngine {
                     Int(
                         (
                             Double(combatants[actorIndex].status.battleStats.healing)
-                            * combatants[actorIndex].status.battleDerivedStats.healingMultiplier
                             * actionMultiplier(for: actorIndex, actionKind: .recoverySpell)
                             * livePartyModifier(
                                 for: combatants[actorIndex].side,
@@ -553,13 +552,12 @@ nonisolated private struct BattleResolutionEngine {
                 ) {
                     let recoveredHP = max(
                         Int(
-                            (
-                                Double(combatants[actorIndex].status.battleStats.healing)
-                                * combatants[actorIndex].status.battleDerivedStats.healingMultiplier
-                                * livePartyModifier(
-                                    for: combatants[actorIndex].side,
-                                    target: "allyHealingMultiplier"
-                                )
+                        (
+                            Double(combatants[actorIndex].status.battleStats.healing)
+                            * livePartyModifier(
+                                for: combatants[actorIndex].side,
+                                target: "allyHealingMultiplier"
+                            )
                             ).rounded()
                         ),
                         1
@@ -724,7 +722,6 @@ nonisolated private struct BattleResolutionEngine {
                 var totalDamage = 0
                 var combinedFlags: Set<BattleTargetResultFlag> = []
                 var landedHitOnTarget = false
-                let isPrimaryTarget = originalTargetIndex == primaryTargetIndex
                 var hitIndices = sharesAttackCountAcrossTargets
                     ? remainingHitIndices
                     : Array(0..<attackCount)
@@ -818,12 +815,6 @@ nonisolated private struct BattleResolutionEngine {
                     ) ?? 0.0)
                     multiplier *= 1.0 + elapsedTurnPctAdd
                     multiplier *= actionMultiplier(for: actorIndex, actionKind: actionKind)
-                    if isNormalAttack {
-                        multiplier *= normalAttackAdditionalTargetDamageMultiplier(
-                            for: actorIndex,
-                            isPrimaryTarget: isPrimaryTarget
-                        )
-                    }
 
                     breakPhysicalBarrierOnNormalHitIfNeeded(
                         attackerIndex: actorIndex,
@@ -833,9 +824,6 @@ nonisolated private struct BattleResolutionEngine {
                     let barrierMultiplier = combatants[targetIndex].physicalBarrierActive ? 0.5 : 1.0
                     let defendDamageTakenMultiplier = guarded
                         ? combatants[targetIndex].status.defenseRuleProduct(for: "defendDamageTakenMultiplier")
-                        : 1.0
-                    let guardedDamageTakenMultiplier = guardedTarget.didRedirect
-                        ? combatants[targetIndex].status.defenseRuleProduct(for: "guardedDamageTakenMultiplier")
                         : 1.0
                     let partyDamageTakenMultiplier = livePartyModifier(
                         for: combatants[targetIndex].side,
@@ -860,7 +848,6 @@ nonisolated private struct BattleResolutionEngine {
                                 ? (combatants[targetIndex].status.combatRuleMaxValue(for: "lowHPPhysicalResistanceMultiplier") ?? 1.0)
                                 : 1.0)
                             * partyDamageTakenMultiplier
-                            * guardedDamageTakenMultiplier
                             * defendDamageTakenMultiplier,
                         barrierMultiplier: barrierMultiplier,
                         guarded: guarded,
@@ -1181,9 +1168,6 @@ nonisolated private struct BattleResolutionEngine {
         let defendDamageTakenMultiplier = guarded
             ? target.status.defenseRuleProduct(for: "defendDamageTakenMultiplier")
             : 1.0
-        let guardedDamageTakenMultiplier = guardedTarget.didRedirect
-            ? target.status.defenseRuleProduct(for: "guardedDamageTakenMultiplier")
-            : 1.0
         let partyDamageTakenMultiplier = livePartyModifier(
             for: target.side,
             target: "allyPhysicalDamageTakenMultiplier"
@@ -1203,7 +1187,6 @@ nonisolated private struct BattleResolutionEngine {
                     ? (target.status.combatRuleMaxValue(for: "lowHPPhysicalResistanceMultiplier") ?? 1.0)
                     : 1.0)
                 * partyDamageTakenMultiplier
-                * guardedDamageTakenMultiplier
                 * defendDamageTakenMultiplier,
             barrierMultiplier: barrierMultiplier,
             guarded: guarded,
@@ -1349,7 +1332,6 @@ nonisolated private struct BattleResolutionEngine {
                 Int(
                     (
                         Double(combatants[actorIndex].status.battleStats.healing)
-                        * combatants[actorIndex].status.battleDerivedStats.healingMultiplier
                         * actionMultiplier(for: actorIndex, actionKind: .recoverySpell)
                         * livePartyModifier(
                             for: combatants[actorIndex].side,
@@ -1491,7 +1473,6 @@ nonisolated private struct BattleResolutionEngine {
                     Int(
                         (
                             Double(combatants[actorIndex].status.battleStats.healing)
-                            * combatants[actorIndex].status.battleDerivedStats.healingMultiplier
                             * extraHealMultiplier
                             * livePartyModifier(
                                 for: combatants[actorIndex].side,
@@ -1736,7 +1717,6 @@ nonisolated private struct BattleResolutionEngine {
                 Int(
                     (
                         Double(combatants[queuedAction.actorIndex].status.battleStats.healing)
-                        * combatants[queuedAction.actorIndex].status.battleDerivedStats.healingMultiplier
                         * livePartyModifier(
                             for: combatants[queuedAction.actorIndex].side,
                             target: "allyHealingMultiplier"
@@ -1778,7 +1758,6 @@ nonisolated private struct BattleResolutionEngine {
                 Int(
                     (
                         Double(combatants[queuedAction.actorIndex].status.battleStats.healing)
-                        * combatants[queuedAction.actorIndex].status.battleDerivedStats.healingMultiplier
                         * livePartyModifier(
                             for: combatants[queuedAction.actorIndex].side,
                             target: "allyHealingMultiplier"
@@ -2535,18 +2514,6 @@ nonisolated private struct BattleResolutionEngine {
         )
     }
 
-    private func normalAttackAdditionalTargetDamageMultiplier(
-        for actorIndex: Int,
-        isPrimaryTarget: Bool
-    ) -> Double {
-        guard !isPrimaryTarget else {
-            return 1.0
-        }
-        return combatants[actorIndex].status.actionRuleMaxValue(
-            for: "normalAttackAdditionalTargetDamageMultiplier"
-        ) ?? 1.0
-    }
-
     private func physicalBasePower(
         attackerIndex: Int,
         targetIndex: Int,
@@ -3130,26 +3097,11 @@ nonisolated private struct BattleResolutionEngine {
            uniform(
             turn: currentTurn,
             action: currentActionNumber,
-            subaction: 94,
+           subaction: 94,
             roll: queuedAction.actorIndex + 1,
             purpose: "\(purpose).allEnemiesChance"
            ) < chance {
             return livingIndices(on: opposingSide(of: actor.side))
-        }
-        if actor.status.actionRuleMaxValue(for: "normalAttackTargetingAllEnemies") != nil {
-            return livingIndices(on: opposingSide(of: actor.side))
-        }
-        if actor.status.actionRuleMaxValue(for: "normalAttackTargetingFrontRowAll") != nil {
-            let targetSide = opposingSide(of: actor.side)
-            let frontRow = livingIndices(on: targetSide, rank: .front)
-            if !frontRow.isEmpty {
-                return frontRow
-            }
-            let middleRow = livingIndices(on: targetSide, rank: .middle)
-            if !middleRow.isEmpty {
-                return middleRow
-            }
-            return livingIndices(on: targetSide, rank: .back)
         }
         guard let primaryTargetIndex = selectPhysicalTarget(
             for: actor.side,
@@ -3168,14 +3120,6 @@ nonisolated private struct BattleResolutionEngine {
             actionNumber: currentActionNumber
            ) {
             targetIndices.append(additionalTargetIndex)
-        } else if actor.status.actionRuleMaxValue(for: "normalAttackHitsAdjacentTarget") != nil,
-           let adjacentTargetIndex = adjacentPhysicalTarget(
-            to: primaryTargetIndex,
-            excluding: [primaryTargetIndex],
-            purpose: "\(purpose).adjacent",
-            actionNumber: currentActionNumber
-           ) {
-            targetIndices.append(adjacentTargetIndex)
         }
         return targetIndices
     }

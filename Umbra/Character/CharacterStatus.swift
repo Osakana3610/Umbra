@@ -180,7 +180,6 @@ nonisolated struct CharacterBattleStats: Equatable, Sendable {
 nonisolated struct CharacterBattleDerivedStats: Equatable, Sendable {
     let physicalDamageMultiplier: Double
     let attackMagicMultiplier: Double
-    let healingMultiplier: Double
     let spellDamageMultiplier: Double
     let criticalDamageMultiplier: Double
     let meleeDamageMultiplier: Double
@@ -193,7 +192,6 @@ nonisolated struct CharacterBattleDerivedStats: Equatable, Sendable {
     static let baseline = CharacterBattleDerivedStats(
         physicalDamageMultiplier: 1.0,
         attackMagicMultiplier: 1.0,
-        healingMultiplier: 1.0,
         spellDamageMultiplier: 1.0,
         criticalDamageMultiplier: 1.0,
         meleeDamageMultiplier: 1.0,

@@ -402,7 +402,6 @@ struct UmbraTests {
         #expect(status.battleDerivedStats == CharacterBattleDerivedStats(
             physicalDamageMultiplier: 1.0,
             attackMagicMultiplier: 1.0,
-            healingMultiplier: 1.0,
             spellDamageMultiplier: 1.0,
             criticalDamageMultiplier: 1.0,
             meleeDamageMultiplier: 1.0,
@@ -470,7 +469,6 @@ struct UmbraTests {
         #expect(breathStatus.battleDerivedStats == CharacterBattleDerivedStats(
             physicalDamageMultiplier: 1.0,
             attackMagicMultiplier: 1.0,
-            healingMultiplier: 1.0,
             spellDamageMultiplier: 1.0,
             criticalDamageMultiplier: 1.1,
             meleeDamageMultiplier: 1.0,
@@ -4539,7 +4537,7 @@ struct UmbraTests {
     }
 
     @Test
-    func recoverySpellUsesHealingMultiplierAndPartyHealingModifier() throws {
+    func recoverySpellUsesPartyHealingModifier() throws {
         let healSpell = MasterData.Spell(
             id: 1,
             name: "ヒール",
@@ -4590,7 +4588,6 @@ struct UmbraTests {
                 criticalRate: 0,
                 breathPower: 0
             ),
-            battleDerivedStats: makeBattleDerivedStats(healingMultiplier: 1.5),
             skillIds: [healingSupportSkill.id],
             spellIds: [healSpell.id]
         )
@@ -4636,7 +4633,7 @@ struct UmbraTests {
 
         let firstAction = try #require(result.battleRecord.turns.first?.actions.first)
         #expect(firstAction.targetIds == [BattleCombatantID(rawValue: "character:2")])
-        #expect(firstAction.results.first?.value == 39)
+        #expect(firstAction.results.first?.value == 26)
     }
 
     @Test
@@ -6893,61 +6890,6 @@ struct UmbraTests {
         #expect(firstAction.actorId == BattleCombatantID(rawValue: "enemy:1:1"))
         #expect(firstAction.actionKind == .attack)
         #expect(firstAction.targetIds == [BattleCombatantID(rawValue: "character:3")])
-    }
-
-    @Test
-    func normalAttackTargetingFrontRowAllHitsEntireFrontRank() throws {
-        let masterData = makeBattleTestMasterData(
-            enemyBaseStats: battleBaseStats(vitality: 1, agility: 0),
-            enemyActionRates: MasterData.ActionRates(
-                breath: 0,
-                attack: 0,
-                recoverySpell: 0,
-                attackSpell: 0
-            )
-        )
-        let attackerStatus = makeBattleTestStatus(
-            baseStats: battleCharacterBaseStats(agility: 1_000),
-            battleStats: CharacterBattleStats(
-                maxHP: 100,
-                physicalAttack: 20,
-                physicalDefense: 0,
-                magic: 0,
-                magicDefense: 0,
-                healing: 0,
-                accuracy: 1_000,
-                evasion: 0,
-                attackCount: 1,
-                criticalRate: 0,
-                breathPower: 0
-            ),
-            actionRuleValuesByTarget: ["normalAttackTargetingFrontRowAll": [1]]
-        )
-
-        let result = try SingleBattleResolver.resolve(
-            context: BattleContext(
-                runId: RunSessionID(partyId: 1, partyRunId: 1),
-                rootSeed: 0,
-                floorNumber: 1,
-                battleNumber: 1
-            ),
-            partyMembers: [makePartyBattleMember(id: 1, name: "暴君", status: attackerStatus)],
-            enemies: [
-                BattleEnemySeed(enemyId: 1, level: 1),
-                BattleEnemySeed(enemyId: 1, level: 1),
-                BattleEnemySeed(enemyId: 1, level: 1)
-            ],
-            masterData: masterData
-        )
-
-        let attack = try #require(result.battleRecord.turns.first?.actions.first(where: { $0.actorId == BattleCombatantID(rawValue: "character:1") }))
-        #expect(attack.actionKind == .attack)
-        #expect(
-            Set(attack.targetIds) == [
-                BattleCombatantID(rawValue: "enemy:1:1"),
-                BattleCombatantID(rawValue: "enemy:1:2")
-            ]
-        )
     }
 
     @Test
@@ -9670,7 +9612,6 @@ struct UmbraTests {
             battleDerivedStats: CharacterBattleDerivedStats(
                 physicalDamageMultiplier: 1.0,
                 attackMagicMultiplier: 1.0,
-                healingMultiplier: 1.0,
                 spellDamageMultiplier: 1.0,
                 criticalDamageMultiplier: 1.0,
                 meleeDamageMultiplier: 1.1,
@@ -9706,7 +9647,6 @@ struct UmbraTests {
             battleDerivedStats: CharacterBattleDerivedStats(
                 physicalDamageMultiplier: 1.0,
                 attackMagicMultiplier: 1.0,
-                healingMultiplier: 1.0,
                 spellDamageMultiplier: 1.0,
                 criticalDamageMultiplier: 1.0,
                 meleeDamageMultiplier: 1.15,
@@ -10195,7 +10135,6 @@ private func battleCharacterBaseStats(
 private func makeBattleDerivedStats(
     physicalDamageMultiplier: Double = 1.0,
     attackMagicMultiplier: Double = 1.0,
-    healingMultiplier: Double = 1.0,
     spellDamageMultiplier: Double = 1.0,
     criticalDamageMultiplier: Double = 1.0,
     meleeDamageMultiplier: Double = 1.0,
@@ -10208,7 +10147,6 @@ private func makeBattleDerivedStats(
     CharacterBattleDerivedStats(
         physicalDamageMultiplier: physicalDamageMultiplier,
         attackMagicMultiplier: attackMagicMultiplier,
-        healingMultiplier: healingMultiplier,
         spellDamageMultiplier: spellDamageMultiplier,
         criticalDamageMultiplier: criticalDamageMultiplier,
         meleeDamageMultiplier: meleeDamageMultiplier,

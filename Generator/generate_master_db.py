@@ -131,7 +131,6 @@ VALID_REWARD_MULTIPLIER_TARGETS = {
     "goldGainMultiplier",
     "experienceGainMultiplier",
     "rareDropMultiplier",
-    "titleDropMultiplier",
 }
 
 VALID_PARTY_MODIFIER_TARGETS = {

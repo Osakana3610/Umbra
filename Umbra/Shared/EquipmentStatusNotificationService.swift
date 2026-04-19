@@ -41,7 +41,6 @@ final class EquipmentStatusNotificationService {
     private static let derivedStatDescriptors: [DerivedStatDescriptor] = [
         ("物理威力倍率", \.physicalDamageMultiplier),
         ("攻撃魔法威力倍率", \.attackMagicMultiplier),
-        ("回復魔法威力倍率", \.healingMultiplier),
         ("個別魔法威力倍率", \.spellDamageMultiplier),
         ("必殺時威力倍率", \.criticalDamageMultiplier),
         ("近接威力倍率", \.meleeDamageMultiplier),
