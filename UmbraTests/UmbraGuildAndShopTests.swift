@@ -1316,12 +1316,10 @@ struct UmbraGuildAndShopTests {
             jewelTitleId: 0,
             jewelItemId: 0
         )
-        var snapshot = try guildCoreDataRepository.loadRosterSnapshot()
-        snapshot.playerState.shopInventoryInitialized = true
         let sellCount = 3
 
         try guildCoreDataRepository.saveTradeState(
-            playerState: snapshot.playerState,
+            playerState: try guildCoreDataRepository.loadRosterSnapshot().playerState,
             inventoryStacks: [CompositeItemStack(itemID: itemID, count: sellCount)],
             shopInventoryStacks: []
         )
@@ -1354,11 +1352,9 @@ struct UmbraGuildAndShopTests {
         let masterData = currentMasterData()
         let baseItem = try #require(masterData.items.first(where: { $0.rarity != .normal }))
         let itemID = CompositeItemID.baseItem(itemId: baseItem.id)
-        var snapshot = try guildCoreDataRepository.loadRosterSnapshot()
-        snapshot.playerState.shopInventoryInitialized = true
 
         try guildCoreDataRepository.saveTradeState(
-            playerState: snapshot.playerState,
+            playerState: try guildCoreDataRepository.loadRosterSnapshot().playerState,
             inventoryStacks: [],
             shopInventoryStacks: [
                 CompositeItemStack(

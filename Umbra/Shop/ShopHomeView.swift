@@ -196,6 +196,25 @@ private struct ShopTradingView: View {
     @State private var presentedItemDetail: ItemDetailSheetPresentation?
     @State private var presentedPurchaseSheet: PresentedPurchaseSheet?
     @State private var presentedSaleSheet: PresentedSaleSheet?
+    @State private var currentFilterCatalog: ItemBrowserFilterOptions
+    @State private var visibleSections: [TradeSection] = []
+
+    init(
+        mode: ShopTradeMode,
+        masterData: MasterData,
+        rosterStore: GuildRosterStore,
+        equipmentStore: EquipmentInventoryStore,
+        shopStore: ShopInventoryStore
+    ) {
+        self.mode = mode
+        self.masterData = masterData
+        self.rosterStore = rosterStore
+        self.equipmentStore = equipmentStore
+        self.shopStore = shopStore
+        _currentFilterCatalog = State(
+            initialValue: ItemBrowserFilterOptions(itemIDs: [CompositeItemID](), masterData: masterData)
+        )
+    }
 
     var body: some View {
         tradeList
@@ -247,16 +266,17 @@ private struct ShopTradingView: View {
                     loadError = error.localizedDescription
                 }
             }
+            .task(id: tradePresentationInputs) {
+                rebuildTradePresentation()
+            }
     }
 
     private var tradeList: some View {
-        let sections = visibleSections
-
         return Group {
             if #available(iOS 26.0, *) {
-                tradeListView(sections: sections, showsSectionIndex: true)
+                tradeListView(showsSectionIndex: true)
             } else {
-                tradeListView(sections: sections, showsSectionIndex: false)
+                tradeListView(showsSectionIndex: false)
             }
         }
         .listStyle(.insetGrouped)
@@ -265,7 +285,6 @@ private struct ShopTradingView: View {
     }
 
     private func tradeListView(
-        sections: [TradeSection],
         showsSectionIndex: Bool
     ) -> some View {
         List {
@@ -278,14 +297,14 @@ private struct ShopTradingView: View {
                 Section(mode.rawValue) {
                     ShopTradeLoadingRow()
                 }
-            } else if sections.isEmpty {
+            } else if visibleSections.isEmpty {
                 Section(mode.rawValue) {
                     Text(emptyStateMessage(filterCatalog: currentFilterCatalog))
                         .foregroundStyle(.secondary)
                 }
             } else {
-                ForEach(sections) { section in
-                    tradeSection(section, in: sections, showsSectionIndex: showsSectionIndex)
+                ForEach(visibleSections) { section in
+                    tradeSection(section, in: visibleSections, showsSectionIndex: showsSectionIndex)
                 }
             }
 
@@ -308,6 +327,15 @@ private struct ShopTradingView: View {
         mode == .buy ? "商店在庫を検索" : "所持アイテムを検索"
     }
 
+    private var tradePresentationInputs: TradePresentationInputs {
+        TradePresentationInputs(
+            searchText: trimmedSearchText,
+            itemFilter: itemFilter,
+            sectionKeys: sourceSectionKeys,
+            itemsBySection: sourceItemsBySection
+        )
+    }
+
     private var isCurrentSourceLoaded: Bool {
         switch mode {
         case .buy:
@@ -317,38 +345,24 @@ private struct ShopTradingView: View {
         }
     }
 
-    private var currentFilterCatalog: ItemBrowserFilterOptions {
-        let itemIDs = sourceItems.map(\.itemID)
-        return ItemBrowserFilterOptions(itemIDs: itemIDs, masterData: masterData)
-    }
-
-    private var sourceItems: [EquipmentCachedItem] {
-        switch mode {
-        case .buy:
-            shopStore.orderedSectionKeys.flatMap { shopStore.shopItemsBySection[$0] ?? [] }
-        case .sell:
-            equipmentStore.orderedSectionKeys.flatMap { equipmentStore.inventoryItemsBySection[$0] ?? [] }
-        }
-    }
-
-    private var visibleSections: [TradeSection] {
-        // Filtering is applied after section grouping so the section index only exposes buckets that
-        // still have visible rows.
-        sourceSectionKeys.compactMap { key in
-            let rows = (sourceItemsBySection[key] ?? []).filter(matchesFilters)
-            guard !rows.isEmpty else {
-                return nil
-            }
-            return TradeSection(key: key, rows: rows)
-        }
-    }
-
     private var sourceSectionKeys: [EquipmentSectionKey] {
         switch mode {
         case .buy:
             shopStore.orderedSectionKeys
         case .sell:
             equipmentStore.orderedSectionKeys
+        }
+    }
+
+    private func rebuildTradePresentation() {
+        let itemIDs = sourceSectionKeys.flatMap { sourceItemsBySection[$0]?.map(\.itemID) ?? [] }
+        currentFilterCatalog = ItemBrowserFilterOptions(itemIDs: itemIDs, masterData: masterData)
+        visibleSections = sourceSectionKeys.compactMap { key in
+            let rows = (sourceItemsBySection[key] ?? []).filter(matchesFilters)
+            guard !rows.isEmpty else {
+                return nil
+            }
+            return TradeSection(key: key, rows: rows)
         }
     }
 
@@ -414,21 +428,6 @@ private struct ShopTradingView: View {
         }
     }
 
-    private func canAffordPurchase(_ item: EquipmentCachedItem) -> Bool {
-        guard mode == .buy else {
-            return true
-        }
-
-        return (rosterStore.playerState?.gold ?? 0) >= ShopPricingCalculator.purchasePrice(
-            for: item.itemID,
-            masterData: masterData
-        )
-    }
-
-    private func performTrade(itemID: CompositeItemID) {
-        _ = itemID
-    }
-
     private func performPurchase(itemID: CompositeItemID, count: Int) {
         shopStore.buy(
             itemID: itemID,
@@ -454,9 +453,7 @@ private struct ShopTradingView: View {
             item: item,
             masterData: masterData,
             mode: mode,
-            canAffordPurchase: canAffordPurchase(item),
             isMutating: shopStore.isMutating,
-            onTrade: performTrade,
             onPresentPurchaseSheet: { selectedItem in
                 presentedPurchaseSheet = PresentedPurchaseSheet(item: selectedItem)
             },
@@ -474,9 +471,7 @@ private struct ShopTradeItemRow: View {
     let item: EquipmentCachedItem
     let masterData: MasterData
     let mode: ShopTradeMode
-    let canAffordPurchase: Bool
     let isMutating: Bool
-    let onTrade: (CompositeItemID) -> Void
     let onPresentPurchaseSheet: (EquipmentCachedItem) -> Void
     let onPresentSaleSheet: (EquipmentCachedItem) -> Void
     let onShowDetail: (CompositeItemID) -> Void
@@ -548,15 +543,6 @@ private struct ShopTradeItemRow: View {
             return "在庫 \(item.quantity.formatted()) / 購入 \(purchasePrice.formatted())G / 売却 \(sellPrice.formatted())G"
         case .sell:
             return "所持 \(item.quantity.formatted()) / 売却 \(sellPrice.formatted())G"
-        }
-    }
-
-    private var isTradeDisabled: Bool {
-        switch mode {
-        case .buy:
-            isMutating || !canAffordPurchase
-        case .sell:
-            isMutating
         }
     }
 }
@@ -705,6 +691,13 @@ private struct TradeSection: Identifiable {
     var id: EquipmentSectionKey {
         key
     }
+}
+
+private struct TradePresentationInputs: Equatable {
+    let searchText: String
+    let itemFilter: ItemBrowserFilter
+    let sectionKeys: [EquipmentSectionKey]
+    let itemsBySection: [EquipmentSectionKey: [EquipmentCachedItem]]
 }
 
 extension TradeSection: EquipmentSectionIndexable {}

@@ -15,6 +15,7 @@ final class ShopInventoryStore {
     private var sectionKeyByItemID: [CompositeItemID: EquipmentSectionKey] = [:]
 
     private(set) var isLoaded = false
+    private(set) var contentRevision = 0
     private(set) var isMutating = false
     private(set) var lastOperationError: String?
     private(set) var shopItemsBySection: [EquipmentSectionKey: [EquipmentCachedItem]] = [:]
@@ -39,7 +40,7 @@ final class ShopInventoryStore {
     func reload(masterData: MasterData) throws {
         configure(masterData: masterData)
 
-        let stock = try service.loadShopInventoryStacks(masterData: masterData)
+        let stock = try service.loadShopInventoryStacks()
         var groupedItems: [EquipmentSectionKey: [EquipmentCachedItem]] = [:]
         var newSectionKeyByItemID: [CompositeItemID: EquipmentSectionKey] = [:]
         for stack in stock.normalizedCompositeItemStacks() {
@@ -56,6 +57,7 @@ final class ShopInventoryStore {
         sectionKeyByItemID = newSectionKeyByItemID
         orderedSectionKeys = groupedItems.keys.sorted(by: EquipmentSectionKey.isOrderedBefore)
         isLoaded = true
+        contentRevision &+= 1
     }
 
     func applyInventoryChanges(
@@ -77,6 +79,7 @@ final class ShopInventoryStore {
                 decrementInventory(itemID: itemID, by: -count)
             }
         }
+        contentRevision &+= 1
     }
 
     func buy(
@@ -99,10 +102,14 @@ final class ShopInventoryStore {
             do {
                 try loadIfNeeded(masterData: masterData)
                 try equipmentStore.loadIfNeeded(masterData: masterData)
-                try service.buyShopItem(itemID: itemID, count: count, masterData: masterData)
+                let playerState = try service.buyShopItem(
+                    itemID: itemID,
+                    count: count,
+                    masterData: masterData
+                )
                 // Refresh persistent player state first, then mirror the same delta into both cached
                 // inventories so every visible screen stays in sync with one mutation.
-                rosterStore.refreshFromPersistence()
+                rosterStore.replacePlayerState(playerState)
                 equipmentStore.applyInventoryChanges([itemID: count], masterData: masterData)
                 applyInventoryChanges([itemID: -count], masterData: masterData)
             } catch {
@@ -131,8 +138,12 @@ final class ShopInventoryStore {
             do {
                 try loadIfNeeded(masterData: masterData)
                 try equipmentStore.loadIfNeeded(masterData: masterData)
-                try service.sellInventoryItem(itemID: itemID, count: count, masterData: masterData)
-                rosterStore.refreshFromPersistence()
+                let playerState = try service.sellInventoryItem(
+                    itemID: itemID,
+                    count: count,
+                    masterData: masterData
+                )
+                rosterStore.replacePlayerState(playerState)
                 equipmentStore.applyInventoryChanges([itemID: -count], masterData: masterData)
                 applyInventoryChanges([itemID: count], masterData: masterData)
             } catch {
@@ -158,11 +169,11 @@ final class ShopInventoryStore {
 
             do {
                 try loadIfNeeded(masterData: masterData)
-                try service.organizeShopInventoryItem(
+                let playerState = try service.organizeShopInventoryItem(
                     itemID: itemID,
                     masterData: masterData
                 )
-                rosterStore.refreshFromPersistence()
+                rosterStore.replacePlayerState(playerState)
                 applyInventoryChanges(
                     [itemID: -ShopPricingCalculator.stockOrganizationBundleSize],
                     masterData: masterData
@@ -197,11 +208,11 @@ final class ShopInventoryStore {
                 )
                 // Auto-sell moves every owned stack for the selected identities into the shop at once,
                 // so capture those counts before the service mutates persistence.
-                _ = try service.configureAutoSell(
+                let playerState = try service.configureAutoSell(
                     itemIDs: itemIDs,
                     masterData: masterData
                 )
-                rosterStore.refreshFromPersistence()
+                rosterStore.replacePlayerState(playerState)
                 equipmentStore.applyInventoryChanges(
                     Dictionary(uniqueKeysWithValues: movedCounts.map { ($0.key, -$0.value) }),
                     masterData: masterData

@@ -473,17 +473,11 @@ nonisolated private enum ExplorationCoreDataBridge {
         partyId: Int,
         in context: NSManagedObjectContext
     ) throws -> Int {
-        let request = NSFetchRequest<NSDictionary>(entityName: "RunSessionEntity")
-        request.resultType = .dictionaryResultType
+        let request = NSFetchRequest<RunSessionEntity>(entityName: "RunSessionEntity")
+        request.fetchLimit = 1
         request.predicate = NSPredicate(format: "partyId == %d", partyId)
-
-        let expression = NSExpressionDescription()
-        expression.name = "maxPartyRunId"
-        expression.expression = NSExpression(forFunction: "max:", arguments: [NSExpression(forKeyPath: "partyRunId")])
-        expression.expressionResultType = .integer64AttributeType
-        request.propertiesToFetch = [expression]
-
-        let maximum = (try context.fetch(request).first?["maxPartyRunId"] as? Int64) ?? 0
+        request.sortDescriptors = [NSSortDescriptor(key: "partyRunId", ascending: false)]
+        let maximum = try context.fetch(request).first?.partyRunId ?? 0
         return Int(maximum) + 1
     }
 
@@ -588,14 +582,6 @@ nonisolated private enum ExplorationCoreDataBridge {
             Int(lhs.formationIndex) < Int(rhs.formationIndex)
         }
         .map { Int($0.characterId) }
-    }
-
-    static func memberCharacterIds(from entity: RunSessionEntity) -> [Int] {
-        orderedMembers(from: entity).map { Int($0.characterId) }
-    }
-
-    static func currentPartyHPs(from entity: RunSessionEntity) -> [Int] {
-        orderedMembers(from: entity).map { Int($0.currentHP) }
     }
 
     static func orderedMembers(

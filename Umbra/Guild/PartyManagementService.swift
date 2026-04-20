@@ -27,10 +27,10 @@ final class PartyManagementService {
         reopenedAt: Date,
         partyStatusesById: [Int: ExplorationPartyStatus],
         masterData: MasterData
-    ) throws {
+    ) throws -> [PartyRecord] {
         var roster = try coreDataRepository.loadRosterSnapshot()
         guard let backgroundedAt = roster.playerState.lastBackgroundedAt else {
-            return
+            return try coreDataRepository.loadParties()
         }
 
         var parties = try coreDataRepository.loadParties()
@@ -62,22 +62,23 @@ final class PartyManagementService {
         roster.playerState.lastBackgroundedAt = nil
         try coreDataRepository.saveRosterSnapshot(roster)
         try coreDataRepository.saveParties(parties)
+        return parties
     }
 
-    func consumePendingAutomaticRun(partyId: Int) throws {
-        var parties = try coreDataRepository.loadParties()
-        let index = try partyIndex(for: partyId, in: parties)
-        parties[index].pendingAutomaticRunCount = max(parties[index].pendingAutomaticRunCount - 1, 0)
-        parties[index].pendingAutomaticRunStartedAt = nil
-        try coreDataRepository.saveParties(parties)
+    func consumePendingAutomaticRun(party: PartyRecord) throws -> PartyRecord {
+        try coreDataRepository.updatePendingAutomaticRunState(
+            partyId: party.partyId,
+            pendingAutomaticRunCount: max(party.pendingAutomaticRunCount - 1, 0),
+            pendingAutomaticRunStartedAt: nil
+        )
     }
 
-    func clearPendingAutomaticRuns(partyId: Int) throws {
-        var parties = try coreDataRepository.loadParties()
-        let index = try partyIndex(for: partyId, in: parties)
-        parties[index].pendingAutomaticRunCount = 0
-        parties[index].pendingAutomaticRunStartedAt = nil
-        try coreDataRepository.saveParties(parties)
+    func clearPendingAutomaticRuns(partyId: Int) throws -> PartyRecord {
+        try coreDataRepository.updatePendingAutomaticRunState(
+            partyId: partyId,
+            pendingAutomaticRunCount: 0,
+            pendingAutomaticRunStartedAt: nil
+        )
     }
 
     func unlockParty() throws -> [PartyRecord] {

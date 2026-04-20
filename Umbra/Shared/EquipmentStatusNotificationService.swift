@@ -10,7 +10,7 @@ import Observation
 @Observable
 final class EquipmentStatusNotificationService {
     struct StatusChangeNotification: Identifiable, Equatable, Sendable {
-        let id: UUID
+        let id: String
         let displayText: String
     }
 
@@ -70,7 +70,7 @@ final class EquipmentStatusNotificationService {
 
         notifications = differenceLines.map {
             StatusChangeNotification(
-                id: UUID(),
+                id: $0,
                 displayText: $0
             )
         }

@@ -9,8 +9,10 @@ struct MonsterBookEnemyDetailView: View {
     let masterData: MasterData
 
     @State private var selectedLevel: Int
+    @State private var displayedStatus: CharacterStatus?
     @State private var presentedSheet: MonsterEnemyDetailSheet?
 
+    private let enemy: MasterData.Enemy?
     private let resolver: MasterDataDetailContentResolver
     private let jobsByID: [Int: MasterData.Job]
     private let itemsByID: [Int: MasterData.Item]
@@ -23,7 +25,18 @@ struct MonsterBookEnemyDetailView: View {
     ) {
         self.appearance = appearance
         self.masterData = masterData
+        let resolvedEnemy = masterData.enemies.first(where: { $0.id == appearance.enemyId })
+        enemy = resolvedEnemy
         _selectedLevel = State(initialValue: appearance.maximumLevel)
+        _displayedStatus = State(
+            initialValue: resolvedEnemy.flatMap { enemy in
+                CharacterDerivedStatsCalculator.status(
+                    for: enemy,
+                    level: appearance.maximumLevel,
+                    masterData: masterData
+                )
+            }
+        )
         resolver = MasterDataDetailContentResolver(masterData: masterData)
         jobsByID = Dictionary(uniqueKeysWithValues: masterData.jobs.map { ($0.id, $0) })
         itemsByID = Dictionary(uniqueKeysWithValues: masterData.items.map { ($0.id, $0) })
@@ -57,9 +70,9 @@ struct MonsterBookEnemyDetailView: View {
                         }
                     )
 
-                    if let status {
+                    if let displayedStatus {
                         MonsterEnemyStatusSectionsView(
-                            status: status,
+                            status: displayedStatus,
                             skillsByID: skillsByID,
                             spellsByID: spellsByID
                         )
@@ -122,6 +135,9 @@ struct MonsterBookEnemyDetailView: View {
                         }
                     }
                 }
+                .task(id: selectedLevel) {
+                    displayedStatus = resolveStatus()
+                }
             } else {
                 ContentUnavailableView(
                     "敵が見つかりません",
@@ -131,11 +147,7 @@ struct MonsterBookEnemyDetailView: View {
         }
     }
 
-    private var enemy: MasterData.Enemy? {
-        masterData.enemies.first(where: { $0.id == appearance.enemyId })
-    }
-
-    private var status: CharacterStatus? {
+    private func resolveStatus() -> CharacterStatus? {
         guard let enemy else {
             return nil
         }

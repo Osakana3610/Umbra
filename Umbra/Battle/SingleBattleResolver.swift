@@ -3042,31 +3042,6 @@ nonisolated private struct BattleResolutionEngine {
         )
     }
 
-    private func adjacentPhysicalTarget(
-        to targetIndex: Int,
-        excluding excludedIndices: Set<Int> = [],
-        purpose: String,
-        actionNumber: Int
-    ) -> Int? {
-        let target = combatants[targetIndex]
-        let candidates = combatants.indices
-            .filter {
-                $0 != targetIndex
-                    && !excludedIndices.contains($0)
-                    && combatants[$0].side == target.side
-                    && combatants[$0].isAlive
-                    && abs(combatants[$0].formationIndex - target.formationIndex) == 1
-            }
-            .sorted { combatants[$0].formationIndex < combatants[$1].formationIndex }
-        return randomChoice(
-            from: candidates,
-            turn: currentTurn,
-            action: actionNumber,
-            subaction: 95,
-            purpose: purpose
-        )
-    }
-
     private func randomAdditionalPhysicalTarget(
         to targetIndex: Int,
         excluding excludedIndices: Set<Int> = [],

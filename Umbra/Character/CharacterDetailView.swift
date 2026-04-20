@@ -10,6 +10,7 @@ struct CharacterDetailView: View {
 
     @State private var draftRates = CharacterActionRates.default
     @State private var draftPriority = CharacterAutoBattleSettings.default.priority
+    @State private var displayedStatus: CharacterStatus?
 
     private let skillsByID: [Int: MasterData.Skill]
     private let spellsByID: [Int: MasterData.Spell]
@@ -35,9 +36,9 @@ struct CharacterDetailView: View {
             if let character {
                 CharacterDetailLoadedView(
                     character: character,
-                    status: status,
+                    status: displayedStatus,
                     summaryText: masterData.characterSummaryText(for: character),
-                    hpText: hpText(for: character, status: status),
+                    hpText: hpText(for: character, status: displayedStatus),
                     experienceToNextLevelText: experienceToNextLevelText(for: character),
                     skillsByID: skillsByID,
                     spellsByID: spellsByID,
@@ -63,6 +64,12 @@ struct CharacterDetailView: View {
                     // characters, but local slider edits are preserved while a mutation is in flight.
                     synchronizeDraftValues(with: character)
                 }
+                .task(id: character) {
+                    displayedStatus = CharacterDerivedStatsCalculator.status(
+                        for: character,
+                        masterData: masterData
+                    )
+                }
                 .onChange(of: character.autoBattleSettings.rates) { _, newValue in
                     if !rosterStore.isMutating {
                         draftRates = newValue
@@ -84,14 +91,6 @@ struct CharacterDetailView: View {
 
     private var character: CharacterRecord? {
         rosterStore.charactersById[characterId]
-    }
-
-    private var status: CharacterStatus? {
-        guard let character else {
-            return nil
-        }
-
-        return CharacterDerivedStatsCalculator.status(for: character, masterData: masterData)
     }
 
     private func hpText(for character: CharacterRecord, status: CharacterStatus?) -> String {

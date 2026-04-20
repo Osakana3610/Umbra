@@ -56,7 +56,6 @@
         <attribute name="gold" optional="NO" attributeType="Integer 64" defaultValueString="1000" usesScalarValueType="YES"/>
         <attribute name="lastBackgroundedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="nextCharacterId" optional="NO" attributeType="Integer 64" defaultValueString="1" usesScalarValueType="YES"/>
-        <attribute name="shopInventoryInitialized" optional="NO" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <relationship name="autoSellItems" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="PlayerStateAutoSellItemEntity" inverseName="playerState" inverseEntity="PlayerStateAutoSellItemEntity"/>
     </entity>
     <entity name="PlayerStateAutoSellItemEntity" representedClassName="PlayerStateAutoSellItemEntity" syncable="YES">

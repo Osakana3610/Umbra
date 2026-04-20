@@ -1,4 +1,4 @@
-// Shares the legacy player-status bottom inset with scrollable tab content.
+// Shares the manual player-status bottom inset with scrollable tab content.
 
 import SwiftUI
 

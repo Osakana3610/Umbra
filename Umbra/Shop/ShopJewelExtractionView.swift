@@ -8,9 +8,15 @@ struct ShopJewelExtractionView: View {
     let equipmentStore: EquipmentInventoryStore
 
     @Environment(\.dismiss) private var dismiss
+    @State private var loadError: String?
     @State private var itemFilter = ItemBrowserFilter()
     @State private var presentedItemDetail: ItemDetailSheetPresentation?
     @State private var pendingExtraction: PendingJewelExtraction?
+    @State private var currentFilterCatalog = ItemBrowserFilterOptions(
+        itemIDs: [CompositeItemID](),
+        masterData: MasterData.current
+    )
+    @State private var visibleSections: [ShopEnhancementSection] = []
 
     private let nameResolver: EquipmentDisplayNameResolver
 
@@ -32,20 +38,20 @@ struct ShopJewelExtractionView: View {
                     .foregroundStyle(.secondary)
             }
 
-            if let message = equipmentStore.lastOperationError {
+            if let message = currentErrorMessage {
                 Section {
                     Text(message)
                         .foregroundStyle(.red)
                 }
             }
 
-            if extractionSections.isEmpty {
+            if visibleSections.isEmpty {
                 Section("宝石を外す") {
                     Text(emptyStateMessage)
                         .foregroundStyle(.secondary)
                 }
             } else {
-                ForEach(extractionSections) { section in
+                ForEach(visibleSections) { section in
                     if #available(iOS 26.0, *) {
                         Section(section.key.title) {
                             ForEach(section.rows) { row in
@@ -53,7 +59,7 @@ struct ShopJewelExtractionView: View {
                                     .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
                             }
                         }
-                        .sectionIndexLabel(equipmentSectionIndexLabel(for: section, in: extractionSections))
+                        .sectionIndexLabel(equipmentSectionIndexLabel(for: section, in: visibleSections))
                     } else {
                         Section(section.key.title) {
                             ForEach(section.rows) { row in
@@ -110,20 +116,32 @@ struct ShopJewelExtractionView: View {
         } message: { extraction in
             Text(extraction.message)
         }
+        .task {
+            do {
+                try equipmentStore.loadIfNeeded(masterData: masterData)
+                loadError = nil
+            } catch {
+                loadError = error.localizedDescription
+            }
+        }
+        .task(
+            id: ShopEnhancementPresentationInput(
+                itemFilter: itemFilter,
+                searchText: "",
+                inventoryRevision: equipmentStore.contentRevision,
+                rosterRevision: rosterStore.contentRevision
+            )
+        ) {
+            rebuildPresentation()
+        }
     }
 
-    private var inventoryItems: [EquipmentCachedItem] {
-        equipmentStore.displayOrderedInventoryItems
+    private var currentErrorMessage: String? {
+        loadError ?? equipmentStore.lastOperationError
     }
 
-    private var currentFilterCatalog: ItemBrowserFilterOptions {
-        ItemBrowserFilterOptions(
-            itemIDs: extractionItemIDs,
-            masterData: masterData
-        )
-    }
-
-    private var extractionItemIDs: [CompositeItemID] {
+    private func rebuildPresentation() {
+        let inventoryItems = equipmentStore.displayOrderedInventoryItems
         let inventoryIDs = inventoryItems
             .filter { $0.itemID.jewelItemId > 0 }
             .map(\.itemID)
@@ -132,11 +150,12 @@ struct ShopJewelExtractionView: View {
         }
         .filter { $0.jewelItemId > 0 }
 
-        return inventoryIDs + equippedIDs
-    }
+        currentFilterCatalog = ItemBrowserFilterOptions(
+            itemIDs: inventoryIDs + equippedIDs,
+            masterData: masterData
+        )
 
-    private var extractionSections: [ShopEnhancementSection] {
-        ShopEnhancementRow.buildSections(
+        visibleSections = ShopEnhancementRow.buildSections(
             inventoryItems: inventoryItems,
             characters: rosterStore.characters,
             masterData: masterData

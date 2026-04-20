@@ -26,19 +26,6 @@ nonisolated enum CharacterDerivedStatsCalculator {
             criticalRate: 0,
             breathPower: 0
         ),
-        armorBattleStats: CharacterBattleStats(
-            maxHP: 0,
-            physicalAttack: 0,
-            physicalDefense: 0,
-            magic: 0,
-            magicDefense: 0,
-            healing: 0,
-            accuracy: 0,
-            evasion: 0,
-            attackCount: 0,
-            criticalRate: 0,
-            breathPower: 0
-        ),
         categoryBattleStats: [:],
         itemSkillIDs: [],
         isUnarmed: true,
@@ -163,7 +150,6 @@ nonisolated enum CharacterDerivedStatsCalculator {
             skillIds: activeSkillIds,
             masterData: masterData,
             equipmentBattleStats: equipmentResolution.battleStats,
-            armorEquipmentBattleStats: equipmentResolution.armorBattleStats,
             equipmentBattleStatsByCategory: equipmentResolution.categoryBattleStats,
             isUnarmed: equipmentResolution.isUnarmed,
             hasMeleeWeapon: equipmentResolution.hasMeleeWeapon,
@@ -179,7 +165,6 @@ nonisolated enum CharacterDerivedStatsCalculator {
         skillIds: [Int],
         masterData: MasterData,
         equipmentBattleStats: CharacterBattleStats = defaultEquipmentResolution.battleStats,
-        armorEquipmentBattleStats: CharacterBattleStats = defaultEquipmentResolution.armorBattleStats,
         equipmentBattleStatsByCategory: [ItemCategory: CharacterBattleStats] = defaultEquipmentResolution.categoryBattleStats,
         isUnarmed: Bool = defaultEquipmentResolution.isUnarmed,
         hasMeleeWeapon: Bool = defaultEquipmentResolution.hasMeleeWeapon,
@@ -197,13 +182,9 @@ nonisolated enum CharacterDerivedStatsCalculator {
             skillLookup: skillLookup,
             isUnarmed: isUnarmed
         )
-        let normalizedEquipmentBattleStatsByCategory = normalizedEquipmentBattleStatsByCategory(
-            explicitCategoryBattleStats: equipmentBattleStatsByCategory,
-            legacyArmorBattleStats: armorEquipmentBattleStats
-        )
         let adjustedEquipmentBattleStats = adjustedEquipmentBattleStats(
             equipmentBattleStats: equipmentBattleStats,
-            equipmentBattleStatsByCategory: normalizedEquipmentBattleStatsByCategory,
+            equipmentBattleStatsByCategory: equipmentBattleStatsByCategory,
             skillAdjustments: skillAdjustments
         )
 
@@ -454,16 +435,6 @@ nonisolated enum CharacterDerivedStatsCalculator {
             equipmentMultiplier: 1.0,
             magicDefenseMultiplier: magicDefenseMultiplier
         )
-    }
-
-    private static func normalizedEquipmentBattleStatsByCategory(
-        explicitCategoryBattleStats: [ItemCategory: CharacterBattleStats],
-        legacyArmorBattleStats: CharacterBattleStats
-    ) -> [ItemCategory: CharacterBattleStats] {
-        if explicitCategoryBattleStats.isEmpty, legacyArmorBattleStats != initialBattleStats() {
-            return [.armor: legacyArmorBattleStats]
-        }
-        return explicitCategoryBattleStats
     }
 
     private static func equipmentBattleStatFlatMultiplier(

@@ -46,6 +46,11 @@ private struct ShopRecipeEnhancementBrowserView: View {
     @State private var itemFilter = ItemBrowserFilter()
     @State private var loadError: String?
     @State private var presentedItemDetail: ItemDetailSheetPresentation?
+    @State private var currentFilterCatalog = ItemBrowserFilterOptions(
+        itemIDs: [CompositeItemID](),
+        masterData: MasterData.current
+    )
+    @State private var visibleSections: [ShopEnhancementSection] = []
 
     var body: some View {
         List {
@@ -65,13 +70,13 @@ private struct ShopRecipeEnhancementBrowserView: View {
                 Section(title) {
                     ProgressView()
                 }
-            } else if sections.isEmpty {
+            } else if visibleSections.isEmpty {
                 Section("対象アイテム") {
                     Text(emptyStateMessage)
                         .foregroundStyle(.secondary)
                 }
             } else {
-                ForEach(sections) { section in
+                ForEach(visibleSections) { section in
                     if #available(iOS 26.0, *) {
                         Section(section.key.title) {
                             ForEach(section.rows) { row in
@@ -79,7 +84,7 @@ private struct ShopRecipeEnhancementBrowserView: View {
                                     .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
                             }
                         }
-                        .sectionIndexLabel(equipmentSectionIndexLabel(for: section, in: sections))
+                        .sectionIndexLabel(equipmentSectionIndexLabel(for: section, in: visibleSections))
                     } else {
                         Section(section.key.title) {
                             ForEach(section.rows) { row in
@@ -115,18 +120,34 @@ private struct ShopRecipeEnhancementBrowserView: View {
                 loadError = error.localizedDescription
             }
         }
-    }
-
-    private var inventoryItems: [EquipmentCachedItem] {
-        equipmentStore.displayOrderedInventoryItems
+        .task(
+            id: ShopEnhancementPresentationInput(
+                itemFilter: itemFilter,
+                searchText: "",
+                inventoryRevision: equipmentStore.contentRevision,
+                rosterRevision: rosterStore.contentRevision
+            )
+        ) {
+            rebuildPresentation()
+        }
     }
 
     private var currentErrorMessage: String? {
         loadError ?? equipmentStore.lastOperationError
     }
 
-    private var currentFilterCatalog: ItemBrowserFilterOptions {
-        ItemBrowserFilterOptions(
+    private func rebuildPresentation() {
+        guard equipmentStore.isLoaded else {
+            currentFilterCatalog = ItemBrowserFilterOptions(
+                itemIDs: [CompositeItemID](),
+                masterData: masterData
+            )
+            visibleSections = []
+            return
+        }
+
+        let inventoryItems = equipmentStore.displayOrderedInventoryItems
+        currentFilterCatalog = ItemBrowserFilterOptions(
             // Recipe enhancement can eventually consume both inventory items and currently equipped
             // items, so the filter catalog is built from both sources now.
             itemIDs: inventoryItems.map(\.itemID) + rosterStore.characters.flatMap { character in
@@ -134,10 +155,8 @@ private struct ShopRecipeEnhancementBrowserView: View {
             },
             masterData: masterData
         )
-    }
 
-    private var sections: [ShopEnhancementSection] {
-        ShopEnhancementRow.buildSections(
+        visibleSections = ShopEnhancementRow.buildSections(
             inventoryItems: inventoryItems,
             characters: rosterStore.characters,
             masterData: masterData

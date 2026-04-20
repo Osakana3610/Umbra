@@ -12,6 +12,7 @@ final class PartyStore {
     private(set) var phase: StoreLoadPhase
     private(set) var parties: [PartyRecord]
     private(set) var partiesById: [Int: PartyRecord]
+    private(set) var contentRevision = 0
     private(set) var isMutating = false
     private(set) var lastOperationError: String?
 
@@ -264,10 +265,19 @@ final class PartyStore {
         parties.first(where: { $0.memberCharacterIds.contains(characterId) })
     }
 
+    func synchronizeLoadedParties(_ parties: [PartyRecord]) {
+        guard phase == .loaded else {
+            return
+        }
+
+        applyParties(parties)
+    }
+
     private func applyParties(_ parties: [PartyRecord]) {
         self.parties = parties
         // The ID lookup is rebuilt eagerly because most party-facing screens dereference by ID.
         partiesById = Dictionary(uniqueKeysWithValues: parties.map { ($0.partyId, $0) })
+        contentRevision &+= 1
     }
 
     private func reorderedMembers(

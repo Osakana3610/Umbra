@@ -132,12 +132,12 @@ final class ExplorationSessionService {
     }
 
     func refreshRuns(
+        from currentRuns: [RunSessionRecord],
         at currentDate: Date,
         masterData: MasterData
     ) async throws -> ExplorationRunSnapshot {
-        let progressContexts = try await coreDataRepository.loadSnapshot().runs
         let resolvedProgress = try await resolveProgress(
-            progressContexts,
+            currentRuns,
             at: currentDate,
             masterData: masterData
         )

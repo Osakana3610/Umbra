@@ -13,7 +13,6 @@ nonisolated struct PlayerState: Equatable, Sendable {
     var catTicketCount: Int
     var nextCharacterId: Int
     var autoReviveDefeatedCharacters: Bool
-    var shopInventoryInitialized: Bool
     var autoSellItemIDs: Set<CompositeItemID>
     var lastBackgroundedAt: Date? = nil
 
@@ -24,7 +23,6 @@ nonisolated struct PlayerState: Equatable, Sendable {
         catTicketCount: 10,
         nextCharacterId: 1,
         autoReviveDefeatedCharacters: true,
-        shopInventoryInitialized: false,
         autoSellItemIDs: [],
         lastBackgroundedAt: nil
     )

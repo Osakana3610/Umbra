@@ -15,6 +15,11 @@ struct ShopJewelEnhancementJewelSelectionView: View {
     @State private var itemFilter = ItemBrowserFilter()
     @State private var presentedItemDetail: ItemDetailSheetPresentation?
     @State private var pendingEnhancement: PendingJewelEnhancement?
+    @State private var currentFilterCatalog = ItemBrowserFilterOptions(
+        itemIDs: [CompositeItemID](),
+        masterData: MasterData.current
+    )
+    @State private var visibleSections: [ShopEnhancementSection] = []
 
     private let nameResolver: EquipmentDisplayNameResolver
 
@@ -51,13 +56,13 @@ struct ShopJewelEnhancementJewelSelectionView: View {
                 }
             }
 
-            if jewelSections.isEmpty {
+            if visibleSections.isEmpty {
                 Section("宝石") {
                     Text(jewelEmptyStateMessage)
                         .foregroundStyle(.secondary)
                 }
             } else {
-                ForEach(jewelSections) { section in
+                ForEach(visibleSections) { section in
                     if #available(iOS 26.0, *) {
                         Section(section.key.title) {
                             ForEach(section.rows) { row in
@@ -65,7 +70,7 @@ struct ShopJewelEnhancementJewelSelectionView: View {
                                     .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
                             }
                         }
-                        .sectionIndexLabel(equipmentSectionIndexLabel(for: section, in: jewelSections))
+                        .sectionIndexLabel(equipmentSectionIndexLabel(for: section, in: visibleSections))
                     } else {
                         Section(section.key.title) {
                             ForEach(section.rows) { row in
@@ -126,20 +131,20 @@ struct ShopJewelEnhancementJewelSelectionView: View {
         } message: { enhancement in
             Text(enhancement.message)
         }
+        .task(
+            id: ShopEnhancementPresentationInput(
+                itemFilter: itemFilter,
+                searchText: "",
+                inventoryRevision: equipmentStore.contentRevision,
+                rosterRevision: rosterStore.contentRevision
+            )
+        ) {
+            rebuildPresentation()
+        }
     }
 
-    private var inventoryItems: [EquipmentCachedItem] {
-        equipmentStore.displayOrderedInventoryItems
-    }
-
-    private var currentFilterCatalog: ItemBrowserFilterOptions {
-        ItemBrowserFilterOptions(
-            itemIDs: jewelItemIDs,
-            masterData: masterData
-        )
-    }
-
-    private var jewelItemIDs: [CompositeItemID] {
+    private func rebuildPresentation() {
+        let inventoryItems = equipmentStore.displayOrderedInventoryItems
         let inventoryIDs = inventoryItems
             .filter { $0.category == .jewel && $0.itemID.jewelItemId == 0 }
             .map(\.itemID)
@@ -154,11 +159,12 @@ struct ShopJewelEnhancementJewelSelectionView: View {
         }
         // Filter choices are based on all jewels that could legally be consumed, regardless of
         // whether they currently live in inventory or on a character.
-        return inventoryIDs + equippedIDs
-    }
+        currentFilterCatalog = ItemBrowserFilterOptions(
+            itemIDs: inventoryIDs + equippedIDs,
+            masterData: masterData
+        )
 
-    private var jewelSections: [ShopEnhancementSection] {
-        ShopEnhancementRow.buildSections(
+        visibleSections = ShopEnhancementRow.buildSections(
             inventoryItems: inventoryItems,
             characters: rosterStore.characters,
             masterData: masterData

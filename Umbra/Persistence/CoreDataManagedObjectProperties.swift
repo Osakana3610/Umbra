@@ -179,7 +179,6 @@ extension PlayerStateEntity {
     @NSManaged nonisolated public var gold: Int64
     @NSManaged nonisolated public var lastBackgroundedAt: Date?
     @NSManaged nonisolated public var nextCharacterId: Int64
-    @NSManaged nonisolated public var shopInventoryInitialized: Bool
     @NSManaged nonisolated public var autoSellItems: NSSet?
 
 }

@@ -12,13 +12,17 @@ struct CharacterEquipmentView: View {
     @State private var searchText = ""
     @State private var loadError: String?
     @State private var presentedItemDetail: ItemDetailSheetPresentation?
+    @State private var filterCatalog = ItemBrowserFilterOptions(
+        itemIDs: [CompositeItemID](),
+        masterData: MasterData.current
+    )
+    @State private var visibleSections: [EquipmentSectionRows] = []
+    @State private var headerStatus: CharacterStatus?
 
     var body: some View {
         Group {
             if let character {
-                let maximumEquippedItemCount = character.maximumEquippedItemCount(masterData: masterData)
-                let filterCatalog = filterCatalog(for: character)
-                let visibleSections = visibleSections(for: character)
+                let maximumEquippedItemCount = maximumEquippedItemCount(for: character)
 
                 List {
                     Section {
@@ -168,6 +172,20 @@ struct CharacterEquipmentView: View {
                         loadError = error.localizedDescription
                     }
                 }
+                .task(
+                    id: CharacterEquipmentPresentationInput(
+                        character: character,
+                        searchText: trimmedSearchText,
+                        itemFilter: itemFilter,
+                        inventoryRevision: equipmentStore.contentRevision
+                    )
+                ) {
+                    guard equipmentStore.isLoaded else {
+                        return
+                    }
+
+                    rebuildPresentation(for: character)
+                }
             } else {
                 ContentUnavailableView(
                     "キャラクターが見つかりません",
@@ -199,8 +217,13 @@ struct CharacterEquipmentView: View {
         equipmentStore.equippedItems(for: character, masterData: masterData)
     }
 
-    private func visibleSections(for character: CharacterRecord) -> [EquipmentSectionRows] {
-        equipmentStore.mergedSections(for: character.characterId).compactMap { section in
+    private func rebuildPresentation(for character: CharacterRecord) {
+        let mergedSections = equipmentStore.mergedSections(for: character.characterId)
+        filterCatalog = ItemBrowserFilterOptions(
+            itemIDs: mergedSections.flatMap(\.rows).map { $0.cachedItem.itemID },
+            masterData: masterData
+        )
+        visibleSections = mergedSections.compactMap { section in
             let rows = visibleRows(in: section.rows)
             // Section headers disappear once search or filter conditions remove all rows, while the
             // underlying store still preserves the stable category and rarity ordering.
@@ -209,6 +232,10 @@ struct CharacterEquipmentView: View {
             }
             return EquipmentSectionRows(key: section.key, rows: rows)
         }
+        headerStatus = CharacterDerivedStatsCalculator.status(
+            for: character,
+            masterData: masterData
+        )
     }
 
     private func visibleRows(in rows: [EquipmentDisplayRow]) -> [EquipmentDisplayRow] {
@@ -227,14 +254,8 @@ struct CharacterEquipmentView: View {
         }
     }
 
-    private func filterCatalog(for character: CharacterRecord) -> ItemBrowserFilterOptions {
-        let itemIDs = equipmentStore.mergedSections(for: character.characterId)
-            .flatMap(\.rows)
-            .map { $0.cachedItem.itemID }
-        return ItemBrowserFilterOptions(
-            itemIDs: itemIDs,
-            masterData: masterData
-        )
+    private func maximumEquippedItemCount(for character: CharacterRecord) -> Int {
+        max(character.baseMaximumEquippedItemCount + (headerStatus?.equipmentCapacityModifier ?? 0), 0)
     }
 
     @ViewBuilder
@@ -252,11 +273,11 @@ struct CharacterEquipmentView: View {
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
 
-                if let status = CharacterDerivedStatsCalculator.status(for: character, masterData: masterData) {
-                    Text("HP \(character.currentHP)/\(status.maxHP)")
+                if let headerStatus {
+                    Text("HP \(character.currentHP)/\(headerStatus.maxHP)")
                         .font(.subheadline)
                         .monospacedDigit()
-                    Text(combatStyleText(for: status))
+                    Text(combatStyleText(for: headerStatus))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -286,6 +307,13 @@ struct CharacterEquipmentView: View {
             return "遠距離"
         }
     }
+}
+
+private struct CharacterEquipmentPresentationInput: Equatable {
+    let character: CharacterRecord
+    let searchText: String
+    let itemFilter: ItemBrowserFilter
+    let inventoryRevision: Int
 }
 
 private struct EquipmentInventoryLoadingRow: View {

@@ -18,6 +18,7 @@ final class EquipmentInventoryStore {
     private var mergedSectionsByCharacterID: [Int: [EquipmentSectionRows]] = [:]
 
     private(set) var isLoaded = false
+    private(set) var contentRevision = 0
     private(set) var isMutating = false
     private(set) var lastOperationError: String?
     private(set) var inventoryItemsBySection: [EquipmentSectionKey: [EquipmentCachedItem]] = [:]
@@ -71,6 +72,7 @@ final class EquipmentInventoryStore {
         }
 
         isLoaded = true
+        contentRevision &+= 1
     }
 
     func applyInventoryChanges(
@@ -93,6 +95,7 @@ final class EquipmentInventoryStore {
         for sectionKey in affectedSectionKeys {
             refreshMergedSections(affectedSectionKey: sectionKey)
         }
+        contentRevision &+= 1
     }
 
     func inventoryQuantity(for itemID: CompositeItemID) -> Int {
@@ -120,6 +123,7 @@ final class EquipmentInventoryStore {
         }
 
         mergedSectionsByCharacterID[character.characterId] = buildMergedSections(for: character.characterId)
+        contentRevision &+= 1
     }
 
     func removeCharacter(characterId: Int) {
@@ -129,6 +133,7 @@ final class EquipmentInventoryStore {
 
         equippedItemsByCharacterID.removeValue(forKey: characterId)
         mergedSectionsByCharacterID.removeValue(forKey: characterId)
+        contentRevision &+= 1
     }
 
     func equippedItems(
@@ -144,10 +149,6 @@ final class EquipmentInventoryStore {
         let cachedItems = cachedItems(from: character.equippedItemStacks)
         equippedItemsByCharacterID[character.characterId] = cachedItems
         return cachedItems
-    }
-
-    func hasPreparedMergedSections(for characterId: Int) -> Bool {
-        mergedSectionsByCharacterID[characterId] != nil
     }
 
     func prepareMergedSectionsIfNeeded(
@@ -396,6 +397,7 @@ final class EquipmentInventoryStore {
         let affectedSectionKey = updateInventory(itemID: itemID, quantityDelta: inventoryQuantityDelta)
         equippedItemsByCharacterID[updatedCharacter.characterId] = cachedItems(from: updatedCharacter.equippedItemStacks)
         refreshMergedSections(affectedSectionKey: affectedSectionKey)
+        contentRevision &+= 1
     }
 
     private func updateInventory(

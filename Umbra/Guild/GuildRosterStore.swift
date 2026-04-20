@@ -15,6 +15,7 @@ final class GuildRosterStore {
     private(set) var charactersById: [Int: CharacterRecord]
     private(set) var labyrinthProgressRecords: [LabyrinthProgressRecord]
     private(set) var labyrinthProgressByLabyrinthId: [Int: LabyrinthProgressRecord]
+    private(set) var contentRevision = 0
     private(set) var isMutating = false
     private(set) var lastOperationError: String?
     private(set) var lastHireMessage: String?
@@ -117,6 +118,11 @@ final class GuildRosterStore {
 
     func dismissHireMessage() {
         lastHireMessage = nil
+    }
+
+    func replacePlayerState(_ playerState: PlayerState) {
+        self.playerState = playerState
+        contentRevision &+= 1
     }
 
     func reviveCharacter(
@@ -292,6 +298,7 @@ final class GuildRosterStore {
         } else {
             characters.append(character)
         }
+        contentRevision &+= 1
     }
 
     private func applyCharacters(_ characters: [CharacterRecord]) {
@@ -308,6 +315,7 @@ final class GuildRosterStore {
         labyrinthProgressByLabyrinthId = Dictionary(
             uniqueKeysWithValues: snapshot.labyrinthProgressRecords.map { ($0.labyrinthId, $0) }
         )
+        contentRevision &+= 1
     }
 
 }

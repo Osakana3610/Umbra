@@ -31,24 +31,37 @@ private struct MonsterBookLabyrinthView: View {
     let masterData: MasterData
 
     @State private var selectedAppearance: MonsterBookEnemyAppearance?
+    private let presentation: MonsterBookLabyrinthPresentation
+
+    init(
+        labyrinth: MasterData.Labyrinth,
+        masterData: MasterData
+    ) {
+        self.labyrinth = labyrinth
+        self.masterData = masterData
+        presentation = MonsterBookLabyrinthPresentation(
+            labyrinth: labyrinth,
+            masterData: masterData
+        )
+    }
 
     var body: some View {
         List {
             Section("概要") {
                 LabeledContent("階層数", value: "\(labyrinth.floors.count)")
-                LabeledContent("敵数", value: enemyCountSummary)
-                LabeledContent("出現敵数", value: "\(enemyAppearances.count)")
+                LabeledContent("敵数", value: presentation.enemyCountSummary)
+                LabeledContent("出現敵数", value: "\(presentation.enemyAppearances.count)")
             }
 
             Section("出現する敵") {
-                if enemyAppearances.isEmpty {
+                if presentation.enemyAppearances.isEmpty {
                     Text("出現する敵がありません。")
                         .foregroundStyle(.secondary)
                 } else {
-                    ForEach(enemyAppearances) { appearance in
+                    ForEach(presentation.enemyAppearances) { appearance in
                         MonsterBookEnemyRowView(
                             appearance: appearance,
-                            enemy: enemyByID[appearance.enemyId],
+                            enemy: presentation.enemyByID[appearance.enemyId],
                             onShowDetail: {
                                 selectedAppearance = appearance
                             }
@@ -76,7 +89,20 @@ private struct MonsterBookLabyrinthView: View {
         }
     }
 
-    private var enemyAppearances: [MonsterBookEnemyAppearance] {
+}
+
+private struct MonsterBookLabyrinthPresentation {
+    let enemyByID: [Int: MasterData.Enemy]
+    let enemyAppearances: [MonsterBookEnemyAppearance]
+    let enemyCountSummary: String
+
+    init(
+        labyrinth: MasterData.Labyrinth,
+        masterData: MasterData
+    ) {
+        let resolvedEnemyByID = Dictionary(uniqueKeysWithValues: masterData.enemies.map { ($0.id, $0) })
+        enemyByID = resolvedEnemyByID
+
         // Merge normal encounters and fixed battles by enemy ID so each monster appears once per
         // labyrinth with its full level span and floor coverage.
         var aggregated: [Int: AggregatedAppearance] = [:]
@@ -97,7 +123,7 @@ private struct MonsterBookLabyrinthView: View {
             }
         }
 
-        return aggregated.map { enemyId, appearance in
+        enemyAppearances = aggregated.map { enemyId, appearance in
             MonsterBookEnemyAppearance(
                 labyrinthId: labyrinth.id,
                 labyrinthName: labyrinth.name,
@@ -112,21 +138,15 @@ private struct MonsterBookLabyrinthView: View {
                 return (lhs.floorNumbers.first ?? 0) < (rhs.floorNumbers.first ?? 0)
             }
 
-            let lhsName = enemyByID[lhs.enemyId]?.name ?? ""
-            let rhsName = enemyByID[rhs.enemyId]?.name ?? ""
+            let lhsName = resolvedEnemyByID[lhs.enemyId]?.name ?? ""
+            let rhsName = resolvedEnemyByID[rhs.enemyId]?.name ?? ""
             if lhsName != rhsName {
                 return lhsName < rhsName
             }
 
             return lhs.enemyId < rhs.enemyId
         }
-    }
 
-    private var enemyByID: [Int: MasterData.Enemy] {
-        Dictionary(uniqueKeysWithValues: masterData.enemies.map { ($0.id, $0) })
-    }
-
-    private var enemyCountSummary: String {
         let counts = Set(
             labyrinth.floors.flatMap { floor in
                 var floorCounts = [floor.enemyCount]
@@ -138,12 +158,14 @@ private struct MonsterBookLabyrinthView: View {
         ).sorted()
 
         guard let first = counts.first else {
-            return "0"
+            enemyCountSummary = "0"
+            return
         }
         if counts.count == 1 {
-            return "\(first)"
+            enemyCountSummary = "\(first)"
+            return
         }
-        return counts.map(String.init).joined(separator: ", ")
+        enemyCountSummary = counts.map(String.init).joined(separator: ", ")
     }
 }
 

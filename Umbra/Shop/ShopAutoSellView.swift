@@ -15,6 +15,12 @@ struct ShopAutoSellView: View {
     @State private var searchText = ""
     @State private var presentedItemDetail: ItemDetailSheetPresentation?
     @State private var isPresentingInventoryPicker = false
+    @State private var configuredCandidates: [AutoSellCandidate] = []
+    @State private var visibleSections: [AutoSellSection] = []
+    @State private var currentFilterCatalog = ItemBrowserFilterOptions(
+        itemIDs: [CompositeItemID](),
+        masterData: MasterData.current
+    )
 
     private let nameResolver: EquipmentDisplayNameResolver
 
@@ -141,6 +147,18 @@ struct ShopAutoSellView: View {
                 loadError = error.localizedDescription
             }
         }
+        .task(
+            id: ShopAutoSellPresentationInput(
+                autoSellItemIDs: autoSellItemIDs,
+                searchText: searchText.trimmingCharacters(in: .whitespacesAndNewlines),
+                itemFilter: itemFilter,
+                equipmentRevision: equipmentStore.contentRevision,
+                shopRevision: shopStore.contentRevision,
+                rosterRevision: rosterStore.contentRevision
+            )
+        ) {
+            rebuildPresentation()
+        }
     }
 
     private var autoSellItemIDs: Set<CompositeItemID> {
@@ -151,14 +169,14 @@ struct ShopAutoSellView: View {
         loadError ?? shopStore.lastOperationError ?? rosterStore.lastOperationError
     }
 
-    private var configuredCandidates: [AutoSellCandidate] {
+    private func rebuildPresentation() {
         let inventoryCounts = Dictionary(
             uniqueKeysWithValues: equipmentStore.displayOrderedInventoryItems.map { ($0.itemID, $0.quantity) }
         )
         let shopCounts = Dictionary(
             uniqueKeysWithValues: shopStore.displayOrderedShopItems.map { ($0.itemID, $0.quantity) }
         )
-        return autoSellItemIDs
+        configuredCandidates = autoSellItemIDs
             .sorted { $0.isOrdered(before: $1) }
             .compactMap { itemID in
             // Auto-sell is configured per item identity, not per concrete stack, so the summary pulls
@@ -191,11 +209,9 @@ struct ShopAutoSellView: View {
                 isEnabled: autoSellItemIDs.contains(itemID)
             )
         }
-    }
 
-    private var visibleCandidates: [AutoSellCandidate] {
         let trimmedSearchText = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
-        return configuredCandidates.filter { candidate in
+        let visibleCandidates = configuredCandidates.filter { candidate in
             guard itemFilter.matches(
                 itemID: candidate.itemID,
                 category: candidate.item.category
@@ -207,12 +223,9 @@ struct ShopAutoSellView: View {
             }
             return true
         }
-    }
-
-    private var visibleSections: [AutoSellSection] {
         // Group after filtering so the section index reflects only currently visible candidates.
         let grouped = Dictionary(grouping: visibleCandidates, by: \.sectionKey)
-        return grouped.keys
+        visibleSections = grouped.keys
             .sorted(by: EquipmentSectionKey.isOrderedBefore)
             .map { key in
                 AutoSellSection(
@@ -222,10 +235,7 @@ struct ShopAutoSellView: View {
                     } ?? []
                 )
             }
-    }
-
-    private var currentFilterCatalog: ItemBrowserFilterOptions {
-        ItemBrowserFilterOptions(
+        currentFilterCatalog = ItemBrowserFilterOptions(
             itemIDs: configuredCandidates.map(\.itemID),
             masterData: masterData
         )
@@ -469,3 +479,12 @@ private struct AutoSellSection: Identifiable {
 }
 
 extension AutoSellSection: EquipmentSectionIndexable {}
+
+private struct ShopAutoSellPresentationInput: Equatable {
+    let autoSellItemIDs: Set<CompositeItemID>
+    let searchText: String
+    let itemFilter: ItemBrowserFilter
+    let equipmentRevision: Int
+    let shopRevision: Int
+    let rosterRevision: Int
+}

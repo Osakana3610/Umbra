@@ -11,37 +11,61 @@ struct AdventureHomeView: View {
     let explorationStore: ExplorationStore
 
     @State private var showsCappedUnlockJewelPicker = false
+    @State private var partyEntries: [AdventurePartyListEntry] = []
+    @State private var cachedBulkStartableRuns: [ConfiguredRunStart] = []
+
+    private let labyrinthByID: [Int: MasterData.Labyrinth]
+    private let cumulativeBattleCountsByLabyrinthId: [Int: [Int: Int]]
+
+    init(
+        masterData: MasterData,
+        rosterStore: GuildRosterStore,
+        partyStore: PartyStore,
+        equipmentStore: EquipmentInventoryStore,
+        explorationStore: ExplorationStore
+    ) {
+        self.masterData = masterData
+        self.rosterStore = rosterStore
+        self.partyStore = partyStore
+        self.equipmentStore = equipmentStore
+        self.explorationStore = explorationStore
+        labyrinthByID = Dictionary(uniqueKeysWithValues: masterData.labyrinths.map { ($0.id, $0) })
+        cumulativeBattleCountsByLabyrinthId = Dictionary(
+            uniqueKeysWithValues: masterData.labyrinths.map { labyrinth in
+                var cumulativeBattleCount = 0
+                let battleCountsByFloor = Dictionary(
+                    uniqueKeysWithValues: labyrinth.floors
+                        .sorted { $0.floorNumber < $1.floorNumber }
+                        .map { floor in
+                            cumulativeBattleCount += floor.battleCount
+                            return (floor.floorNumber, cumulativeBattleCount)
+                        }
+                )
+                return (labyrinth.id, battleCountsByFloor)
+            }
+        )
+    }
 
     var body: some View {
         List {
             if rosterStore.playerState != nil {
-                ForEach(partyStore.parties) { party in
-                    let status = explorationStore.status(for: party.partyId)
-                    let completedRunCount = explorationStore.completedRunCount(for: party.partyId)
-                    let presentation = AdventurePartyPresentation(
-                        party: party,
-                        status: status,
-                        charactersById: rosterStore.charactersById,
-                        masterData: masterData,
-                        canStartRun: canStartRun(for: party)
-                    )
-
+                ForEach(partyEntries) { entry in
                     Section {
                         AdventurePartyHeaderRow(
-                            party: party,
-                            presentation: presentation,
+                            party: entry.party,
+                            presentation: entry.presentation,
                             onStartRun: {
-                                startRun(for: party)
+                                startRun(for: entry)
                             },
                             onStartRunWithCatTicket: {
                                 startRun(
-                                    for: party,
+                                    for: entry,
                                     catTicketUsage: .required
                                 )
                             },
                             onStartRunWithoutCatTicket: {
                                 startRun(
-                                    for: party,
+                                    for: entry,
                                     catTicketUsage: .never
                                 )
                             }
@@ -51,7 +75,7 @@ struct AdventureHomeView: View {
 
                         NavigationLink {
                             PartyDetailView(
-                                partyId: party.partyId,
+                                partyId: entry.party.partyId,
                                 masterData: masterData,
                                 rosterStore: rosterStore,
                                 partyStore: partyStore,
@@ -61,16 +85,16 @@ struct AdventureHomeView: View {
                         } label: {
                             PartyMembersView(
                                 masterData: masterData,
-                                memberCharacterIds: party.memberCharacterIds,
+                                memberCharacterIds: entry.party.memberCharacterIds,
                                 charactersById: rosterStore.charactersById,
-                                displayedHPs: status.activeRun?.currentPartyHPs
+                                displayedHPs: entry.status.activeRun?.currentPartyHPs
                             )
                         }
                         .buttonStyle(.plain)
-                        .accessibilityLabel("\(party.name)のメンバーを見る")
+                        .accessibilityLabel("\(entry.party.name)のメンバーを見る")
                         .listRowInsets(EdgeInsets(top: 2, leading: 20, bottom: 6, trailing: 20))
 
-                        if let run = status.activeRun ?? status.latestCompletedRun {
+                        if let run = entry.status.activeRun ?? entry.status.latestCompletedRun {
                             NavigationLink {
                                 RunSessionDetailView(
                                     partyId: run.partyId,
@@ -81,21 +105,21 @@ struct AdventureHomeView: View {
                                     explorationStore: explorationStore
                                 )
                             } label: {
-                                AdventurePartyLogRow(presentation: presentation)
+                                AdventurePartyLogRow(presentation: entry.presentation)
                             }
                             .buttonStyle(.plain)
-                            .accessibilityLabel("\(party.name)の探索記録を見る")
+                            .accessibilityLabel("\(entry.party.name)の探索記録を見る")
                             .listRowInsets(EdgeInsets(top: 0, leading: 20, bottom: 0, trailing: 20))
                         } else {
-                            AdventurePartyLogRow(presentation: presentation)
+                            AdventurePartyLogRow(presentation: entry.presentation)
                                 .listRowInsets(EdgeInsets(top: 0, leading: 20, bottom: 0, trailing: 20))
                         }
 
-                        if completedRunCount > 0 {
+                        if entry.completedRunCount > 0 {
                             NavigationLink {
                                 PartyExplorationHistoryView(
-                                    partyId: party.partyId,
-                                    partyName: party.name,
+                                    partyId: entry.party.partyId,
+                                    partyName: entry.party.name,
                                     masterData: masterData,
                                     rosterStore: rosterStore,
                                     partyStore: partyStore,
@@ -108,14 +132,14 @@ struct AdventureHomeView: View {
 
                                     Spacer(minLength: 0)
 
-                                    Text("\(completedRunCount)件")
+                                    Text("\(entry.completedRunCount)件")
                                         .font(.footnote)
                                         .foregroundStyle(.secondary)
                                         .monospacedDigit()
                                 }
                             }
                             .buttonStyle(.plain)
-                            .accessibilityLabel("\(party.name)の過去の探索を見る")
+                            .accessibilityLabel("\(entry.party.name)の過去の探索を見る")
                             .listRowInsets(EdgeInsets(top: 0, leading: 20, bottom: 0, trailing: 20))
                         }
                     }
@@ -156,7 +180,7 @@ struct AdventureHomeView: View {
                 Button("一括出撃") {
                     startAllRuns()
                 }
-                .disabled(bulkStartableRuns.isEmpty || explorationStore.isSortieLocked)
+                .disabled(cachedBulkStartableRuns.isEmpty || explorationStore.isSortieLocked)
             }
         }
         .sheet(isPresented: $showsCappedUnlockJewelPicker) {
@@ -179,22 +203,14 @@ struct AdventureHomeView: View {
         .task {
             await explorationStore.loadIfNeeded(masterData: masterData)
         }
-    }
-
-    private var bulkStartableRuns: [ConfiguredRunStart] {
-        partyStore.parties.compactMap { party in
-            guard canStartRun(for: party),
-                  let labyrinthId = configuredLabyrinthId(for: party),
-                  let selectedDifficultyTitleId = configuredDifficultyTitleId(for: party) else {
-                return nil
-            }
-
-            return ConfiguredRunStart(
-                partyId: party.partyId,
-                labyrinthId: labyrinthId,
-                selectedDifficultyTitleId: selectedDifficultyTitleId,
-                catTicketUsage: party.automaticallyUsesCatTicket ? .automaticIfAvailable : .never
+        .task(
+            id: AdventureHomePresentationInput(
+                rosterRevision: rosterStore.contentRevision,
+                partyRevision: partyStore.contentRevision,
+                explorationRevision: explorationStore.contentRevision
             )
+        ) {
+            rebuildPartyEntries()
         }
     }
 
@@ -232,7 +248,7 @@ struct AdventureHomeView: View {
 
     private func configuredLabyrinthId(for party: PartyRecord) -> Int? {
         guard let selectedLabyrinthId = party.selectedLabyrinthId,
-              masterData.labyrinths.contains(where: { $0.id == selectedLabyrinthId }),
+              labyrinthByID[selectedLabyrinthId] != nil,
               isLabyrinthUnlocked(selectedLabyrinthId) else {
             return nil
         }
@@ -260,38 +276,43 @@ struct AdventureHomeView: View {
         )
     }
 
-    private func canStartRun(for party: PartyRecord) -> Bool {
+    private func configuredRunStart(for party: PartyRecord) -> ConfiguredRunStart? {
         // A party can only sortie when configuration, member state, and exploration state all
         // agree; this keeps the button logic consistent with the underlying service validation.
         guard !explorationStore.isSortieLocked,
-              configuredLabyrinthId(for: party) != nil,
+              let labyrinthId = configuredLabyrinthId(for: party),
+              let selectedDifficultyTitleId = configuredDifficultyTitleId(for: party),
               !explorationStore.hasActiveRun(for: party.partyId),
-              !party.memberCharacterIds.isEmpty else {
-            return false
+              !party.memberCharacterIds.isEmpty,
+              party.memberCharacterIds.allSatisfy({ characterId in
+                  (rosterStore.charactersById[characterId]?.currentHP ?? 0) > 0
+              }) else {
+            return nil
         }
 
-        return party.memberCharacterIds.allSatisfy { characterId in
-            (rosterStore.charactersById[characterId]?.currentHP ?? 0) > 0
-        }
+        return ConfiguredRunStart(
+            partyId: party.partyId,
+            labyrinthId: labyrinthId,
+            selectedDifficultyTitleId: selectedDifficultyTitleId,
+            catTicketUsage: party.automaticallyUsesCatTicket ? .automaticIfAvailable : .never
+        )
     }
 
     private func startRun(
-        for party: PartyRecord,
+        for entry: AdventurePartyListEntry,
         catTicketUsage: CatTicketUsage? = nil
     ) {
-        guard let labyrinthId = configuredLabyrinthId(for: party),
-              let selectedDifficultyTitleId = configuredDifficultyTitleId(for: party) else {
+        guard let configuredRunStart = entry.configuredRunStart else {
             return
         }
 
-        let resolvedCatTicketUsage = catTicketUsage
-            ?? (party.automaticallyUsesCatTicket ? .automaticIfAvailable : .never)
+        let resolvedCatTicketUsage = catTicketUsage ?? configuredRunStart.catTicketUsage
         let startedAt = Date()
         Task {
             await explorationStore.startRun(
-                partyId: party.partyId,
-                labyrinthId: labyrinthId,
-                selectedDifficultyTitleId: selectedDifficultyTitleId,
+                partyId: configuredRunStart.partyId,
+                labyrinthId: configuredRunStart.labyrinthId,
+                selectedDifficultyTitleId: configuredRunStart.selectedDifficultyTitleId,
                 startedAt: startedAt,
                 catTicketUsage: resolvedCatTicketUsage,
                 masterData: masterData
@@ -327,11 +348,35 @@ struct AdventureHomeView: View {
         let startedAt = Date()
         Task {
             await explorationStore.startConfiguredRuns(
-                bulkStartableRuns,
+                cachedBulkStartableRuns,
                 startedAt: startedAt,
                 masterData: masterData
             )
         }
+    }
+
+    private func rebuildPartyEntries() {
+        let entries = partyStore.parties.map { party in
+            let status = explorationStore.status(for: party.partyId)
+            let configuredRunStart = configuredRunStart(for: party)
+            return AdventurePartyListEntry(
+                party: party,
+                status: status,
+                completedRunCount: explorationStore.completedRunCount(for: party.partyId),
+                presentation: AdventurePartyPresentation(
+                    party: party,
+                    status: status,
+                    charactersById: rosterStore.charactersById,
+                    masterData: masterData,
+                    labyrinthByID: labyrinthByID,
+                    cumulativeBattleCountsByLabyrinthId: cumulativeBattleCountsByLabyrinthId,
+                    canStartRun: configuredRunStart != nil
+                ),
+                configuredRunStart: configuredRunStart
+            )
+        }
+        partyEntries = entries
+        cachedBulkStartableRuns = entries.compactMap(\.configuredRunStart)
     }
 }
 
@@ -446,6 +491,8 @@ private struct AdventurePartyPresentation {
         status: ExplorationPartyStatus,
         charactersById: [Int: CharacterRecord],
         masterData: MasterData,
+        labyrinthByID: [Int: MasterData.Labyrinth],
+        cumulativeBattleCountsByLabyrinthId: [Int: [Int: Int]],
         canStartRun: Bool
     ) {
         let members = party.memberCharacterIds.compactMap { charactersById[$0] }
@@ -459,7 +506,7 @@ private struct AdventurePartyPresentation {
         }
 
         if let activeRun = status.activeRun {
-            let labyrinthName = masterData.labyrinths.first(where: { $0.id == activeRun.labyrinthId }).map { labyrinth in
+            let labyrinthName = labyrinthByID[activeRun.labyrinthId].map { labyrinth in
                 masterData.explorationLabyrinthDisplayName(
                     labyrinthName: labyrinth.name,
                     difficultyTitleId: activeRun.selectedDifficultyTitleId
@@ -468,7 +515,11 @@ private struct AdventurePartyPresentation {
             // The active-run card emphasizes the latest resolved battle, while the header shows the
             // projected return time computed from the full configured route.
             let latestBattleText = activeRun.latestBattleOutcome.map(Self.battleText(for:)) ?? "探索開始"
-            logHeaderText = Self.estimatedReturnText(for: activeRun, masterData: masterData)
+            logHeaderText = Self.estimatedReturnText(
+                for: activeRun,
+                labyrinthByID: labyrinthByID,
+                cumulativeBattleCountsByLabyrinthId: cumulativeBattleCountsByLabyrinthId
+            )
             logText = Self.logText(
                 labyrinthName: labyrinthName,
                 floorNumber: activeRun.latestBattleFloorNumber,
@@ -482,7 +533,7 @@ private struct AdventurePartyPresentation {
 
         if let latestCompletedRun = status.latestCompletedRun,
            let completion = latestCompletedRun.completion {
-            let labyrinthName = masterData.labyrinths.first(where: { $0.id == latestCompletedRun.labyrinthId }).map { labyrinth in
+            let labyrinthName = labyrinthByID[latestCompletedRun.labyrinthId].map { labyrinth in
                 masterData.explorationLabyrinthDisplayName(
                     labyrinthName: labyrinth.name,
                     difficultyTitleId: latestCompletedRun.selectedDifficultyTitleId
@@ -505,7 +556,7 @@ private struct AdventurePartyPresentation {
         }
 
         if let labyrinthId = party.selectedLabyrinthId,
-           let labyrinth = masterData.labyrinths.first(where: { $0.id == labyrinthId }) {
+           let labyrinth = labyrinthByID[labyrinthId] {
             let labyrinthName = masterData.explorationLabyrinthDisplayName(
                 labyrinthName: labyrinth.name,
                 difficultyTitleId: party.selectedDifficultyTitleId
@@ -539,19 +590,16 @@ private struct AdventurePartyPresentation {
 
     private static func estimatedReturnText(
         for run: RunSessionRecord,
-        masterData: MasterData
+        labyrinthByID: [Int: MasterData.Labyrinth],
+        cumulativeBattleCountsByLabyrinthId: [Int: [Int: Int]]
     ) -> String {
-        guard let labyrinth = masterData.labyrinths.first(where: { $0.id == run.labyrinthId }) else {
+        guard let labyrinth = labyrinthByID[run.labyrinthId] else {
             return "帰還予定時刻 --:--:--"
         }
 
         // Return time is based on the configured target floor rather than current progress so the
         // card shows the original planned finish even while the run is still underway.
-        let totalBattleCount = labyrinth.floors
-            .filter { $0.floorNumber <= run.targetFloorNumber }
-            .reduce(into: 0) { partialResult, floor in
-                partialResult += floor.battleCount
-            }
+        let totalBattleCount = cumulativeBattleCountsByLabyrinthId[run.labyrinthId]?[run.targetFloorNumber] ?? 0
         guard totalBattleCount > 0 else {
             return "帰還予定時刻 --:--:--"
         }
@@ -596,4 +644,22 @@ private struct AdventurePartyPresentation {
             "引き分け"
         }
     }
+}
+
+private struct AdventurePartyListEntry: Identifiable {
+    let party: PartyRecord
+    let status: ExplorationPartyStatus
+    let completedRunCount: Int
+    let presentation: AdventurePartyPresentation
+    let configuredRunStart: ConfiguredRunStart?
+
+    var id: Int {
+        party.partyId
+    }
+}
+
+private struct AdventureHomePresentationInput: Equatable {
+    let rosterRevision: Int
+    let partyRevision: Int
+    let explorationRevision: Int
 }

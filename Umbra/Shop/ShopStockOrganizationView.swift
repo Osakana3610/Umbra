@@ -13,6 +13,9 @@ struct ShopStockOrganizationView: View {
 
     @State private var loadError: String?
     @State private var presentedItemDetail: ItemDetailSheetPresentation?
+    @State private var visibleSections: [StockOrganizationSection] = []
+
+    private let itemsByID: [Int: MasterData.Item]
 
     init(
         masterData: MasterData,
@@ -22,6 +25,7 @@ struct ShopStockOrganizationView: View {
         self.masterData = masterData
         self.rosterStore = rosterStore
         self.shopStore = shopStore
+        itemsByID = Dictionary(uniqueKeysWithValues: masterData.items.map { ($0.id, $0) })
     }
 
     var body: some View {
@@ -43,13 +47,13 @@ struct ShopStockOrganizationView: View {
                     ProgressView()
                 }
             } else {
-                if rows.isEmpty {
+                if visibleSections.isEmpty {
                     Section("対象スタック") {
                         Text("在庫整理できる在庫がありません。")
                             .foregroundStyle(.secondary)
                     }
                 } else {
-                    ForEach(sections) { section in
+                    ForEach(visibleSections) { section in
                         if #available(iOS 26.0, *) {
                             Section(section.key.title) {
                                 ForEach(section.rows) { row in
@@ -57,7 +61,7 @@ struct ShopStockOrganizationView: View {
                                         .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
                                 }
                             }
-                            .sectionIndexLabel(equipmentSectionIndexLabel(for: section, in: sections))
+                            .sectionIndexLabel(equipmentSectionIndexLabel(for: section, in: visibleSections))
                         } else {
                             Section(section.key.title) {
                                 ForEach(section.rows) { row in
@@ -84,49 +88,57 @@ struct ShopStockOrganizationView: View {
                 loadError = error.localizedDescription
             }
         }
+        .task(id: shopStore.contentRevision) {
+            rebuildVisibleSections()
+        }
     }
 
     private var currentErrorMessage: String? {
         loadError ?? shopStore.lastOperationError
     }
 
-    private var rows: [StockOrganizationRow] {
-        shopStore.displayOrderedShopItems.compactMap { item in
-                    guard item.rarity != .normal,
-                          let baseItem = masterData.items.first(where: { $0.id == item.itemID.baseItemId }) else {
-                        return nil
-                    }
+    private func rebuildVisibleSections() {
+        guard shopStore.isLoaded else {
+            visibleSections = []
+            return
+        }
 
-                    let availableExchangeCount = item.quantity / ShopPricingCalculator.stockOrganizationBundleSize
-                    let remainder = item.quantity % ShopPricingCalculator.stockOrganizationBundleSize
-                    let remainingCount = availableExchangeCount == 0
-                        ? ShopPricingCalculator.stockOrganizationBundleSize - item.quantity
-                        : remainder
+        let rows: [StockOrganizationRow] = shopStore.displayOrderedShopItems.compactMap { item in
+            guard item.rarity != .normal,
+                  let baseItem = itemsByID[item.itemID.baseItemId] else {
+                return nil
+            }
 
-                    // Preview only near-threshold stacks so the list acts as a progress view toward
-                    // the 99-item exchange instead of duplicating the entire shop inventory browser.
-                    guard item.quantity >= Self.previewThreshold else {
-                        return nil
-                    }
+            let availableExchangeCount = item.quantity / ShopPricingCalculator.stockOrganizationBundleSize
+            let remainder = item.quantity % ShopPricingCalculator.stockOrganizationBundleSize
+            let remainingCount = availableExchangeCount == 0
+                ? ShopPricingCalculator.stockOrganizationBundleSize - item.quantity
+                : remainder
 
-                    return StockOrganizationRow(
-                        item: item,
-                        itemID: item.itemID,
-                        summaryText: [
-                            "\(item.rarity.displayName) / 在庫 \(item.quantity)個",
-                            "交換 \(ShopPricingCalculator.stockOrganizationTicketCount(for: baseItem.basePrice))枚",
-                            availableExchangeCount > 0
-                                ? "交換可能 \(availableExchangeCount)回 / 余り \(remainder)個"
-                                : "あと \(remainingCount)個"
-                        ].joined(separator: " / "),
-                        availableExchangeCount: availableExchangeCount
-                    )
-                }
-    }
+            // Preview only near-threshold stacks so the list acts as a progress view toward
+            // the 99-item exchange instead of duplicating the entire shop inventory browser.
+            guard item.quantity >= Self.previewThreshold else {
+                return nil
+            }
 
-    private var sections: [StockOrganizationSection] {
-        let grouped = Dictionary(grouping: rows, by: \.item.sectionKey)
-        return grouped.keys
+            return StockOrganizationRow(
+                item: item,
+                itemID: item.itemID,
+                summaryText: [
+                    "\(item.rarity.displayName) / 在庫 \(item.quantity)個",
+                    "交換 \(ShopPricingCalculator.stockOrganizationTicketCount(for: baseItem.basePrice))枚",
+                    availableExchangeCount > 0
+                        ? "交換可能 \(availableExchangeCount)回 / 余り \(remainder)個"
+                        : "あと \(remainingCount)個"
+                ].joined(separator: " / "),
+                availableExchangeCount: availableExchangeCount
+            )
+        }
+
+        let grouped = Dictionary(grouping: rows) { row in
+            row.item.sectionKey
+        }
+        visibleSections = grouped.keys
             .sorted(by: EquipmentSectionKey.isOrderedBefore)
             .map { key in
                 StockOrganizationSection(

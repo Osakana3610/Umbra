@@ -25,7 +25,6 @@ nonisolated enum EquipmentResolverError: LocalizedError, Equatable {
 nonisolated struct EquipmentResolution: Equatable, Sendable {
     let baseStats: CharacterBaseStats
     let battleStats: CharacterBattleStats
-    let armorBattleStats: CharacterBattleStats
     let categoryBattleStats: [ItemCategory: CharacterBattleStats]
     let itemSkillIDs: [Int]
     let isUnarmed: Bool
@@ -67,19 +66,6 @@ nonisolated struct EquipmentResolver {
             criticalRate: 0,
             breathPower: 0
         )
-        var armorBattleStats = CharacterBattleStats(
-            maxHP: 0,
-            physicalAttack: 0,
-            physicalDefense: 0,
-            magic: 0,
-            magicDefense: 0,
-            healing: 0,
-            accuracy: 0,
-            evasion: 0,
-            attackCount: 0,
-            criticalRate: 0,
-            breathPower: 0
-        )
         var categoryBattleStats: [ItemCategory: CharacterBattleStats] = [:]
         var itemSkillIDs: [Int] = []
         var seenSkillIDs = Set<Int>()
@@ -101,7 +87,6 @@ nonisolated struct EquipmentResolver {
                 count: stack.count,
                 baseStats: &baseStats,
                 battleStats: &battleStats,
-                armorBattleStats: &armorBattleStats,
                 categoryBattleStats: &categoryBattleStats,
                 itemSkillIDs: &itemSkillIDs,
                 seenSkillIDs: &seenSkillIDs,
@@ -126,7 +111,6 @@ nonisolated struct EquipmentResolver {
                     battleStatDivisor: 2,
                     baseStats: &baseStats,
                     battleStats: &battleStats,
-                    armorBattleStats: &armorBattleStats,
                     categoryBattleStats: &categoryBattleStats,
                     itemSkillIDs: &itemSkillIDs,
                     seenSkillIDs: &seenSkillIDs,
@@ -140,7 +124,6 @@ nonisolated struct EquipmentResolver {
         return EquipmentResolution(
             baseStats: baseStats,
             battleStats: battleStats,
-            armorBattleStats: armorBattleStats,
             categoryBattleStats: categoryBattleStats,
             itemSkillIDs: itemSkillIDs,
             isUnarmed: totalWeaponAttack <= 0,
@@ -215,7 +198,6 @@ nonisolated struct EquipmentResolver {
         battleStatDivisor: Int? = nil,
         baseStats: inout CharacterBaseStats,
         battleStats: inout CharacterBattleStats,
-        armorBattleStats: inout CharacterBattleStats,
         categoryBattleStats: inout [ItemCategory: CharacterBattleStats],
         itemSkillIDs: inout [Int],
         seenSkillIDs: inout Set<Int>,
@@ -239,15 +221,6 @@ nonisolated struct EquipmentResolver {
             statDivisor: resolvedBattleStatDivisor,
             to: &battleStats
         )
-
-        if contribution.itemCategory == .armor {
-            applyBattleStats(
-                contribution.battleStats,
-                count: count,
-                statDivisor: resolvedBattleStatDivisor,
-                to: &armorBattleStats
-            )
-        }
 
         var aggregatedCategoryBattleStats = categoryBattleStats[contribution.itemCategory]
             ?? CharacterBattleStats(

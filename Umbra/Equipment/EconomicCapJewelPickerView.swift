@@ -17,6 +17,7 @@ struct EconomicCapJewelPickerView: View {
     @State private var searchText = ""
     @State private var selectedJewel: EconomicCapJewelSelection?
     @State private var presentedItemDetail: ItemDetailSheetPresentation?
+    @State private var visibleSections: [ShopEnhancementSection] = []
 
     var body: some View {
         List {
@@ -36,13 +37,13 @@ struct EconomicCapJewelPickerView: View {
                 Section("宝石") {
                     ProgressView()
                 }
-            } else if cappedJewelSections.isEmpty {
+            } else if visibleSections.isEmpty {
                 Section("宝石") {
                     Text(emptyStateMessage)
                         .foregroundStyle(.secondary)
                 }
             } else {
-                ForEach(cappedJewelSections) { section in
+                ForEach(visibleSections) { section in
                     Section(section.key.title) {
                         ForEach(section.rows) { row in
                             cappedJewelRow(for: row)
@@ -82,21 +83,33 @@ struct EconomicCapJewelPickerView: View {
                 loadError = error.localizedDescription
             }
         }
+        .task(
+            id: ShopEnhancementPresentationInput(
+                itemFilter: ItemBrowserFilter(),
+                searchText: searchText.trimmingCharacters(in: .whitespacesAndNewlines),
+                inventoryRevision: equipmentStore.contentRevision,
+                rosterRevision: rosterStore.contentRevision
+            )
+        ) {
+            rebuildPresentation()
+        }
     }
 
     private var currentErrorMessage: String? {
         loadError ?? equipmentStore.lastOperationError
     }
 
-    private var inventoryItems: [EquipmentCachedItem] {
-        equipmentStore.displayOrderedInventoryItems
-    }
+    private func rebuildPresentation() {
+        guard equipmentStore.isLoaded else {
+            visibleSections = []
+            return
+        }
 
-    private var cappedJewelSections: [ShopEnhancementSection] {
+        let trimmedSearchText = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
         // Reuse the enhancement grouping so shared inventory and equipped jewels appear with the
         // same sections and labels as the existing jewel-management UI.
-        ShopEnhancementRow.buildSections(
-            inventoryItems: inventoryItems,
+        visibleSections = ShopEnhancementRow.buildSections(
+            inventoryItems: equipmentStore.displayOrderedInventoryItems,
             characters: rosterStore.characters,
             masterData: masterData
         ) { item in
@@ -105,7 +118,7 @@ struct EconomicCapJewelPickerView: View {
                     for: item.itemID,
                     masterData: masterData
                 ) == EconomyPricing.maximumEconomicPrice
-                && (searchText.isEmpty || item.displayName.localizedCaseInsensitiveContains(searchText))
+                && (trimmedSearchText.isEmpty || item.displayName.localizedCaseInsensitiveContains(trimmedSearchText))
         }
     }
 

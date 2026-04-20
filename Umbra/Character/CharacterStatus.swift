@@ -90,10 +90,6 @@ nonisolated struct CharacterStatus: Equatable, Sendable {
         actionRuleValues(for: target).max()
     }
 
-    func actionRuleProduct(for target: ActionRuleTarget) -> Double {
-        actionRuleValues(for: target).reduce(1.0, *)
-    }
-
     func reviveRuleValues(for target: ReviveRuleTarget) -> [Double] {
         reviveRuleValuesByTarget[target] ?? []
     }
@@ -118,16 +114,8 @@ nonisolated struct CharacterStatus: Equatable, Sendable {
         rewardRuleValuesByTarget[target] ?? []
     }
 
-    func rewardRuleMaxValue(for target: RewardRuleTarget) -> Double? {
-        rewardRuleValues(for: target).max()
-    }
-
     func equipmentRuleValues(for target: EquipmentRuleTarget) -> [Double] {
         equipmentRuleValuesByTarget[target] ?? []
-    }
-
-    func equipmentRuleMaxValue(for target: EquipmentRuleTarget) -> Double? {
-        equipmentRuleValues(for: target).max()
     }
 
     func equipmentRuleProduct(for target: EquipmentRuleTarget) -> Double {
@@ -136,10 +124,6 @@ nonisolated struct CharacterStatus: Equatable, Sendable {
 
     func explorationRuleValues(for target: ExplorationRuleTarget) -> [Double] {
         explorationRuleValuesByTarget[target] ?? []
-    }
-
-    func explorationRuleMaxValue(for target: ExplorationRuleTarget) -> Double? {
-        explorationRuleValues(for: target).max()
     }
 
     func explorationRuleProduct(for target: ExplorationRuleTarget) -> Double {
@@ -154,9 +138,6 @@ nonisolated struct CharacterStatus: Equatable, Sendable {
         hitRuleValues(for: target).max()
     }
 
-    func hitRuleProduct(for target: HitRuleTarget) -> Double {
-        hitRuleValues(for: target).reduce(1.0, *)
-    }
 }
 
 nonisolated struct CharacterBaseStats: Equatable, Sendable {

@@ -5,12 +5,6 @@ import Foundation
 nonisolated enum CharacterLevelProgression {
     private static let experienceScale = 5
 
-    static func nextLevelExperience(for level: Int) -> Int {
-        // Per-level demand grows cubically so later levels widen quickly without requiring a
-        // lookup table in master data.
-        experienceScale * level * level * level
-    }
-
     static func totalExperience(toReach level: Int) -> Int {
         // The closed form matches the cumulative sum of the cubic level costs above.
         let previousLevelSum = (level - 1) * level / 2

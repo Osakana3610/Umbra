@@ -47,16 +47,67 @@ final class GuildCoreDataRepository {
         return try fetchPartyEntities(in: context).map(makePartyRecord)
     }
 
+    func updatePendingAutomaticRunState(
+        partyId: Int,
+        pendingAutomaticRunCount: Int,
+        pendingAutomaticRunStartedAt: Date?
+    ) throws -> PartyRecord {
+        let context = container.viewContext
+        _ = try fetchOrCreateInitialParties(in: context)
+        guard let entity = try fetchPartyEntity(partyId: partyId, in: context) else {
+            throw GuildServiceError.invalidParty(partyId: partyId)
+        }
+
+        entity.pendingAutomaticRunCount = Int64(max(pendingAutomaticRunCount, 0))
+        entity.pendingAutomaticRunStartedAt = pendingAutomaticRunStartedAt
+        try saveIfNeeded(context)
+        return makePartyRecord(from: entity)
+    }
+
     func loadInventoryStacks() throws -> [CompositeItemStack] {
-        try fetchInventoryItemEntities(in: container.viewContext)
-            .compactMap(makeInventoryStack)
-            .sorted { $0.itemID.isOrdered(before: $1.itemID) }
+        let context = container.newBackgroundContext()
+        context.undoManager = nil
+
+        return try context.performAndWait { () throws -> [CompositeItemStack] in
+            let request = NSFetchRequest<InventoryItemEntity>(entityName: "InventoryItemEntity")
+            request.sortDescriptors = CompositeItemPersistence.sortDescriptors
+
+            let entities: [InventoryItemEntity] = try context.fetch(request)
+            let stacks: [CompositeItemStack] = entities.compactMap { entity -> CompositeItemStack? in
+                    guard entity.count > 0 else {
+                        return nil
+                    }
+
+                    return CompositeItemStack(
+                        itemID: CompositeItemID(entity: entity),
+                        count: Int(entity.count)
+                    )
+                }
+            return stacks.sorted { $0.itemID.isOrdered(before: $1.itemID) }
+        }
     }
 
     func loadShopInventoryStacks() throws -> [CompositeItemStack] {
-        try fetchShopItemEntities(in: container.viewContext)
-            .compactMap(makeShopInventoryStack)
-            .sorted { $0.itemID.isOrdered(before: $1.itemID) }
+        let context = container.newBackgroundContext()
+        context.undoManager = nil
+
+        return try context.performAndWait { () throws -> [CompositeItemStack] in
+            let request = NSFetchRequest<ShopItemEntity>(entityName: "ShopItemEntity")
+            request.sortDescriptors = CompositeItemPersistence.sortDescriptors
+
+            let entities: [ShopItemEntity] = try context.fetch(request)
+            let stacks: [CompositeItemStack] = entities.compactMap { entity -> CompositeItemStack? in
+                    guard entity.count > 0 else {
+                        return nil
+                    }
+
+                    return CompositeItemStack(
+                        itemID: CompositeItemID(entity: entity),
+                        count: Int(entity.count)
+                    )
+                }
+            return stacks.sorted { $0.itemID.isOrdered(before: $1.itemID) }
+        }
     }
 
     func loadCharacter(characterId: Int) throws -> CharacterRecord? {
@@ -71,12 +122,6 @@ final class GuildCoreDataRepository {
             .flatMap(makeInventoryStack)
     }
 
-    func loadShopInventoryStack(itemID: CompositeItemID) throws -> CompositeItemStack? {
-        let context = container.viewContext
-        return try fetchShopItemEntity(itemID: itemID, in: context)
-            .flatMap(makeShopInventoryStack)
-    }
-
     func saveRosterSnapshot(_ snapshot: GuildRosterSnapshot) throws {
         let context = container.viewContext
         let playerState = try fetchOrCreatePlayerState(in: context)
@@ -84,7 +129,6 @@ final class GuildCoreDataRepository {
         playerState.catTicketCount = Int64(snapshot.playerState.catTicketCount)
         playerState.nextCharacterId = Int64(snapshot.playerState.nextCharacterId)
         playerState.autoReviveDefeatedCharacters = snapshot.playerState.autoReviveDefeatedCharacters
-        playerState.shopInventoryInitialized = snapshot.playerState.shopInventoryInitialized
         playerState.lastBackgroundedAt = snapshot.playerState.lastBackgroundedAt
         syncAutoSellItems(snapshot.playerState.autoSellItemIDs, on: playerState, in: context)
         try syncCharacters(snapshot.characters, in: context)
@@ -104,12 +148,6 @@ final class GuildCoreDataRepository {
         try saveIfNeeded(context)
     }
 
-    func saveShopInventoryStacks(_ inventoryStacks: [CompositeItemStack]) throws {
-        let context = container.viewContext
-        try syncShopInventoryStacks(inventoryStacks, in: context)
-        try saveIfNeeded(context)
-    }
-
     func saveRosterState(
         _ snapshot: GuildRosterSnapshot,
         parties: [PartyRecord],
@@ -121,7 +159,6 @@ final class GuildCoreDataRepository {
         playerState.catTicketCount = Int64(snapshot.playerState.catTicketCount)
         playerState.nextCharacterId = Int64(snapshot.playerState.nextCharacterId)
         playerState.autoReviveDefeatedCharacters = snapshot.playerState.autoReviveDefeatedCharacters
-        playerState.shopInventoryInitialized = snapshot.playerState.shopInventoryInitialized
         playerState.lastBackgroundedAt = snapshot.playerState.lastBackgroundedAt
         syncAutoSellItems(snapshot.playerState.autoSellItemIDs, on: playerState, in: context)
         try syncCharacters(snapshot.characters, in: context)
@@ -185,7 +222,6 @@ final class GuildCoreDataRepository {
         playerStateEntity.catTicketCount = Int64(playerState.catTicketCount)
         playerStateEntity.nextCharacterId = Int64(playerState.nextCharacterId)
         playerStateEntity.autoReviveDefeatedCharacters = playerState.autoReviveDefeatedCharacters
-        playerStateEntity.shopInventoryInitialized = playerState.shopInventoryInitialized
         playerStateEntity.lastBackgroundedAt = playerState.lastBackgroundedAt
         syncAutoSellItems(playerState.autoSellItemIDs, on: playerStateEntity, in: context)
         try syncInventoryStacks(inventoryStacks, in: context)
@@ -403,8 +439,11 @@ final class GuildCoreDataRepository {
         playerState.catTicketCount = Int64(PlayerState.initial.catTicketCount)
         playerState.nextCharacterId = Int64(PlayerState.initial.nextCharacterId)
         playerState.autoReviveDefeatedCharacters = PlayerState.initial.autoReviveDefeatedCharacters
-        playerState.shopInventoryInitialized = PlayerState.initial.shopInventoryInitialized
         playerState.lastBackgroundedAt = PlayerState.initial.lastBackgroundedAt
+        try syncShopInventoryStacks(
+            ShopInventoryLoader.initialInventory(masterData: MasterData.current),
+            in: context
+        )
         return playerState
     }
 
@@ -496,6 +535,16 @@ final class GuildCoreDataRepository {
         return try context.fetch(request)
     }
 
+    private func fetchPartyEntity(
+        partyId: Int,
+        in context: NSManagedObjectContext
+    ) throws -> PartyEntity? {
+        let request = NSFetchRequest<PartyEntity>(entityName: "PartyEntity")
+        request.fetchLimit = 1
+        request.predicate = NSPredicate(format: "partyId == %d", partyId)
+        return try context.fetch(request).first
+    }
+
     private func fetchLabyrinthProgressEntities(
         in context: NSManagedObjectContext
     ) throws -> [LabyrinthProgressEntity] {
@@ -510,7 +559,6 @@ final class GuildCoreDataRepository {
             catTicketCount: Int(entity.catTicketCount),
             nextCharacterId: Int(entity.nextCharacterId),
             autoReviveDefeatedCharacters: entity.autoReviveDefeatedCharacters,
-            shopInventoryInitialized: entity.shopInventoryInitialized,
             autoSellItemIDs: makeAutoSellItemIDs(from: entity),
             lastBackgroundedAt: entity.lastBackgroundedAt
         )

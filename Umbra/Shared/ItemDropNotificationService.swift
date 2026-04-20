@@ -7,7 +7,7 @@ import Observation
 @Observable
 final class ItemDropNotificationService {
     struct DroppedItemNotification: Identifiable, Equatable, Sendable {
-        let id: UUID
+        let id: Int
         let displayName: String
         let isSuperRare: Bool
         let partyId: Int?
@@ -24,6 +24,7 @@ final class ItemDropNotificationService {
     private let masterData: MasterData
     private let userDefaults: UserDefaults
     private let maxNotificationCount = 20
+    private var nextNotificationID = 0
 
     private(set) var droppedItems: [DroppedItemNotification] = []
 
@@ -55,7 +56,7 @@ final class ItemDropNotificationService {
                 ) {
                 notifications.append(
                     DroppedItemNotification(
-                        id: UUID(),
+                        id: makeNotificationID(),
                         displayName: displayNameResolver.displayName(for: reward.itemID),
                         isSuperRare: reward.itemID.baseSuperRareId > 0 || reward.itemID.jewelSuperRareId > 0,
                         partyId: batch.partyId
@@ -79,6 +80,11 @@ final class ItemDropNotificationService {
 
     func clear() {
         droppedItems.removeAll()
+    }
+
+    private func makeNotificationID() -> Int {
+        defer { nextNotificationID &+= 1 }
+        return nextNotificationID
     }
 }
 

@@ -42,6 +42,7 @@ final class ExplorationStore {
     private(set) var isMutating = false
     private(set) var lastOperationError: String?
     private(set) var runs: [RunSessionRecord] = []
+    private(set) var contentRevision = 0
     private var statusByPartyID: [Int: ExplorationPartyStatus] = [:]
     private var completedRunCountByPartyID: [Int: Int] = [:]
     private var isRefreshingProgress = false
@@ -109,7 +110,11 @@ final class ExplorationStore {
         defer { isRefreshingProgress = false }
 
         do {
-            let snapshot = try await service.refreshRuns(at: currentDate, masterData: masterData)
+            let snapshot = try await service.refreshRuns(
+                from: runs,
+                at: currentDate,
+                masterData: masterData
+            )
             applySnapshot(snapshot, masterData: masterData)
             if snapshot.didApplyRewards {
                 rosterStore?.refreshFromPersistence()
@@ -200,8 +205,6 @@ final class ExplorationStore {
 
         // Resume first synchronizes any in-flight runs, then reconstructs queued automatic runs
         // from the saved background timestamp before resolving them one by one.
-        rosterStore?.refreshFromPersistence()
-        partyStore.reload()
         await reload(masterData: masterData)
         _ = await refreshProgress(
             at: reopenedAt,
@@ -212,79 +215,82 @@ final class ExplorationStore {
         }
 
         do {
-            try partyService.queueAutomaticRunsForResume(
+            var pendingParties = try partyService.queueAutomaticRunsForResume(
                 reopenedAt: reopenedAt,
                 partyStatusesById: Dictionary(
                     uniqueKeysWithValues: partyStore.parties.map { ($0.partyId, status(for: $0.partyId)) }
                 ),
                 masterData: masterData
             )
-            rosterStore?.refreshFromPersistence()
-            partyStore.reload()
-        } catch {
-            lastOperationError = UserFacingErrorMessage.resolve(error)
-            return
-        }
-
-        var firstResumeError: String?
-        while let pendingRun = nextPendingAutomaticRun(
-            partyStore: partyStore,
-            masterData: masterData
-        ) {
-            // Automatic runs are consumed sequentially so each completion can update persisted
-            // HP, rewards, and unlock state before the next queued sortie is resolved.
-            do {
-                guard let step = try await service.resumeAutomaticRun(
-                    partyId: pendingRun.partyId,
-                    labyrinthId: pendingRun.labyrinthId,
-                    selectedDifficultyTitleId: pendingRun.selectedDifficultyTitleId,
-                    startedAt: pendingRun.startedAt,
-                    catTicketUsage: pendingRun.catTicketUsage,
-                    reopenedAt: reopenedAt,
-                    masterData: masterData
-                ) else {
-                    try partyService.clearPendingAutomaticRuns(partyId: pendingRun.partyId)
-                    partyStore.reload()
-                    continue
-                }
-
-                mergeResumedRun(step.completedRun)
-                if step.outcome.didApplyRewards {
-                    rosterStore?.refreshFromPersistence()
-                    if let equipmentStore, equipmentStore.isLoaded {
-                        equipmentStore.applyInventoryChanges(
-                            step.outcome.appliedInventoryCounts,
-                            masterData: masterData
-                        )
-                    }
-                    if let shopStore, shopStore.isLoaded {
-                        shopStore.applyInventoryChanges(
-                            step.outcome.appliedShopInventoryCounts,
-                            masterData: masterData
-                        )
-                    }
-                }
-                itemDropNotificationService.publish(
-                    batches: step.outcome.dropNotificationBatches
-                )
-                try partyService.consumePendingAutomaticRun(partyId: pendingRun.partyId)
-                partyStore.reload()
-            } catch {
-                firstResumeError = firstResumeError ?? UserFacingErrorMessage.resolve(error)
+            var firstResumeError: String?
+            while let pendingRun = nextPendingAutomaticRun(
+                parties: pendingParties,
+                masterData: masterData
+            ) {
+                // Automatic runs are consumed sequentially so each completion can update persisted
+                // HP, rewards, and unlock state before the next queued sortie is resolved.
                 do {
-                    try partyService.clearPendingAutomaticRuns(partyId: pendingRun.partyId)
-                    partyStore.reload()
-                    continue
+                    guard let step = try await service.resumeAutomaticRun(
+                        partyId: pendingRun.party.partyId,
+                        labyrinthId: pendingRun.labyrinthId,
+                        selectedDifficultyTitleId: pendingRun.selectedDifficultyTitleId,
+                        startedAt: pendingRun.startedAt,
+                        catTicketUsage: pendingRun.catTicketUsage,
+                        reopenedAt: reopenedAt,
+                        masterData: masterData
+                    ) else {
+                        let updatedParty = try partyService.clearPendingAutomaticRuns(
+                            partyId: pendingRun.party.partyId
+                        )
+                        replacePendingAutomaticRunParty(updatedParty, in: &pendingParties)
+                        continue
+                    }
+
+                    mergeResumedRun(step.completedRun)
+                    if step.outcome.didApplyRewards {
+                        rosterStore?.refreshFromPersistence()
+                        if let equipmentStore, equipmentStore.isLoaded {
+                            equipmentStore.applyInventoryChanges(
+                                step.outcome.appliedInventoryCounts,
+                                masterData: masterData
+                            )
+                        }
+                        if let shopStore, shopStore.isLoaded {
+                            shopStore.applyInventoryChanges(
+                                step.outcome.appliedShopInventoryCounts,
+                                masterData: masterData
+                            )
+                        }
+                    }
+                    itemDropNotificationService.publish(
+                        batches: step.outcome.dropNotificationBatches
+                    )
+                    let updatedParty = try partyService.consumePendingAutomaticRun(
+                        party: pendingRun.party
+                    )
+                    replacePendingAutomaticRunParty(updatedParty, in: &pendingParties)
                 } catch {
-                    lastOperationError = UserFacingErrorMessage.resolve(error)
-                    return
+                    firstResumeError = firstResumeError ?? UserFacingErrorMessage.resolve(error)
+                    do {
+                        let updatedParty = try partyService.clearPendingAutomaticRuns(
+                            partyId: pendingRun.party.partyId
+                        )
+                        replacePendingAutomaticRunParty(updatedParty, in: &pendingParties)
+                        continue
+                    } catch {
+                        lastOperationError = UserFacingErrorMessage.resolve(error)
+                        return
+                    }
                 }
             }
 
-        }
+            partyStore.synchronizeLoadedParties(pendingParties)
 
-        if let firstResumeError {
-            lastOperationError = firstResumeError
+            if let firstResumeError {
+                lastOperationError = firstResumeError
+            }
+        } catch {
+            lastOperationError = UserFacingErrorMessage.resolve(error)
         }
     }
 
@@ -395,6 +401,7 @@ final class ExplorationStore {
         runs = snapshot.runs
         rebuildPartyCaches()
         isLoaded = true
+        contentRevision &+= 1
         scheduleProgressRefresh(using: masterData)
     }
 
@@ -472,10 +479,10 @@ final class ExplorationStore {
     }
 
     private func nextPendingAutomaticRun(
-        partyStore: PartyStore,
+        parties: [PartyRecord],
         masterData: MasterData
-    ) -> (partyId: Int, labyrinthId: Int, selectedDifficultyTitleId: Int, startedAt: Date, catTicketUsage: CatTicketUsage)? {
-        for party in partyStore.parties {
+    ) -> (party: PartyRecord, labyrinthId: Int, selectedDifficultyTitleId: Int, startedAt: Date, catTicketUsage: CatTicketUsage)? {
+        for party in parties {
             guard party.pendingAutomaticRunCount > 0,
                   status(for: party.partyId).activeRun == nil,
                   let labyrinthId = party.selectedLabyrinthId,
@@ -498,7 +505,7 @@ final class ExplorationStore {
                 continue
             }
             return (
-                partyId: party.partyId,
+                party: party,
                 labyrinthId: labyrinthId,
                 selectedDifficultyTitleId: selectedDifficultyTitleId,
                 startedAt: startedAt,
@@ -520,6 +527,18 @@ final class ExplorationStore {
         }
         rebuildPartyCaches()
         isLoaded = true
+        contentRevision &+= 1
+    }
+
+    private func replacePendingAutomaticRunParty(
+        _ updatedParty: PartyRecord,
+        in parties: inout [PartyRecord]
+    ) {
+        guard let index = parties.firstIndex(where: { $0.partyId == updatedParty.partyId }) else {
+            return
+        }
+
+        parties[index] = updatedParty
     }
 
     private func rebuildPartyCaches() {

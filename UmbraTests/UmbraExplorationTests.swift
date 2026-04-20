@@ -385,6 +385,7 @@ struct UmbraExplorationTests {
         #expect(!storedRun.experienceRewards.isEmpty)
 
         let refreshedSnapshot = try await explorationService.refreshRuns(
+            from: snapshot.runs,
             at: startedAt.addingTimeInterval(10_000),
             masterData: masterData
         )
@@ -463,6 +464,7 @@ struct UmbraExplorationTests {
         ])
 
         let refreshedSnapshot = try await explorationService.refreshRuns(
+            from: snapshot.runs,
             at: startedAt.addingTimeInterval(5),
             masterData: masterData
         )
@@ -611,7 +613,7 @@ struct UmbraExplorationTests {
         try setCurrentHP(characterId: character.characterId, to: 999, in: container)
 
         let startedAt = Date(timeIntervalSinceReferenceDate: 290_000)
-        _ = try await explorationService.startRun(
+        let startedSnapshot = try await explorationService.startRun(
             partyId: 1,
             labyrinthId: try #require(masterData.labyrinths.first?.id),
             selectedDifficultyTitleId: try #require(masterData.defaultExplorationDifficultyTitle?.id),
@@ -630,6 +632,7 @@ struct UmbraExplorationTests {
         )
 
         let snapshot = try await explorationService.refreshRuns(
+            from: startedSnapshot.runs,
             at: startedAt.addingTimeInterval(1),
             masterData: masterData
         )
@@ -867,7 +870,7 @@ struct UmbraExplorationTests {
 
         let startedAt = Date(timeIntervalSinceReferenceDate: 300_000)
         let startingGold = try guildCoreDataRepository.loadRosterSnapshot().playerState.gold
-        _ = try await explorationService.startRun(
+        let startedSnapshot = try await explorationService.startRun(
             partyId: 1,
             labyrinthId: try #require(masterData.labyrinths.first(where: { $0.name == "森" })?.id),
             selectedDifficultyTitleId: try #require(masterData.defaultExplorationDifficultyTitle?.id),
@@ -880,6 +883,7 @@ struct UmbraExplorationTests {
         )
 
         let snapshot = try await explorationService.refreshRuns(
+            from: startedSnapshot.runs,
             at: startedAt.addingTimeInterval(10),
             masterData: masterData
         )
@@ -919,9 +923,13 @@ struct UmbraExplorationTests {
         let masterData = currentMasterData()
         let inventoryItemID = CompositeItemID.baseItem(itemId: try itemId(for: .sword, in: masterData))
         let autoSellItemID = CompositeItemID.baseItem(itemId: try itemId(for: .armor, in: masterData))
-        var rosterSnapshot = try guildCoreDataRepository.loadRosterSnapshot()
-        rosterSnapshot.playerState.autoSellItemIDs = [autoSellItemID]
-        try guildCoreDataRepository.saveRosterSnapshot(rosterSnapshot)
+        var playerState = try guildCoreDataRepository.loadRosterSnapshot().playerState
+        playerState.autoSellItemIDs = [autoSellItemID]
+        try guildCoreDataRepository.saveTradeState(
+            playerState: playerState,
+            inventoryStacks: [],
+            shopInventoryStacks: []
+        )
 
         let completion = RunCompletionRecord(
             completedAt: Date(timeIntervalSinceReferenceDate: 305_010),
@@ -1054,7 +1062,7 @@ struct UmbraExplorationTests {
             )
         )
 
-        _ = try await explorationService.startRun(
+        let startedSnapshot = try await explorationService.startRun(
             partyId: 1,
             labyrinthId: labyrinthId,
             selectedDifficultyTitleId: defaultDifficultyTitleId,
@@ -1062,6 +1070,7 @@ struct UmbraExplorationTests {
             masterData: masterData
         )
         _ = try await explorationService.refreshRuns(
+            from: startedSnapshot.runs,
             at: Date(timeIntervalSinceReferenceDate: 310_010),
             masterData: masterData
         )
@@ -1104,7 +1113,7 @@ struct UmbraExplorationTests {
         )
 
         let startedAt = Date(timeIntervalSinceReferenceDate: 320_000)
-        _ = try await explorationService.startRun(
+        let startedSnapshot = try await explorationService.startRun(
             partyId: 1,
             labyrinthId: try #require(masterData.labyrinths.first(where: { $0.name == "森" })?.id),
             selectedDifficultyTitleId: try #require(masterData.defaultExplorationDifficultyTitle?.id),
@@ -1123,6 +1132,7 @@ struct UmbraExplorationTests {
         )
 
         let snapshot = try await explorationService.refreshRuns(
+            from: startedSnapshot.runs,
             at: startedAt.addingTimeInterval(10),
             masterData: masterData
         )
@@ -1160,7 +1170,7 @@ struct UmbraExplorationTests {
         )
 
         let startedAt = Date(timeIntervalSinceReferenceDate: 500_000)
-        _ = try await explorationService.startRun(
+        let startedSnapshot = try await explorationService.startRun(
             partyId: 1,
             labyrinthId: try #require(masterData.labyrinths.first(where: { $0.name == "洞窟" })?.id),
             selectedDifficultyTitleId: try #require(masterData.defaultExplorationDifficultyTitle?.id),
@@ -1169,6 +1179,7 @@ struct UmbraExplorationTests {
         )
 
         let snapshot = try await explorationService.refreshRuns(
+            from: startedSnapshot.runs,
             at: startedAt.addingTimeInterval(10),
             masterData: masterData
         )

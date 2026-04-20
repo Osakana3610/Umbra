@@ -883,19 +883,21 @@ struct UmbraCatalogAndStatsTests {
                     criticalRate: 0,
                     breathPower: 0
                 ),
-                armorEquipmentBattleStats: CharacterBattleStats(
-                    maxHP: 10,
-                    physicalAttack: 0,
-                    physicalDefense: 4,
-                    magic: 0,
-                    magicDefense: 6,
-                    healing: 0,
-                    accuracy: 0,
-                    evasion: 0,
-                    attackCount: 0,
-                    criticalRate: 0,
-                    breathPower: 0
-                )
+                equipmentBattleStatsByCategory: [
+                    .armor: CharacterBattleStats(
+                        maxHP: 10,
+                        physicalAttack: 0,
+                        physicalDefense: 4,
+                        magic: 0,
+                        magicDefense: 6,
+                        healing: 0,
+                        accuracy: 0,
+                        evasion: 0,
+                        attackCount: 0,
+                        criticalRate: 0,
+                        breathPower: 0
+                    )
+                ]
             )
         )
 

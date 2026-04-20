@@ -15,18 +15,34 @@ struct PersistenceController {
 
     init(inMemory: Bool = false) {
         container = NSPersistentContainer(name: "Umbra")
-        if let firstDescription = container.persistentStoreDescriptions.first {
+        if inMemory {
+            let description = NSPersistentStoreDescription()
+            description.type = NSInMemoryStoreType
+            description.shouldMigrateStoreAutomatically = true
+            description.shouldInferMappingModelAutomatically = true
+            container.persistentStoreDescriptions = [description]
+        } else if let firstDescription = container.persistentStoreDescriptions.first {
             firstDescription.shouldMigrateStoreAutomatically = true
             firstDescription.shouldInferMappingModelAutomatically = true
-
-            if inMemory {
-                firstDescription.url = URL(fileURLWithPath: "/dev/null")
-            }
         }
 
         container.loadPersistentStores { _, error in
             if let error = error as NSError? {
                 fatalError("Unresolved error \(error), \(error.userInfo)")
+            }
+        }
+
+        if inMemory {
+            let context = container.viewContext
+            for entityName in container.managedObjectModel.entities.compactMap(\.name) {
+                let request = NSFetchRequest<NSManagedObject>(entityName: entityName)
+                let objects = (try? context.fetch(request)) ?? []
+                for object in objects {
+                    context.delete(object)
+                }
+            }
+            if context.hasChanges {
+                try? context.save()
             }
         }
 

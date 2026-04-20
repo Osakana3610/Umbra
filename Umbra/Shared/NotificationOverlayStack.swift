@@ -20,7 +20,7 @@ struct NotificationOverlayStack<Items: RandomAccessCollection, RowContent: View>
             .contentShape(Rectangle())
             .frame(maxWidth: 320, alignment: .leading)
             .onTapGesture(perform: clearNotifications)
-            .animation(rowAnimation, value: Array(items.map(\.id)))
+            .animation(rowAnimation, value: animationKey)
         }
     }
 
@@ -38,4 +38,18 @@ struct NotificationOverlayStack<Items: RandomAccessCollection, RowContent: View>
     private var rowAnimation: Animation {
         accessibilityReduceMotion ? .easeOut(duration: 0.15) : .easeOut(duration: 0.25)
     }
+
+    private var animationKey: NotificationAnimationKey<Items.Element.ID> {
+        NotificationAnimationKey(
+            count: items.count,
+            firstID: items.first?.id,
+            lastID: items.last?.id
+        )
+    }
+}
+
+private struct NotificationAnimationKey<ID: Hashable>: Equatable {
+    let count: Int
+    let firstID: ID?
+    let lastID: ID?
 }

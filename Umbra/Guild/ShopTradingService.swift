@@ -27,8 +27,7 @@ final class ShopTradingService {
         }
 
         var inventoryStacks = try coreDataRepository.loadInventoryStacks()
-        _ = try loadShopInventoryStacks(masterData: masterData)
-        var shopInventoryStacks = try coreDataRepository.loadShopInventoryStacks()
+        var shopInventoryStacks = try loadShopInventoryStacks()
 
         for itemID in orderedItemIDs {
             guard let ownedStack = inventoryStacks.first(where: { $0.itemID == itemID }),
@@ -55,31 +54,15 @@ final class ShopTradingService {
         return roster.playerState
     }
 
-    func loadShopInventoryStacks(masterData: MasterData) throws -> [CompositeItemStack] {
-        let roster = try coreDataRepository.loadRosterSnapshot()
-        let existingStacks = try coreDataRepository.loadShopInventoryStacks()
-        guard roster.playerState.shopInventoryInitialized == false else {
-            return existingStacks
-        }
-
-        // The initial catalog is seeded lazily so older saves do not need a separate migration step
-        // before the shop can be opened.
-        let initialInventory = ShopInventoryLoader.initialInventory(masterData: masterData)
-        var updatedRoster = roster
-        updatedRoster.playerState.shopInventoryInitialized = true
-        try coreDataRepository.saveTradeState(
-            playerState: updatedRoster.playerState,
-            inventoryStacks: try coreDataRepository.loadInventoryStacks(),
-            shopInventoryStacks: initialInventory
-        )
-        return initialInventory
+    func loadShopInventoryStacks() throws -> [CompositeItemStack] {
+        try coreDataRepository.loadShopInventoryStacks()
     }
 
     func buyShopItem(
         itemID: CompositeItemID,
         count: Int,
         masterData: MasterData
-    ) throws {
+    ) throws -> PlayerState {
         guard itemID.isValid(in: masterData) else {
             throw GuildServiceError.invalidItemStack
         }
@@ -89,7 +72,7 @@ final class ShopTradingService {
 
         var roster = try coreDataRepository.loadRosterSnapshot()
         var inventoryStacks = try coreDataRepository.loadInventoryStacks()
-        var shopInventoryStacks = try loadShopInventoryStacks(masterData: masterData)
+        var shopInventoryStacks = try loadShopInventoryStacks()
 
         guard let shopStack = shopInventoryStacks.first(where: { $0.itemID == itemID }),
               shopStack.count >= count else {
@@ -116,13 +99,14 @@ final class ShopTradingService {
             inventoryStacks: inventoryStacks,
             shopInventoryStacks: shopInventoryStacks
         )
+        return roster.playerState
     }
 
     func sellInventoryItem(
         itemID: CompositeItemID,
         count: Int,
         masterData: MasterData
-    ) throws {
+    ) throws -> PlayerState {
         guard itemID.isValid(in: masterData) else {
             throw GuildServiceError.invalidItemStack
         }
@@ -132,8 +116,7 @@ final class ShopTradingService {
 
         var roster = try coreDataRepository.loadRosterSnapshot()
         var inventoryStacks = try coreDataRepository.loadInventoryStacks()
-        _ = try loadShopInventoryStacks(masterData: masterData)
-        var shopInventoryStacks = try coreDataRepository.loadShopInventoryStacks()
+        var shopInventoryStacks = try loadShopInventoryStacks()
 
         guard let ownedStack = inventoryStacks.first(where: { $0.itemID == itemID }),
               ownedStack.count >= count else {
@@ -149,19 +132,19 @@ final class ShopTradingService {
             inventoryStacks: inventoryStacks,
             shopInventoryStacks: shopInventoryStacks
         )
+        return roster.playerState
     }
 
     func organizeShopInventoryItem(
         itemID: CompositeItemID,
         masterData: MasterData
-    ) throws {
+    ) throws -> PlayerState {
         guard itemID.isValid(in: masterData) else {
             throw GuildServiceError.invalidItemStack
         }
 
         var roster = try coreDataRepository.loadRosterSnapshot()
-        _ = try loadShopInventoryStacks(masterData: masterData)
-        var shopInventoryStacks = try coreDataRepository.loadShopInventoryStacks()
+        var shopInventoryStacks = try loadShopInventoryStacks()
 
         guard let baseItem = masterData.items.first(where: { $0.id == itemID.baseItemId }),
               baseItem.rarity != .normal,
@@ -186,5 +169,6 @@ final class ShopTradingService {
             inventoryStacks: try coreDataRepository.loadInventoryStacks(),
             shopInventoryStacks: shopInventoryStacks
         )
+        return roster.playerState
     }
 }

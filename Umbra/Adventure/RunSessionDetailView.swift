@@ -14,6 +14,7 @@ struct RunSessionDetailView: View {
     private let nameResolver: EquipmentDisplayNameResolver
     @State private var runDetail: RunSessionRecord?
     @State private var battleLogIndexEntries: [ExplorationBattleLog.IndexEntry]?
+    @State private var loadedBattleLogCount = 0
     @State private var itemFilter = ItemBrowserFilter()
 
     init(
@@ -147,7 +148,6 @@ struct RunSessionDetailView: View {
                 }
                 .task {
                     await explorationStore.loadIfNeeded(masterData: masterData)
-                    await reloadDisplayedData()
                 }
                 .task(id: progressKey(for: runSummary)) {
                     await reloadDisplayedData()
@@ -183,24 +183,60 @@ struct RunSessionDetailView: View {
         guard let runSummary else {
             runDetail = nil
             battleLogIndexEntries = []
+            loadedBattleLogCount = 0
             return
         }
 
-        runDetail = nil
-        battleLogIndexEntries = nil
+        let targetBattleLogCount = runSummary.completedBattleCount
+        let reloadsAllBattleLogs = battleLogIndexEntries == nil || targetBattleLogCount < loadedBattleLogCount
+        let missingBattleLogCount = max(targetBattleLogCount - loadedBattleLogCount, 0)
+        let shouldReloadRunDetail = runDetail == nil
+            || runDetail?.completedBattleCount != runSummary.completedBattleCount
+            || runDetail?.completion != runSummary.completion
 
-        async let loadedRunDetail = explorationStore.loadRunDetail(
-            partyId: partyId,
-            partyRunId: partyRunId
-        )
-        async let loadedBattleLogIndexEntries = explorationStore.loadBattleLogIndexEntries(
-            partyId: partyId,
-            partyRunId: partyRunId,
-            battleIndex: 0,
-            count: runSummary.completedBattleCount
-        )
-        runDetail = await loadedRunDetail
-        battleLogIndexEntries = await loadedBattleLogIndexEntries
+        let runDetailTask = Task {
+            guard shouldReloadRunDetail else {
+                return runDetail
+            }
+
+            return await explorationStore.loadRunDetail(
+                partyId: partyId,
+                partyRunId: partyRunId
+            )
+        }
+        let battleLogsTask = Task {
+            if reloadsAllBattleLogs {
+                return await explorationStore.loadBattleLogIndexEntries(
+                    partyId: partyId,
+                    partyRunId: partyRunId,
+                    battleIndex: 0,
+                    count: targetBattleLogCount
+                )
+            }
+
+            guard missingBattleLogCount > 0 else {
+                return []
+            }
+
+            return await explorationStore.loadBattleLogIndexEntries(
+                partyId: partyId,
+                partyRunId: partyRunId,
+                battleIndex: loadedBattleLogCount,
+                count: missingBattleLogCount
+            )
+        }
+
+        if shouldReloadRunDetail {
+            runDetail = await runDetailTask.value
+        }
+
+        let fetchedBattleLogs = await battleLogsTask.value
+        if reloadsAllBattleLogs {
+            battleLogIndexEntries = fetchedBattleLogs
+        } else if !fetchedBattleLogs.isEmpty {
+            battleLogIndexEntries = fetchedBattleLogs + (battleLogIndexEntries ?? [])
+        }
+        loadedBattleLogCount = targetBattleLogCount
     }
 
     private func progressKey(for run: RunSessionRecord?) -> String {

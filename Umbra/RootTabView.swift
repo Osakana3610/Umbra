@@ -4,7 +4,7 @@ import SwiftUI
 
 struct RootTabView: View {
     private static let statusBarBottomInset: CGFloat = 49
-    private static let legacyPlayerStatusContentInset: CGFloat = 106
+    private static let manualPlayerStatusContentInset: CGFloat = 106
 
     let masterData: MasterData
     let persistenceController: PersistenceController
@@ -154,7 +154,7 @@ struct RootTabView: View {
 
     private var notificationBottomPadding: CGFloat {
         // The notification overlay is offset differently per tab chrome implementation so it does
-        // not collide with either the accessory bar or the legacy safe-area inset.
+        // not collide with either the accessory bar or the manual bottom inset.
         if #available(iOS 26.0, *) {
             return 112
         }
@@ -171,6 +171,6 @@ struct RootTabView: View {
             return 0
         }
 
-        return Self.legacyPlayerStatusContentInset
+        return Self.manualPlayerStatusContentInset
     }
 }

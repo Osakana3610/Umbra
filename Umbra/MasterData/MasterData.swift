@@ -673,14 +673,6 @@ extension MasterData {
         return titles[index + 1].id
     }
 
-    nonisolated func explorationDifficultyDisplayName(for titleId: Int?) -> String {
-        guard let title = explorationDifficultyTitle(id: titleId) else {
-            return "不明な難易度"
-        }
-
-        return title.name.isEmpty ? "無称号" : title.name
-    }
-
     nonisolated func explorationLabyrinthDisplayName(
         labyrinthName: String,
         difficultyTitleId: Int?

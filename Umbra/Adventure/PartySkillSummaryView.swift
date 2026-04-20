@@ -9,6 +9,7 @@ struct PartySkillSummaryView: View {
     let partyStore: PartyStore
 
     private let skillsByID: [Int: MasterData.Skill]
+    @State private var presentation = PartySkillSummaryPresentation.empty
 
     init(
         partyId: Int,
@@ -28,17 +29,17 @@ struct PartySkillSummaryView: View {
             if party != nil {
                 List {
                     Section {
-                        if experienceMemberRows.isEmpty {
+                        if presentation.experienceRows.isEmpty {
                             Text("メンバーがいません。")
                                 .foregroundStyle(.secondary)
                         } else {
-                            ForEach(experienceMemberRows) { row in
+                            ForEach(presentation.experienceRows) { row in
                                 LabeledContent(row.characterName, value: multiplierText(row.multiplier))
                             }
                         }
 
                         PartySkillEntryListView(
-                            entries: aggregation.rewardEntries(for: .experienceGainMultiplier)
+                            entries: presentation.aggregation.rewardEntries(for: .experienceGainMultiplier)
                         )
                     } header: {
                         Text("経験値倍率")
@@ -47,24 +48,24 @@ struct PartySkillSummaryView: View {
                     }
 
                     Section("ゴールド") {
-                        LabeledContent("合計倍率", value: multiplierText(aggregation.goldMultiplier))
+                        LabeledContent("合計倍率", value: multiplierText(presentation.aggregation.goldMultiplier))
 
                         PartySkillEntryListView(
-                            entries: aggregation.rewardEntries(for: .goldGainMultiplier)
+                            entries: presentation.aggregation.rewardEntries(for: .goldGainMultiplier)
                         )
                     }
 
                     Section("称号抽選回数") {
-                        LabeledContent("合計補正", value: signedCountText(aggregation.titleRollCountModifier))
+                        LabeledContent("合計補正", value: signedCountText(presentation.aggregation.titleRollCountModifier))
 
-                        PartySkillEntryListView(entries: aggregation.titleRollCountEntries)
+                        PartySkillEntryListView(entries: presentation.aggregation.titleRollCountEntries)
                     }
 
                     Section("レア倍率") {
-                        LabeledContent("合計倍率", value: multiplierText(aggregation.rareDropMultiplier))
+                        LabeledContent("合計倍率", value: multiplierText(presentation.aggregation.rareDropMultiplier))
 
                         PartySkillEntryListView(
-                            entries: aggregation.rewardEntries(for: .rareDropMultiplier)
+                            entries: presentation.aggregation.rewardEntries(for: .rareDropMultiplier)
                         )
                     }
 
@@ -73,6 +74,15 @@ struct PartySkillSummaryView: View {
                 .playerStatusContentInsetAware()
                 .navigationTitle("パーティスキル")
                 .navigationBarTitleDisplayMode(.inline)
+                .task(
+                    id: PartySkillSummaryInput(
+                        party: party,
+                        rosterRevision: rosterStore.contentRevision,
+                        partyRevision: partyStore.contentRevision
+                    )
+                ) {
+                    rebuildPresentation()
+                }
             } else {
                 ContentUnavailableView(
                     "パーティが見つかりません",
@@ -86,11 +96,7 @@ struct PartySkillSummaryView: View {
         partyStore.partiesById[partyId]
     }
 
-    private var memberStatuses: [PartyMemberStatus] {
-        guard let party else {
-            return []
-        }
-
+    private func memberStatuses(for party: PartyRecord) -> [PartyMemberStatus] {
         // Reward skills are derived from the same fully calculated character status used in battle
         // so race, job, previous job, and equipment-granted skills all contribute here.
         return party.memberCharacterIds.compactMap { characterId in
@@ -106,14 +112,25 @@ struct PartySkillSummaryView: View {
         }
     }
 
-    private var aggregation: PartySkillAggregation {
-        PartySkillAggregation(
-            memberStatuses: memberStatuses,
-            skillsByID: skillsByID
+    private func rebuildPresentation() {
+        guard let party else {
+            presentation = .empty
+            return
+        }
+
+        let resolvedMemberStatuses = memberStatuses(for: party)
+        presentation = PartySkillSummaryPresentation(
+            experienceRows: makeExperienceMemberRows(from: resolvedMemberStatuses),
+            aggregation: PartySkillAggregation(
+                memberStatuses: resolvedMemberStatuses,
+                skillsByID: skillsByID
+            )
         )
     }
 
-    private var experienceMemberRows: [ExperienceMemberRow] {
+    private func makeExperienceMemberRows(
+        from memberStatuses: [PartyMemberStatus]
+    ) -> [ExperienceMemberRow] {
         memberStatuses.map { memberStatus in
             ExperienceMemberRow(
                 characterID: memberStatus.character.characterId,
@@ -144,6 +161,22 @@ private struct ExperienceMemberRow: Identifiable {
     let multiplier: Double
 
     var id: Int { characterID }
+}
+
+private struct PartySkillSummaryPresentation {
+    let experienceRows: [ExperienceMemberRow]
+    let aggregation: PartySkillAggregation
+
+    static let empty = PartySkillSummaryPresentation(
+        experienceRows: [],
+        aggregation: PartySkillAggregation(memberStatuses: [], skillsByID: [:])
+    )
+}
+
+private struct PartySkillSummaryInput: Equatable {
+    let party: PartyRecord?
+    let rosterRevision: Int
+    let partyRevision: Int
 }
 
 private struct PartySkillAggregation {

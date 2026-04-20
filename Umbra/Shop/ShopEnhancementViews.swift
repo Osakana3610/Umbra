@@ -11,6 +11,13 @@ struct ShopEnhancementSection: Identifiable {
     var id: EquipmentSectionKey { key }
 }
 
+struct ShopEnhancementPresentationInput: Equatable {
+    let itemFilter: ItemBrowserFilter
+    let searchText: String
+    let inventoryRevision: Int
+    let rosterRevision: Int
+}
+
 enum ShopEnhancementRow: Identifiable {
     case inventory(item: EquipmentCachedItem)
     case equipped(

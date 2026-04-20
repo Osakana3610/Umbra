@@ -12,6 +12,11 @@ struct ShopJewelEnhancementView: View {
     @State private var loadError: String?
     @State private var itemFilter = ItemBrowserFilter()
     @State private var presentedItemDetail: ItemDetailSheetPresentation?
+    @State private var currentFilterCatalog = ItemBrowserFilterOptions(
+        itemIDs: [CompositeItemID](),
+        masterData: MasterData.current
+    )
+    @State private var visibleSections: [ShopEnhancementSection] = []
 
     var body: some View {
         List {
@@ -41,13 +46,13 @@ struct ShopJewelEnhancementView: View {
                 Section("宝石強化") {
                     ProgressView()
                 }
-            } else if baseSections.isEmpty {
+            } else if visibleSections.isEmpty {
                 Section("ベースアイテム") {
                     Text(emptyStateMessage)
                         .foregroundStyle(.secondary)
                 }
             } else {
-                ForEach(baseSections) { section in
+                ForEach(visibleSections) { section in
                     if #available(iOS 26.0, *) {
                         Section(section.key.title) {
                             ForEach(section.rows) { row in
@@ -55,7 +60,7 @@ struct ShopJewelEnhancementView: View {
                                     .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
                             }
                         }
-                        .sectionIndexLabel(equipmentSectionIndexLabel(for: section, in: baseSections))
+                        .sectionIndexLabel(equipmentSectionIndexLabel(for: section, in: visibleSections))
                     } else {
                         Section(section.key.title) {
                             ForEach(section.rows) { row in
@@ -91,24 +96,33 @@ struct ShopJewelEnhancementView: View {
                 loadError = error.localizedDescription
             }
         }
-    }
-
-    private var inventoryItems: [EquipmentCachedItem] {
-        equipmentStore.displayOrderedInventoryItems
+        .task(
+            id: ShopEnhancementPresentationInput(
+                itemFilter: itemFilter,
+                searchText: "",
+                inventoryRevision: equipmentStore.contentRevision,
+                rosterRevision: rosterStore.contentRevision
+            )
+        ) {
+            rebuildPresentation()
+        }
     }
 
     private var currentErrorMessage: String? {
         loadError ?? equipmentStore.lastOperationError
     }
 
-    private var currentFilterCatalog: ItemBrowserFilterOptions {
-        ItemBrowserFilterOptions(
-            itemIDs: enhancementItemIDs,
-            masterData: masterData
-        )
-    }
+    private func rebuildPresentation() {
+        guard equipmentStore.isLoaded else {
+            currentFilterCatalog = ItemBrowserFilterOptions(
+                itemIDs: [CompositeItemID](),
+                masterData: masterData
+            )
+            visibleSections = []
+            return
+        }
 
-    private var enhancementItemIDs: [CompositeItemID] {
+        let inventoryItems = equipmentStore.displayOrderedInventoryItems
         let inventoryIDs = inventoryItems
             .filter { item in
                 item.itemID.jewelItemId == 0 && item.category != .jewel
@@ -125,11 +139,12 @@ struct ShopJewelEnhancementView: View {
         }
         // The filter catalog spans both inventory and equipped candidates because the next screen can
         // start from either source.
-        return inventoryIDs + equippedIDs
-    }
+        currentFilterCatalog = ItemBrowserFilterOptions(
+            itemIDs: inventoryIDs + equippedIDs,
+            masterData: masterData
+        )
 
-    private var baseSections: [ShopEnhancementSection] {
-        ShopEnhancementRow.buildSections(
+        visibleSections = ShopEnhancementRow.buildSections(
             inventoryItems: inventoryItems,
             characters: rosterStore.characters,
             masterData: masterData

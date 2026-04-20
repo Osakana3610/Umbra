@@ -65,10 +65,6 @@ extension MasterData {
         job(for: jobID)?.name ?? "不明"
     }
 
-    nonisolated func raceAssetName(for raceID: Int) -> String {
-        race(for: raceID)?.assetName ?? ""
-    }
-
     nonisolated func portraitAssetName(for character: CharacterRecord) -> String {
         job(for: character.currentJobId)?.portraitAssetName(for: character.portraitGender) ?? ""
     }
