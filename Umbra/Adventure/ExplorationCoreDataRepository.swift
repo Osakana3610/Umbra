@@ -24,6 +24,46 @@ actor ExplorationCoreDataRepository {
         }
     }
 
+    func loadBattleLogIndexEntries(
+        partyId: Int,
+        partyRunId: Int,
+        battleIndex: Int,
+        count: Int
+    ) async throws -> [ExplorationBattleLog.IndexEntry] {
+        try await perform { context in
+            guard count > 0 else {
+                return []
+            }
+
+            let logEntities = try ExplorationCoreDataBridge.fetchBattleLogEntities(
+                partyId: partyId,
+                partyRunId: partyRunId,
+                range: battleIndex..<(battleIndex + count),
+                in: context
+            )
+            return logEntities.reversed().map(ExplorationCoreDataBridge.makeBattleLogIndexEntry)
+        }
+    }
+
+    func loadBattleLog(
+        partyId: Int,
+        partyRunId: Int,
+        battleIndex: Int
+    ) async throws -> ExplorationBattleLog? {
+        try await perform { context in
+            guard let entity = try ExplorationCoreDataBridge.fetchBattleLogEntity(
+                partyId: partyId,
+                partyRunId: partyRunId,
+                battleIndex: battleIndex,
+                in: context
+            ) else {
+                return nil
+            }
+
+            return ExplorationCoreDataBridge.makeBattleLog(from: entity)
+        }
+    }
+
     func loadRunDetail(
         partyId: Int,
         partyRunId: Int
@@ -125,6 +165,18 @@ actor ExplorationCoreDataRepository {
     func insertRun(_ session: RunSessionRecord) async throws {
         try await insertRun(
             session,
+            battleLogs: [],
+            consumesCatTicket: false
+        )
+    }
+
+    func insertRun(
+        _ session: RunSessionRecord,
+        battleLogs: [ExplorationBattleLog]
+    ) async throws {
+        try await insertRun(
+            session,
+            battleLogs: battleLogs,
             consumesCatTicket: false
         )
     }
@@ -138,6 +190,7 @@ actor ExplorationCoreDataRepository {
 
     func insertRun(
         _ session: RunSessionRecord,
+        battleLogs: [ExplorationBattleLog],
         consumesCatTicket: Bool
     ) async throws {
         try await perform { context in
@@ -159,6 +212,7 @@ actor ExplorationCoreDataRepository {
 
             try ExplorationCoreDataBridge.insertRunEntity(
                 for: session,
+                battleLogs: battleLogs,
                 in: context
             )
         }
@@ -167,19 +221,6 @@ actor ExplorationCoreDataRepository {
     func pruneCompletedRunsExceedingRetentionLimit() async throws -> Bool {
         try await perform { context in
             try ExplorationCoreDataBridge.pruneCompletedRunsExceedingRetentionLimit(in: context)
-        }
-    }
-
-    func loadProgressContexts() async throws -> [RunSessionRecord] {
-        try await perform { context in
-            let runEntities = try ExplorationCoreDataBridge.fetchRunEntities(in: context)
-            return runEntities.map { runEntity in
-                if runEntity.completedAt == nil {
-                    return ExplorationCoreDataBridge.makeRunDetailRecord(from: runEntity)
-                }
-
-                return ExplorationCoreDataBridge.makeRunSummaryRecord(from: runEntity)
-            }
         }
     }
 
@@ -334,6 +375,43 @@ nonisolated private enum ExplorationCoreDataBridge {
             format: "partyId == %d AND partyRunId == %d",
             partyId,
             partyRunId
+        )
+        return try context.fetch(request).first
+    }
+
+    static func fetchBattleLogEntities(
+        partyId: Int,
+        partyRunId: Int,
+        range: Range<Int>,
+        in context: NSManagedObjectContext
+    ) throws -> [RunSessionBattleLogEntity] {
+        let request = NSFetchRequest<RunSessionBattleLogEntity>(entityName: "RunSessionBattleLogEntity")
+        request.predicate = NSPredicate(
+            format: "runSession.partyId == %d AND runSession.partyRunId == %d AND logIndex >= %d AND logIndex < %d",
+            partyId,
+            partyRunId,
+            range.lowerBound,
+            range.upperBound
+        )
+        request.sortDescriptors = [
+            NSSortDescriptor(key: "logIndex", ascending: true)
+        ]
+        return try context.fetch(request)
+    }
+
+    static func fetchBattleLogEntity(
+        partyId: Int,
+        partyRunId: Int,
+        battleIndex: Int,
+        in context: NSManagedObjectContext
+    ) throws -> RunSessionBattleLogEntity? {
+        let request = NSFetchRequest<RunSessionBattleLogEntity>(entityName: "RunSessionBattleLogEntity")
+        request.fetchLimit = 1
+        request.predicate = NSPredicate(
+            format: "runSession.partyId == %d AND runSession.partyRunId == %d AND logIndex == %d",
+            partyId,
+            partyRunId,
+            battleIndex
         )
         return try context.fetch(request).first
     }
@@ -531,6 +609,7 @@ nonisolated private enum ExplorationCoreDataBridge {
 
     static func insertRunEntity(
         for session: RunSessionRecord,
+        battleLogs: [ExplorationBattleLog],
         in context: NSManagedObjectContext
     ) throws {
         guard let runEntity = NSEntityDescription.insertNewObject(
@@ -561,7 +640,7 @@ nonisolated private enum ExplorationCoreDataBridge {
             }
         }
         appendBattleLogs(
-            session.battleLogs,
+            battleLogs,
             to: runEntity,
             in: context
         )
@@ -818,11 +897,14 @@ nonisolated private enum ExplorationCoreDataBridge {
     }
 
     static func makeRunSummaryRecord(from entity: RunSessionEntity) -> RunSessionRecord {
+        let shouldLoadDeferredRewards = entity.completedAt == nil
         let members = orderedMembers(from: entity)
         let memberSnapshots = members.map(makeCharacterRecord)
         let memberCharacterIds = members.map { Int($0.characterId) }
         let currentPartyHPs = members.map { Int($0.currentHP) }
         let memberExperienceMultipliers = members.map(\.experienceMultiplier)
+        let experienceRewards = shouldLoadDeferredRewards ? makeExperienceRewards(from: entity) : []
+        let dropRewards = shouldLoadDeferredRewards ? makeDropRewards(from: entity) : []
 
         return RunSessionRecord(
             partyRunId: Int(entity.partyRunId),
@@ -834,6 +916,7 @@ nonisolated private enum ExplorationCoreDataBridge {
             rootSeed: UInt64(bitPattern: entity.rootSeedSigned),
             memberSnapshots: memberSnapshots,
             memberCharacterIds: memberCharacterIds,
+            totalBattleCount: Int(entity.totalBattleCount),
             completedBattleCount: Int(entity.completedBattleCount),
             currentPartyHPs: currentPartyHPs,
             memberExperienceMultipliers: memberExperienceMultipliers,
@@ -847,14 +930,13 @@ nonisolated private enum ExplorationCoreDataBridge {
                 BattleOutcome.self,
                 from: entity.latestBattleOutcomeValue
             ),
-            battleLogs: [],
             goldBuffer: Int(entity.goldBuffer),
-            experienceRewards: [],
-            dropRewards: [],
+            experienceRewards: experienceRewards,
+            dropRewards: dropRewards,
             completion: makeCompletionRecord(
                 from: entity,
-                experienceRewards: [],
-                dropRewards: []
+                experienceRewards: experienceRewards,
+                dropRewards: dropRewards
             )
         )
     }
@@ -862,10 +944,9 @@ nonisolated private enum ExplorationCoreDataBridge {
     static func makeRunDetailRecord(from entity: RunSessionEntity) -> RunSessionRecord {
         let experienceRewards = makeExperienceRewards(from: entity)
         let dropRewards = makeDropRewards(from: entity)
-        // Rebuild the summary first so detail decoding stays in lockstep with the lightweight
-        // list representation and only layers extra payload on top.
-        var summary = makeRunSummaryRecord(from: entity)
-        summary = RunSessionRecord(
+        let summary = makeRunSummaryRecord(from: entity)
+
+        return RunSessionRecord(
             partyRunId: summary.partyRunId,
             partyId: summary.partyId,
             labyrinthId: summary.labyrinthId,
@@ -875,6 +956,7 @@ nonisolated private enum ExplorationCoreDataBridge {
             rootSeed: summary.rootSeed,
             memberSnapshots: summary.memberSnapshots,
             memberCharacterIds: summary.memberCharacterIds,
+            totalBattleCount: summary.totalBattleCount,
             completedBattleCount: summary.completedBattleCount,
             currentPartyHPs: summary.currentPartyHPs,
             memberExperienceMultipliers: summary.memberExperienceMultipliers,
@@ -885,7 +967,6 @@ nonisolated private enum ExplorationCoreDataBridge {
             latestBattleFloorNumber: summary.latestBattleFloorNumber,
             latestBattleNumber: summary.latestBattleNumber,
             latestBattleOutcome: summary.latestBattleOutcome,
-            battleLogs: makeBattleLogs(from: entity),
             goldBuffer: summary.goldBuffer,
             experienceRewards: experienceRewards,
             dropRewards: dropRewards,
@@ -895,7 +976,6 @@ nonisolated private enum ExplorationCoreDataBridge {
                 dropRewards: dropRewards
             )
         )
-        return summary
     }
 
     static func makeCompletionRecord(
@@ -917,11 +997,42 @@ nonisolated private enum ExplorationCoreDataBridge {
         )
     }
 
-    static func makeBattleLogs(from entity: RunSessionEntity) -> [ExplorationBattleLog] {
-        let logs = entity.battleLogs as? Set<RunSessionBattleLogEntity> ?? []
-        return logs.sorted { lhs, rhs in
-            Int(lhs.logIndex) < Int(rhs.logIndex)
-        }.map(makeBattleLog)
+    static func makeBattleLogIndexEntry(from entity: RunSessionBattleLogEntity) -> ExplorationBattleLog.IndexEntry {
+        let defeatedTargetIndices = Set(
+            (entity.turns as? Set<RunSessionBattleTurnEntity> ?? [])
+                .flatMap { $0.actions as? Set<RunSessionBattleActionEntity> ?? [] }
+                .flatMap { $0.results as? Set<RunSessionBattleResultEntity> ?? [] }
+                .filter(\.isDefeated)
+                .map { Int($0.targetCombatantIndex) }
+        )
+        let defeatedPartyMemberNames = (entity.combatants as? Set<RunSessionBattleCombatantEntity> ?? [])
+            .filter { combatant in
+                let side = decodedPersistenceOrder(BattleSide.self, from: combatant.sideValue) ?? .enemy
+                return side == .ally && defeatedTargetIndices.contains(Int(combatant.combatantIndex))
+            }
+            .sorted { lhs, rhs in
+                Int(lhs.formationIndex) < Int(rhs.formationIndex)
+            }
+            .map { $0.name ?? "" }
+
+        return ExplorationBattleLog.IndexEntry(
+            partyId: Int(entity.runSession?.partyId ?? 0),
+            partyRunId: Int(entity.runSession?.partyRunId ?? 0),
+            battleIndex: Int(entity.logIndex),
+            floorNumber: Int(entity.floorNumber),
+            battleNumber: Int(entity.battleNumber),
+            result: decodedPersistenceOrder(BattleOutcome.self, from: entity.resultValue) ?? .draw,
+            turnCount: (entity.turns as? Set<RunSessionBattleTurnEntity> ?? []).count,
+            defeatedPartyMemberNames: defeatedPartyMemberNames,
+            currentPartyHPs: (entity.combatants as? Set<RunSessionBattleCombatantEntity> ?? [])
+            .filter { combatant in
+                (decodedPersistenceOrder(BattleSide.self, from: combatant.sideValue) ?? .enemy) == .ally
+            }
+            .sorted { lhs, rhs in
+                Int(lhs.formationIndex) < Int(rhs.formationIndex)
+            }
+            .map { Int($0.remainingHP) }
+        )
     }
 
     static func makeBattleLog(from entity: RunSessionBattleLogEntity) -> ExplorationBattleLog {
@@ -1092,6 +1203,7 @@ nonisolated private enum ExplorationCoreDataBridge {
         entity.targetFloorNumber = Int64(session.targetFloorNumber)
         entity.startedAt = session.startedAt
         entity.rootSeedSigned = Int64(bitPattern: session.rootSeed)
+        entity.totalBattleCount = Int64(session.totalBattleCount)
         entity.completedBattleCount = Int64(session.completedBattleCount)
         entity.goldBuffer = Int64(session.goldBuffer)
         entity.progressIntervalMultiplier = session.progressIntervalMultiplier

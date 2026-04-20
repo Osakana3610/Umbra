@@ -17,9 +17,7 @@ struct AdventureHomeView: View {
             if rosterStore.playerState != nil {
                 ForEach(partyStore.parties) { party in
                     let status = explorationStore.status(for: party.partyId)
-                    let completedRuns = explorationStore.runs.filter {
-                        $0.partyId == party.partyId && $0.isCompleted
-                    }
+                    let completedRunCount = explorationStore.completedRunCount(for: party.partyId)
                     let presentation = AdventurePartyPresentation(
                         party: party,
                         status: status,
@@ -80,7 +78,6 @@ struct AdventureHomeView: View {
                                     masterData: masterData,
                                     rosterStore: rosterStore,
                                     partyStore: partyStore,
-                                    equipmentStore: equipmentStore,
                                     explorationStore: explorationStore
                                 )
                             } label: {
@@ -94,7 +91,7 @@ struct AdventureHomeView: View {
                                 .listRowInsets(EdgeInsets(top: 0, leading: 20, bottom: 0, trailing: 20))
                         }
 
-                        if !completedRuns.isEmpty {
+                        if completedRunCount > 0 {
                             NavigationLink {
                                 PartyExplorationHistoryView(
                                     partyId: party.partyId,
@@ -102,7 +99,6 @@ struct AdventureHomeView: View {
                                     masterData: masterData,
                                     rosterStore: rosterStore,
                                     partyStore: partyStore,
-                                    equipmentStore: equipmentStore,
                                     explorationStore: explorationStore
                                 )
                             } label: {
@@ -112,7 +108,7 @@ struct AdventureHomeView: View {
 
                                     Spacer(minLength: 0)
 
-                                    Text("\(completedRuns.count)件")
+                                    Text("\(completedRunCount)件")
                                         .font(.footnote)
                                         .foregroundStyle(.secondary)
                                         .monospacedDigit()

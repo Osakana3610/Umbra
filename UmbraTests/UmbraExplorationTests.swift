@@ -363,17 +363,26 @@ struct UmbraExplorationTests {
             masterData: masterData
         )
         let startedRun = try #require(snapshot.runs.first)
-        let storedDetail = try #require(await explorationCoreDataRepository.loadRunDetail(partyId: 1, partyRunId: 1))
+        let storedSnapshot = try await explorationCoreDataRepository.loadSnapshot()
+        let storedRun = try #require(
+            storedSnapshot.runs.first { $0.partyId == 1 && $0.partyRunId == 1 }
+        )
+        let storedFirstBattleLog = try #require(
+            await explorationCoreDataRepository.loadBattleLog(
+                partyId: 1,
+                partyRunId: 1,
+                battleIndex: 0
+            )
+        )
 
         #expect(startedRun.completedBattleCount == 0)
         #expect(startedRun.completion == nil)
-        #expect(startedRun.battleLogs.isEmpty)
 
-        #expect(storedDetail.completedBattleCount == 0)
-        #expect(storedDetail.completion == nil)
-        #expect(storedDetail.battleLogs.count > startedRun.battleLogs.count)
-        #expect(storedDetail.goldBuffer > 0)
-        #expect(!storedDetail.experienceRewards.isEmpty)
+        #expect(storedRun.completedBattleCount == 0)
+        #expect(storedRun.completion == nil)
+        #expect(storedFirstBattleLog.battleRecord.battleNumber == 1)
+        #expect(storedRun.goldBuffer > 0)
+        #expect(!storedRun.experienceRewards.isEmpty)
 
         let refreshedSnapshot = try await explorationService.refreshRuns(
             at: startedAt.addingTimeInterval(10_000),
@@ -381,10 +390,9 @@ struct UmbraExplorationTests {
         )
         let completedRun = try #require(refreshedSnapshot.runs.first)
         let completion = try #require(completedRun.completion)
-
-        #expect(storedDetail.battleLogs == completedRun.battleLogs)
-        #expect(storedDetail.goldBuffer == completion.gold)
-        #expect(storedDetail.experienceRewards == completion.experienceRewards)
+        #expect(storedRun.completion == nil)
+        #expect(storedRun.goldBuffer == completion.gold)
+        #expect(storedRun.experienceRewards == completion.experienceRewards)
     }
 
     @Test
@@ -445,9 +453,12 @@ struct UmbraExplorationTests {
         #expect(startedRun.rareDropMultiplier == 2.0)
         #expect(startedRun.memberExperienceMultipliers == [2.0])
 
-        let plannedDetail = try #require(await explorationCoreDataRepository.loadRunDetail(partyId: 1, partyRunId: 1))
-        #expect(plannedDetail.goldBuffer == 20)
-        #expect(plannedDetail.experienceRewards == [
+        let storedSnapshot = try await explorationCoreDataRepository.loadSnapshot()
+        let storedRun = try #require(
+            storedSnapshot.runs.first { $0.partyId == 1 && $0.partyRunId == 1 }
+        )
+        #expect(storedRun.goldBuffer == 20)
+        #expect(storedRun.experienceRewards == [
             ExplorationExperienceReward(characterId: character.characterId, experience: 20)
         ])
 
@@ -608,28 +619,34 @@ struct UmbraExplorationTests {
             masterData: masterData
         )
 
-        let plannedDetail = try #require(await explorationCoreDataRepository.loadRunDetail(partyId: 1, partyRunId: 1))
-        let firstBattlePartyHPs = plannedDetail.battleLogs[0].combatants
-            .filter { $0.side == .ally }
-            .sorted { $0.formationIndex < $1.formationIndex }
-            .map(\.remainingHP)
+        let firstBattleIndexEntry = try #require(
+            await explorationCoreDataRepository.loadBattleLogIndexEntries(
+                partyId: 1,
+                partyRunId: 1,
+                battleIndex: 0,
+                count: 1
+            )
+            .first
+        )
 
         let snapshot = try await explorationService.refreshRuns(
             at: startedAt.addingTimeInterval(1),
             masterData: masterData
         )
         let activeRun = try #require(snapshot.runs.first)
-        let refreshedDetail = try #require(await explorationCoreDataRepository.loadRunDetail(partyId: 1, partyRunId: 1))
+        let refreshedSnapshot = try await explorationCoreDataRepository.loadSnapshot()
+        let refreshedSummary = try #require(
+            refreshedSnapshot.runs.first { $0.partyId == 1 && $0.partyRunId == 1 }
+        )
 
         #expect(activeRun.completedBattleCount == 1)
         #expect(activeRun.completion == nil)
-        #expect(refreshedDetail.battleLogs.count == plannedDetail.battleLogs.count)
-        #expect(refreshedDetail.completedBattleCount == 1)
-        #expect(refreshedDetail.currentPartyHPs == firstBattlePartyHPs)
+        #expect(refreshedSummary.completedBattleCount == 1)
+        #expect(refreshedSummary.currentPartyHPs == firstBattleIndexEntry.currentPartyHPs)
     }
 
     @Test
-    func loadRunDetailPreservesActionTargetIdsIndependentFromResults() async throws {
+    func loadBattleLogPreservesActionTargetIdsIndependentFromResults() async throws {
         let explorationCoreDataRepository = ExplorationCoreDataRepository(
             container: PersistenceController(inMemory: true).container
         )
@@ -647,6 +664,7 @@ struct UmbraExplorationTests {
                 rootSeed: 1,
                 memberSnapshots: [],
                 memberCharacterIds: [],
+                totalBattleCount: 1,
                 completedBattleCount: 0,
                 currentPartyHPs: [],
                 memberExperienceMultipliers: [],
@@ -657,88 +675,163 @@ struct UmbraExplorationTests {
                 latestBattleFloorNumber: nil,
                 latestBattleNumber: nil,
                 latestBattleOutcome: nil,
-                battleLogs: [
-                    ExplorationBattleLog(
-                        battleRecord: BattleRecord(
-                            runId: RunSessionID(partyId: 1, partyRunId: 1),
-                            floorNumber: 1,
-                            battleNumber: 1,
-                            result: .victory,
-                            turns: [
-                                BattleTurnRecord(
-                                    turnNumber: 1,
-                                    actions: [
-                                        BattleActionRecord(
-                                            actorId: BattleCombatantID(rawValue: 1 - 1),
-                                            actionKind: .attack,
-                                            actionRef: nil,
-                                            actionFlags: [],
-                                            targetIds: [firstTargetId, secondTargetId],
-                                            results: [
-                                                BattleTargetResult(
-                                                    targetId: secondTargetId,
-                                                    resultKind: .damage,
-                                                    value: 12,
-                                                    statusId: nil,
-                                                    flags: []
-                                                )
-                                            ]
-                                        )
-                                    ]
-                                )
-                            ]
-                        ),
-                        combatants: [
-                            BattleCombatantSnapshot(
-                                id: BattleCombatantID(rawValue: 1 - 1),
-                                name: "前衛",
-                                side: .ally,
-                                imageReference: nil,
-                                level: 1,
-                                initialHP: 10,
-                                maxHP: 10,
-                                remainingHP: 10,
-                                formationIndex: 0
-                            ),
-                            BattleCombatantSnapshot(
-                                id: firstTargetId,
-                                name: "敵A",
-                                side: .enemy,
-                                imageReference: nil,
-                                level: 1,
-                                initialHP: 10,
-                                maxHP: 10,
-                                remainingHP: 10,
-                                formationIndex: 0
-                            ),
-                            BattleCombatantSnapshot(
-                                id: secondTargetId,
-                                name: "敵B",
-                                side: .enemy,
-                                imageReference: nil,
-                                level: 1,
-                                initialHP: 10,
-                                maxHP: 10,
-                                remainingHP: 0,
-                                formationIndex: 1
-                            )
-                        ]
-                    )
-                ],
                 goldBuffer: 0,
                 experienceRewards: [],
                 dropRewards: [],
                 completion: nil
-            )
+            ),
+            battleLogs: [
+                ExplorationBattleLog(
+                    battleRecord: BattleRecord(
+                        runId: RunSessionID(partyId: 1, partyRunId: 1),
+                        floorNumber: 1,
+                        battleNumber: 1,
+                        result: .victory,
+                        turns: [
+                            BattleTurnRecord(
+                                turnNumber: 1,
+                                actions: [
+                                    BattleActionRecord(
+                                        actorId: BattleCombatantID(rawValue: 1 - 1),
+                                        actionKind: .attack,
+                                        actionRef: nil,
+                                        actionFlags: [],
+                                        targetIds: [firstTargetId, secondTargetId],
+                                        results: [
+                                            BattleTargetResult(
+                                                targetId: secondTargetId,
+                                                resultKind: .damage,
+                                                value: 12,
+                                                statusId: nil,
+                                                flags: []
+                                            )
+                                        ]
+                                    )
+                                ]
+                            )
+                        ]
+                    ),
+                    combatants: [
+                        BattleCombatantSnapshot(
+                            id: BattleCombatantID(rawValue: 1 - 1),
+                            name: "前衛",
+                            side: .ally,
+                            imageReference: nil,
+                            level: 1,
+                            initialHP: 10,
+                            maxHP: 10,
+                            remainingHP: 10,
+                            formationIndex: 0
+                        ),
+                        BattleCombatantSnapshot(
+                            id: firstTargetId,
+                            name: "敵A",
+                            side: .enemy,
+                            imageReference: nil,
+                            level: 1,
+                            initialHP: 10,
+                            maxHP: 10,
+                            remainingHP: 10,
+                            formationIndex: 0
+                        ),
+                        BattleCombatantSnapshot(
+                            id: secondTargetId,
+                            name: "敵B",
+                            side: .enemy,
+                            imageReference: nil,
+                            level: 1,
+                            initialHP: 10,
+                            maxHP: 10,
+                            remainingHP: 0,
+                            formationIndex: 1
+                        )
+                    ]
+                )
+            ]
         )
 
-        let storedDetail = try #require(await explorationCoreDataRepository.loadRunDetail(partyId: 1, partyRunId: 1))
+        let storedBattleLog = try #require(
+            await explorationCoreDataRepository.loadBattleLog(
+                partyId: 1,
+                partyRunId: 1,
+                battleIndex: 0
+            )
+        )
         let storedAction = try #require(
-            storedDetail.battleLogs.first?.battleRecord.turns.first?.actions.first
+            storedBattleLog.battleRecord.turns.first?.actions.first
         )
 
         #expect(storedAction.targetIds == [firstTargetId, secondTargetId])
         #expect(storedAction.results.map(\.targetId) == [secondTargetId])
+    }
+
+    @Test
+    func completedRunSummaryDefersRewardDetailsUntilDetailLoad() async throws {
+        let explorationCoreDataRepository = ExplorationCoreDataRepository(
+            container: PersistenceController(inMemory: true).container
+        )
+        let experienceRewards = [
+            ExplorationExperienceReward(characterId: 10, experience: 123)
+        ]
+        let dropRewards = [
+            ExplorationDropReward(
+                itemID: .baseItem(itemId: 1),
+                sourceFloorNumber: 1,
+                sourceBattleNumber: 1
+            )
+        ]
+        let completion = RunCompletionRecord(
+            completedAt: Date(timeIntervalSinceReferenceDate: 296_000),
+            reason: .cleared,
+            gold: 77,
+            experienceRewards: experienceRewards,
+            dropRewards: dropRewards
+        )
+        let completedRun = RunSessionRecord(
+            partyRunId: 1,
+            partyId: 1,
+            labyrinthId: 1,
+            selectedDifficultyTitleId: 1,
+            targetFloorNumber: 1,
+            startedAt: Date(timeIntervalSinceReferenceDate: 295_000),
+            rootSeed: 1,
+            memberSnapshots: [],
+            memberCharacterIds: [],
+            totalBattleCount: 1,
+            completedBattleCount: 1,
+            currentPartyHPs: [],
+            memberExperienceMultipliers: [],
+            progressIntervalMultiplier: 1,
+            goldMultiplier: 1,
+            rareDropMultiplier: 1,
+            partyAverageLuck: 0,
+            latestBattleFloorNumber: 1,
+            latestBattleNumber: 1,
+            latestBattleOutcome: .victory,
+            goldBuffer: completion.gold,
+            experienceRewards: experienceRewards,
+            dropRewards: dropRewards,
+            completion: completion
+        )
+
+        try await explorationCoreDataRepository.insertRun(completedRun)
+
+        let summary = try #require(
+            try await explorationCoreDataRepository.loadSnapshot().runs.first
+        )
+        #expect(summary.totalBattleCount == 1)
+        #expect(summary.completion?.gold == 77)
+        #expect(summary.completion?.experienceRewards.isEmpty == true)
+        #expect(summary.completion?.dropRewards.isEmpty == true)
+
+        let detail = try #require(
+            try await explorationCoreDataRepository.loadRunDetail(
+                partyId: 1,
+                partyRunId: 1
+            )
+        )
+        #expect(detail.completion?.experienceRewards == experienceRewards)
+        #expect(detail.completion?.dropRewards == dropRewards)
     }
 
     @Test
@@ -781,7 +874,10 @@ struct UmbraExplorationTests {
             startedAt: startedAt,
             masterData: masterData
         )
-        let plannedRun = try #require(await explorationCoreDataRepository.loadRunDetail(partyId: 1, partyRunId: 1))
+        let storedSnapshot = try await explorationCoreDataRepository.loadSnapshot()
+        let storedRun = try #require(
+            storedSnapshot.runs.first { $0.partyId == 1 && $0.partyRunId == 1 }
+        )
 
         let snapshot = try await explorationService.refreshRuns(
             at: startedAt.addingTimeInterval(10),
@@ -791,9 +887,8 @@ struct UmbraExplorationTests {
         let completion = try #require(completedRun.completion)
 
         #expect(snapshot.didApplyRewards)
-        #expect(completion.gold == plannedRun.goldBuffer)
-        #expect(completion.experienceRewards == plannedRun.experienceRewards)
-        #expect(completedRun.battleLogs == plannedRun.battleLogs)
+        #expect(completion.gold == storedRun.goldBuffer)
+        #expect(completion.experienceRewards == storedRun.experienceRewards)
 
         let rosterSnapshot = try guildCoreDataRepository.loadRosterSnapshot()
         let updatedCharacter = try #require(
@@ -840,37 +935,33 @@ struct UmbraExplorationTests {
             ]
         )
 
-        try await explorationCoreDataRepository.insertRun(
-            RunSessionRecord(
-                partyRunId: 1,
-                partyId: 1,
-                labyrinthId: try #require(masterData.labyrinths.first?.id),
-                selectedDifficultyTitleId: try #require(masterData.defaultExplorationDifficultyTitle?.id),
-                targetFloorNumber: 1,
-                startedAt: Date(timeIntervalSinceReferenceDate: 305_000),
-                rootSeed: 1,
-                memberSnapshots: [],
-                memberCharacterIds: [],
-                completedBattleCount: 1,
-                currentPartyHPs: [],
-                memberExperienceMultipliers: [],
-                progressIntervalMultiplier: 1,
-                goldMultiplier: 1,
-                rareDropMultiplier: 1,
-                partyAverageLuck: 0,
-                latestBattleFloorNumber: 1,
-                latestBattleNumber: 1,
-                latestBattleOutcome: .victory,
-                battleLogs: [],
-                goldBuffer: 0,
-                experienceRewards: [],
-                dropRewards: completion.dropRewards,
-                completion: completion
-            )
+        let completedRun = RunSessionRecord(
+            partyRunId: 1,
+            partyId: 1,
+            labyrinthId: try #require(masterData.labyrinths.first?.id),
+            selectedDifficultyTitleId: try #require(masterData.defaultExplorationDifficultyTitle?.id),
+            targetFloorNumber: 1,
+            startedAt: Date(timeIntervalSinceReferenceDate: 305_000),
+            rootSeed: 1,
+            memberSnapshots: [],
+            memberCharacterIds: [],
+            totalBattleCount: 1,
+            completedBattleCount: 1,
+            currentPartyHPs: [],
+            memberExperienceMultipliers: [],
+            progressIntervalMultiplier: 1,
+            goldMultiplier: 1,
+            rareDropMultiplier: 1,
+            partyAverageLuck: 0,
+            latestBattleFloorNumber: 1,
+            latestBattleNumber: 1,
+            latestBattleOutcome: .victory,
+            goldBuffer: 0,
+            experienceRewards: [],
+            dropRewards: completion.dropRewards,
+            completion: completion
         )
-        let completedRun = try #require(
-            await explorationCoreDataRepository.loadRunDetail(partyId: 1, partyRunId: 1)
-        )
+        try await explorationCoreDataRepository.insertRun(completedRun)
 
         let rewardApplication = try await explorationCoreDataRepository.commitProgressUpdates(
             [(currentSession: completedRun, resolvedSession: completedRun)],
@@ -1020,7 +1111,10 @@ struct UmbraExplorationTests {
             startedAt: startedAt,
             masterData: masterData
         )
-        let plannedRun = try #require(await explorationCoreDataRepository.loadRunDetail(partyId: 1, partyRunId: 1))
+        let storedSnapshot = try await explorationCoreDataRepository.loadSnapshot()
+        let storedRun = try #require(
+            storedSnapshot.runs.first { $0.partyId == 1 && $0.partyRunId == 1 }
+        )
 
         try promoteCharacter(
             characterId: character.characterId,
@@ -1035,9 +1129,8 @@ struct UmbraExplorationTests {
         let completedRun = try #require(snapshot.runs.first)
         let completion = try #require(completedRun.completion)
 
-        #expect(completion.gold == plannedRun.goldBuffer)
-        #expect(completion.experienceRewards == plannedRun.experienceRewards)
-        #expect(completedRun.battleLogs == plannedRun.battleLogs)
+        #expect(completion.gold == storedRun.goldBuffer)
+        #expect(completion.experienceRewards == storedRun.experienceRewards)
     }
 
     @Test
@@ -1089,6 +1182,79 @@ struct UmbraExplorationTests {
     }
 
     @Test
+    func explorationStoreCachesPartyStatusAndCompletedRunCount() async throws {
+        let container = PersistenceController(inMemory: true).container
+        let guildCoreDataRepository = GuildCoreDataRepository(container: container)
+        let explorationCoreDataRepository = ExplorationCoreDataRepository(container: container)
+        let guildServices = GuildServices(
+            coreDataRepository: guildCoreDataRepository,
+            explorationCoreDataRepository: explorationCoreDataRepository
+        )
+        let masterData = makeExplorationBattleTestMasterData(
+            allyBaseStats: battleBaseStats(vitality: 20, strength: 20, agility: 20),
+            enemyBaseStats: battleBaseStats(vitality: 1),
+            labyrinths: [
+                MasterData.Labyrinth(
+                    id: 1,
+                    name: "状態集約迷宮",
+                    progressIntervalSeconds: 1,
+                    floors: [
+                        MasterData.Floor(
+                            id: 1,
+                            floorNumber: 1,
+                            battleCount: 1,
+                            enemyCount: 1,
+                            encounters: [MasterData.Encounter(enemyId: 1, level: 1, weight: 1)],
+                            fixedBattle: nil
+                        )
+                    ]
+                )
+            ]
+        )
+        let itemDropNotificationService = ItemDropNotificationService(masterData: masterData)
+        let explorationStore = ExplorationStore(
+            coreDataRepository: explorationCoreDataRepository,
+            itemDropNotificationService: itemDropNotificationService
+        )
+
+        let character = try guildServices.roster.hireCharacter(
+            raceId: 1,
+            jobId: 1,
+            aptitudeId: 1,
+            masterData: masterData
+        ).character
+        _ = try await guildServices.parties.addCharacter(characterId: character.characterId, toParty: 1)
+
+        let firstStartedAt = Date(timeIntervalSinceReferenceDate: 600_000)
+        await explorationStore.startRun(
+            partyId: 1,
+            labyrinthId: 1,
+            selectedDifficultyTitleId: 1,
+            startedAt: firstStartedAt,
+            masterData: masterData
+        )
+        _ = await explorationStore.refreshProgress(
+            at: firstStartedAt.addingTimeInterval(1),
+            masterData: masterData
+        )
+
+        let secondStartedAt = firstStartedAt.addingTimeInterval(2)
+        await explorationStore.startRun(
+            partyId: 1,
+            labyrinthId: 1,
+            selectedDifficultyTitleId: 1,
+            startedAt: secondStartedAt,
+            masterData: masterData
+        )
+        await explorationStore.reload(masterData: masterData)
+
+        let status = explorationStore.status(for: 1)
+        #expect(status.activeRun?.partyRunId == 2)
+        #expect(status.latestCompletedRun?.partyRunId == 1)
+        #expect(explorationStore.completedRunCount(for: 1) == 1)
+    }
+
+    @Test
     func completedExplorationLogsArePrunedByRetentionCount() async throws {
         let previousValue = UserDefaults.standard.object(forKey: ExplorationLogRetentionRepository.userDefaultsKey)
         defer {
@@ -1114,9 +1280,15 @@ struct UmbraExplorationTests {
         }
 
         #expect(try await explorationCoreDataRepository.pruneCompletedRunsExceedingRetentionLimit())
-        #expect(try await explorationCoreDataRepository.loadRunDetail(partyId: 1, partyRunId: 1) == nil)
-        #expect(try await explorationCoreDataRepository.loadRunDetail(partyId: 1, partyRunId: 2) != nil)
-        #expect(try await explorationCoreDataRepository.loadRunDetail(partyId: 1, partyRunId: 201) != nil)
+
+        let remainingSnapshot = try await explorationCoreDataRepository.loadSnapshot()
+        let remainingRunIDs = remainingSnapshot.runs
+            .filter { $0.partyId == 1 }
+            .map(\.partyRunId)
+
+        #expect(!remainingRunIDs.contains(1))
+        #expect(remainingRunIDs.contains(2))
+        #expect(remainingRunIDs.contains(201))
     }
 
 }

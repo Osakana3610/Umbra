@@ -494,6 +494,7 @@ extension RunSessionEntity {
     @NSManaged nonisolated public var rootSeedSigned: Int64
     @NSManaged nonisolated public var selectedDifficultyTitleId: Int64
     @NSManaged nonisolated public var startedAt: Date?
+    @NSManaged nonisolated public var totalBattleCount: Int64
     @NSManaged nonisolated public var targetFloorNumber: Int64
     @NSManaged nonisolated public var goldMultiplier: Double
     @NSManaged nonisolated public var battleLogs: NSSet?

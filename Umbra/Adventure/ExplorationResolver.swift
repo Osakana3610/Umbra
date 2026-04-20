@@ -12,7 +12,7 @@ nonisolated enum ExplorationResolver {
         session: RunSessionRecord,
         masterData: MasterData,
         cachedStatuses: inout [Int: ExplorationMemberStatusCacheEntry]
-    ) throws -> RunSessionRecord {
+    ) throws -> PlannedExplorationRun {
         guard let labyrinth = masterData.labyrinths.first(where: { $0.id == session.labyrinthId }) else {
             throw ExplorationError.invalidLabyrinth(labyrinthId: session.labyrinthId)
         }
@@ -140,109 +140,34 @@ nonisolated enum ExplorationResolver {
             }
         }
 
-        return RunSessionRecord(
-            partyRunId: session.partyRunId,
-            partyId: session.partyId,
-            labyrinthId: session.labyrinthId,
-            selectedDifficultyTitleId: session.selectedDifficultyTitleId,
-            targetFloorNumber: session.targetFloorNumber,
-            startedAt: session.startedAt,
-            rootSeed: session.rootSeed,
-            memberSnapshots: session.memberSnapshots,
-            memberCharacterIds: session.memberCharacterIds,
-            completedBattleCount: completedBattleCount,
-            currentPartyHPs: currentPartyHPs,
-            memberExperienceMultipliers: session.memberExperienceMultipliers,
-            progressIntervalMultiplier: session.progressIntervalMultiplier,
-            goldMultiplier: session.goldMultiplier,
-            rareDropMultiplier: session.rareDropMultiplier,
-            partyAverageLuck: session.partyAverageLuck,
-            latestBattleFloorNumber: battleLogs.last?.battleRecord.floorNumber,
-            latestBattleNumber: battleLogs.last?.battleRecord.battleNumber,
-            latestBattleOutcome: battleLogs.last?.battleRecord.result,
-            battleLogs: battleLogs,
-            goldBuffer: goldBuffer,
-            experienceRewards: experienceRewards,
-            dropRewards: dropRewards,
-            completion: completion
-        )
-    }
-
-    static func reveal(
-        session: RunSessionRecord,
-        upTo currentDate: Date,
-        masterData: MasterData
-    ) throws -> RunSessionRecord {
-        guard session.completion == nil else {
-            return session
-        }
-
-        guard let labyrinth = masterData.labyrinths.first(where: { $0.id == session.labyrinthId }) else {
-            throw ExplorationError.invalidLabyrinth(labyrinthId: session.labyrinthId)
-        }
-
-        let interval = session.progressIntervalSeconds(baseIntervalSeconds: labyrinth.progressIntervalSeconds)
-        let revealedBattleCount = min(
-            max(Int(currentDate.timeIntervalSince(session.startedAt) / interval), 0),
-            session.battleLogs.count
-        )
-        guard revealedBattleCount > session.completedBattleCount else {
-            return session
-        }
-
-        let latestBattleLog = revealedBattleCount > 0 ? session.battleLogs[revealedBattleCount - 1] : nil
-        let latestPartyHPs = latestBattleLog.map { battleLog in
-            battleLog.combatants
-                .filter { $0.side == .ally }
-                .sorted { $0.formationIndex < $1.formationIndex }
-                .map(\.remainingHP)
-        } ?? session.memberSnapshots.map(\.currentHP)
-        let completionReason: RunCompletionReason = switch latestBattleLog?.battleRecord.result ?? .draw {
-        case .victory:
-            .cleared
-        case .defeat:
-            .defeated
-        case .draw:
-            .draw
-        }
-
-        return RunSessionRecord(
-            partyRunId: session.partyRunId,
-            partyId: session.partyId,
-            labyrinthId: session.labyrinthId,
-            selectedDifficultyTitleId: session.selectedDifficultyTitleId,
-            targetFloorNumber: session.targetFloorNumber,
-            startedAt: session.startedAt,
-            rootSeed: session.rootSeed,
-            memberSnapshots: session.memberSnapshots,
-            memberCharacterIds: session.memberCharacterIds,
-            completedBattleCount: revealedBattleCount,
-            currentPartyHPs: latestPartyHPs,
-            memberExperienceMultipliers: session.memberExperienceMultipliers,
-            progressIntervalMultiplier: session.progressIntervalMultiplier,
-            goldMultiplier: session.goldMultiplier,
-            rareDropMultiplier: session.rareDropMultiplier,
-            partyAverageLuck: session.partyAverageLuck,
-            latestBattleFloorNumber: latestBattleLog?.battleRecord.floorNumber,
-            latestBattleNumber: latestBattleLog?.battleRecord.battleNumber,
-            latestBattleOutcome: latestBattleLog?.battleRecord.result,
-            battleLogs: session.battleLogs,
-            goldBuffer: session.goldBuffer,
-            experienceRewards: session.experienceRewards,
-            dropRewards: session.dropRewards,
-            completion: revealedBattleCount == session.battleLogs.count
-                ? RunCompletionRecord(
-                    completedAt: completionDate(
-                        startedAt: session.startedAt,
-                        interval: interval,
-                        completedBattleCount: revealedBattleCount
-                    ),
-                    reason: completionReason,
-                    gold: session.goldBuffer,
-                    experienceRewards: session.experienceRewards,
-                    dropRewards: session.dropRewards
-                )
-                : nil
+        return (
+            session: RunSessionRecord(
+                partyRunId: session.partyRunId,
+                partyId: session.partyId,
+                labyrinthId: session.labyrinthId,
+                selectedDifficultyTitleId: session.selectedDifficultyTitleId,
+                targetFloorNumber: session.targetFloorNumber,
+                startedAt: session.startedAt,
+                rootSeed: session.rootSeed,
+                memberSnapshots: session.memberSnapshots,
+                memberCharacterIds: session.memberCharacterIds,
+                totalBattleCount: battleLogs.count,
+                completedBattleCount: completedBattleCount,
+                currentPartyHPs: currentPartyHPs,
+                memberExperienceMultipliers: session.memberExperienceMultipliers,
+                progressIntervalMultiplier: session.progressIntervalMultiplier,
+                goldMultiplier: session.goldMultiplier,
+                rareDropMultiplier: session.rareDropMultiplier,
+                partyAverageLuck: session.partyAverageLuck,
+                latestBattleFloorNumber: battleLogs.last?.battleRecord.floorNumber,
+                latestBattleNumber: battleLogs.last?.battleRecord.battleNumber,
+                latestBattleOutcome: battleLogs.last?.battleRecord.result,
+                goldBuffer: goldBuffer,
+                experienceRewards: experienceRewards,
+                dropRewards: dropRewards,
+                completion: completion
+            ),
+            battleLogs: battleLogs
         )
     }
 

@@ -695,6 +695,7 @@ struct UmbraBattleTests {
                 )
             ],
             memberCharacterIds: [1],
+            totalBattleCount: 0,
             completedBattleCount: 0,
             currentPartyHPs: [100],
             memberExperienceMultipliers: [1.0],
@@ -705,7 +706,6 @@ struct UmbraBattleTests {
             latestBattleFloorNumber: nil,
             latestBattleNumber: nil,
             latestBattleOutcome: nil,
-            battleLogs: [],
             goldBuffer: 0,
             experienceRewards: [],
             dropRewards: [],
@@ -719,13 +719,13 @@ struct UmbraBattleTests {
             cachedStatuses: &cachedStatuses
         )
 
-        #expect(plannedSession.completedBattleCount == 1)
+        #expect(plannedSession.session.completedBattleCount == 1)
         #expect(plannedSession.battleLogs.count == 1)
         #expect(plannedSession.battleLogs.first?.battleRecord.result == .draw)
-        #expect(plannedSession.completion?.reason == .draw)
-        #expect(plannedSession.goldBuffer == 0)
-        #expect(plannedSession.experienceRewards.isEmpty)
-        #expect(plannedSession.dropRewards.isEmpty)
+        #expect(plannedSession.session.completion?.reason == .draw)
+        #expect(plannedSession.session.goldBuffer == 0)
+        #expect(plannedSession.session.experienceRewards.isEmpty)
+        #expect(plannedSession.session.dropRewards.isEmpty)
     }
 
     // Recovery targeting, healing amount rules, and deterministic encounter planning.
@@ -1253,6 +1253,7 @@ struct UmbraBattleTests {
                 )
             ],
             memberCharacterIds: [1],
+            totalBattleCount: 0,
             completedBattleCount: 0,
             currentPartyHPs: [100],
             memberExperienceMultipliers: [1.0],
@@ -1263,7 +1264,6 @@ struct UmbraBattleTests {
             latestBattleFloorNumber: nil,
             latestBattleNumber: nil,
             latestBattleOutcome: nil,
-            battleLogs: [],
             goldBuffer: 0,
             experienceRewards: [],
             dropRewards: [],

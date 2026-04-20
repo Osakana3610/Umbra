@@ -44,6 +44,22 @@ extension RunCompletionReason: PersistenceOrderRepresentable {
 }
 
 nonisolated struct ExplorationBattleLog: Codable, Equatable, Sendable, Identifiable {
+    nonisolated struct IndexEntry: Equatable, Sendable, Identifiable {
+        let partyId: Int
+        let partyRunId: Int
+        let battleIndex: Int
+        let floorNumber: Int
+        let battleNumber: Int
+        let result: BattleOutcome
+        let turnCount: Int
+        let defeatedPartyMemberNames: [String]
+        let currentPartyHPs: [Int]
+
+        var id: String {
+            "\(partyId):\(partyRunId):\(battleIndex)"
+        }
+    }
+
     let battleRecord: BattleRecord
     let combatants: [BattleCombatantSnapshot]
 
@@ -87,6 +103,7 @@ nonisolated struct RunSessionRecord: Equatable, Sendable, Identifiable {
     let rootSeed: UInt64
     let memberSnapshots: [CharacterRecord]
     let memberCharacterIds: [Int]
+    let totalBattleCount: Int
     let completedBattleCount: Int
     let currentPartyHPs: [Int]
     let memberExperienceMultipliers: [Double]
@@ -97,7 +114,6 @@ nonisolated struct RunSessionRecord: Equatable, Sendable, Identifiable {
     let latestBattleFloorNumber: Int?
     let latestBattleNumber: Int?
     let latestBattleOutcome: BattleOutcome?
-    let battleLogs: [ExplorationBattleLog]
     let goldBuffer: Int
     let experienceRewards: [ExplorationExperienceReward]
     let dropRewards: [ExplorationDropReward]
@@ -125,46 +141,12 @@ nonisolated struct RunSessionRecord: Equatable, Sendable, Identifiable {
         let clampedMultiplier = max(progressIntervalMultiplier, 0.1)
         return Double(clampedBaseIntervalSeconds) * clampedMultiplier
     }
-
-    var summaryRecord: RunSessionRecord {
-        // Summary records intentionally drop heavy payloads so list screens can refresh progress
-        // without carrying every stored battle log and reward row in memory.
-        RunSessionRecord(
-            partyRunId: partyRunId,
-            partyId: partyId,
-            labyrinthId: labyrinthId,
-            selectedDifficultyTitleId: selectedDifficultyTitleId,
-            targetFloorNumber: targetFloorNumber,
-            startedAt: startedAt,
-            rootSeed: rootSeed,
-            memberSnapshots: memberSnapshots,
-            memberCharacterIds: memberCharacterIds,
-            completedBattleCount: completedBattleCount,
-            currentPartyHPs: currentPartyHPs,
-            memberExperienceMultipliers: memberExperienceMultipliers,
-            progressIntervalMultiplier: progressIntervalMultiplier,
-            goldMultiplier: goldMultiplier,
-            rareDropMultiplier: rareDropMultiplier,
-            partyAverageLuck: partyAverageLuck,
-            latestBattleFloorNumber: latestBattleFloorNumber,
-            latestBattleNumber: latestBattleNumber,
-            latestBattleOutcome: latestBattleOutcome,
-            battleLogs: [],
-            goldBuffer: goldBuffer,
-            experienceRewards: [],
-            dropRewards: [],
-            completion: completion.map { completion in
-                RunCompletionRecord(
-                    completedAt: completion.completedAt,
-                    reason: completion.reason,
-                    gold: completion.gold,
-                    experienceRewards: [],
-                    dropRewards: []
-                )
-            }
-        )
-    }
 }
+
+typealias PlannedExplorationRun = (
+    session: RunSessionRecord,
+    battleLogs: [ExplorationBattleLog]
+)
 
 nonisolated struct ExplorationRunSnapshot: Equatable, Sendable {
     // Reward application is reported alongside the refreshed runs so UI layers can reload only the

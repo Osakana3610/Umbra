@@ -8,7 +8,6 @@ struct PartyExplorationHistoryView: View {
     let masterData: MasterData
     let rosterStore: GuildRosterStore
     let partyStore: PartyStore
-    let equipmentStore: EquipmentInventoryStore
     let explorationStore: ExplorationStore
 
     var body: some View {
@@ -29,7 +28,6 @@ struct PartyExplorationHistoryView: View {
                             masterData: masterData,
                             rosterStore: rosterStore,
                             partyStore: partyStore,
-                            equipmentStore: equipmentStore,
                             explorationStore: explorationStore
                         )
                     } label: {

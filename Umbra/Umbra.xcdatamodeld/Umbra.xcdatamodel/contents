@@ -101,6 +101,7 @@
         <attribute name="rootSeedSigned" optional="NO" attributeType="Integer 64" usesScalarValueType="YES"/>
         <attribute name="selectedDifficultyTitleId" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="startedAt" optional="NO" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="totalBattleCount" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="targetFloorNumber" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="goldMultiplier" optional="NO" attributeType="Double" defaultValueString="1"/>
         <relationship name="battleLogs" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="RunSessionBattleLogEntity" inverseName="runSession" inverseEntity="RunSessionBattleLogEntity"/>

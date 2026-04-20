@@ -3,48 +3,72 @@
 import SwiftUI
 
 struct RunSessionBattleLogDetailView: View {
-    let log: ExplorationBattleLog
+    let indexEntry: ExplorationBattleLog.IndexEntry
+    let explorationStore: ExplorationStore
 
     private let masterData: MasterData
     private let spellsByID: [Int: MasterData.Spell]
+    @State private var log: ExplorationBattleLog?
+    @State private var hasLoaded = false
 
     init(
-        log: ExplorationBattleLog,
-        masterData: MasterData
+        indexEntry: ExplorationBattleLog.IndexEntry,
+        masterData: MasterData,
+        explorationStore: ExplorationStore
     ) {
-        self.log = log
+        self.indexEntry = indexEntry
         self.masterData = masterData
+        self.explorationStore = explorationStore
         spellsByID = Dictionary(uniqueKeysWithValues: masterData.spells.map { ($0.id, $0) })
     }
 
     var body: some View {
-        List {
-            Section("戦闘結果") {
-                LabeledContent("結果") {
-                    Text(outcomeText(for: log.battleRecord.result))
-                }
+        Group {
+            if let log {
+                List {
+                    Section("戦闘結果") {
+                        LabeledContent("結果") {
+                            Text(outcomeText(for: log.battleRecord.result))
+                        }
 
-                LabeledContent("ターン数") {
-                    Text("\(log.battleRecord.turns.count)")
-                        .monospacedDigit()
-                }
-            }
+                        LabeledContent("ターン数") {
+                            Text("\(log.battleRecord.turns.count)")
+                                .monospacedDigit()
+                        }
+                    }
 
-            ForEach(turnSummaries) { summary in
-                RunSessionBattleTurnSectionView(summary: summary)
+                    ForEach(turnSummaries) { summary in
+                        RunSessionBattleTurnSectionView(summary: summary)
+                    }
+                }
+            } else if hasLoaded {
+                ContentUnavailableView(
+                    "戦闘ログが見つかりません",
+                    systemImage: "text.page.slash"
+                )
+            } else {
+                ProgressView()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
         .listStyle(.insetGrouped)
         .playerStatusContentInsetAware()
-        .navigationTitle("\(log.battleRecord.floorNumber)F / 戦闘 \(log.battleRecord.battleNumber)")
+        .navigationTitle("\(indexEntry.floorNumber)F / 戦闘 \(indexEntry.battleNumber)")
         .navigationBarTitleDisplayMode(.inline)
+        .task {
+            await loadBattleLog()
+        }
     }
 
     private var combatantsByID: [BattleCombatantID: BattleCombatantSnapshot] {
-        Dictionary(uniqueKeysWithValues: log.combatants.map { ($0.id, $0) })
+        Dictionary(uniqueKeysWithValues: (log?.combatants ?? []).map { ($0.id, $0) })
     }
 
     private var turnSummaries: [RunSessionBattleTurnSummary] {
+        guard let log else {
+            return []
+        }
+
         var states = Dictionary(
             uniqueKeysWithValues: log.combatants.map {
                 ($0.id, RunSessionBattleParticipantState(snapshot: $0, masterData: masterData))
@@ -88,6 +112,15 @@ struct RunSessionBattleLogDetailView: View {
         }
 
         return summaries
+    }
+
+    private func loadBattleLog() async {
+        log = await explorationStore.loadBattleLog(
+            partyId: indexEntry.partyId,
+            partyRunId: indexEntry.partyRunId,
+            battleIndex: indexEntry.battleIndex
+        )
+        hasLoaded = true
     }
 
     private func makeActionPresentation(

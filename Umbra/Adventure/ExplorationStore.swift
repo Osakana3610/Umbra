@@ -42,6 +42,8 @@ final class ExplorationStore {
     private(set) var isMutating = false
     private(set) var lastOperationError: String?
     private(set) var runs: [RunSessionRecord] = []
+    private var statusByPartyID: [Int: ExplorationPartyStatus] = [:]
+    private var completedRunCountByPartyID: [Int: Int] = [:]
     private var isRefreshingProgress = false
     private var isResumingAutomaticRuns = false
     private var progressRefreshTask: Task<Void, Never>?
@@ -246,7 +248,7 @@ final class ExplorationStore {
                     continue
                 }
 
-                mergeResumedRun(step.completedRun.summaryRecord)
+                mergeResumedRun(step.completedRun)
                 if step.outcome.didApplyRewards {
                     rosterStore?.refreshFromPersistence()
                     if let equipmentStore, equipmentStore.isLoaded {
@@ -287,11 +289,50 @@ final class ExplorationStore {
     }
 
     func status(for partyId: Int) -> ExplorationPartyStatus {
-        let partyRuns = runs.filter { $0.partyId == partyId }
-        return ExplorationPartyStatus(
-            activeRun: partyRuns.first(where: { !$0.isCompleted }),
-            latestCompletedRun: partyRuns.first(where: \.isCompleted)
+        statusByPartyID[partyId] ?? ExplorationPartyStatus(
+            activeRun: nil,
+            latestCompletedRun: nil
         )
+    }
+
+    func completedRunCount(for partyId: Int) -> Int {
+        completedRunCountByPartyID[partyId] ?? 0
+    }
+
+    func loadBattleLogIndexEntries(
+        partyId: Int,
+        partyRunId: Int,
+        battleIndex: Int,
+        count: Int
+    ) async -> [ExplorationBattleLog.IndexEntry] {
+        do {
+            return try await coreDataRepository.loadBattleLogIndexEntries(
+                partyId: partyId,
+                partyRunId: partyRunId,
+                battleIndex: battleIndex,
+                count: count
+            )
+        } catch {
+            lastOperationError = UserFacingErrorMessage.resolve(error)
+            return []
+        }
+    }
+
+    func loadBattleLog(
+        partyId: Int,
+        partyRunId: Int,
+        battleIndex: Int
+    ) async -> ExplorationBattleLog? {
+        do {
+            return try await coreDataRepository.loadBattleLog(
+                partyId: partyId,
+                partyRunId: partyRunId,
+                battleIndex: battleIndex
+            )
+        } catch {
+            lastOperationError = UserFacingErrorMessage.resolve(error)
+            return nil
+        }
     }
 
     func loadRunDetail(
@@ -352,6 +393,7 @@ final class ExplorationStore {
         masterData: MasterData
     ) {
         runs = snapshot.runs
+        rebuildPartyCaches()
         isLoaded = true
         scheduleProgressRefresh(using: masterData)
     }
@@ -476,7 +518,38 @@ final class ExplorationStore {
             }
             return $0.partyRunId > $1.partyRunId
         }
+        rebuildPartyCaches()
         isLoaded = true
+    }
+
+    private func rebuildPartyCaches() {
+        var newStatusByPartyID: [Int: ExplorationPartyStatus] = [:]
+        var newCompletedRunCountByPartyID: [Int: Int] = [:]
+
+        for run in runs {
+            let currentStatus = newStatusByPartyID[run.partyId] ?? ExplorationPartyStatus(
+                activeRun: nil,
+                latestCompletedRun: nil
+            )
+
+            if run.isCompleted {
+                newCompletedRunCountByPartyID[run.partyId, default: 0] += 1
+                if currentStatus.latestCompletedRun == nil {
+                    newStatusByPartyID[run.partyId] = ExplorationPartyStatus(
+                        activeRun: currentStatus.activeRun,
+                        latestCompletedRun: run
+                    )
+                }
+            } else if currentStatus.activeRun == nil {
+                newStatusByPartyID[run.partyId] = ExplorationPartyStatus(
+                    activeRun: run,
+                    latestCompletedRun: currentStatus.latestCompletedRun
+                )
+            }
+        }
+
+        statusByPartyID = newStatusByPartyID
+        completedRunCountByPartyID = newCompletedRunCountByPartyID
     }
 
 }

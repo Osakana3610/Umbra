@@ -95,31 +95,32 @@ final class ExplorationSessionService {
             )
             try await coreDataRepository.insertRun(
                 RunSessionRecord(
-                    partyRunId: plannedSession.partyRunId,
-                    partyId: plannedSession.partyId,
-                    labyrinthId: plannedSession.labyrinthId,
-                    selectedDifficultyTitleId: plannedSession.selectedDifficultyTitleId,
-                    targetFloorNumber: plannedSession.targetFloorNumber,
-                    startedAt: plannedSession.startedAt,
-                    rootSeed: plannedSession.rootSeed,
-                    memberSnapshots: plannedSession.memberSnapshots,
-                    memberCharacterIds: plannedSession.memberCharacterIds,
+                    partyRunId: plannedSession.session.partyRunId,
+                    partyId: plannedSession.session.partyId,
+                    labyrinthId: plannedSession.session.labyrinthId,
+                    selectedDifficultyTitleId: plannedSession.session.selectedDifficultyTitleId,
+                    targetFloorNumber: plannedSession.session.targetFloorNumber,
+                    startedAt: plannedSession.session.startedAt,
+                    rootSeed: plannedSession.session.rootSeed,
+                    memberSnapshots: plannedSession.session.memberSnapshots,
+                    memberCharacterIds: plannedSession.session.memberCharacterIds,
+                    totalBattleCount: plannedSession.session.totalBattleCount,
                     completedBattleCount: 0,
-                    currentPartyHPs: plannedSession.memberSnapshots.map(\.currentHP),
-                    memberExperienceMultipliers: plannedSession.memberExperienceMultipliers,
-                    progressIntervalMultiplier: plannedSession.progressIntervalMultiplier,
-                    goldMultiplier: plannedSession.goldMultiplier,
-                    rareDropMultiplier: plannedSession.rareDropMultiplier,
-                    partyAverageLuck: plannedSession.partyAverageLuck,
+                    currentPartyHPs: plannedSession.session.memberSnapshots.map(\.currentHP),
+                    memberExperienceMultipliers: plannedSession.session.memberExperienceMultipliers,
+                    progressIntervalMultiplier: plannedSession.session.progressIntervalMultiplier,
+                    goldMultiplier: plannedSession.session.goldMultiplier,
+                    rareDropMultiplier: plannedSession.session.rareDropMultiplier,
+                    partyAverageLuck: plannedSession.session.partyAverageLuck,
                     latestBattleFloorNumber: nil,
                     latestBattleNumber: nil,
                     latestBattleOutcome: nil,
-                    battleLogs: plannedSession.battleLogs,
-                    goldBuffer: plannedSession.goldBuffer,
-                    experienceRewards: plannedSession.experienceRewards,
-                    dropRewards: plannedSession.dropRewards,
+                    goldBuffer: plannedSession.session.goldBuffer,
+                    experienceRewards: plannedSession.session.experienceRewards,
+                    dropRewards: plannedSession.session.dropRewards,
                     completion: nil
                 ),
+                battleLogs: plannedSession.battleLogs,
                 consumesCatTicket: appliesCatTicket
             )
             if appliesCatTicket {
@@ -134,8 +135,8 @@ final class ExplorationSessionService {
         at currentDate: Date,
         masterData: MasterData
     ) async throws -> ExplorationRunSnapshot {
-        let progressContexts = try await coreDataRepository.loadProgressContexts()
-        let resolvedProgress = try await Self.resolveProgress(
+        let progressContexts = try await coreDataRepository.loadSnapshot().runs
+        let resolvedProgress = try await resolveProgress(
             progressContexts,
             at: currentDate,
             masterData: masterData
@@ -200,27 +201,28 @@ final class ExplorationSessionService {
             masterData: masterData,
             cachedStatuses: [:]
         )
-        guard let completion = plannedSession.completion,
+        guard let completion = plannedSession.session.completion,
               completion.completedAt <= reopenedAt else {
             return nil
         }
 
         try await coreDataRepository.insertRun(
-            plannedSession,
+            plannedSession.session,
+            battleLogs: plannedSession.battleLogs,
             consumesCatTicket: appliesCatTicket
         )
 
         let rewardApplication = try await coreDataRepository.commitProgressUpdates(
-            [(currentSession: plannedSession, resolvedSession: plannedSession)],
+            [(currentSession: plannedSession.session, resolvedSession: plannedSession.session)],
             masterData: masterData
         )
         return AutomaticRunResumeStep(
-            completedRun: plannedSession,
+            completedRun: plannedSession.session,
             outcome: AutomaticRunResumeOutcome(
                 didApplyRewards: rewardApplication.didApplyRewards,
                 appliedInventoryCounts: rewardApplication.appliedInventoryCounts,
                 appliedShopInventoryCounts: rewardApplication.appliedShopInventoryCounts,
-                dropNotificationBatches: Self.completedRunDropNotificationBatch(from: plannedSession).map { [$0] } ?? []
+                dropNotificationBatches: Self.completedRunDropNotificationBatch(from: plannedSession.session).map { [$0] } ?? []
             )
         )
     }
@@ -256,7 +258,7 @@ final class ExplorationSessionService {
         _ initialSession: RunSessionRecord,
         masterData: MasterData,
         cachedStatuses: [Int: ExplorationMemberStatusCacheEntry]
-    ) async throws -> RunSessionRecord {
+    ) async throws -> PlannedExplorationRun {
         var cachedStatuses = cachedStatuses
         return try ExplorationResolver.plan(
             session: initialSession,
@@ -265,8 +267,7 @@ final class ExplorationSessionService {
         )
     }
 
-    @concurrent
-    nonisolated private static func resolveProgress(
+    private func resolveProgress(
         _ progressContexts: [RunSessionRecord],
         at currentDate: Date,
         masterData: MasterData
@@ -280,9 +281,9 @@ final class ExplorationSessionService {
             let resolvedSession: RunSessionRecord
             if currentSession.completion == nil {
                 // Active runs are revealed up to the requested wall-clock time; completed runs are
-                // passed through unchanged to avoid re-resolving rewards.
-                resolvedSession = try ExplorationResolver.reveal(
-                    session: currentSession,
+                // rebuilt from summary plus the newly visible battle snapshot only.
+                resolvedSession = try await revealProgress(
+                    currentSession,
                     upTo: currentDate,
                     masterData: masterData
                 )
@@ -296,10 +297,90 @@ final class ExplorationSessionService {
                     resolvedSession: resolvedSession
                 )
             )
-            runs.append(resolvedSession.completion == nil ? resolvedSession.summaryRecord : resolvedSession)
+            runs.append(resolvedSession)
         }
 
         return ResolvedRunProgress(runs: runs, updates: updates)
+    }
+
+    private func revealProgress(
+        _ session: RunSessionRecord,
+        upTo currentDate: Date,
+        masterData: MasterData
+    ) async throws -> RunSessionRecord {
+        guard let labyrinth = masterData.labyrinths.first(where: { $0.id == session.labyrinthId }) else {
+            throw ExplorationError.invalidLabyrinth(labyrinthId: session.labyrinthId)
+        }
+
+        let interval = session.progressIntervalSeconds(baseIntervalSeconds: labyrinth.progressIntervalSeconds)
+        let revealedBattleCount = min(
+            max(Int(currentDate.timeIntervalSince(session.startedAt) / interval), 0),
+            session.totalBattleCount
+        )
+        guard revealedBattleCount > session.completedBattleCount else {
+            return session
+        }
+
+        let latestBattle = try await coreDataRepository.loadBattleLogIndexEntries(
+            partyId: session.partyId,
+            partyRunId: session.partyRunId,
+            battleIndex: revealedBattleCount - 1,
+            count: 1
+        )
+        guard let latestBattle = latestBattle.first else {
+            throw ExplorationError.runNotFound(
+                partyId: session.partyId,
+                partyRunId: session.partyRunId
+            )
+        }
+
+        let completionReason: RunCompletionReason = switch latestBattle.result {
+        case .victory:
+            .cleared
+        case .defeat:
+            .defeated
+        case .draw:
+            .draw
+        }
+
+        return RunSessionRecord(
+            partyRunId: session.partyRunId,
+            partyId: session.partyId,
+            labyrinthId: session.labyrinthId,
+            selectedDifficultyTitleId: session.selectedDifficultyTitleId,
+            targetFloorNumber: session.targetFloorNumber,
+            startedAt: session.startedAt,
+            rootSeed: session.rootSeed,
+            memberSnapshots: session.memberSnapshots,
+            memberCharacterIds: session.memberCharacterIds,
+            totalBattleCount: session.totalBattleCount,
+            completedBattleCount: revealedBattleCount,
+            currentPartyHPs: latestBattle.currentPartyHPs,
+            memberExperienceMultipliers: session.memberExperienceMultipliers,
+            progressIntervalMultiplier: session.progressIntervalMultiplier,
+            goldMultiplier: session.goldMultiplier,
+            rareDropMultiplier: session.rareDropMultiplier,
+            partyAverageLuck: session.partyAverageLuck,
+            latestBattleFloorNumber: latestBattle.floorNumber,
+            latestBattleNumber: latestBattle.battleNumber,
+            latestBattleOutcome: latestBattle.result,
+            goldBuffer: session.goldBuffer,
+            experienceRewards: session.experienceRewards,
+            dropRewards: session.dropRewards,
+            completion: revealedBattleCount == session.totalBattleCount
+                ? RunCompletionRecord(
+                    completedAt: ExplorationResolver.completionDate(
+                        startedAt: session.startedAt,
+                        interval: interval,
+                        completedBattleCount: revealedBattleCount
+                    ),
+                    reason: completionReason,
+                    gold: session.goldBuffer,
+                    experienceRewards: session.experienceRewards,
+                    dropRewards: session.dropRewards
+                )
+                : nil
+        )
     }
 
     @concurrent
@@ -365,6 +446,7 @@ final class ExplorationSessionService {
             rootSeed: rootSeed,
             memberSnapshots: startContext.partyMembers,
             memberCharacterIds: startContext.partyMembers.map(\.characterId),
+            totalBattleCount: 0,
             completedBattleCount: 0,
             currentPartyHPs: startContext.partyMembers.map(\.currentHP),
             memberExperienceMultipliers: memberExperienceMultipliers,
@@ -389,7 +471,6 @@ final class ExplorationSessionService {
             latestBattleFloorNumber: nil,
             latestBattleNumber: nil,
             latestBattleOutcome: nil,
-            battleLogs: [],
             goldBuffer: 0,
             experienceRewards: [],
             dropRewards: [],

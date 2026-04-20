@@ -8,12 +8,12 @@ struct RunSessionDetailView: View {
     let masterData: MasterData
     let rosterStore: GuildRosterStore
     let partyStore: PartyStore
-    let equipmentStore: EquipmentInventoryStore
     let explorationStore: ExplorationStore
 
     private let itemsByID: [Int: MasterData.Item]
     private let nameResolver: EquipmentDisplayNameResolver
     @State private var runDetail: RunSessionRecord?
+    @State private var battleLogIndexEntries: [ExplorationBattleLog.IndexEntry]?
     @State private var itemFilter = ItemBrowserFilter()
 
     init(
@@ -22,7 +22,6 @@ struct RunSessionDetailView: View {
         masterData: MasterData,
         rosterStore: GuildRosterStore,
         partyStore: PartyStore,
-        equipmentStore: EquipmentInventoryStore,
         explorationStore: ExplorationStore
     ) {
         self.partyId = partyId
@@ -30,7 +29,6 @@ struct RunSessionDetailView: View {
         self.masterData = masterData
         self.rosterStore = rosterStore
         self.partyStore = partyStore
-        self.equipmentStore = equipmentStore
         self.explorationStore = explorationStore
         itemsByID = Dictionary(uniqueKeysWithValues: masterData.items.map { ($0.id, $0) })
         nameResolver = EquipmentDisplayNameResolver(masterData: masterData)
@@ -38,16 +36,16 @@ struct RunSessionDetailView: View {
 
     var body: some View {
         Group {
-            if let run {
-                let dropRewardCatalog = dropRewardCatalog(for: detailedRun?.completion)
+            if let displayedRun {
+                let dropRewardCatalog = dropRewardCatalog(for: displayedCompletion)
 
                 List {
                     Section("探索結果") {
-                        Text(explorationResultText(for: run))
+                        Text(explorationResultText(for: displayedRun))
                     }
 
-                    if let detailedRun {
-                        if displayedBattleLogs(from: detailedRun).isEmpty {
+                    if let battleLogIndexEntries {
+                        if battleLogIndexEntries.isEmpty {
                             Section {
                                 ContentUnavailableView(
                                     "戦闘ログがありません",
@@ -57,18 +55,21 @@ struct RunSessionDetailView: View {
                             }
                         } else {
                             Section("戦闘一覧") {
-                                ForEach(displayedBattleLogs(from: detailedRun)) { log in
+                                ForEach(battleLogIndexEntries) { entry in
                                     NavigationLink {
                                         RunSessionBattleLogDetailView(
-                                            log: log,
-                                            masterData: masterData
+                                            indexEntry: entry,
+                                            masterData: masterData,
+                                            explorationStore: explorationStore
                                         )
                                     } label: {
                                         BattleLogSummaryRow(
-                                            titleText: "\(log.battleRecord.floorNumber)F / 戦闘 \(log.battleRecord.battleNumber)",
-                                            resultText: completionText(for: log.battleRecord.result),
-                                            turnCount: log.battleRecord.turns.count,
-                                            footerText: defeatedPartyMemberText(for: log)
+                                            titleText: "\(entry.floorNumber)F / 戦闘 \(entry.battleNumber)",
+                                            resultText: completionText(for: entry.result),
+                                            turnCount: entry.turnCount,
+                                            footerText: entry.defeatedPartyMemberNames.isEmpty
+                                                ? nil
+                                                : "死亡：\(entry.defeatedPartyMemberNames.joined(separator: "、"))"
                                         )
                                     }
                                 }
@@ -81,7 +82,14 @@ struct RunSessionDetailView: View {
                         }
                     }
 
-                    if let completion = detailedRun?.completion {
+                    if runSummary?.completion != nil && runDetail == nil {
+                        Section {
+                            ProgressView("探索結果を読み込み中")
+                                .frame(maxWidth: .infinity, alignment: .center)
+                        }
+                    }
+
+                    if let completion = displayedCompletion {
                         Section("入手ゴールド") {
                             Text("\(completion.gold) G")
                                 .monospacedDigit()
@@ -128,7 +136,7 @@ struct RunSessionDetailView: View {
                 .navigationTitle("\(partyName)の探索ログ")
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
-                    if detailedRun?.completion?.dropRewards.isEmpty == false {
+                    if displayedCompletion?.dropRewards.isEmpty == false {
                         ToolbarItem(placement: .topBarTrailing) {
                             ItemBrowserFilterButton(
                                 catalog: dropRewardCatalog,
@@ -139,14 +147,10 @@ struct RunSessionDetailView: View {
                 }
                 .task {
                     await explorationStore.loadIfNeeded(masterData: masterData)
-                    await loadRunDetail()
+                    await reloadDisplayedData()
                 }
                 .task(id: progressKey(for: runSummary)) {
-                    guard runSummary != nil else {
-                        return
-                    }
-
-                    await loadRunDetail()
+                    await reloadDisplayedData()
                 }
             } else {
                 ContentUnavailableView(
@@ -157,31 +161,46 @@ struct RunSessionDetailView: View {
         }
     }
 
-    private var run: RunSessionRecord? {
-        runDetail ?? explorationStore.runs.first {
-            $0.partyId == partyId && $0.partyRunId == partyRunId
-        }
-    }
-
     private var runSummary: RunSessionRecord? {
         explorationStore.runs.first {
             $0.partyId == partyId && $0.partyRunId == partyRunId
         }
     }
 
-    private var detailedRun: RunSessionRecord? {
-        runDetail
+    private var displayedRun: RunSessionRecord? {
+        runDetail ?? runSummary
+    }
+
+    private var displayedCompletion: RunCompletionRecord? {
+        runDetail?.completion
     }
 
     private var partyName: String {
         partyStore.partiesById[partyId]?.name ?? "パーティ\(partyId)"
     }
 
-    private func loadRunDetail() async {
-        runDetail = await explorationStore.loadRunDetail(
+    private func reloadDisplayedData() async {
+        guard let runSummary else {
+            runDetail = nil
+            battleLogIndexEntries = []
+            return
+        }
+
+        runDetail = nil
+        battleLogIndexEntries = nil
+
+        async let loadedRunDetail = explorationStore.loadRunDetail(
             partyId: partyId,
             partyRunId: partyRunId
         )
+        async let loadedBattleLogIndexEntries = explorationStore.loadBattleLogIndexEntries(
+            partyId: partyId,
+            partyRunId: partyRunId,
+            battleIndex: 0,
+            count: runSummary.completedBattleCount
+        )
+        runDetail = await loadedRunDetail
+        battleLogIndexEntries = await loadedBattleLogIndexEntries
     }
 
     private func progressKey(for run: RunSessionRecord?) -> String {
@@ -216,11 +235,6 @@ struct RunSessionDetailView: View {
         )
     }
 
-    private func displayedBattleLogs(from run: RunSessionRecord) -> [ExplorationBattleLog] {
-        // Only battles that have actually been completed are displayed, newest first.
-        Array(run.battleLogs.prefix(run.completedBattleCount).reversed())
-    }
-
     private func displayedDropRewards(
         from completion: RunCompletionRecord
     ) -> [ExplorationDropReward] {
@@ -242,29 +256,6 @@ struct RunSessionDetailView: View {
             itemIDs: completion?.dropRewards.map(\.itemID) ?? [],
             masterData: masterData
         )
-    }
-
-    private func defeatedPartyMemberText(for log: ExplorationBattleLog) -> String? {
-        // A party member is listed once if they were defeated at any point during the battle, even
-        // if later actions in the same log changed HP again.
-        let defeatedTargets = Set(
-            log.battleRecord.turns
-                .flatMap(\.actions)
-                .flatMap(\.results)
-                .filter { $0.flags.contains(.defeated) }
-                .map(\.targetId)
-        )
-
-        let defeatedNames = log.combatants
-            .filter { $0.side == .ally && defeatedTargets.contains($0.id) }
-            .sorted { $0.formationIndex < $1.formationIndex }
-            .map(\.name)
-
-        guard !defeatedNames.isEmpty else {
-            return nil
-        }
-
-        return "死亡：\(defeatedNames.joined(separator: "、"))"
     }
 
     private func explorationResultText(for run: RunSessionRecord) -> String {
