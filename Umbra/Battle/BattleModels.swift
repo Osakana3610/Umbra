@@ -77,6 +77,11 @@ nonisolated struct BattleCombatantID: RawRepresentable, Codable, Hashable, Equat
     }
 }
 
+nonisolated enum BattleCombatantImageReference: Codable, Equatable, Sendable {
+    case partyMember(jobId: Int, portraitGender: PortraitGender)
+    case enemy(enemyId: Int)
+}
+
 nonisolated struct BattleTargetResult: Codable, Equatable, Sendable {
     let targetId: BattleCombatantID
     let resultKind: BattleTargetResultKind
@@ -111,12 +116,68 @@ nonisolated struct BattleCombatantSnapshot: Codable, Equatable, Sendable, Identi
     let id: BattleCombatantID
     let name: String
     let side: BattleSide
-    let imageAssetID: String?
+    let imageReference: BattleCombatantImageReference?
     let level: Int
     let initialHP: Int
     let maxHP: Int
     let remainingHP: Int
     let formationIndex: Int
+}
+
+extension BattleCombatantImageReference {
+    nonisolated init?(
+        persistenceKind: Int64,
+        primaryID: Int64,
+        secondaryID: Int64
+    ) {
+        switch Int(persistenceKind) {
+        case 1:
+            guard primaryID > 0,
+                  let portraitGender = PortraitGender(rawValue: Int(secondaryID)) else {
+                return nil
+            }
+
+            self = .partyMember(
+                jobId: Int(primaryID),
+                portraitGender: portraitGender
+            )
+        case 2:
+            guard primaryID > 0 else {
+                return nil
+            }
+
+            self = .enemy(enemyId: Int(primaryID))
+        default:
+            return nil
+        }
+    }
+
+    nonisolated var persistenceKind: Int64 {
+        switch self {
+        case .partyMember:
+            1
+        case .enemy:
+            2
+        }
+    }
+
+    nonisolated var persistencePrimaryID: Int64 {
+        switch self {
+        case let .partyMember(jobId, _):
+            Int64(jobId)
+        case let .enemy(enemyId):
+            Int64(enemyId)
+        }
+    }
+
+    nonisolated var persistenceSecondaryID: Int64 {
+        switch self {
+        case let .partyMember(_, portraitGender):
+            Int64(portraitGender.rawValue)
+        case .enemy:
+            0
+        }
+    }
 }
 
 nonisolated struct SingleBattleResult: Equatable, Sendable {

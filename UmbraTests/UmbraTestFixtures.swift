@@ -519,7 +519,6 @@ func makeBattleTestCharacter(
         currentJobId: 1,
         aptitudeId: 1,
         portraitGender: .male,
-        portraitAssetID: "job_test-job_male",
         experience: 0,
         level: level,
         currentHP: currentHP,

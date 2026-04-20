@@ -70,7 +70,22 @@ extension MasterData {
     }
 
     nonisolated func portraitAssetName(for character: CharacterRecord) -> String {
-        character.portraitAssetID
+        job(for: character.currentJobId)?.portraitAssetName(for: character.portraitGender) ?? ""
+    }
+
+    nonisolated func battleCombatantAssetName(
+        for imageReference: BattleCombatantImageReference?
+    ) -> String? {
+        guard let imageReference else {
+            return nil
+        }
+
+        switch imageReference {
+        case let .partyMember(jobId, portraitGender):
+            return job(for: jobId)?.portraitAssetName(for: portraitGender)
+        case let .enemy(enemyId):
+            return enemies.first(where: { $0.id == enemyId })?.imageAssetName
+        }
     }
 
     nonisolated func jobDisplayName(for character: CharacterRecord) -> String {

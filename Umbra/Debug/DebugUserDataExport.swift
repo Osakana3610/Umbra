@@ -128,11 +128,15 @@ nonisolated struct DebugUserDataExporter {
         return try context.fetch(request).map { entity in
             let selectedLabyrinthId = Int(entity.selectedLabyrinthId)
             let selectedDifficultyTitleId = Int(entity.selectedDifficultyTitleId)
+            let memberCharacterIds = (entity.members as? Set<PartyMemberEntity> ?? [])
+                .sorted { lhs, rhs in
+                    Int(lhs.formationIndex) < Int(rhs.formationIndex)
+                }
+                .map { Int($0.characterId) }
             return DebugUserDataSnapshot.PartyPayload(
                 partyId: Int(entity.partyId),
                 name: entity.name ?? "",
-                memberCharacterIdsRawValue: entity.memberCharacterIdsRawValue ?? "",
-                memberCharacterIds: parseIntegerList(rawValue: entity.memberCharacterIdsRawValue),
+                memberCharacterIds: memberCharacterIds,
                 selectedLabyrinthId: selectedLabyrinthId,
                 selectedLabyrinthName: lookup.labyrinthName(optional: selectedLabyrinthId),
                 selectedDifficultyTitleId: selectedDifficultyTitleId,
@@ -311,12 +315,6 @@ nonisolated struct DebugUserDataExporter {
         )
     }
 
-    private func parseIntegerList(rawValue: String?) -> [Int] {
-        (rawValue ?? "")
-            .split(separator: ",")
-            .compactMap { Int($0) }
-    }
-
     private func actionPriorityLabels(from persistedValues: [Int64]) -> [String] {
         CharacterAutoBattleSettings.decodedPriority(from: persistedValues)
             .map { String(describing: $0) }
@@ -389,7 +387,6 @@ nonisolated struct DebugUserDataSnapshot: Codable, Sendable {
     nonisolated struct PartyPayload: Codable, Sendable {
         let partyId: Int
         let name: String
-        let memberCharacterIdsRawValue: String
         let memberCharacterIds: [Int]
         let selectedLabyrinthId: Int
         let selectedLabyrinthName: String?

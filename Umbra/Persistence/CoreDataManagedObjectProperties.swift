@@ -23,7 +23,6 @@ extension CharacterEntity {
     @NSManaged nonisolated public var experience: Int64
     @NSManaged nonisolated public var level: Int64
     @NSManaged nonisolated public var name: String?
-    @NSManaged nonisolated public var portraitAssetID: String?
     @NSManaged nonisolated public var portraitVariant: Int64
     @NSManaged nonisolated public var previousJobId: Int64
     @NSManaged nonisolated public var raceId: Int64
@@ -122,17 +121,50 @@ extension PartyEntity {
     }
 
     @NSManaged nonisolated public var automaticallyUsesCatTicket: Bool
-    @NSManaged nonisolated public var memberCharacterIdsRawValue: String?
     @NSManaged nonisolated public var name: String?
     @NSManaged nonisolated public var partyId: Int64
     @NSManaged nonisolated public var pendingAutomaticRunCount: Int64
     @NSManaged nonisolated public var pendingAutomaticRunStartedAt: Date?
     @NSManaged nonisolated public var selectedDifficultyTitleId: Int64
     @NSManaged nonisolated public var selectedLabyrinthId: Int64
+    @NSManaged nonisolated public var members: NSSet?
+
+}
+
+// MARK: Generated accessors for members
+extension PartyEntity {
+
+    @objc(addMembersObject:)
+    @NSManaged nonisolated public func addToMembers(_ value: PartyMemberEntity)
+
+    @objc(removeMembersObject:)
+    @NSManaged nonisolated public func removeFromMembers(_ value: PartyMemberEntity)
+
+    @objc(addMembers:)
+    @NSManaged nonisolated public func addToMembers(_ values: NSSet)
+
+    @objc(removeMembers:)
+    @NSManaged nonisolated public func removeFromMembers(_ values: NSSet)
 
 }
 
 extension PartyEntity : Identifiable {
+
+}
+
+extension PartyMemberEntity {
+
+    @nonobjc nonisolated public class func fetchRequest() -> NSFetchRequest<PartyMemberEntity> {
+        return NSFetchRequest<PartyMemberEntity>(entityName: "PartyMemberEntity")
+    }
+
+    @NSManaged nonisolated public var characterId: Int64
+    @NSManaged nonisolated public var formationIndex: Int64
+    @NSManaged nonisolated public var party: PartyEntity?
+
+}
+
+extension PartyMemberEntity : Identifiable {
 
 }
 
@@ -288,7 +320,9 @@ extension RunSessionBattleCombatantEntity {
 
     @NSManaged nonisolated public var combatantIndex: Int64
     @NSManaged nonisolated public var formationIndex: Int64
-    @NSManaged nonisolated public var imageAssetID: String?
+    @NSManaged nonisolated public var imageSourceKindValue: Int64
+    @NSManaged nonisolated public var imageSourcePrimaryIDValue: Int64
+    @NSManaged nonisolated public var imageSourceSecondaryIDValue: Int64
     @NSManaged nonisolated public var initialHP: Int64
     @NSManaged nonisolated public var level: Int64
     @NSManaged nonisolated public var maxHP: Int64
@@ -579,7 +613,6 @@ extension RunSessionMemberEntity {
     @NSManaged nonisolated public var formationIndex: Int64
     @NSManaged nonisolated public var level: Int64
     @NSManaged nonisolated public var name: String?
-    @NSManaged nonisolated public var portraitAssetID: String?
     @NSManaged nonisolated public var portraitVariant: Int64
     @NSManaged nonisolated public var previousJobId: Int64
     @NSManaged nonisolated public var raceId: Int64

@@ -123,7 +123,10 @@ nonisolated private struct BattleResolutionEngine {
                     seedKey: "character:\(character.character.characterId)",
                     name: character.character.name,
                     side: .ally,
-                    imageAssetID: masterData.portraitAssetName(for: character.character),
+                    imageReference: .partyMember(
+                        jobId: character.character.currentJobId,
+                        portraitGender: character.character.portraitGender
+                    ),
                     level: character.character.level,
                     formationIndex: formationIndex,
                     currentHP: min(max(character.character.currentHP, 0), character.status.maxHP),
@@ -154,7 +157,7 @@ nonisolated private struct BattleResolutionEngine {
                     seedKey: "enemy:\(enemy.id):\(formationIndex + 1)",
                     name: enemyDisplayName,
                     side: .enemy,
-                    imageAssetID: enemy.imageAssetName,
+                    imageReference: enemy.imageAssetName == nil ? nil : .enemy(enemyId: enemy.id),
                     level: enemySeed.level,
                     formationIndex: formationIndex,
                     currentHP: status.maxHP,
@@ -398,7 +401,7 @@ nonisolated private struct BattleResolutionEngine {
                     id: combatant.id,
                     name: combatant.name,
                     side: combatant.side,
-                    imageAssetID: combatant.imageAssetID,
+                    imageReference: combatant.imageReference,
                     level: combatant.level,
                     initialHP: combatant.initialHP,
                     maxHP: combatant.status.maxHP,
@@ -3302,7 +3305,7 @@ nonisolated private struct RuntimeCombatant {
     let seedKey: String
     let name: String
     let side: BattleSide
-    let imageAssetID: String?
+    let imageReference: BattleCombatantImageReference?
     let level: Int
     let formationIndex: Int
     let initialHP: Int
@@ -3332,7 +3335,7 @@ nonisolated private struct RuntimeCombatant {
         seedKey: String,
         name: String,
         side: BattleSide,
-        imageAssetID: String?,
+        imageReference: BattleCombatantImageReference?,
         level: Int,
         formationIndex: Int,
         currentHP: Int,
@@ -3344,7 +3347,7 @@ nonisolated private struct RuntimeCombatant {
         self.seedKey = seedKey
         self.name = name
         self.side = side
-        self.imageAssetID = imageAssetID
+        self.imageReference = imageReference
         self.level = level
         self.formationIndex = formationIndex
         self.initialHP = currentHP

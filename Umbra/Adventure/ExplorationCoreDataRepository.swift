@@ -505,9 +505,11 @@ nonisolated private enum ExplorationCoreDataBridge {
     }
 
     static func memberCharacterIds(from entity: PartyEntity) -> [Int] {
-        (entity.memberCharacterIdsRawValue ?? "")
-            .split(separator: ",")
-            .compactMap { Int($0) }
+        let members = entity.members as? Set<PartyMemberEntity> ?? []
+        return members.sorted { lhs, rhs in
+            Int(lhs.formationIndex) < Int(rhs.formationIndex)
+        }
+        .map { Int($0.characterId) }
     }
 
     static func memberCharacterIds(from entity: RunSessionEntity) -> [Int] {
@@ -934,7 +936,11 @@ nonisolated private enum ExplorationCoreDataBridge {
                     id: combatantID,
                     name: combatant.name ?? "",
                     side: side,
-                    imageAssetID: combatant.imageAssetID,
+                    imageReference: BattleCombatantImageReference(
+                        persistenceKind: combatant.imageSourceKindValue,
+                        primaryID: combatant.imageSourcePrimaryIDValue,
+                        secondaryID: combatant.imageSourceSecondaryIDValue
+                    ),
                     level: Int(combatant.level),
                     initialHP: Int(combatant.initialHP),
                     maxHP: Int(combatant.maxHP),
@@ -1162,7 +1168,10 @@ nonisolated private enum ExplorationCoreDataBridge {
                 combatantEntity.combatantIndex = Int64(combatantIndex)
                 combatantEntity.name = combatant.name
                 combatantEntity.sideValue = encodedPersistenceOrder(combatant.side)
-                combatantEntity.imageAssetID = combatant.imageAssetID
+                let imageReference = combatant.imageReference
+                combatantEntity.imageSourceKindValue = imageReference?.persistenceKind ?? 0
+                combatantEntity.imageSourcePrimaryIDValue = imageReference?.persistencePrimaryID ?? 0
+                combatantEntity.imageSourceSecondaryIDValue = imageReference?.persistenceSecondaryID ?? 0
                 combatantEntity.level = Int64(combatant.level)
                 combatantEntity.initialHP = Int64(combatant.initialHP)
                 combatantEntity.maxHP = Int64(combatant.maxHP)
@@ -1311,7 +1320,6 @@ nonisolated private enum ExplorationCoreDataBridge {
         entity.previousJobId = Int64(character.previousJobId)
         entity.currentJobId = Int64(character.currentJobId)
         entity.aptitudeId = Int64(character.aptitudeId)
-        entity.portraitAssetID = character.portraitAssetID
         entity.portraitVariant = Int64(character.portraitGender.rawValue)
         entity.experience = Int64(character.experience)
         entity.level = Int64(character.level)
@@ -1347,7 +1355,6 @@ nonisolated private enum ExplorationCoreDataBridge {
             currentJobId: Int(entity.currentJobId),
             aptitudeId: Int(entity.aptitudeId),
             portraitGender: PortraitGender(rawValue: Int(entity.portraitVariant)) ?? .unisex,
-            portraitAssetID: entity.portraitAssetID ?? "",
             experience: Int(entity.experience),
             level: Int(entity.level),
             currentHP: Int(entity.currentHP),
@@ -1382,7 +1389,6 @@ nonisolated private enum ExplorationCoreDataBridge {
             currentJobId: Int(entity.currentJobId),
             aptitudeId: Int(entity.aptitudeId),
             portraitGender: PortraitGender(rawValue: Int(entity.portraitVariant)) ?? .unisex,
-            portraitAssetID: entity.portraitAssetID ?? "",
             experience: Int(entity.experience),
             level: Int(entity.level),
             currentHP: Int(entity.currentHP),

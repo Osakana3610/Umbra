@@ -226,7 +226,6 @@ final class GuildCoreDataRepository {
             entity.previousJobId = Int64(character.previousJobId)
             entity.currentJobId = Int64(character.currentJobId)
             entity.aptitudeId = Int64(character.aptitudeId)
-            entity.portraitAssetID = character.portraitAssetID
             entity.portraitVariant = Int64(character.portraitGender.rawValue)
             entity.experience = Int64(character.experience)
             entity.level = Int64(character.level)
@@ -535,7 +534,6 @@ final class GuildCoreDataRepository {
             currentJobId: Int(entity.currentJobId),
             aptitudeId: Int(entity.aptitudeId),
             portraitGender: PortraitGender(rawValue: Int(entity.portraitVariant)) ?? .unisex,
-            portraitAssetID: entity.portraitAssetID ?? "",
             experience: Int(entity.experience),
             level: Int(entity.level),
             currentHP: Int(entity.currentHP),
@@ -562,7 +560,6 @@ final class GuildCoreDataRepository {
         entity.previousJobId = Int64(character.previousJobId)
         entity.currentJobId = Int64(character.currentJobId)
         entity.aptitudeId = Int64(character.aptitudeId)
-        entity.portraitAssetID = character.portraitAssetID
         entity.portraitVariant = Int64(character.portraitGender.rawValue)
         entity.experience = Int64(character.experience)
         entity.level = Int64(character.level)
@@ -618,13 +615,35 @@ final class GuildCoreDataRepository {
     }
 
     private func memberCharacterIds(from entity: PartyEntity) -> [Int] {
-        (entity.memberCharacterIdsRawValue ?? "")
-            .split(separator: ",")
-            .compactMap { Int($0) }
+        let members = entity.members as? Set<PartyMemberEntity> ?? []
+        return members.sorted { lhs, rhs in
+            Int(lhs.formationIndex) < Int(rhs.formationIndex)
+        }
+        .map { Int($0.characterId) }
     }
 
     private func setMemberCharacterIds(_ memberCharacterIds: [Int], on entity: PartyEntity) {
-        entity.memberCharacterIdsRawValue = memberCharacterIds.map(String.init).joined(separator: ",")
+        guard let context = entity.managedObjectContext else {
+            fatalError("PartyEntity の context が見つかりません。")
+        }
+
+        let existingMembers = entity.members as? Set<PartyMemberEntity> ?? []
+        for existingMember in existingMembers {
+            context.delete(existingMember)
+        }
+
+        for (formationIndex, characterId) in memberCharacterIds.enumerated() {
+            guard let memberEntity = NSEntityDescription.insertNewObject(
+                forEntityName: "PartyMemberEntity",
+                into: context
+            ) as? PartyMemberEntity else {
+                fatalError("PartyMemberEntity の生成に失敗しました。")
+            }
+
+            memberEntity.party = entity
+            memberEntity.formationIndex = Int64(formationIndex)
+            memberEntity.characterId = Int64(characterId)
+        }
     }
 
     private func equippedItemStacks(from entity: CharacterEntity) -> [CompositeItemStack] {

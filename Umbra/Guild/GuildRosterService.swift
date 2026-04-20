@@ -162,7 +162,6 @@ final class GuildRosterService {
 
         character.previousJobId = character.currentJobId
         character.currentJobId = targetJobId
-        character.portraitAssetID = targetJob.portraitAssetName(for: character.portraitGender)
 
         // A job change can invalidate max HP and equipment limits, so both are normalized before
         // the updated character is persisted back to the roster.

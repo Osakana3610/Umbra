@@ -5,6 +5,7 @@ import SwiftUI
 struct RunSessionBattleLogDetailView: View {
     let log: ExplorationBattleLog
 
+    private let masterData: MasterData
     private let spellsByID: [Int: MasterData.Spell]
 
     init(
@@ -12,6 +13,7 @@ struct RunSessionBattleLogDetailView: View {
         masterData: MasterData
     ) {
         self.log = log
+        self.masterData = masterData
         spellsByID = Dictionary(uniqueKeysWithValues: masterData.spells.map { ($0.id, $0) })
     }
 
@@ -45,7 +47,7 @@ struct RunSessionBattleLogDetailView: View {
     private var turnSummaries: [RunSessionBattleTurnSummary] {
         var states = Dictionary(
             uniqueKeysWithValues: log.combatants.map {
-                ($0.id, RunSessionBattleParticipantState(snapshot: $0))
+                ($0.id, RunSessionBattleParticipantState(snapshot: $0, masterData: masterData))
             }
         )
         var previousTurnStartStates = states
@@ -93,7 +95,12 @@ struct RunSessionBattleLogDetailView: View {
         action: BattleActionRecord,
         states: inout [BattleCombatantID: RunSessionBattleParticipantState]
     ) -> RunSessionBattleActionPresentation {
-        let actor = combatantsByID[action.actorId].map(RunSessionBattleParticipantState.init(snapshot:))
+        let actor = combatantsByID[action.actorId].map { snapshot in
+            RunSessionBattleParticipantState(
+                snapshot: snapshot,
+                masterData: masterData
+            )
+        }
 
         // Result messages are built while mutating the running HP state so later results in the
         // same turn can render against already-updated values.
@@ -282,18 +289,21 @@ private struct RunSessionBattleParticipantState: Identifiable {
     let id: BattleCombatantID
     let side: BattleSide
     let name: String
-    let imageAssetID: String?
+    let imageAssetName: String?
     let order: Int
     let level: Int
     let maxHP: Int
     var currentHP: Int
     var previousTurnStartHP: Int
 
-    init(snapshot: BattleCombatantSnapshot) {
+    init(
+        snapshot: BattleCombatantSnapshot,
+        masterData: MasterData
+    ) {
         id = snapshot.id
         side = snapshot.side
         name = snapshot.name
-        imageAssetID = snapshot.imageAssetID
+        imageAssetName = masterData.battleCombatantAssetName(for: snapshot.imageReference)
         order = snapshot.formationIndex
         level = snapshot.level
         maxHP = snapshot.maxHP
@@ -400,7 +410,7 @@ private struct RunSessionBattleActionRowView: View {
         HStack(alignment: .top, spacing: 12) {
             RunSessionBattleActorBadge(
                 side: action.actor?.side ?? .ally,
-                imageAssetID: action.actor?.imageAssetID
+                imageAssetName: action.actor?.imageAssetName
             )
             .padding(.top, 2)
 
@@ -487,12 +497,12 @@ private struct RunSessionBattleActionRowView: View {
 
 private struct RunSessionBattleActorBadge: View {
     let side: BattleSide
-    let imageAssetID: String?
+    let imageAssetName: String?
 
     var body: some View {
         Group {
-            if let imageAssetID {
-                GameAssetImage(assetName: imageAssetID)
+            if let imageAssetName {
+                GameAssetImage(assetName: imageAssetName)
             } else {
                 RoundedRectangle(cornerRadius: 10)
                     .fill(.background)

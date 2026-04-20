@@ -12,7 +12,6 @@ nonisolated struct CharacterRecord: Identifiable, Equatable, Sendable {
     var currentJobId: Int
     let aptitudeId: Int
     let portraitGender: PortraitGender
-    var portraitAssetID: String
     var experience: Int
     var level: Int
     var currentHP: Int
@@ -47,7 +46,7 @@ nonisolated struct CharacterRecord: Identifiable, Equatable, Sendable {
     }
 }
 
-nonisolated enum PortraitGender: Int, CaseIterable, Sendable {
+nonisolated enum PortraitGender: Int, CaseIterable, Codable, Sendable {
     case male = 1
     case female = 2
     case unisex = 3

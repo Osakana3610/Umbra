@@ -944,7 +944,7 @@ struct UmbraGuildAndShopTests {
 
         #expect(updatedCharacter.previousJobId == magicianJobId)
         #expect(updatedCharacter.currentJobId == knightJobId)
-        #expect(updatedCharacter.portraitAssetID == "job_knight_\(updatedCharacter.portraitGender.assetKey)")
+        #expect(masterData.portraitAssetName(for: updatedCharacter) == "job_knight_\(updatedCharacter.portraitGender.assetKey)")
         #expect(Set(updatedStatus.spellIds) == expectedSpellIDs)
         #expect(updatedStatus.skillIds.contains(magicSkillId))
     }

@@ -30,9 +30,6 @@ enum GuildHiring {
         }
 
         let portraitGender = PortraitGender.allCases.randomElement() ?? .unisex
-        guard let portraitAssetID = masterData.job(for: jobId)?.portraitAssetName(for: portraitGender) else {
-            throw GuildServiceError.invalidHireSelection
-        }
         let name = randomName(
             matching: portraitGender,
             from: masterData.recruitNames
@@ -54,7 +51,6 @@ enum GuildHiring {
             currentJobId: jobId,
             aptitudeId: aptitudeId,
             portraitGender: portraitGender,
-            portraitAssetID: portraitAssetID,
             experience: 0,
             level: 1,
             currentHP: currentHP,

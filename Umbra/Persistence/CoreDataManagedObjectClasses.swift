@@ -28,6 +28,11 @@ public class PartyEntity: NSManagedObject {
 
 }
 
+@objc(PartyMemberEntity)
+public class PartyMemberEntity: NSManagedObject {
+
+}
+
 @objc(PlayerStateEntity)
 public class PlayerStateEntity: NSManagedObject {
 
