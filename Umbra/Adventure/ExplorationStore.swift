@@ -197,7 +197,7 @@ final class ExplorationStore {
         defer { isResumingAutomaticRuns = false }
 
         // Resume first synchronizes any in-flight runs, then reconstructs queued automatic runs
-        // from the saved background timestamp before starting them one by one.
+        // from the saved background timestamp before resolving them one by one.
         rosterStore?.refreshFromPersistence()
         partyStore.reload()
         await reload(masterData: masterData)
@@ -230,21 +230,48 @@ final class ExplorationStore {
             masterData: masterData
         ) {
             // Automatic runs are consumed sequentially so each completion can update persisted
-            // HP, rewards, and unlock state before the next queued sortie is started.
-                await startRun(
-                partyId: pendingRun.partyId,
-                labyrinthId: pendingRun.labyrinthId,
-                selectedDifficultyTitleId: pendingRun.selectedDifficultyTitleId,
-                startedAt: pendingRun.startedAt,
-                catTicketUsage: pendingRun.catTicketUsage,
-                masterData: masterData
-            )
-            if let error = lastOperationError {
-                firstResumeError = firstResumeError ?? error
+            // HP, rewards, and unlock state before the next queued sortie is resolved.
+            do {
+                guard let step = try await service.resumeAutomaticRun(
+                    partyId: pendingRun.partyId,
+                    labyrinthId: pendingRun.labyrinthId,
+                    selectedDifficultyTitleId: pendingRun.selectedDifficultyTitleId,
+                    startedAt: pendingRun.startedAt,
+                    catTicketUsage: pendingRun.catTicketUsage,
+                    reopenedAt: reopenedAt,
+                    masterData: masterData
+                ) else {
+                    try partyService.clearPendingAutomaticRuns(partyId: pendingRun.partyId)
+                    partyStore.reload()
+                    continue
+                }
+
+                mergeResumedRun(step.completedRun.summaryRecord)
+                if step.outcome.didApplyRewards {
+                    rosterStore?.refreshFromPersistence()
+                    if let equipmentStore, equipmentStore.isLoaded {
+                        equipmentStore.applyInventoryChanges(
+                            step.outcome.appliedInventoryCounts,
+                            masterData: masterData
+                        )
+                    }
+                    if let shopStore, shopStore.isLoaded {
+                        shopStore.applyInventoryChanges(
+                            step.outcome.appliedShopInventoryCounts,
+                            masterData: masterData
+                        )
+                    }
+                }
+                itemDropNotificationService.publish(
+                    batches: step.outcome.dropNotificationBatches
+                )
+                try partyService.consumePendingAutomaticRun(partyId: pendingRun.partyId)
+                partyStore.reload()
+            } catch {
+                firstResumeError = firstResumeError ?? UserFacingErrorMessage.resolve(error)
                 do {
                     try partyService.clearPendingAutomaticRuns(partyId: pendingRun.partyId)
                     partyStore.reload()
-                    lastOperationError = nil
                     continue
                 } catch {
                     lastOperationError = UserFacingErrorMessage.resolve(error)
@@ -252,21 +279,6 @@ final class ExplorationStore {
                 }
             }
 
-            do {
-                try partyService.consumePendingAutomaticRun(partyId: pendingRun.partyId)
-                partyStore.reload()
-            } catch {
-                lastOperationError = UserFacingErrorMessage.resolve(error)
-                return
-            }
-
-            _ = await refreshProgress(
-                at: reopenedAt,
-                masterData: masterData
-            )
-            guard lastOperationError == nil else {
-                return
-            }
         }
 
         if let firstResumeError {
@@ -453,6 +465,18 @@ final class ExplorationStore {
         }
 
         return nil
+    }
+
+    private func mergeResumedRun(_ run: RunSessionRecord) {
+        runs.removeAll { $0.runSessionID == run.runSessionID }
+        runs.append(run)
+        runs.sort {
+            if $0.partyId != $1.partyId {
+                return $0.partyId < $1.partyId
+            }
+            return $0.partyRunId > $1.partyRunId
+        }
+        isLoaded = true
     }
 
 }

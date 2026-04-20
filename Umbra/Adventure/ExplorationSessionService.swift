@@ -12,6 +12,18 @@ nonisolated private struct ResolvedRunProgress: Sendable {
     let updates: [ResolvedRunUpdate]
 }
 
+nonisolated struct AutomaticRunResumeOutcome: Equatable, Sendable {
+    let didApplyRewards: Bool
+    let appliedInventoryCounts: [CompositeItemID: Int]
+    let appliedShopInventoryCounts: [CompositeItemID: Int]
+    let dropNotificationBatches: [ExplorationDropNotificationBatch]
+}
+
+nonisolated struct AutomaticRunResumeStep: Equatable, Sendable {
+    let completedRun: RunSessionRecord
+    let outcome: AutomaticRunResumeOutcome
+}
+
 final class ExplorationSessionService {
     private let coreDataRepository: ExplorationCoreDataRepository
     nonisolated private static let catTicketRewardMultiplier = 2.0
@@ -142,6 +154,74 @@ final class ExplorationSessionService {
             appliedInventoryCounts: rewardApplication.appliedInventoryCounts,
             appliedShopInventoryCounts: rewardApplication.appliedShopInventoryCounts,
             dropNotificationBatches: resolvedProgress.updates.compactMap(Self.dropNotificationBatch(from:))
+        )
+    }
+
+    func resumeAutomaticRun(
+        partyId: Int,
+        labyrinthId: Int,
+        selectedDifficultyTitleId: Int,
+        startedAt: Date,
+        catTicketUsage: CatTicketUsage,
+        reopenedAt: Date,
+        masterData: MasterData
+    ) async throws -> AutomaticRunResumeStep? {
+        guard startedAt < reopenedAt else {
+            return nil
+        }
+
+        let availableCatTicketCount = try await coreDataRepository.loadCatTicketCount()
+        let appliesCatTicket: Bool
+        switch catTicketUsage {
+        case .never:
+            appliesCatTicket = false
+        case .automaticIfAvailable:
+            appliesCatTicket = availableCatTicketCount > 0
+        case .required:
+            guard availableCatTicketCount > 0 else {
+                throw ExplorationError.insufficientCatTickets
+            }
+            appliesCatTicket = true
+        }
+
+        let initialSession = try await makeInitialSession(
+            runStart: ConfiguredRunStart(
+                partyId: partyId,
+                labyrinthId: labyrinthId,
+                selectedDifficultyTitleId: selectedDifficultyTitleId,
+                catTicketUsage: catTicketUsage
+            ),
+            startedAt: startedAt,
+            appliesCatTicket: appliesCatTicket,
+            masterData: masterData
+        )
+        let plannedSession = try await Self.planSession(
+            initialSession,
+            masterData: masterData,
+            cachedStatuses: [:]
+        )
+        guard let completion = plannedSession.completion,
+              completion.completedAt <= reopenedAt else {
+            return nil
+        }
+
+        try await coreDataRepository.insertRun(
+            plannedSession,
+            consumesCatTicket: appliesCatTicket
+        )
+
+        let rewardApplication = try await coreDataRepository.commitProgressUpdates(
+            [(currentSession: plannedSession, resolvedSession: plannedSession)],
+            masterData: masterData
+        )
+        return AutomaticRunResumeStep(
+            completedRun: plannedSession,
+            outcome: AutomaticRunResumeOutcome(
+                didApplyRewards: rewardApplication.didApplyRewards,
+                appliedInventoryCounts: rewardApplication.appliedInventoryCounts,
+                appliedShopInventoryCounts: rewardApplication.appliedShopInventoryCounts,
+                dropNotificationBatches: Self.completedRunDropNotificationBatch(from: plannedSession).map { [$0] } ?? []
+            )
         )
     }
 
@@ -338,6 +418,20 @@ final class ExplorationSessionService {
         return ExplorationDropNotificationBatch(
             partyId: update.resolvedSession.partyId,
             dropRewards: revealedDropRewards
+        )
+    }
+
+    private static func completedRunDropNotificationBatch(
+        from session: RunSessionRecord
+    ) -> ExplorationDropNotificationBatch? {
+        guard let completion = session.completion,
+              !completion.dropRewards.isEmpty else {
+            return nil
+        }
+
+        return ExplorationDropNotificationBatch(
+            partyId: session.partyId,
+            dropRewards: completion.dropRewards
         )
     }
 }
