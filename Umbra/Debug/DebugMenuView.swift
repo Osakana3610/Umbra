@@ -6,6 +6,7 @@ import UniformTypeIdentifiers
 
 struct DebugMenuView: View {
     private static let debugGoldIncrement = 99_999_999
+    private static let fullPartyMemberCount = PartyRecord.maxPartyCount * PartyRecord.memberLimit
 
     let masterData: MasterData
     let persistentContainer: NSPersistentContainer
@@ -16,6 +17,8 @@ struct DebugMenuView: View {
     @State private var customCombinationCountText = ""
     @State private var stackCountPreset: DebugStackCountPreset = .one
     @State private var customStackCountText = ""
+    @State private var isCreatingRandomCharacter = false
+    @State private var isConfiguringRandomParties = false
     @State private var isGenerating = false
     @State private var isPreparingExport = false
     @State private var isExportingUserData = false
@@ -41,8 +44,16 @@ struct DebugMenuView: View {
         GuildCoreDataRepository(container: persistentContainer)
     }
 
+    private var explorationCoreDataRepository: ExplorationCoreDataRepository {
+        ExplorationCoreDataRepository(container: persistentContainer)
+    }
+
     private var isBusy: Bool {
-        isGenerating || isPreparingExport || isDeletingAllData
+        isCreatingRandomCharacter
+            || isConfiguringRandomParties
+            || isGenerating
+            || isPreparingExport
+            || isDeletingAllData
     }
 
     var body: some View {
@@ -79,6 +90,43 @@ struct DebugMenuView: View {
                 .disabled(isBusy)
 
                 Text("所持金に \(Self.debugGoldIncrement.formatted())G を加算します。")
+                    .foregroundStyle(.secondary)
+            }
+
+            Section("キャラクター・パーティ") {
+                Button {
+                    Task {
+                        await createRandomCharacter()
+                    }
+                } label: {
+                    if isCreatingRandomCharacter {
+                        HStack(spacing: 12) {
+                            ProgressView()
+                            Text("ランダム作成中...")
+                        }
+                    } else {
+                        Text("キャラクターをランダム作成")
+                    }
+                }
+                .disabled(isBusy)
+
+                Button {
+                    Task {
+                        await unlockAndConfigureRandomParties()
+                    }
+                } label: {
+                    if isConfiguringRandomParties {
+                        HStack(spacing: 12) {
+                            ProgressView()
+                            Text("パーティ設定中...")
+                        }
+                    } else {
+                        Text("全パーティを解放してランダム編成")
+                    }
+                }
+                .disabled(isBusy)
+
+                Text("全パーティ解放では不足人数ぶんのキャラクターを自動作成し、各パーティを6人でランダム編成して、出撃先を現在解放済みの最新迷宮に揃えます。")
                     .foregroundStyle(.secondary)
             }
 
@@ -298,6 +346,149 @@ struct DebugMenuView: View {
         }
     }
 
+    private func createRandomCharacter() async {
+        guard !isCreatingRandomCharacter else {
+            return
+        }
+
+        isCreatingRandomCharacter = true
+        resultMessage = nil
+        errorMessage = nil
+        defer { isCreatingRandomCharacter = false }
+
+        do {
+            var snapshot = try guildCoreDataRepository.loadRosterSnapshot()
+            let character = try makeRandomCharacter(nextCharacterId: snapshot.playerState.nextCharacterId)
+            snapshot.playerState.nextCharacterId += 1
+            snapshot.characters.append(character)
+            try guildCoreDataRepository.saveRosterSnapshot(snapshot)
+
+            let raceName = masterData.race(for: character.raceId)?.name ?? "不明"
+            let jobName = masterData.job(for: character.currentJobId)?.name ?? "不明"
+            let aptitudeName = masterData.aptitudes.first(where: { $0.id == character.aptitudeId })?.name ?? "不明"
+            resultMessage = "\(character.name)を作成しました。\(raceName) / \(jobName) / \(aptitudeName)"
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    private func unlockAndConfigureRandomParties() async {
+        guard !isConfiguringRandomParties else {
+            return
+        }
+
+        isConfiguringRandomParties = true
+        resultMessage = nil
+        errorMessage = nil
+        defer { isConfiguringRandomParties = false }
+
+        do {
+            try await ensureNoActiveRuns()
+
+            var snapshot = try guildCoreDataRepository.loadRosterSnapshot()
+            var parties = try guildCoreDataRepository.loadParties()
+            var createdCharacterCount = 0
+
+            while parties.count < PartyRecord.maxPartyCount {
+                let nextPartyId = parties.count + 1
+                parties.append(
+                    PartyRecord(
+                        partyId: nextPartyId,
+                        name: PartyRecord.defaultName(for: nextPartyId),
+                        memberCharacterIds: [],
+                        selectedLabyrinthId: nil,
+                        selectedDifficultyTitleId: nil,
+                        automaticallyUsesCatTicket: false
+                    )
+                )
+            }
+
+            if snapshot.characters.count < Self.fullPartyMemberCount {
+                let additionalCharacterCount = Self.fullPartyMemberCount - snapshot.characters.count
+                for _ in 0..<additionalCharacterCount {
+                    let character = try makeRandomCharacter(nextCharacterId: snapshot.playerState.nextCharacterId)
+                    snapshot.playerState.nextCharacterId += 1
+                    snapshot.characters.append(character)
+                }
+                createdCharacterCount = additionalCharacterCount
+            }
+
+            let sortieDestination = try latestUnlockedSortieDestination(
+                labyrinthProgressRecords: snapshot.labyrinthProgressRecords
+            )
+            let shuffledCharacterIds = snapshot.characters.map(\.characterId).shuffled()
+
+            for partyIndex in parties.indices {
+                let startIndex = partyIndex * PartyRecord.memberLimit
+                let endIndex = startIndex + PartyRecord.memberLimit
+                parties[partyIndex].memberCharacterIds = Array(shuffledCharacterIds[startIndex..<endIndex])
+                parties[partyIndex].selectedLabyrinthId = sortieDestination.labyrinthId
+                parties[partyIndex].selectedDifficultyTitleId = sortieDestination.selectedDifficultyTitleId
+                parties[partyIndex].pendingAutomaticRunCount = 0
+                parties[partyIndex].pendingAutomaticRunStartedAt = nil
+            }
+
+            try guildCoreDataRepository.saveRosterState(
+                snapshot,
+                parties: parties,
+                inventoryStacks: try guildCoreDataRepository.loadInventoryStacks()
+            )
+
+            resultMessage = "\(createdCharacterCount.formatted())人を追加し、\(PartyRecord.maxPartyCount)パーティを全解放して各\(PartyRecord.memberLimit)人をランダム編成しました。出撃先は\(sortieDestination.labyrinthName)です。"
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    private func makeRandomCharacter(nextCharacterId: Int) throws -> CharacterRecord {
+        guard let raceId = masterData.races.randomElement()?.id,
+              let jobId = masterData.jobs.randomElement()?.id,
+              let aptitudeId = masterData.aptitudes.randomElement()?.id else {
+            throw DebugMenuMutationError.missingCharacterMasterData
+        }
+
+        return try GuildHiring.makeCharacterRecord(
+            nextCharacterId: nextCharacterId,
+            raceId: raceId,
+            jobId: jobId,
+            aptitudeId: aptitudeId,
+            masterData: masterData
+        )
+    }
+
+    private func ensureNoActiveRuns() async throws {
+        let snapshot = try await explorationCoreDataRepository.loadSnapshot()
+        guard snapshot.runs.allSatisfy(\.isCompleted) else {
+            throw DebugMenuMutationError.activeRunExists
+        }
+    }
+
+    private func latestUnlockedSortieDestination(
+        labyrinthProgressRecords: [LabyrinthProgressRecord]
+    ) throws -> DebugSortieDestination {
+        guard let defaultLabyrinthId = masterData.defaultUnlockedLabyrinthId else {
+            throw DebugMenuMutationError.missingLabyrinthMasterData
+        }
+
+        let unlockedLabyrinthIds = Set(labyrinthProgressRecords.map(\.labyrinthId)).union([defaultLabyrinthId])
+        guard let labyrinth = masterData.labyrinths.last(where: { unlockedLabyrinthIds.contains($0.id) }) else {
+            throw DebugMenuMutationError.missingLabyrinthMasterData
+        }
+
+        let highestUnlockedTitleId = labyrinthProgressRecords.first(where: { $0.labyrinthId == labyrinth.id })?
+            .highestUnlockedDifficultyTitleId
+        let selectedDifficultyTitleId = masterData.resolvedExplorationDifficultyTitleId(
+            requestedTitleId: highestUnlockedTitleId,
+            highestUnlockedTitleId: highestUnlockedTitleId
+        )
+
+        return DebugSortieDestination(
+            labyrinthId: labyrinth.id,
+            labyrinthName: labyrinth.name,
+            selectedDifficultyTitleId: selectedDifficultyTitleId
+        )
+    }
+
     private func deleteAllDataAndExit() async {
         guard !isDeletingAllData else {
             return
@@ -343,5 +534,28 @@ struct DebugMenuView: View {
         let timestamp = formatter.string(from: Date())
             .replacingOccurrences(of: ":", with: "-")
         return "UmbraUserData-\(timestamp)"
+    }
+}
+
+private struct DebugSortieDestination {
+    let labyrinthId: Int
+    let labyrinthName: String
+    let selectedDifficultyTitleId: Int
+}
+
+private enum DebugMenuMutationError: LocalizedError {
+    case missingCharacterMasterData
+    case missingLabyrinthMasterData
+    case activeRunExists
+
+    var errorDescription: String? {
+        switch self {
+        case .missingCharacterMasterData:
+            "キャラクター作成に必要なマスターデータが不足しています。"
+        case .missingLabyrinthMasterData:
+            "迷宮設定に必要なマスターデータが不足しています。"
+        case .activeRunExists:
+            "出撃中のパーティがあるため、全パーティのランダム編成はできません。"
+        }
     }
 }
