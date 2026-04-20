@@ -12,7 +12,6 @@
         <attribute name="characterId" optional="NO" attributeType="Integer 64" usesScalarValueType="YES"/>
         <attribute name="currentHP" optional="NO" attributeType="Integer 64" usesScalarValueType="YES"/>
         <attribute name="currentJobId" optional="NO" attributeType="Integer 64" usesScalarValueType="YES"/>
-        <attribute name="equippedItemStacksRawValue" optional="NO" attributeType="String" defaultValueString=""/>
         <attribute name="experience" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="level" optional="NO" attributeType="Integer 64" defaultValueString="1" usesScalarValueType="YES"/>
         <attribute name="name" optional="NO" attributeType="String"/>
@@ -21,23 +20,54 @@
         <attribute name="previousJobId" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="raceId" optional="NO" attributeType="Integer 64" usesScalarValueType="YES"/>
         <attribute name="recoverySpellRate" optional="NO" attributeType="Integer 64" defaultValueString="50" usesScalarValueType="YES"/>
+        <relationship name="equippedItems" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="CharacterEquippedItemEntity" inverseName="character" inverseEntity="CharacterEquippedItemEntity"/>
+    </entity>
+    <entity name="CharacterEquippedItemEntity" representedClassName="CharacterEquippedItemEntity" syncable="YES">
+        <attribute name="baseItemIdValue" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="baseSuperRareIdValue" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="baseTitleIdValue" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="count" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="jewelItemIdValue" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="jewelSuperRareIdValue" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="jewelTitleIdValue" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="stackIndex" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <relationship name="character" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="CharacterEntity" inverseName="equippedItems" inverseEntity="CharacterEntity"/>
     </entity>
     <entity name="InventoryItemEntity" representedClassName="InventoryItemEntity" syncable="YES">
+        <attribute name="baseItemIdValue" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="baseSuperRareIdValue" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="baseTitleIdValue" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="count" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
-        <attribute name="stackKeyRawValue" optional="NO" attributeType="String" defaultValueString="0:0:0:0:0:0"/>
+        <attribute name="jewelItemIdValue" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="jewelSuperRareIdValue" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="jewelTitleIdValue" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
     </entity>
     <entity name="ShopItemEntity" representedClassName="ShopItemEntity" syncable="YES">
+        <attribute name="baseItemIdValue" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="baseSuperRareIdValue" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="baseTitleIdValue" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="count" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
-        <attribute name="stackKeyRawValue" optional="NO" attributeType="String" defaultValueString="0:0:0:0:0:0"/>
+        <attribute name="jewelItemIdValue" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="jewelSuperRareIdValue" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="jewelTitleIdValue" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
     </entity>
     <entity name="PlayerStateEntity" representedClassName="PlayerStateEntity" syncable="YES">
-        <attribute name="autoSellItemIDsRawValue" optional="NO" attributeType="String" defaultValueString=""/>
         <attribute name="autoReviveDefeatedCharacters" optional="NO" attributeType="Boolean" defaultValueString="YES" usesScalarValueType="YES"/>
         <attribute name="catTicketCount" optional="NO" attributeType="Integer 64" defaultValueString="10" usesScalarValueType="YES"/>
         <attribute name="gold" optional="NO" attributeType="Integer 64" defaultValueString="1000" usesScalarValueType="YES"/>
         <attribute name="lastBackgroundedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="nextCharacterId" optional="NO" attributeType="Integer 64" defaultValueString="1" usesScalarValueType="YES"/>
         <attribute name="shopInventoryInitialized" optional="NO" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <relationship name="autoSellItems" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="PlayerStateAutoSellItemEntity" inverseName="playerState" inverseEntity="PlayerStateAutoSellItemEntity"/>
+    </entity>
+    <entity name="PlayerStateAutoSellItemEntity" representedClassName="PlayerStateAutoSellItemEntity" syncable="YES">
+        <attribute name="baseItemIdValue" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="baseSuperRareIdValue" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="baseTitleIdValue" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="jewelItemIdValue" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="jewelSuperRareIdValue" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="jewelTitleIdValue" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <relationship name="playerState" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="PlayerStateEntity" inverseName="autoSellItems" inverseEntity="PlayerStateEntity"/>
     </entity>
     <entity name="PartyEntity" representedClassName="PartyEntity" syncable="YES">
         <attribute name="automaticallyUsesCatTicket" optional="NO" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
@@ -86,7 +116,6 @@
         <attribute name="characterId" optional="NO" attributeType="Integer 64" usesScalarValueType="YES"/>
         <attribute name="currentHP" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="currentJobId" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
-        <attribute name="equippedItemStacksRawValue" optional="NO" attributeType="String" defaultValueString=""/>
         <attribute name="experience" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="experienceMultiplier" optional="NO" attributeType="Double" defaultValueString="1"/>
         <attribute name="formationIndex" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
@@ -97,7 +126,19 @@
         <attribute name="previousJobId" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="raceId" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="recoverySpellRate" optional="NO" attributeType="Integer 64" defaultValueString="50" usesScalarValueType="YES"/>
+        <relationship name="equippedItems" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="RunSessionMemberEquippedItemEntity" inverseName="runSessionMember" inverseEntity="RunSessionMemberEquippedItemEntity"/>
         <relationship name="runSession" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="RunSessionEntity" inverseName="members" inverseEntity="RunSessionEntity"/>
+    </entity>
+    <entity name="RunSessionMemberEquippedItemEntity" representedClassName="RunSessionMemberEquippedItemEntity" syncable="YES">
+        <attribute name="baseItemIdValue" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="baseSuperRareIdValue" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="baseTitleIdValue" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="count" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="jewelItemIdValue" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="jewelSuperRareIdValue" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="jewelTitleIdValue" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="stackIndex" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <relationship name="runSessionMember" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="RunSessionMemberEntity" inverseName="equippedItems" inverseEntity="RunSessionMemberEntity"/>
     </entity>
     <entity name="RunSessionExperienceRewardEntity" representedClassName="RunSessionExperienceRewardEntity" syncable="YES">
         <attribute name="characterId" optional="NO" attributeType="Integer 64" usesScalarValueType="YES"/>
@@ -105,7 +146,12 @@
         <relationship name="runSession" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="RunSessionEntity" inverseName="experienceRewards" inverseEntity="RunSessionEntity"/>
     </entity>
     <entity name="RunSessionDropRewardEntity" representedClassName="RunSessionDropRewardEntity" syncable="YES">
-        <attribute name="itemIDRawValue" optional="NO" attributeType="String" defaultValueString="0:0:0:0:0:0"/>
+        <attribute name="baseItemIdValue" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="baseSuperRareIdValue" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="baseTitleIdValue" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="jewelItemIdValue" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="jewelSuperRareIdValue" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="jewelTitleIdValue" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="sourceBattleNumber" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="sourceFloorNumber" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <relationship name="runSession" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="RunSessionEntity" inverseName="dropRewards" inverseEntity="RunSessionEntity"/>
@@ -173,14 +219,17 @@
     <elements>
         <element name="PlayerStateEntity" positionX="-63" positionY="-18" width="128" height="59"/>
         <element name="CharacterEntity" positionX="178" positionY="-18" width="128" height="254"/>
+        <element name="CharacterEquippedItemEntity" positionX="392" positionY="-18" width="128" height="149"/>
         <element name="PartyEntity" positionX="-63" positionY="101" width="128" height="89"/>
-        <element name="InventoryItemEntity" positionX="-63" positionY="197" width="128" height="74"/>
-        <element name="ShopItemEntity" positionX="-63" positionY="366" width="128" height="74"/>
+        <element name="InventoryItemEntity" positionX="-63" positionY="197" width="128" height="134"/>
+        <element name="ShopItemEntity" positionX="-63" positionY="366" width="128" height="134"/>
+        <element name="PlayerStateAutoSellItemEntity" positionX="-277" positionY="-18" width="128" height="119"/>
         <element name="LabyrinthProgressEntity" positionX="-63" positionY="281" width="128" height="74"/>
         <element name="RunSessionEntity" positionX="178" positionY="281" width="128" height="254"/>
         <element name="RunSessionMemberEntity" positionX="392" positionY="281" width="128" height="284"/>
+        <element name="RunSessionMemberEquippedItemEntity" positionX="606" positionY="514" width="128" height="149"/>
         <element name="RunSessionExperienceRewardEntity" positionX="392" positionY="405" width="128" height="89"/>
-        <element name="RunSessionDropRewardEntity" positionX="392" positionY="514" width="128" height="104"/>
+        <element name="RunSessionDropRewardEntity" positionX="392" positionY="514" width="128" height="194"/>
         <element name="RunSessionBattleLogEntity" positionX="606" positionY="281" width="128" height="119"/>
         <element name="RunSessionBattleCombatantEntity" positionX="820" positionY="185" width="128" height="164"/>
         <element name="RunSessionBattleTurnEntity" positionX="820" positionY="369" width="128" height="104"/>

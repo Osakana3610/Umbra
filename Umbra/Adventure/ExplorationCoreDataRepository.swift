@@ -501,7 +501,6 @@ nonisolated private enum ExplorationCoreDataBridge {
         entity.catTicketCount = Int64(PlayerState.initial.catTicketCount)
         entity.nextCharacterId = Int64(PlayerState.initial.nextCharacterId)
         entity.autoReviveDefeatedCharacters = PlayerState.initial.autoReviveDefeatedCharacters
-        entity.autoSellItemIDsRawValue = ""
         return entity
     }
 
@@ -645,7 +644,7 @@ nonisolated private enum ExplorationCoreDataBridge {
             }
         }
 
-        let autoSellItemIDs = decodedAutoSellItemIDs(playerState.autoSellItemIDsRawValue)
+        let autoSellItemIDs = autoSellItemIDs(from: playerState)
         let dropCounts = Dictionary(
             completion.dropRewards.map { ($0.itemID, 1) },
             uniquingKeysWith: +
@@ -756,20 +755,14 @@ nonisolated private enum ExplorationCoreDataBridge {
 
         // Fetch all touched stacks up front, then upsert in memory so one completion pass does
         // not issue a per-item fetch for every reward.
-        let keys = itemCounts.keys.map(\.rawValue)
         let request = NSFetchRequest<InventoryItemEntity>(entityName: "InventoryItemEntity")
-        request.predicate = NSPredicate(format: "stackKeyRawValue IN %@", keys)
+        request.predicate = CompositeItemPersistence.predicate(for: itemCounts.keys)
         let existingEntities = (try? context.fetch(request)) ?? []
-        var entitiesByKey: [String: InventoryItemEntity] = Dictionary(uniqueKeysWithValues: existingEntities.compactMap { entity in
-            guard let key = entity.stackKeyRawValue else {
-                return nil
-            }
-            return (key, entity)
-        })
+        var entitiesByID = Dictionary(uniqueKeysWithValues: existingEntities.map { (CompositeItemID(entity: $0), $0) })
 
         for (itemID, count) in itemCounts where count > 0 {
             let entity: InventoryItemEntity
-            if let existingEntity = entitiesByKey[itemID.rawValue] {
+            if let existingEntity = entitiesByID[itemID] {
                 entity = existingEntity
             } else {
                 guard let insertedEntity = NSEntityDescription.insertNewObject(
@@ -778,9 +771,9 @@ nonisolated private enum ExplorationCoreDataBridge {
                 ) as? InventoryItemEntity else {
                     fatalError("InventoryItemEntity の生成に失敗しました。")
                 }
-                insertedEntity.stackKeyRawValue = itemID.rawValue
+                itemID.apply(to: insertedEntity)
                 insertedEntity.count = 0
-                entitiesByKey[itemID.rawValue] = insertedEntity
+                entitiesByID[itemID] = insertedEntity
                 entity = insertedEntity
             }
 
@@ -796,20 +789,14 @@ nonisolated private enum ExplorationCoreDataBridge {
             return
         }
 
-        let keys = itemCounts.keys.map(\.rawValue)
         let request = NSFetchRequest<ShopItemEntity>(entityName: "ShopItemEntity")
-        request.predicate = NSPredicate(format: "stackKeyRawValue IN %@", keys)
+        request.predicate = CompositeItemPersistence.predicate(for: itemCounts.keys)
         let existingEntities = (try? context.fetch(request)) ?? []
-        var entitiesByKey: [String: ShopItemEntity] = Dictionary(uniqueKeysWithValues: existingEntities.compactMap { entity in
-            guard let key = entity.stackKeyRawValue else {
-                return nil
-            }
-            return (key, entity)
-        })
+        var entitiesByID = Dictionary(uniqueKeysWithValues: existingEntities.map { (CompositeItemID(entity: $0), $0) })
 
         for (itemID, count) in itemCounts where count > 0 {
             let entity: ShopItemEntity
-            if let existingEntity = entitiesByKey[itemID.rawValue] {
+            if let existingEntity = entitiesByID[itemID] {
                 entity = existingEntity
             } else {
                 guard let insertedEntity = NSEntityDescription.insertNewObject(
@@ -818,26 +805,14 @@ nonisolated private enum ExplorationCoreDataBridge {
                 ) as? ShopItemEntity else {
                     fatalError("ShopItemEntity の生成に失敗しました。")
                 }
-                insertedEntity.stackKeyRawValue = itemID.rawValue
+                itemID.apply(to: insertedEntity)
                 insertedEntity.count = 0
-                entitiesByKey[itemID.rawValue] = insertedEntity
+                entitiesByID[itemID] = insertedEntity
                 entity = insertedEntity
             }
 
             entity.count += Int64(count)
         }
-    }
-
-    static func decodedAutoSellItemIDs(_ rawValue: String?) -> Set<CompositeItemID> {
-        guard let rawValue, !rawValue.isEmpty else {
-            return []
-        }
-
-        return Set(
-            rawValue
-                .split(separator: ",")
-                .compactMap { CompositeItemID(rawValue: String($0)) }
-        )
     }
 
     static func makeRunSummaryRecord(from entity: RunSessionEntity) -> RunSessionRecord {
@@ -1090,15 +1065,10 @@ nonisolated private enum ExplorationCoreDataBridge {
             if lhs.sourceBattleNumber != rhs.sourceBattleNumber {
                 return Int(lhs.sourceBattleNumber) < Int(rhs.sourceBattleNumber)
             }
-            return (lhs.itemIDRawValue ?? "") < (rhs.itemIDRawValue ?? "")
-        }.compactMap { reward in
-            guard let rawValue = reward.itemIDRawValue,
-                  let itemID = CompositeItemID(rawValue: rawValue) else {
-                return nil
-            }
-
+            return CompositeItemID(entity: lhs).isOrdered(before: CompositeItemID(entity: rhs))
+        }.map { reward in
             return ExplorationDropReward(
-                itemID: itemID,
+                itemID: CompositeItemID(entity: reward),
                 sourceFloorNumber: Int(reward.sourceFloorNumber),
                 sourceBattleNumber: Int(reward.sourceBattleNumber)
             )
@@ -1324,7 +1294,7 @@ nonisolated private enum ExplorationCoreDataBridge {
             }
 
             rewardEntity.runSession = entity
-            rewardEntity.itemIDRawValue = reward.itemID.rawValue
+            reward.itemID.apply(to: rewardEntity)
             rewardEntity.sourceFloorNumber = Int64(reward.sourceFloorNumber)
             rewardEntity.sourceBattleNumber = Int64(reward.sourceBattleNumber)
         }
@@ -1334,8 +1304,8 @@ nonisolated private enum ExplorationCoreDataBridge {
         _ character: CharacterRecord,
         to entity: RunSessionMemberEntity
     ) {
-        // Store the same serialized equipment and auto-battle payload used by the guild roster so
-        // a resumed run can rebuild a battle-ready character without touching live roster rows.
+        // Run members keep their own frozen equipment rows so resumed runs do not depend on live
+        // roster mutations.
         entity.name = character.name
         entity.raceId = Int64(character.raceId)
         entity.previousJobId = Int64(character.previousJobId)
@@ -1345,10 +1315,7 @@ nonisolated private enum ExplorationCoreDataBridge {
         entity.portraitVariant = Int64(character.portraitGender.rawValue)
         entity.experience = Int64(character.experience)
         entity.level = Int64(character.level)
-        entity.equippedItemStacksRawValue = character.equippedItemStacks
-            .normalizedCompositeItemStacks()
-            .map { "\($0.itemID.rawValue)#\($0.count)" }
-            .joined(separator: "|")
+        setEquippedItemStacks(character.equippedItemStacks, on: entity, in: entity.managedObjectContext)
         entity.breathRate = Int64(character.autoBattleSettings.rates.breath)
         entity.attackRate = Int64(character.autoBattleSettings.rates.attack)
         entity.recoverySpellRate = Int64(character.autoBattleSettings.rates.recoverySpell)
@@ -1433,35 +1400,73 @@ nonisolated private enum ExplorationCoreDataBridge {
     }
 
     static func equippedItemStacks(from entity: CharacterEntity) -> [CompositeItemStack] {
-        (entity.equippedItemStacksRawValue ?? "")
-            .split(separator: "|")
-            .compactMap { component in
-                let parts = component.split(separator: "#")
-                guard parts.count == 2,
-                      let itemID = CompositeItemID(rawValue: String(parts[0])),
-                      let count = Int(parts[1]),
-                      count > 0 else {
-                    return nil
-                }
-                return CompositeItemStack(itemID: itemID, count: count)
-            }
+        let equippedItems = entity.equippedItems as? Set<CharacterEquippedItemEntity> ?? []
+        return equippedItems.sorted { Int($0.stackIndex) < Int($1.stackIndex) }
+            .compactMap(makeEquippedItemStack)
             .normalizedCompositeItemStacks()
     }
 
     static func equippedItemStacks(from entity: RunSessionMemberEntity) -> [CompositeItemStack] {
-        (entity.equippedItemStacksRawValue ?? "")
-            .split(separator: "|")
-            .compactMap { component in
-                let parts = component.split(separator: "#")
-                guard parts.count == 2,
-                      let itemID = CompositeItemID(rawValue: String(parts[0])),
-                      let count = Int(parts[1]),
-                      count > 0 else {
-                    return nil
-                }
-                return CompositeItemStack(itemID: itemID, count: count)
-            }
+        let equippedItems = entity.equippedItems as? Set<RunSessionMemberEquippedItemEntity> ?? []
+        return equippedItems.sorted { Int($0.stackIndex) < Int($1.stackIndex) }
+            .compactMap(makeEquippedItemStack)
             .normalizedCompositeItemStacks()
+    }
+
+    static func autoSellItemIDs(from entity: PlayerStateEntity) -> Set<CompositeItemID> {
+        let autoSellEntities = entity.autoSellItems as? Set<PlayerStateAutoSellItemEntity> ?? []
+        return Set(autoSellEntities.map(CompositeItemID.init(entity:)))
+    }
+
+    static func makeEquippedItemStack(from entity: CharacterEquippedItemEntity) -> CompositeItemStack? {
+        guard entity.count > 0 else {
+            return nil
+        }
+
+        return CompositeItemStack(
+            itemID: CompositeItemID(entity: entity),
+            count: Int(entity.count)
+        )
+    }
+
+    static func makeEquippedItemStack(from entity: RunSessionMemberEquippedItemEntity) -> CompositeItemStack? {
+        guard entity.count > 0 else {
+            return nil
+        }
+
+        return CompositeItemStack(
+            itemID: CompositeItemID(entity: entity),
+            count: Int(entity.count)
+        )
+    }
+
+    static func setEquippedItemStacks(
+        _ equippedItemStacks: [CompositeItemStack],
+        on entity: RunSessionMemberEntity,
+        in context: NSManagedObjectContext?
+    ) {
+        guard let context else {
+            fatalError("RunSessionMemberEntity の context が見つかりません。")
+        }
+
+        let existingItems = entity.equippedItems as? Set<RunSessionMemberEquippedItemEntity> ?? []
+        for existingItem in existingItems {
+            context.delete(existingItem)
+        }
+
+        for (stackIndex, stack) in equippedItemStacks.normalizedCompositeItemStacks().enumerated() {
+            guard let itemEntity = NSEntityDescription.insertNewObject(
+                    forEntityName: "RunSessionMemberEquippedItemEntity",
+                    into: context
+                  ) as? RunSessionMemberEquippedItemEntity else {
+                fatalError("RunSessionMemberEquippedItemEntity の生成に失敗しました。")
+            }
+
+            itemEntity.runSessionMember = entity
+            itemEntity.stackIndex = Int64(stackIndex)
+            itemEntity.count = Int64(stack.count)
+            stack.itemID.apply(to: itemEntity)
+        }
     }
 
     static func restoreCurrentHPToMax(

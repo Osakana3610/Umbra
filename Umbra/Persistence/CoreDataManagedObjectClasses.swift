@@ -8,6 +8,11 @@ public class CharacterEntity: NSManagedObject {
 
 }
 
+@objc(CharacterEquippedItemEntity)
+public class CharacterEquippedItemEntity: NSManagedObject {
+
+}
+
 @objc(InventoryItemEntity)
 public class InventoryItemEntity: NSManagedObject {
 
@@ -25,6 +30,11 @@ public class PartyEntity: NSManagedObject {
 
 @objc(PlayerStateEntity)
 public class PlayerStateEntity: NSManagedObject {
+
+}
+
+@objc(PlayerStateAutoSellItemEntity)
+public class PlayerStateAutoSellItemEntity: NSManagedObject {
 
 }
 
@@ -75,6 +85,11 @@ public class RunSessionEntity: NSManagedObject {
 
 @objc(RunSessionExperienceRewardEntity)
 public class RunSessionExperienceRewardEntity: NSManagedObject {
+
+}
+
+@objc(RunSessionMemberEquippedItemEntity)
+public class RunSessionMemberEquippedItemEntity: NSManagedObject {
 
 }
 

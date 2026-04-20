@@ -85,8 +85,8 @@ final class GuildCoreDataRepository {
         playerState.nextCharacterId = Int64(snapshot.playerState.nextCharacterId)
         playerState.autoReviveDefeatedCharacters = snapshot.playerState.autoReviveDefeatedCharacters
         playerState.shopInventoryInitialized = snapshot.playerState.shopInventoryInitialized
-        playerState.autoSellItemIDsRawValue = encodedAutoSellItemIDs(snapshot.playerState.autoSellItemIDs)
         playerState.lastBackgroundedAt = snapshot.playerState.lastBackgroundedAt
+        syncAutoSellItems(snapshot.playerState.autoSellItemIDs, on: playerState, in: context)
         try syncCharacters(snapshot.characters, in: context)
         try syncLabyrinthProgressRecords(snapshot.labyrinthProgressRecords, in: context)
         try saveIfNeeded(context)
@@ -122,8 +122,8 @@ final class GuildCoreDataRepository {
         playerState.nextCharacterId = Int64(snapshot.playerState.nextCharacterId)
         playerState.autoReviveDefeatedCharacters = snapshot.playerState.autoReviveDefeatedCharacters
         playerState.shopInventoryInitialized = snapshot.playerState.shopInventoryInitialized
-        playerState.autoSellItemIDsRawValue = encodedAutoSellItemIDs(snapshot.playerState.autoSellItemIDs)
         playerState.lastBackgroundedAt = snapshot.playerState.lastBackgroundedAt
+        syncAutoSellItems(snapshot.playerState.autoSellItemIDs, on: playerState, in: context)
         try syncCharacters(snapshot.characters, in: context)
         try syncParties(parties, in: context)
         try syncInventoryStacks(inventoryStacks, in: context)
@@ -165,7 +165,7 @@ final class GuildCoreDataRepository {
                 }
                 return insertedEntity
             }()
-            inventoryEntity.stackKeyRawValue = inventoryStack.itemID.rawValue
+            inventoryStack.itemID.apply(to: inventoryEntity)
             inventoryEntity.count = Int64(inventoryStack.count)
         } else if let inventoryEntity = try fetchInventoryItemEntity(itemID: inventoryItemID, in: context) {
             context.delete(inventoryEntity)
@@ -186,8 +186,8 @@ final class GuildCoreDataRepository {
         playerStateEntity.nextCharacterId = Int64(playerState.nextCharacterId)
         playerStateEntity.autoReviveDefeatedCharacters = playerState.autoReviveDefeatedCharacters
         playerStateEntity.shopInventoryInitialized = playerState.shopInventoryInitialized
-        playerStateEntity.autoSellItemIDsRawValue = encodedAutoSellItemIDs(playerState.autoSellItemIDs)
         playerStateEntity.lastBackgroundedAt = playerState.lastBackgroundedAt
+        syncAutoSellItems(playerState.autoSellItemIDs, on: playerStateEntity, in: context)
         try syncInventoryStacks(inventoryStacks, in: context)
         try syncShopInventoryStacks(shopInventoryStacks, in: context)
         try saveIfNeeded(context)
@@ -321,34 +321,28 @@ final class GuildCoreDataRepository {
         let normalizedStacks = inventoryStacks.normalizedCompositeItemStacks()
         // Inventory is normalized before persistence so duplicated stack keys from multiple
         // upstream mutations collapse into one stored row.
-        var existingByKey: [String: InventoryItemEntity] = try Dictionary(
-            uniqueKeysWithValues: fetchInventoryItemEntities(in: context).compactMap { entity in
-                guard let rawValue = entity.stackKeyRawValue else {
-                    return nil
-                }
-                return (rawValue, entity)
-            }
+        var existingByID: [CompositeItemID: InventoryItemEntity] = try Dictionary(
+            uniqueKeysWithValues: fetchInventoryItemEntities(in: context).map { (CompositeItemID(entity: $0), $0) }
         )
-        let incomingKeys = Set(normalizedStacks.map(\.itemID.rawValue))
+        let incomingIDs = Set(normalizedStacks.map(\.itemID))
 
-        for (rawValue, entity) in existingByKey where !incomingKeys.contains(rawValue) {
+        for (itemID, entity) in existingByID where !incomingIDs.contains(itemID) {
             context.delete(entity)
         }
 
         for stack in normalizedStacks {
-            let rawValue = stack.itemID.rawValue
-            let entity = existingByKey[rawValue] ?? {
+            let entity = existingByID[stack.itemID] ?? {
                 guard let insertedEntity = NSEntityDescription.insertNewObject(
                     forEntityName: "InventoryItemEntity",
                     into: context
                 ) as? InventoryItemEntity else {
                     fatalError("InventoryItemEntity の生成に失敗しました。")
                 }
-                existingByKey[rawValue] = insertedEntity
+                existingByID[stack.itemID] = insertedEntity
                 return insertedEntity
             }()
 
-            entity.stackKeyRawValue = rawValue
+            stack.itemID.apply(to: entity)
             entity.count = Int64(stack.count)
         }
     }
@@ -358,34 +352,28 @@ final class GuildCoreDataRepository {
         in context: NSManagedObjectContext
     ) throws {
         let normalizedStacks = inventoryStacks.normalizedCompositeItemStacks()
-        var existingByKey: [String: ShopItemEntity] = try Dictionary(
-            uniqueKeysWithValues: fetchShopItemEntities(in: context).compactMap { entity in
-                guard let rawValue = entity.stackKeyRawValue else {
-                    return nil
-                }
-                return (rawValue, entity)
-            }
+        var existingByID: [CompositeItemID: ShopItemEntity] = try Dictionary(
+            uniqueKeysWithValues: fetchShopItemEntities(in: context).map { (CompositeItemID(entity: $0), $0) }
         )
-        let incomingKeys = Set(normalizedStacks.map(\.itemID.rawValue))
+        let incomingIDs = Set(normalizedStacks.map(\.itemID))
 
-        for (rawValue, entity) in existingByKey where !incomingKeys.contains(rawValue) {
+        for (itemID, entity) in existingByID where !incomingIDs.contains(itemID) {
             context.delete(entity)
         }
 
         for stack in normalizedStacks {
-            let rawValue = stack.itemID.rawValue
-            let entity = existingByKey[rawValue] ?? {
+            let entity = existingByID[stack.itemID] ?? {
                 guard let insertedEntity = NSEntityDescription.insertNewObject(
                     forEntityName: "ShopItemEntity",
                     into: context
                 ) as? ShopItemEntity else {
                     fatalError("ShopItemEntity の生成に失敗しました。")
                 }
-                existingByKey[rawValue] = insertedEntity
+                existingByID[stack.itemID] = insertedEntity
                 return insertedEntity
             }()
 
-            entity.stackKeyRawValue = rawValue
+            stack.itemID.apply(to: entity)
             entity.count = Int64(stack.count)
         }
     }
@@ -417,7 +405,6 @@ final class GuildCoreDataRepository {
         playerState.nextCharacterId = Int64(PlayerState.initial.nextCharacterId)
         playerState.autoReviveDefeatedCharacters = PlayerState.initial.autoReviveDefeatedCharacters
         playerState.shopInventoryInitialized = PlayerState.initial.shopInventoryInitialized
-        playerState.autoSellItemIDsRawValue = encodedAutoSellItemIDs(PlayerState.initial.autoSellItemIDs)
         playerState.lastBackgroundedAt = PlayerState.initial.lastBackgroundedAt
         return playerState
     }
@@ -470,7 +457,7 @@ final class GuildCoreDataRepository {
         in context: NSManagedObjectContext
     ) throws -> [InventoryItemEntity] {
         let request = NSFetchRequest<InventoryItemEntity>(entityName: "InventoryItemEntity")
-        request.sortDescriptors = [NSSortDescriptor(key: "stackKeyRawValue", ascending: true)]
+        request.sortDescriptors = CompositeItemPersistence.sortDescriptors
         return try context.fetch(request)
     }
 
@@ -478,7 +465,7 @@ final class GuildCoreDataRepository {
         in context: NSManagedObjectContext
     ) throws -> [ShopItemEntity] {
         let request = NSFetchRequest<ShopItemEntity>(entityName: "ShopItemEntity")
-        request.sortDescriptors = [NSSortDescriptor(key: "stackKeyRawValue", ascending: true)]
+        request.sortDescriptors = CompositeItemPersistence.sortDescriptors
         return try context.fetch(request)
     }
 
@@ -488,7 +475,7 @@ final class GuildCoreDataRepository {
     ) throws -> InventoryItemEntity? {
         let request = NSFetchRequest<InventoryItemEntity>(entityName: "InventoryItemEntity")
         request.fetchLimit = 1
-        request.predicate = NSPredicate(format: "stackKeyRawValue == %@", itemID.rawValue)
+        request.predicate = CompositeItemPersistence.predicate(for: itemID)
         return try context.fetch(request).first
     }
 
@@ -498,7 +485,7 @@ final class GuildCoreDataRepository {
     ) throws -> ShopItemEntity? {
         let request = NSFetchRequest<ShopItemEntity>(entityName: "ShopItemEntity")
         request.fetchLimit = 1
-        request.predicate = NSPredicate(format: "stackKeyRawValue == %@", itemID.rawValue)
+        request.predicate = CompositeItemPersistence.predicate(for: itemID)
         return try context.fetch(request).first
     }
 
@@ -525,27 +512,8 @@ final class GuildCoreDataRepository {
             nextCharacterId: Int(entity.nextCharacterId),
             autoReviveDefeatedCharacters: entity.autoReviveDefeatedCharacters,
             shopInventoryInitialized: entity.shopInventoryInitialized,
-            autoSellItemIDs: decodedAutoSellItemIDs(entity.autoSellItemIDsRawValue),
+            autoSellItemIDs: makeAutoSellItemIDs(from: entity),
             lastBackgroundedAt: entity.lastBackgroundedAt
-        )
-    }
-
-    private func encodedAutoSellItemIDs(_ itemIDs: Set<CompositeItemID>) -> String {
-        itemIDs
-            .sorted { $0.isOrdered(before: $1) }
-            .map(\.rawValue)
-            .joined(separator: ",")
-    }
-
-    private func decodedAutoSellItemIDs(_ rawValue: String?) -> Set<CompositeItemID> {
-        guard let rawValue, !rawValue.isEmpty else {
-            return []
-        }
-
-        return Set(
-            rawValue
-                .split(separator: ",")
-                .compactMap { CompositeItemID(rawValue: String($0)) }
         )
     }
 
@@ -634,23 +602,19 @@ final class GuildCoreDataRepository {
     }
 
     private func makeInventoryStack(from entity: InventoryItemEntity) -> CompositeItemStack? {
-        guard let rawValue = entity.stackKeyRawValue,
-              let itemID = CompositeItemID(rawValue: rawValue),
-              entity.count > 0 else {
+        guard entity.count > 0 else {
             return nil
         }
 
-        return CompositeItemStack(itemID: itemID, count: Int(entity.count))
+        return CompositeItemStack(itemID: CompositeItemID(entity: entity), count: Int(entity.count))
     }
 
     private func makeShopInventoryStack(from entity: ShopItemEntity) -> CompositeItemStack? {
-        guard let rawValue = entity.stackKeyRawValue,
-              let itemID = CompositeItemID(rawValue: rawValue),
-              entity.count > 0 else {
+        guard entity.count > 0 else {
             return nil
         }
 
-        return CompositeItemStack(itemID: itemID, count: Int(entity.count))
+        return CompositeItemStack(itemID: CompositeItemID(entity: entity), count: Int(entity.count))
     }
 
     private func memberCharacterIds(from entity: PartyEntity) -> [Int] {
@@ -664,30 +628,78 @@ final class GuildCoreDataRepository {
     }
 
     private func equippedItemStacks(from entity: CharacterEntity) -> [CompositeItemStack] {
-        // Equipped items are serialized as `itemRawValue#count` components joined by `|` so the
-        // roster store can round-trip value types without extra Core Data child entities.
-        (entity.equippedItemStacksRawValue ?? "")
-            .split(separator: "|")
-            .compactMap { component in
-                let parts = component.split(separator: "#")
-                guard parts.count == 2,
-                      let itemID = CompositeItemID(rawValue: String(parts[0])),
-                      let count = Int(parts[1]),
-                      count > 0 else {
-                    return nil
-                }
-                return CompositeItemStack(itemID: itemID, count: count)
+        let equippedItems = entity.equippedItems as? Set<CharacterEquippedItemEntity> ?? []
+        return equippedItems.sorted {
+            Int($0.stackIndex) < Int($1.stackIndex)
+        }.compactMap { itemEntity in
+            guard itemEntity.count > 0 else {
+                return nil
             }
-            .normalizedCompositeItemStacks()
+
+            return CompositeItemStack(
+                itemID: CompositeItemID(entity: itemEntity),
+                count: Int(itemEntity.count)
+            )
+        }
+        .normalizedCompositeItemStacks()
     }
 
     private func setEquippedItemStacks(
         _ equippedItemStacks: [CompositeItemStack],
         on entity: CharacterEntity
     ) {
-        entity.equippedItemStacksRawValue = equippedItemStacks
-            .normalizedCompositeItemStacks()
-            .map { "\($0.itemID.rawValue)#\($0.count)" }
-            .joined(separator: "|")
+        guard let context = entity.managedObjectContext else {
+            fatalError("CharacterEntity の context が見つかりません。")
+        }
+
+        let normalizedStacks = equippedItemStacks.normalizedCompositeItemStacks()
+        let existingEntities = entity.equippedItems as? Set<CharacterEquippedItemEntity> ?? []
+        for existingEntity in existingEntities {
+            context.delete(existingEntity)
+        }
+
+        for (stackIndex, stack) in normalizedStacks.enumerated() {
+            guard let itemEntity = NSEntityDescription.insertNewObject(
+                forEntityName: "CharacterEquippedItemEntity",
+                into: context
+            ) as? CharacterEquippedItemEntity else {
+                fatalError("CharacterEquippedItemEntity の生成に失敗しました。")
+            }
+
+            itemEntity.character = entity
+            itemEntity.stackIndex = Int64(stackIndex)
+            itemEntity.count = Int64(stack.count)
+            stack.itemID.apply(to: itemEntity)
+        }
+    }
+
+    private func makeAutoSellItemIDs(from entity: PlayerStateEntity) -> Set<CompositeItemID> {
+        let autoSellEntities = entity.autoSellItems as? Set<PlayerStateAutoSellItemEntity> ?? []
+        return Set(autoSellEntities.map(CompositeItemID.init(entity:)))
+    }
+
+    private func syncAutoSellItems(
+        _ itemIDs: Set<CompositeItemID>,
+        on entity: PlayerStateEntity,
+        in context: NSManagedObjectContext
+    ) {
+        let existingEntities = entity.autoSellItems as? Set<PlayerStateAutoSellItemEntity> ?? []
+        let existingByID = Dictionary(uniqueKeysWithValues: existingEntities.map { (CompositeItemID(entity: $0), $0) })
+
+        for (itemID, existingEntity) in existingByID where !itemIDs.contains(itemID) {
+            context.delete(existingEntity)
+        }
+
+        for itemID in itemIDs where existingByID[itemID] == nil {
+            guard let autoSellEntity = NSEntityDescription.insertNewObject(
+                forEntityName: "PlayerStateAutoSellItemEntity",
+                into: context
+            ) as? PlayerStateAutoSellItemEntity else {
+                fatalError("PlayerStateAutoSellItemEntity の生成に失敗しました。")
+            }
+
+            autoSellEntity.playerState = entity
+            itemID.apply(to: autoSellEntity)
+        }
     }
 }

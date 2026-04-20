@@ -24,7 +24,7 @@ nonisolated struct DebugUserDataExporter {
         in context: NSManagedObjectContext,
         lookup: DebugUserDataLookup
     ) throws -> DebugUserDataSnapshot {
-        let playerState = try fetchPlayerState(in: context)
+        let playerState = try fetchPlayerState(in: context, lookup: lookup)
         let characters = try fetchCharacters(in: context, lookup: lookup)
         let inventory = try fetchInventory(in: context, lookup: lookup)
         let parties = try fetchParties(in: context, lookup: lookup)
@@ -43,7 +43,8 @@ nonisolated struct DebugUserDataExporter {
     }
 
     private func fetchPlayerState(
-        in context: NSManagedObjectContext
+        in context: NSManagedObjectContext,
+        lookup: DebugUserDataLookup
     ) throws -> DebugUserDataSnapshot.PlayerStatePayload? {
         let request = PlayerStateEntity.fetchRequest()
         request.fetchLimit = 1
@@ -53,6 +54,10 @@ nonisolated struct DebugUserDataExporter {
                 catTicketCount: Int(entity.catTicketCount),
                 nextCharacterId: Int(entity.nextCharacterId),
                 autoReviveDefeatedCharacters: entity.autoReviveDefeatedCharacters,
+                autoSellItems: (entity.autoSellItems as? Set<PlayerStateAutoSellItemEntity> ?? [])
+                    .map { CompositeItemID(entity: $0) }
+                    .sorted { $0.isOrdered(before: $1) }
+                    .map { makeCompositeItemPayload(itemID: $0, lookup: lookup) },
                 lastBackgroundedAt: entity.lastBackgroundedAt
             )
         }
@@ -80,11 +85,7 @@ nonisolated struct DebugUserDataExporter {
                 experience: Int(entity.experience),
                 currentHP: Int(entity.currentHP),
                 portraitVariant: Int(entity.portraitVariant),
-                equippedItemStacksRawValue: entity.equippedItemStacksRawValue ?? "",
-                equippedItems: parseItemStacks(
-                    rawValue: entity.equippedItemStacksRawValue,
-                    lookup: lookup
-                ),
+                equippedItems: makeCharacterEquippedItems(from: entity, lookup: lookup),
                 autoBattleSettings: .init(
                     breath: Int(entity.breathRate),
                     attack: Int(entity.attackRate),
@@ -108,13 +109,12 @@ nonisolated struct DebugUserDataExporter {
         lookup: DebugUserDataLookup
     ) throws -> [DebugUserDataSnapshot.InventoryPayload] {
         let request = InventoryItemEntity.fetchRequest()
-        request.sortDescriptors = [NSSortDescriptor(key: "stackKeyRawValue", ascending: true)]
+        request.sortDescriptors = CompositeItemPersistence.sortDescriptors
         return try context.fetch(request).map { entity in
-            let stackKey = entity.stackKeyRawValue ?? ""
+            let itemID = CompositeItemID(entity: entity)
             return DebugUserDataSnapshot.InventoryPayload(
-                stackKeyRawValue: stackKey,
                 count: Int(entity.count),
-                item: parseItemID(rawValue: stackKey, count: Int(entity.count), lookup: lookup)
+                item: makeCompositeItemStackPayload(itemID: itemID, count: Int(entity.count), lookup: lookup)
             )
         }
     }
@@ -195,11 +195,7 @@ nonisolated struct DebugUserDataExporter {
                         experience: Int(member.experience),
                         currentHP: Int(member.currentHP),
                         experienceMultiplier: member.experienceMultiplier,
-                        equippedItemStacksRawValue: member.equippedItemStacksRawValue ?? "",
-                        equippedItems: parseItemStacks(
-                            rawValue: member.equippedItemStacksRawValue,
-                            lookup: lookup
-                        ),
+                        equippedItems: makeRunSessionMemberEquippedItems(from: member, lookup: lookup),
                         autoBattleSettings: .init(
                             breath: Int(member.breathRate),
                             attack: Int(member.attackRate),
@@ -244,36 +240,50 @@ nonisolated struct DebugUserDataExporter {
         }
     }
 
-    private func parseItemStacks(
-        rawValue: String?,
+    private func makeCharacterEquippedItems(
+        from entity: CharacterEntity,
         lookup: DebugUserDataLookup
     ) -> [DebugUserDataSnapshot.CompositeItemStackPayload] {
-        (rawValue ?? "")
-            .split(separator: "|")
-            .compactMap { component in
-                let parts = component.split(separator: "#")
-                guard parts.count == 2,
-                      let itemID = CompositeItemID(rawValue: String(parts[0])),
-                      let count = Int(parts[1]),
-                      count > 0 else {
-                    return nil
-                }
-                return DebugUserDataSnapshot.CompositeItemStackPayload(
-                    count: count,
-                    item: makeCompositeItemPayload(itemID: itemID, lookup: lookup)
-                )
+        let equippedItems = (entity.equippedItems as? Set<CharacterEquippedItemEntity> ?? [])
+            .sorted { Int($0.stackIndex) < Int($1.stackIndex) }
+        return equippedItems.compactMap { itemEntity in
+            guard itemEntity.count > 0 else {
+                return nil
             }
+
+            return makeCompositeItemStackPayload(
+                itemID: CompositeItemID(entity: itemEntity),
+                count: Int(itemEntity.count),
+                lookup: lookup
+            )
+        }
     }
 
-    private func parseItemID(
-        rawValue: String,
+    private func makeRunSessionMemberEquippedItems(
+        from entity: RunSessionMemberEntity,
+        lookup: DebugUserDataLookup
+    ) -> [DebugUserDataSnapshot.CompositeItemStackPayload] {
+        let equippedItems = (entity.equippedItems as? Set<RunSessionMemberEquippedItemEntity> ?? [])
+            .sorted { Int($0.stackIndex) < Int($1.stackIndex) }
+        return equippedItems.compactMap { itemEntity in
+            guard itemEntity.count > 0 else {
+                return nil
+            }
+
+            return makeCompositeItemStackPayload(
+                itemID: CompositeItemID(entity: itemEntity),
+                count: Int(itemEntity.count),
+                lookup: lookup
+            )
+        }
+    }
+
+    private func makeCompositeItemStackPayload(
+        itemID: CompositeItemID,
         count: Int,
         lookup: DebugUserDataLookup
-    ) -> DebugUserDataSnapshot.CompositeItemStackPayload? {
-        guard let itemID = CompositeItemID(rawValue: rawValue) else {
-            return nil
-        }
-        return DebugUserDataSnapshot.CompositeItemStackPayload(
+    ) -> DebugUserDataSnapshot.CompositeItemStackPayload {
+        DebugUserDataSnapshot.CompositeItemStackPayload(
             count: count,
             item: makeCompositeItemPayload(itemID: itemID, lookup: lookup)
         )
@@ -348,6 +358,7 @@ nonisolated struct DebugUserDataSnapshot: Codable, Sendable {
         let catTicketCount: Int
         let nextCharacterId: Int
         let autoReviveDefeatedCharacters: Bool
+        let autoSellItems: [CompositeItemPayload]
         let lastBackgroundedAt: Date?
     }
 
@@ -366,15 +377,13 @@ nonisolated struct DebugUserDataSnapshot: Codable, Sendable {
         let experience: Int
         let currentHP: Int
         let portraitVariant: Int
-        let equippedItemStacksRawValue: String
         let equippedItems: [CompositeItemStackPayload]
         let autoBattleSettings: AutoBattleSettingsPayload
     }
 
     nonisolated struct InventoryPayload: Codable, Sendable {
-        let stackKeyRawValue: String
         let count: Int
-        let item: CompositeItemStackPayload?
+        let item: CompositeItemStackPayload
     }
 
     nonisolated struct PartyPayload: Codable, Sendable {
@@ -439,7 +448,6 @@ nonisolated struct DebugUserDataSnapshot: Codable, Sendable {
         let experience: Int
         let currentHP: Int
         let experienceMultiplier: Double
-        let equippedItemStacksRawValue: String
         let equippedItems: [CompositeItemStackPayload]
         let autoBattleSettings: AutoBattleSettingsPayload
     }

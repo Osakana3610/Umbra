@@ -20,7 +20,6 @@ extension CharacterEntity {
     @NSManaged nonisolated public var characterId: Int64
     @NSManaged nonisolated public var currentHP: Int64
     @NSManaged nonisolated public var currentJobId: Int64
-    @NSManaged nonisolated public var equippedItemStacksRawValue: String?
     @NSManaged nonisolated public var experience: Int64
     @NSManaged nonisolated public var level: Int64
     @NSManaged nonisolated public var name: String?
@@ -29,10 +28,50 @@ extension CharacterEntity {
     @NSManaged nonisolated public var previousJobId: Int64
     @NSManaged nonisolated public var raceId: Int64
     @NSManaged nonisolated public var recoverySpellRate: Int64
+    @NSManaged nonisolated public var equippedItems: NSSet?
+
+}
+
+// MARK: Generated accessors for equippedItems
+extension CharacterEntity {
+
+    @objc(addEquippedItemsObject:)
+    @NSManaged nonisolated public func addToEquippedItems(_ value: CharacterEquippedItemEntity)
+
+    @objc(removeEquippedItemsObject:)
+    @NSManaged nonisolated public func removeFromEquippedItems(_ value: CharacterEquippedItemEntity)
+
+    @objc(addEquippedItems:)
+    @NSManaged nonisolated public func addToEquippedItems(_ values: NSSet)
+
+    @objc(removeEquippedItems:)
+    @NSManaged nonisolated public func removeFromEquippedItems(_ values: NSSet)
 
 }
 
 extension CharacterEntity : Identifiable {
+
+}
+
+extension CharacterEquippedItemEntity {
+
+    @nonobjc nonisolated public class func fetchRequest() -> NSFetchRequest<CharacterEquippedItemEntity> {
+        return NSFetchRequest<CharacterEquippedItemEntity>(entityName: "CharacterEquippedItemEntity")
+    }
+
+    @NSManaged nonisolated public var baseItemIdValue: Int64
+    @NSManaged nonisolated public var baseSuperRareIdValue: Int64
+    @NSManaged nonisolated public var baseTitleIdValue: Int64
+    @NSManaged nonisolated public var count: Int64
+    @NSManaged nonisolated public var jewelItemIdValue: Int64
+    @NSManaged nonisolated public var jewelSuperRareIdValue: Int64
+    @NSManaged nonisolated public var jewelTitleIdValue: Int64
+    @NSManaged nonisolated public var stackIndex: Int64
+    @NSManaged nonisolated public var character: CharacterEntity?
+
+}
+
+extension CharacterEquippedItemEntity : Identifiable {
 
 }
 
@@ -42,8 +81,13 @@ extension InventoryItemEntity {
         return NSFetchRequest<InventoryItemEntity>(entityName: "InventoryItemEntity")
     }
 
+    @NSManaged nonisolated public var baseItemIdValue: Int64
+    @NSManaged nonisolated public var baseSuperRareIdValue: Int64
+    @NSManaged nonisolated public var baseTitleIdValue: Int64
     @NSManaged nonisolated public var count: Int64
-    @NSManaged nonisolated public var stackKeyRawValue: String?
+    @NSManaged nonisolated public var jewelItemIdValue: Int64
+    @NSManaged nonisolated public var jewelSuperRareIdValue: Int64
+    @NSManaged nonisolated public var jewelTitleIdValue: Int64
 
 }
 
@@ -57,8 +101,13 @@ extension ShopItemEntity {
         return NSFetchRequest<ShopItemEntity>(entityName: "ShopItemEntity")
     }
 
+    @NSManaged nonisolated public var baseItemIdValue: Int64
+    @NSManaged nonisolated public var baseSuperRareIdValue: Int64
+    @NSManaged nonisolated public var baseTitleIdValue: Int64
     @NSManaged nonisolated public var count: Int64
-    @NSManaged nonisolated public var stackKeyRawValue: String?
+    @NSManaged nonisolated public var jewelItemIdValue: Int64
+    @NSManaged nonisolated public var jewelSuperRareIdValue: Int64
+    @NSManaged nonisolated public var jewelTitleIdValue: Int64
 
 }
 
@@ -93,17 +142,54 @@ extension PlayerStateEntity {
         return NSFetchRequest<PlayerStateEntity>(entityName: "PlayerStateEntity")
     }
 
-    @NSManaged nonisolated public var autoSellItemIDsRawValue: String?
     @NSManaged nonisolated public var autoReviveDefeatedCharacters: Bool
     @NSManaged nonisolated public var catTicketCount: Int64
     @NSManaged nonisolated public var gold: Int64
     @NSManaged nonisolated public var lastBackgroundedAt: Date?
     @NSManaged nonisolated public var nextCharacterId: Int64
     @NSManaged nonisolated public var shopInventoryInitialized: Bool
+    @NSManaged nonisolated public var autoSellItems: NSSet?
+
+}
+
+// MARK: Generated accessors for autoSellItems
+extension PlayerStateEntity {
+
+    @objc(addAutoSellItemsObject:)
+    @NSManaged nonisolated public func addToAutoSellItems(_ value: PlayerStateAutoSellItemEntity)
+
+    @objc(removeAutoSellItemsObject:)
+    @NSManaged nonisolated public func removeFromAutoSellItems(_ value: PlayerStateAutoSellItemEntity)
+
+    @objc(addAutoSellItems:)
+    @NSManaged nonisolated public func addToAutoSellItems(_ values: NSSet)
+
+    @objc(removeAutoSellItems:)
+    @NSManaged nonisolated public func removeFromAutoSellItems(_ values: NSSet)
 
 }
 
 extension PlayerStateEntity : Identifiable {
+
+}
+
+extension PlayerStateAutoSellItemEntity {
+
+    @nonobjc nonisolated public class func fetchRequest() -> NSFetchRequest<PlayerStateAutoSellItemEntity> {
+        return NSFetchRequest<PlayerStateAutoSellItemEntity>(entityName: "PlayerStateAutoSellItemEntity")
+    }
+
+    @NSManaged nonisolated public var baseItemIdValue: Int64
+    @NSManaged nonisolated public var baseSuperRareIdValue: Int64
+    @NSManaged nonisolated public var baseTitleIdValue: Int64
+    @NSManaged nonisolated public var jewelItemIdValue: Int64
+    @NSManaged nonisolated public var jewelSuperRareIdValue: Int64
+    @NSManaged nonisolated public var jewelTitleIdValue: Int64
+    @NSManaged nonisolated public var playerState: PlayerStateEntity?
+
+}
+
+extension PlayerStateAutoSellItemEntity : Identifiable {
 
 }
 
@@ -335,7 +421,12 @@ extension RunSessionDropRewardEntity {
         return NSFetchRequest<RunSessionDropRewardEntity>(entityName: "RunSessionDropRewardEntity")
     }
 
-    @NSManaged nonisolated public var itemIDRawValue: String?
+    @NSManaged nonisolated public var baseItemIdValue: Int64
+    @NSManaged nonisolated public var baseSuperRareIdValue: Int64
+    @NSManaged nonisolated public var baseTitleIdValue: Int64
+    @NSManaged nonisolated public var jewelItemIdValue: Int64
+    @NSManaged nonisolated public var jewelSuperRareIdValue: Int64
+    @NSManaged nonisolated public var jewelTitleIdValue: Int64
     @NSManaged nonisolated public var sourceBattleNumber: Int64
     @NSManaged nonisolated public var sourceFloorNumber: Int64
     @NSManaged nonisolated public var runSession: RunSessionEntity?
@@ -483,7 +574,6 @@ extension RunSessionMemberEntity {
     @NSManaged nonisolated public var characterId: Int64
     @NSManaged nonisolated public var currentHP: Int64
     @NSManaged nonisolated public var currentJobId: Int64
-    @NSManaged nonisolated public var equippedItemStacksRawValue: String?
     @NSManaged nonisolated public var experience: Int64
     @NSManaged nonisolated public var experienceMultiplier: Double
     @NSManaged nonisolated public var formationIndex: Int64
@@ -494,10 +584,50 @@ extension RunSessionMemberEntity {
     @NSManaged nonisolated public var previousJobId: Int64
     @NSManaged nonisolated public var raceId: Int64
     @NSManaged nonisolated public var recoverySpellRate: Int64
+    @NSManaged nonisolated public var equippedItems: NSSet?
     @NSManaged nonisolated public var runSession: RunSessionEntity?
 
 }
 
+// MARK: Generated accessors for equippedItems
+extension RunSessionMemberEntity {
+
+    @objc(addEquippedItemsObject:)
+    @NSManaged nonisolated public func addToEquippedItems(_ value: RunSessionMemberEquippedItemEntity)
+
+    @objc(removeEquippedItemsObject:)
+    @NSManaged nonisolated public func removeFromEquippedItems(_ value: RunSessionMemberEquippedItemEntity)
+
+    @objc(addEquippedItems:)
+    @NSManaged nonisolated public func addToEquippedItems(_ values: NSSet)
+
+    @objc(removeEquippedItems:)
+    @NSManaged nonisolated public func removeFromEquippedItems(_ values: NSSet)
+
+}
+
 extension RunSessionMemberEntity : Identifiable {
+
+}
+
+extension RunSessionMemberEquippedItemEntity {
+
+    @nonobjc nonisolated public class func fetchRequest() -> NSFetchRequest<RunSessionMemberEquippedItemEntity> {
+        return NSFetchRequest<RunSessionMemberEquippedItemEntity>(entityName: "RunSessionMemberEquippedItemEntity")
+    }
+
+    @NSManaged nonisolated public var baseItemIdValue: Int64
+    @NSManaged nonisolated public var baseSuperRareIdValue: Int64
+    @NSManaged nonisolated public var baseTitleIdValue: Int64
+    @NSManaged nonisolated public var count: Int64
+    @NSManaged nonisolated public var jewelItemIdValue: Int64
+    @NSManaged nonisolated public var jewelSuperRareIdValue: Int64
+    @NSManaged nonisolated public var jewelTitleIdValue: Int64
+    @NSManaged nonisolated public var stackIndex: Int64
+    @NSManaged nonisolated public var runSessionMember: RunSessionMemberEntity?
+
+}
+
+extension RunSessionMemberEquippedItemEntity : Identifiable {
 
 }
