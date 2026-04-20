@@ -2,6 +2,12 @@
 
 import Foundation
 
+nonisolated protocol PersistenceOrderRepresentable: Sendable {
+    nonisolated var persistenceOrder: Int { get }
+
+    nonisolated init?(persistenceOrder: Int)
+}
+
 nonisolated enum BattleOutcome: String, Codable, Equatable, Sendable {
     case victory
     case draw
@@ -64,9 +70,9 @@ nonisolated struct BattleEnemySeed: Codable, Equatable, Sendable {
 }
 
 nonisolated struct BattleCombatantID: RawRepresentable, Codable, Hashable, Equatable, Sendable {
-    let rawValue: String
+    let rawValue: Int
 
-    init(rawValue: String) {
+    init(rawValue: Int) {
         self.rawValue = rawValue
     }
 }
@@ -145,6 +151,142 @@ nonisolated enum SingleBattleError: LocalizedError {
             "戦闘開始に必要なキャラクター情報が不足しています。characterId=\(characterId)"
         case let .invalidEnemy(enemyId):
             "戦闘開始に必要な敵情報が不足しています。enemyId=\(enemyId)"
+        }
+    }
+}
+
+extension BattleOutcome: PersistenceOrderRepresentable {
+    nonisolated var persistenceOrder: Int {
+        switch self {
+        case .victory:
+            0
+        case .draw:
+            1
+        case .defeat:
+            2
+        }
+    }
+
+    nonisolated init?(persistenceOrder: Int) {
+        switch persistenceOrder {
+        case 0:
+            self = .victory
+        case 1:
+            self = .draw
+        case 2:
+            self = .defeat
+        default:
+            return nil
+        }
+    }
+}
+
+extension BattleSide: PersistenceOrderRepresentable {
+    nonisolated var persistenceOrder: Int {
+        switch self {
+        case .ally:
+            0
+        case .enemy:
+            1
+        }
+    }
+
+    nonisolated init?(persistenceOrder: Int) {
+        switch persistenceOrder {
+        case 0:
+            self = .ally
+        case 1:
+            self = .enemy
+        default:
+            return nil
+        }
+    }
+}
+
+extension BattleLogActionKind: PersistenceOrderRepresentable {
+    nonisolated var persistenceOrder: Int {
+        switch self {
+        case .breath:
+            0
+        case .attack:
+            1
+        case .unarmedRepeat:
+            2
+        case .recoverySpell:
+            3
+        case .attackSpell:
+            4
+        case .defend:
+            5
+        case .rescue:
+            6
+        case .counter:
+            7
+        case .extraAttack:
+            8
+        case .pursuit:
+            9
+        }
+    }
+
+    nonisolated init?(persistenceOrder: Int) {
+        switch persistenceOrder {
+        case 0:
+            self = .breath
+        case 1:
+            self = .attack
+        case 2:
+            self = .unarmedRepeat
+        case 3:
+            self = .recoverySpell
+        case 4:
+            self = .attackSpell
+        case 5:
+            self = .defend
+        case 6:
+            self = .rescue
+        case 7:
+            self = .counter
+        case 8:
+            self = .extraAttack
+        case 9:
+            self = .pursuit
+        default:
+            return nil
+        }
+    }
+}
+
+extension BattleTargetResultKind: PersistenceOrderRepresentable {
+    nonisolated var persistenceOrder: Int {
+        switch self {
+        case .damage:
+            0
+        case .heal:
+            1
+        case .miss:
+            2
+        case .modifierApplied:
+            3
+        case .ailmentRemoved:
+            4
+        }
+    }
+
+    nonisolated init?(persistenceOrder: Int) {
+        switch persistenceOrder {
+        case 0:
+            self = .damage
+        case 1:
+            self = .heal
+        case 2:
+            self = .miss
+        case 3:
+            self = .modifierApplied
+        case 4:
+            self = .ailmentRemoved
+        default:
+            return nil
         }
     }
 }

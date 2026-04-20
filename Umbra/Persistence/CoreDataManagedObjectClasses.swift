@@ -38,6 +38,11 @@ public class RunSessionBattleActionEntity: NSManagedObject {
 
 }
 
+@objc(RunSessionBattleActionTargetEntity)
+public class RunSessionBattleActionTargetEntity: NSManagedObject {
+
+}
+
 @objc(RunSessionBattleCombatantEntity)
 public class RunSessionBattleCombatantEntity: NSManagedObject {
 

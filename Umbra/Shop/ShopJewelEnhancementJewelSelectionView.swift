@@ -34,7 +34,7 @@ struct ShopJewelEnhancementJewelSelectionView: View {
     var body: some View {
         List {
             Section {
-                Text("選んだ宝石を組み合わせると、確認後に宝石強化を実行します。親1個に宝石1個を組み合わせます。")
+                Text("選んだ宝石を組み合わせると、確認後に宝石強化を実行します。ベースアイテム1個に宝石1個を組み合わせます。")
                     .foregroundStyle(.secondary)
             }
 
@@ -45,7 +45,7 @@ struct ShopJewelEnhancementJewelSelectionView: View {
                 }
             }
 
-            Section("親") {
+            Section("ベースアイテム") {
                 ShopEnhancementDetailRow(row: baseRow) { itemID in
                     presentedItemDetail = ItemDetailSheetPresentation(itemID: itemID)
                 }
@@ -195,7 +195,7 @@ struct ShopJewelEnhancementJewelSelectionView: View {
                     jewelCharacterId: nil,
                     title: "宝石強化",
                     message: [
-                        "親: \(baseRow.displayName)",
+                        "ベースアイテム: \(baseRow.displayName)",
                         "宝石: \(item.displayName)",
                         "結果: \(nameResolver.displayName(for: resultItemID))",
                         "この内容で宝石強化しますか？"
@@ -218,7 +218,7 @@ struct ShopJewelEnhancementJewelSelectionView: View {
                     jewelCharacterId: characterId,
                     title: "宝石強化",
                     message: [
-                        "親: \(baseRow.displayName)",
+                        "ベースアイテム: \(baseRow.displayName)",
                         "宝石: \(item.displayName)",
                         "結果: \(nameResolver.displayName(for: resultItemID))",
                         "この内容で宝石強化しますか？"

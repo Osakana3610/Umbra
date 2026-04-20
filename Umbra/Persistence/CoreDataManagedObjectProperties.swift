@@ -9,7 +9,10 @@ extension CharacterEntity {
         return NSFetchRequest<CharacterEntity>(entityName: "CharacterEntity")
     }
 
-    @NSManaged nonisolated public var actionPriorityRawValue: String?
+    @NSManaged nonisolated public var actionPriorityPrimaryValue: Int64
+    @NSManaged nonisolated public var actionPrioritySecondaryValue: Int64
+    @NSManaged nonisolated public var actionPriorityTertiaryValue: Int64
+    @NSManaged nonisolated public var actionPriorityQuaternaryValue: Int64
     @NSManaged nonisolated public var attackRate: Int64
     @NSManaged nonisolated public var attackSpellRate: Int64
     @NSManaged nonisolated public var aptitudeId: Int64
@@ -126,13 +129,13 @@ extension RunSessionBattleActionEntity {
     }
 
     @NSManaged nonisolated public var actionIndex: Int64
-    @NSManaged nonisolated public var actionKindRawValue: String?
+    @NSManaged nonisolated public var actionKindValue: Int64
     @NSManaged nonisolated public var actionRefValue: Int64
-    @NSManaged nonisolated public var actorCombatantIDRawValue: String?
+    @NSManaged nonisolated public var actorCombatantIndex: Int64
     @NSManaged nonisolated public var hasActionRef: Bool
     @NSManaged nonisolated public var isCritical: Bool
-    @NSManaged nonisolated public var targetCombatantIDsRawValue: String?
     @NSManaged nonisolated public var results: NSSet?
+    @NSManaged nonisolated public var targets: NSSet?
     @NSManaged nonisolated public var turn: RunSessionBattleTurnEntity?
 
 }
@@ -154,7 +157,40 @@ extension RunSessionBattleActionEntity {
 
 }
 
+// MARK: Generated accessors for targets
+extension RunSessionBattleActionEntity {
+
+    @objc(addTargetsObject:)
+    @NSManaged nonisolated public func addToTargets(_ value: RunSessionBattleActionTargetEntity)
+
+    @objc(removeTargetsObject:)
+    @NSManaged nonisolated public func removeFromTargets(_ value: RunSessionBattleActionTargetEntity)
+
+    @objc(addTargets:)
+    @NSManaged nonisolated public func addToTargets(_ values: NSSet)
+
+    @objc(removeTargets:)
+    @NSManaged nonisolated public func removeFromTargets(_ values: NSSet)
+
+}
+
 extension RunSessionBattleActionEntity : Identifiable {
+
+}
+
+extension RunSessionBattleActionTargetEntity {
+
+    @nonobjc nonisolated public class func fetchRequest() -> NSFetchRequest<RunSessionBattleActionTargetEntity> {
+        return NSFetchRequest<RunSessionBattleActionTargetEntity>(entityName: "RunSessionBattleActionTargetEntity")
+    }
+
+    @NSManaged nonisolated public var actionTargetIndex: Int64
+    @NSManaged nonisolated public var targetCombatantIndex: Int64
+    @NSManaged nonisolated public var action: RunSessionBattleActionEntity?
+
+}
+
+extension RunSessionBattleActionTargetEntity : Identifiable {
 
 }
 
@@ -164,7 +200,6 @@ extension RunSessionBattleCombatantEntity {
         return NSFetchRequest<RunSessionBattleCombatantEntity>(entityName: "RunSessionBattleCombatantEntity")
     }
 
-    @NSManaged nonisolated public var combatantIDRawValue: String?
     @NSManaged nonisolated public var combatantIndex: Int64
     @NSManaged nonisolated public var formationIndex: Int64
     @NSManaged nonisolated public var imageAssetID: String?
@@ -173,7 +208,7 @@ extension RunSessionBattleCombatantEntity {
     @NSManaged nonisolated public var maxHP: Int64
     @NSManaged nonisolated public var name: String?
     @NSManaged nonisolated public var remainingHP: Int64
-    @NSManaged nonisolated public var sideRawValue: String?
+    @NSManaged nonisolated public var sideValue: Int64
     @NSManaged nonisolated public var battleLog: RunSessionBattleLogEntity?
 
 }
@@ -191,7 +226,7 @@ extension RunSessionBattleLogEntity {
     @NSManaged nonisolated public var battleNumber: Int64
     @NSManaged nonisolated public var floorNumber: Int64
     @NSManaged nonisolated public var logIndex: Int64
-    @NSManaged nonisolated public var resultRawValue: String?
+    @NSManaged nonisolated public var resultValue: Int64
     @NSManaged nonisolated public var combatants: NSSet?
     @NSManaged nonisolated public var runSession: RunSessionEntity?
     @NSManaged nonisolated public var turns: NSSet?
@@ -248,9 +283,9 @@ extension RunSessionBattleResultEntity {
     @NSManaged nonisolated public var isDefeated: Bool
     @NSManaged nonisolated public var isGuarded: Bool
     @NSManaged nonisolated public var isRevived: Bool
-    @NSManaged nonisolated public var resultKindRawValue: String?
+    @NSManaged nonisolated public var resultKindValue: Int64
     @NSManaged nonisolated public var statusIdValue: Int64
-    @NSManaged nonisolated public var targetCombatantIDRawValue: String?
+    @NSManaged nonisolated public var targetCombatantIndex: Int64
     @NSManaged nonisolated public var valueValue: Int64
     @NSManaged nonisolated public var action: RunSessionBattleActionEntity?
 
@@ -319,12 +354,12 @@ extension RunSessionEntity {
 
     @NSManaged nonisolated public var completedAt: Date?
     @NSManaged nonisolated public var completedBattleCount: Int64
-    @NSManaged nonisolated public var completionReasonRawValue: String?
+    @NSManaged nonisolated public var completionReasonValue: Int64
     @NSManaged nonisolated public var goldBuffer: Int64
     @NSManaged nonisolated public var labyrinthId: Int64
     @NSManaged nonisolated public var latestBattleFloorNumber: Int64
     @NSManaged nonisolated public var latestBattleNumber: Int64
-    @NSManaged nonisolated public var latestBattleOutcomeRawValue: String?
+    @NSManaged nonisolated public var latestBattleOutcomeValue: Int64
     @NSManaged nonisolated public var partyAverageLuck: Double
     @NSManaged nonisolated public var partyId: Int64
     @NSManaged nonisolated public var partyRunId: Int64
@@ -437,7 +472,10 @@ extension RunSessionMemberEntity {
         return NSFetchRequest<RunSessionMemberEntity>(entityName: "RunSessionMemberEntity")
     }
 
-    @NSManaged nonisolated public var actionPriorityRawValue: String?
+    @NSManaged nonisolated public var actionPriorityPrimaryValue: Int64
+    @NSManaged nonisolated public var actionPrioritySecondaryValue: Int64
+    @NSManaged nonisolated public var actionPriorityTertiaryValue: Int64
+    @NSManaged nonisolated public var actionPriorityQuaternaryValue: Int64
     @NSManaged nonisolated public var attackRate: Int64
     @NSManaged nonisolated public var attackSpellRate: Int64
     @NSManaged nonisolated public var aptitudeId: Int64

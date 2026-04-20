@@ -84,6 +84,69 @@ final class EquipmentMutationService {
         )
     }
 
+    func extractJewel(
+        itemID: CompositeItemID,
+        characterId: Int?,
+        masterData: MasterData
+    ) async throws {
+        guard itemID.isValid(in: masterData) else {
+            throw GuildServiceError.invalidItemStack
+        }
+        guard itemID.jewelItemId > 0,
+              itemID.baseItemId > 0,
+              let jewelItem = masterData.items.first(where: { $0.id == itemID.jewelItemId }),
+              jewelItem.category == .jewel else {
+            throw GuildServiceError.invalidJewelExtraction
+        }
+
+        if let characterId {
+            try await explorationCoreDataRepository.validateCharacterMutationIsAllowed(characterId: characterId)
+        }
+
+        var roster = try coreDataRepository.loadRosterSnapshot()
+        var inventoryStacks = try coreDataRepository.loadInventoryStacks()
+        try GuildMutationResolver.consumeJewelEnhancementInput(
+            itemID: itemID,
+            characterId: characterId,
+            inventoryStacks: &inventoryStacks,
+            roster: &roster
+        )
+
+        let baseItemID = CompositeItemID(
+            baseSuperRareId: itemID.baseSuperRareId,
+            baseTitleId: itemID.baseTitleId,
+            baseItemId: itemID.baseItemId,
+            jewelSuperRareId: 0,
+            jewelTitleId: 0,
+            jewelItemId: 0
+        )
+        let jewelItemID = CompositeItemID(
+            baseSuperRareId: itemID.jewelSuperRareId,
+            baseTitleId: itemID.jewelTitleId,
+            baseItemId: itemID.jewelItemId,
+            jewelSuperRareId: 0,
+            jewelTitleId: 0,
+            jewelItemId: 0
+        )
+
+        if let characterId {
+            try addJewelEnhancementResult(
+                itemID: baseItemID,
+                toCharacterId: characterId,
+                roster: &roster
+            )
+        } else {
+            GuildMutationResolver.incrementStack(itemID: baseItemID, in: &inventoryStacks)
+        }
+        GuildMutationResolver.incrementStack(itemID: jewelItemID, in: &inventoryStacks)
+
+        try coreDataRepository.saveRosterState(
+            roster,
+            parties: try coreDataRepository.loadParties(),
+            inventoryStacks: inventoryStacks
+        )
+    }
+
     func equip(
         itemID: CompositeItemID,
         toCharacter characterId: Int,

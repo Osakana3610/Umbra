@@ -116,9 +116,11 @@ nonisolated private struct BattleResolutionEngine {
         let enemyDisplayNames = Self.makeEnemyDisplayNames(enemies: enemies, masterData: masterData)
 
         for (formationIndex, character) in partyMembers.enumerated() {
+            let combatantID = BattleCombatantID(rawValue: combatants.count)
             combatants.append(
                 RuntimeCombatant(
-                    id: BattleCombatantID(rawValue: "character:\(character.character.characterId)"),
+                    id: combatantID,
+                    seedKey: "character:\(character.character.characterId)",
                     name: character.character.name,
                     side: .ally,
                     imageAssetID: masterData.portraitAssetName(for: character.character),
@@ -145,9 +147,11 @@ nonisolated private struct BattleResolutionEngine {
                 throw SingleBattleError.invalidEnemy(enemy.id)
             }
 
+            let combatantID = BattleCombatantID(rawValue: combatants.count)
             combatants.append(
                 RuntimeCombatant(
-                    id: BattleCombatantID(rawValue: "enemy:\(enemy.id):\(formationIndex + 1)"),
+                    id: combatantID,
+                    seedKey: "enemy:\(enemy.id):\(formationIndex + 1)",
                     name: enemyDisplayName,
                     side: .enemy,
                     imageAssetID: enemy.imageAssetName,
@@ -452,7 +456,7 @@ nonisolated private struct BattleResolutionEngine {
                 action: 0,
                 subaction: priorityIndex + 1,
                 roll: actorIndex + 1,
-                purpose: "normalActionRate.\(actor.id.rawValue).\(actionKind.rawValue)"
+                purpose: "normalActionRate.\(actor.seedKey).\(actionKind.rawValue)"
             )
             guard roll < probability else {
                 continue
@@ -546,7 +550,7 @@ nonisolated private struct BattleResolutionEngine {
                     turn: currentTurn,
                     action: currentActionNumber,
                     subaction: 1,
-                    purpose: "defend.revive.\(combatants[actorIndex].id.rawValue)"
+                    purpose: "defend.revive.\(combatants[actorIndex].seedKey)"
                 ) {
                     let recoveredHP = max(
                         Int(
@@ -948,7 +952,7 @@ nonisolated private struct BattleResolutionEngine {
                     if usesCarryOver && remainingHitIndices.isEmpty == false && pendingTargetIndices.isEmpty {
                         let nextTargetIndex = selectPhysicalTarget(
                             for: actor.side,
-                            purpose: "attackTarget.carryOver.\(actor.id.rawValue).\(actionKind.rawValue)",
+                            purpose: "attackTarget.carryOver.\(actor.seedKey).\(actionKind.rawValue)",
                             actionNumber: currentActionNumber,
                             excluding: processedTargetIndices
                         )
@@ -979,7 +983,7 @@ nonisolated private struct BattleResolutionEngine {
                         action: currentActionNumber,
                         subaction: 97,
                         roll: actorIndex + 1,
-                        purpose: "followup.evade.\(combatants[actorIndex].id.rawValue)"
+                        purpose: "followup.evade.\(combatants[actorIndex].seedKey)"
                     )
                     if roll < chance,
                        let followUp = makeFollowUpAttack(actorIndex: actorIndex, targetIndex: primaryTargetIndex) {
@@ -1226,7 +1230,7 @@ nonisolated private struct BattleResolutionEngine {
                     action: currentActionNumber,
                     subaction: 97,
                     roll: actorIndex + 1,
-                    purpose: "followup.evade.\(combatants[actorIndex].id.rawValue)"
+                    purpose: "followup.evade.\(combatants[actorIndex].seedKey)"
                 )
                 if roll < chance,
                    let followUp = makeFollowUpAttack(actorIndex: actorIndex, targetIndex: targetIndex) {
@@ -1744,7 +1748,7 @@ nonisolated private struct BattleResolutionEngine {
             turn: currentTurn,
             action: currentActionNumber,
             subaction: 1,
-            purpose: "rescueTarget.\(combatants[queuedAction.actorIndex].id.rawValue)"
+            purpose: "rescueTarget.\(combatants[queuedAction.actorIndex].seedKey)"
         ) else {
             return nil
         }
@@ -1806,7 +1810,7 @@ nonisolated private struct BattleResolutionEngine {
                 action: currentActionNumber,
                 subaction: 1,
                 roll: rescuerIndex + 1,
-                purpose: "interrupt.rescue.\(combatants[rescuerIndex].id.rawValue)"
+                purpose: "interrupt.rescue.\(combatants[rescuerIndex].seedKey)"
             )
             guard roll < probability(for: .recoverySpell, rates: combatants[rescuerIndex].actionRates) else {
                 return nil
@@ -1865,7 +1869,7 @@ nonisolated private struct BattleResolutionEngine {
                 action: currentActionNumber,
                 subaction: 1,
                 roll: targetIndex + 1,
-                purpose: "interrupt.counter.\(combatants[targetIndex].id.rawValue)"
+                purpose: "interrupt.counter.\(combatants[targetIndex].seedKey)"
             )
             if roll < 0.3 {
                 queuedInterrupts.append(
@@ -1891,7 +1895,7 @@ nonisolated private struct BattleResolutionEngine {
                 action: currentActionNumber,
                 subaction: 1,
                 roll: actorIndex + 1,
-                purpose: "interrupt.extraAttack.\(combatants[actorIndex].id.rawValue)"
+                purpose: "interrupt.extraAttack.\(combatants[actorIndex].seedKey)"
             )
             if roll < chance {
                 queuedInterrupts.append(
@@ -1915,7 +1919,7 @@ nonisolated private struct BattleResolutionEngine {
                 action: currentActionNumber,
                 subaction: 1,
                 roll: actorIndex + 1,
-                purpose: "interrupt.unarmedRepeat.\(combatants[actorIndex].id.rawValue)"
+                purpose: "interrupt.unarmedRepeat.\(combatants[actorIndex].seedKey)"
             )
             if roll < 0.3 {
                 queuedInterrupts.append(
@@ -1946,7 +1950,7 @@ nonisolated private struct BattleResolutionEngine {
                 action: currentActionNumber,
                 subaction: 1,
                 roll: pursuingAllyIndex + 1,
-                purpose: "interrupt.pursuit.\(combatants[pursuingAllyIndex].id.rawValue)"
+                purpose: "interrupt.pursuit.\(combatants[pursuingAllyIndex].seedKey)"
             )
             if roll < chance {
                 queuedInterrupts.append(
@@ -1972,7 +1976,7 @@ nonisolated private struct BattleResolutionEngine {
                 action: 99,
                 subaction: 1,
                 roll: index + 1,
-                purpose: "ailment.sleep.recover.\(combatants[index].id.rawValue)"
+                purpose: "ailment.sleep.recover.\(combatants[index].seedKey)"
             )
             if roll < 0.3 {
                 combatants[index].ailments.remove(.sleep)
@@ -1989,7 +1993,7 @@ nonisolated private struct BattleResolutionEngine {
                 action: 100,
                 subaction: 1,
                 roll: index + 1,
-                purpose: "revive.endTurn.\(combatants[index].id.rawValue)"
+                purpose: "revive.endTurn.\(combatants[index].seedKey)"
             )
             guard roll < reviveChance else {
                 continue
@@ -2027,7 +2031,7 @@ nonisolated private struct BattleResolutionEngine {
                 action: 0,
                 subaction: 0,
                 roll: combatantIndex + 1,
-                purpose: "initiative.random.\(combatants[combatantIndex].id.rawValue)"
+                purpose: "initiative.random.\(combatants[combatantIndex].seedKey)"
             )
         }
         let actor = combatants[combatantIndex]
@@ -2036,14 +2040,14 @@ nonisolated private struct BattleResolutionEngine {
             action: 0,
             subaction: 1,
             roll: combatantIndex + 1,
-            purpose: "initiative.u1.\(actor.id.rawValue)"
+            purpose: "initiative.u1.\(actor.seedKey)"
         )
         let u2 = uniform(
             turn: currentTurn,
             action: 0,
             subaction: 1,
             roll: combatantIndex + 101,
-            purpose: "initiative.u2.\(actor.id.rawValue)"
+            purpose: "initiative.u2.\(actor.seedKey)"
         )
         let luckBias = biasedLuck(actor.status.baseStats.luck)
         let biasedRoll = (1 - luckBias) * u1 + luckBias * max(u1, u2)
@@ -2168,7 +2172,7 @@ nonisolated private struct BattleResolutionEngine {
                 action: currentActionNumber,
                 subaction: 1,
                 roll: guardianIndex + 1,
-                purpose: "guard.redirect.\(combatants[attackerIndex].id.rawValue).\(combatants[guardianIndex].id.rawValue)"
+                purpose: "guard.redirect.\(combatants[attackerIndex].seedKey).\(combatants[guardianIndex].seedKey)"
             )
             if roll < chance {
                 return (guardianIndex, true)
@@ -2280,7 +2284,7 @@ nonisolated private struct BattleResolutionEngine {
             action: currentActionNumber,
             subaction: subactionNumber,
             roll: 7 + statusId,
-            purpose: "status.apply.\(purposeKey).\(combatants[actorIndex].id.rawValue).\(combatants[targetIndex].id.rawValue)"
+            purpose: "status.apply.\(purposeKey).\(combatants[actorIndex].seedKey).\(combatants[targetIndex].seedKey)"
         )
         guard roll < chance else {
             return nil
@@ -2310,28 +2314,28 @@ nonisolated private struct BattleResolutionEngine {
             action: currentActionNumber,
             subaction: subactionNumber,
             roll: 1,
-            purpose: "hit.u1.\(attacker.id.rawValue).\(defender.id.rawValue)"
+            purpose: "hit.u1.\(attacker.seedKey).\(defender.seedKey)"
         )
         let u2 = uniform(
             turn: currentTurn,
             action: currentActionNumber,
             subaction: subactionNumber,
             roll: 2,
-            purpose: "hit.u2.\(attacker.id.rawValue).\(defender.id.rawValue)"
+            purpose: "hit.u2.\(attacker.seedKey).\(defender.seedKey)"
         )
         let u3 = uniform(
             turn: currentTurn,
             action: currentActionNumber,
             subaction: subactionNumber,
             roll: 3,
-            purpose: "evasion.u1.\(attacker.id.rawValue).\(defender.id.rawValue)"
+            purpose: "evasion.u1.\(attacker.seedKey).\(defender.seedKey)"
         )
         let u4 = uniform(
             turn: currentTurn,
             action: currentActionNumber,
             subaction: subactionNumber,
             roll: 4,
-            purpose: "evasion.u2.\(attacker.id.rawValue).\(defender.id.rawValue)"
+            purpose: "evasion.u2.\(attacker.seedKey).\(defender.seedKey)"
         )
 
         // Luck biases each side toward the better of two rolls, then the resulting accuracy gap is
@@ -2358,7 +2362,7 @@ nonisolated private struct BattleResolutionEngine {
             action: currentActionNumber,
             subaction: subactionNumber,
             roll: 5,
-            purpose: "hit.judge.\(attacker.id.rawValue).\(defender.id.rawValue)"
+            purpose: "hit.judge.\(attacker.seedKey).\(defender.seedKey)"
         ) < hitRate
     }
 
@@ -2373,7 +2377,7 @@ nonisolated private struct BattleResolutionEngine {
             action: currentActionNumber,
             subaction: 1,
             roll: attackerIndex + 1,
-            purpose: "critical.\(attacker.id.rawValue)"
+            purpose: "critical.\(attacker.seedKey)"
         ) < criticalRate
     }
 
@@ -2388,7 +2392,7 @@ nonisolated private struct BattleResolutionEngine {
             turn: currentTurn,
             action: currentActionNumber,
             subaction: 98,
-            purpose: "spell.restore.\(combatants[actorIndex].id.rawValue)"
+            purpose: "spell.restore.\(combatants[actorIndex].seedKey)"
         ) else {
             return
         }
@@ -2463,7 +2467,7 @@ nonisolated private struct BattleResolutionEngine {
             action: currentActionNumber,
             subaction: subactionNumber,
             roll: 81,
-            purpose: "damage.variance.\(combatants[actorIndex].id.rawValue)"
+            purpose: "damage.variance.\(combatants[actorIndex].seedKey)"
         )
         return 1.0 + ((roll * 2.0) - 1.0) * halfWidth
     }
@@ -2481,7 +2485,7 @@ nonisolated private struct BattleResolutionEngine {
             action: currentActionNumber,
             subaction: subactionNumber,
             roll: 82,
-            purpose: "damage.lucky.\(combatants[actorIndex].id.rawValue)"
+            purpose: "damage.lucky.\(combatants[actorIndex].seedKey)"
         ) < chance
     }
 
@@ -2498,7 +2502,7 @@ nonisolated private struct BattleResolutionEngine {
             action: currentActionNumber,
             subaction: subactionNumber,
             roll: 83,
-            purpose: "damage.unlucky.\(combatants[actorIndex].id.rawValue)"
+            purpose: "damage.unlucky.\(combatants[actorIndex].seedKey)"
         ) < chance
     }
 
@@ -2661,7 +2665,7 @@ nonisolated private struct BattleResolutionEngine {
             action: currentActionNumber,
             subaction: subactionNumber,
             roll: 6,
-            purpose: "status.apply.\(combatants[actorIndex].id.rawValue).spell.\(spell.id).\(combatants[targetIndex].id.rawValue)"
+            purpose: "status.apply.\(combatants[actorIndex].seedKey).spell.\(spell.id).\(combatants[targetIndex].seedKey)"
         )
         let chance = min(
             statusChance * combatants[actorIndex].status.combatRuleProduct(
@@ -2693,7 +2697,7 @@ nonisolated private struct BattleResolutionEngine {
             turn: currentTurn,
             action: actionNumber,
             subaction: 1,
-            purpose: "cleanse.choice.\(combatants[targetIndex].id.rawValue)"
+            purpose: "cleanse.choice.\(combatants[targetIndex].seedKey)"
         ) else {
             return nil
         }
@@ -2805,7 +2809,7 @@ nonisolated private struct BattleResolutionEngine {
                 action: 0,
                 subaction: offset + 1,
                 roll: actorIndex + 1,
-                purpose: "\(purposePrefix).\(combatants[actorIndex].id.rawValue).spell.\(spell.id)"
+                purpose: "\(purposePrefix).\(combatants[actorIndex].seedKey).spell.\(spell.id)"
             )
             if roll < 0.5 {
                 return spell.id
@@ -2906,7 +2910,7 @@ nonisolated private struct BattleResolutionEngine {
             turn: currentTurn,
             action: actionNumber,
             subaction: 1,
-            purpose: "healingTargetSelection.\(combatants[actorIndex].id.rawValue)"
+            purpose: "healingTargetSelection.\(combatants[actorIndex].seedKey)"
         ) else {
             return []
         }
@@ -2932,7 +2936,7 @@ nonisolated private struct BattleResolutionEngine {
             turn: currentTurn,
             action: actionNumber,
             subaction: 1,
-            purpose: "healingTargetSelection.\(combatants[actorIndex].id.rawValue)"
+            purpose: "healingTargetSelection.\(combatants[actorIndex].seedKey)"
         )
     }
 
@@ -2964,7 +2968,7 @@ nonisolated private struct BattleResolutionEngine {
                     turn: currentTurn,
                     action: actionNumber,
                     subaction: selectionIndex + 1,
-                    purpose: "attackSpellTargets.\(combatants[actorIndex].id.rawValue).spell.\(spell.id)"
+                    purpose: "attackSpellTargets.\(combatants[actorIndex].seedKey).spell.\(spell.id)"
                 ) else {
                     break
                 }
@@ -3089,7 +3093,7 @@ nonisolated private struct BattleResolutionEngine {
 
         let actor = combatants[queuedAction.actorIndex]
         let isNormalAttack = isNormalAttackAction(queuedAction.recordKind)
-        let purpose = "attackTarget.\(actor.id.rawValue).\(queuedAction.recordKind.rawValue)"
+        let purpose = "attackTarget.\(actor.seedKey).\(queuedAction.recordKind.rawValue)"
         if isNormalAttack,
            let chance = actor.status.actionRuleMaxValue(for: .normalAttackTargetingAllEnemiesChance),
            uniform(
@@ -3295,6 +3299,7 @@ nonisolated private struct BattleResolutionEngine {
 
 nonisolated private struct RuntimeCombatant {
     let id: BattleCombatantID
+    let seedKey: String
     let name: String
     let side: BattleSide
     let imageAssetID: String?
@@ -3324,6 +3329,7 @@ nonisolated private struct RuntimeCombatant {
 
     init(
         id: BattleCombatantID,
+        seedKey: String,
         name: String,
         side: BattleSide,
         imageAssetID: String?,
@@ -3335,6 +3341,7 @@ nonisolated private struct RuntimeCombatant {
         actionPriority: [BattleActionKind]
     ) {
         self.id = id
+        self.seedKey = seedKey
         self.name = name
         self.side = side
         self.imageAssetID = imageAssetID

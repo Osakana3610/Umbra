@@ -76,6 +76,18 @@ nonisolated struct CharacterAutoBattleSettings: Equatable, Sendable {
     )
 }
 
+extension CharacterAutoBattleSettings {
+    nonisolated static func persistedPriorityValues(for priority: [BattleActionKind]) -> [Int64] {
+        let resolvedPriority = priority.count == `default`.priority.count ? priority : `default`.priority
+        return resolvedPriority.map { Int64($0.rawValue) }
+    }
+
+    nonisolated static func decodedPriority(from persistedValues: [Int64]) -> [BattleActionKind] {
+        let parsedPriority = persistedValues.compactMap { BattleActionKind(rawValue: Int($0)) }
+        return parsedPriority.count == `default`.priority.count ? parsedPriority : `default`.priority
+    }
+}
+
 nonisolated struct CharacterActionRates: Equatable, Sendable {
     var breath: Int
     var attack: Int

@@ -90,7 +90,14 @@ nonisolated struct DebugUserDataExporter {
                     attack: Int(entity.attackRate),
                     recoverySpell: Int(entity.recoverySpellRate),
                     attackSpell: Int(entity.attackSpellRate),
-                    priority: parseActionPriority(rawValue: entity.actionPriorityRawValue)
+                    priority: actionPriorityLabels(
+                        from: [
+                            entity.actionPriorityPrimaryValue,
+                            entity.actionPrioritySecondaryValue,
+                            entity.actionPriorityTertiaryValue,
+                            entity.actionPriorityQuaternaryValue
+                        ]
+                    )
                 )
             )
         }
@@ -198,7 +205,14 @@ nonisolated struct DebugUserDataExporter {
                             attack: Int(member.attackRate),
                             recoverySpell: Int(member.recoverySpellRate),
                             attackSpell: Int(member.attackSpellRate),
-                            priority: parseActionPriority(rawValue: member.actionPriorityRawValue)
+                            priority: actionPriorityLabels(
+                                from: [
+                                    member.actionPriorityPrimaryValue,
+                                    member.actionPrioritySecondaryValue,
+                                    member.actionPriorityTertiaryValue,
+                                    member.actionPriorityQuaternaryValue
+                                ]
+                            )
                         )
                     )
                 }
@@ -216,8 +230,8 @@ nonisolated struct DebugUserDataExporter {
                 completedBattleCount: Int(entity.completedBattleCount),
                 latestBattleFloorNumber: Int(entity.latestBattleFloorNumber),
                 latestBattleNumber: Int(entity.latestBattleNumber),
-                latestBattleOutcomeRawValue: entity.latestBattleOutcomeRawValue,
-                completionReasonRawValue: entity.completionReasonRawValue,
+                latestBattleOutcomeValue: Int(entity.latestBattleOutcomeValue),
+                completionReasonValue: Int(entity.completionReasonValue),
                 goldBuffer: Int(entity.goldBuffer),
                 progressIntervalMultiplier: entity.progressIntervalMultiplier,
                 goldMultiplier: entity.goldMultiplier,
@@ -293,10 +307,9 @@ nonisolated struct DebugUserDataExporter {
             .compactMap { Int($0) }
     }
 
-    private func parseActionPriority(rawValue: String?) -> [String] {
-        (rawValue ?? "")
-            .split(separator: ",")
-            .map(String.init)
+    private func actionPriorityLabels(from persistedValues: [Int64]) -> [String] {
+        CharacterAutoBattleSettings.decodedPriority(from: persistedValues)
+            .map { String(describing: $0) }
     }
 }
 
@@ -398,8 +411,8 @@ nonisolated struct DebugUserDataSnapshot: Codable, Sendable {
         let completedBattleCount: Int
         let latestBattleFloorNumber: Int
         let latestBattleNumber: Int
-        let latestBattleOutcomeRawValue: String?
-        let completionReasonRawValue: String?
+        let latestBattleOutcomeValue: Int
+        let completionReasonValue: Int
         let goldBuffer: Int
         let progressIntervalMultiplier: Double
         let goldMultiplier: Double

@@ -16,8 +16,18 @@ struct ShopJewelEnhancementView: View {
     var body: some View {
         List {
             Section {
-                Text("強化したいアイテムを選ぶと、次の画面で組み合わせる宝石を選べます。宝石の基本能力値と戦闘能力値の半分が加算されます。")
+                Text("強化したいアイテムを選ぶと、次の画面で組み合わせる宝石を選べます。宝石の基本能力値はそのまま、戦闘能力値は半分が加算されます。")
                     .foregroundStyle(.secondary)
+            }
+
+            Section {
+                NavigationLink("宝石を外す") {
+                    ShopJewelExtractionView(
+                        masterData: masterData,
+                        rosterStore: rosterStore,
+                        equipmentStore: equipmentStore
+                    )
+                }
             }
 
             if let message = currentErrorMessage {
@@ -32,7 +42,7 @@ struct ShopJewelEnhancementView: View {
                     ProgressView()
                 }
             } else if baseSections.isEmpty {
-                Section("親") {
+                Section("ベースアイテム") {
                     Text(emptyStateMessage)
                         .foregroundStyle(.secondary)
                 }
@@ -133,7 +143,7 @@ struct ShopJewelEnhancementView: View {
 
     private var emptyStateMessage: String {
         if itemFilter.isActive(in: currentFilterCatalog) {
-            return "フィルター条件に一致する親アイテムがありません。"
+            return "フィルター条件に一致するベースアイテムがありません。"
         }
 
         return "宝石強化できる在庫がありません。"

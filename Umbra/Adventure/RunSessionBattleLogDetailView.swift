@@ -165,7 +165,7 @@ struct RunSessionBattleLogDetailView: View {
     }
 
     private func resultMessage(for result: BattleTargetResult) -> String {
-        let targetName = combatantsByID[result.targetId]?.name ?? result.targetId.rawValue
+        let targetName = combatantsByID[result.targetId]?.name ?? "\(result.targetId.rawValue)"
         let value = result.value ?? 0
         let baseText: String
 

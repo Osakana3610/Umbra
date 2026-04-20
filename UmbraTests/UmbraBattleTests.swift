@@ -558,17 +558,17 @@ struct UmbraBattleTests {
                 }
 
                 let laterActions = result.battleRecord.turns.dropFirst().flatMap(\.actions)
-                return firstAction.actorId == BattleCombatantID(rawValue: "enemy:1:1")
+                return firstAction.actorId == BattleCombatantID(rawValue: 1)
                     && firstAction.actionKind == .attackSpell
-                    && firstAction.targetIds == [BattleCombatantID(rawValue: "character:1")]
+                    && firstAction.targetIds == [BattleCombatantID(rawValue: 1 - 1)]
                     && firstAction.results.contains(where: {
-                        $0.targetId == BattleCombatantID(rawValue: "character:1")
+                        $0.targetId == BattleCombatantID(rawValue: 1 - 1)
                             && $0.resultKind == .modifierApplied
                             && $0.statusId == BattleAilment.sleep.rawValue
                     })
                     && firstTurn.actions.count == 1
                     && laterActions.contains(where: {
-                        $0.actorId == BattleCombatantID(rawValue: "character:1")
+                        $0.actorId == BattleCombatantID(rawValue: 1 - 1)
                             && $0.actionKind == .attack
                     })
             }
@@ -576,7 +576,7 @@ struct UmbraBattleTests {
 
         let laterActions = result.battleRecord.turns.dropFirst().flatMap(\.actions)
         #expect(laterActions.contains(where: {
-            $0.actorId == BattleCombatantID(rawValue: "character:1")
+            $0.actorId == BattleCombatantID(rawValue: 1 - 1)
                 && $0.actionKind == .attack
         }))
     }
@@ -867,7 +867,7 @@ struct UmbraBattleTests {
 
         let firstAction = try #require(result.battleRecord.turns.first?.actions.first)
         #expect(firstAction.actionKind == .recoverySpell)
-        #expect(firstAction.targetIds == [BattleCombatantID(rawValue: "character:3")])
+        #expect(firstAction.targetIds == [BattleCombatantID(rawValue: 3 - 1)])
     }
 
     @Test
@@ -1008,7 +1008,7 @@ struct UmbraBattleTests {
 
         let firstAction = try #require(result.battleRecord.turns.first?.actions.first)
         #expect(firstAction.actionKind == .recoverySpell)
-        #expect(firstAction.targetIds == [BattleCombatantID(rawValue: "character:3")])
+        #expect(firstAction.targetIds == [BattleCombatantID(rawValue: 3 - 1)])
     }
 
     @Test
@@ -1099,7 +1099,7 @@ struct UmbraBattleTests {
         )
 
         let firstAction = try #require(result.battleRecord.turns.first?.actions.first)
-        #expect(firstAction.targetIds == [BattleCombatantID(rawValue: "character:2")])
+        #expect(firstAction.targetIds == [BattleCombatantID(rawValue: 2 - 1)])
         #expect(firstAction.results.first?.value == 26)
     }
 
@@ -1186,7 +1186,7 @@ struct UmbraBattleTests {
         let firstAction = try #require(result.battleRecord.turns.first?.actions.first)
         #expect(firstAction.actionKind == .recoverySpell)
         #expect(firstAction.results.first?.value == 30)
-        #expect(result.combatants.first(where: { $0.id == BattleCombatantID(rawValue: "character:2") })?.remainingHP == 31)
+        #expect(result.combatants.first(where: { $0.id == BattleCombatantID(rawValue: 2 - 1) })?.remainingHP == 31)
     }
 
     @Test
@@ -1309,7 +1309,7 @@ struct UmbraBattleTests {
             ),
             combatants: [
                 BattleCombatantSnapshot(
-                    id: BattleCombatantID(rawValue: "character:1"),
+                    id: BattleCombatantID(rawValue: 1 - 1),
                     name: "前衛",
                     side: .ally,
                     imageAssetID: nil,
@@ -1320,7 +1320,7 @@ struct UmbraBattleTests {
                     formationIndex: 0
                 ),
                 BattleCombatantSnapshot(
-                    id: BattleCombatantID(rawValue: "character:2"),
+                    id: BattleCombatantID(rawValue: 2 - 1),
                     name: "後衛",
                     side: .ally,
                     imageAssetID: nil,
@@ -1452,7 +1452,7 @@ struct UmbraBattleTests {
             ),
             combatants: [
                 BattleCombatantSnapshot(
-                    id: BattleCombatantID(rawValue: "character:1"),
+                    id: BattleCombatantID(rawValue: 1 - 1),
                     name: "前衛",
                     side: .ally,
                     imageAssetID: nil,
@@ -1463,7 +1463,7 @@ struct UmbraBattleTests {
                     formationIndex: 0
                 ),
                 BattleCombatantSnapshot(
-                    id: BattleCombatantID(rawValue: "character:2"),
+                    id: BattleCombatantID(rawValue: 2 - 1),
                     name: "中衛",
                     side: .ally,
                     imageAssetID: nil,
@@ -1474,7 +1474,7 @@ struct UmbraBattleTests {
                     formationIndex: 1
                 ),
                 BattleCombatantSnapshot(
-                    id: BattleCombatantID(rawValue: "character:3"),
+                    id: BattleCombatantID(rawValue: 3 - 1),
                     name: "後衛",
                     side: .ally,
                     imageAssetID: nil,
@@ -2224,14 +2224,14 @@ struct UmbraBattleTests {
                 masterData: masterData
             ) { result in
                 let attackSpells = result.battleRecord.turns.flatMap(\.actions).filter {
-                    $0.actorId == BattleCombatantID(rawValue: "character:1") && $0.actionKind == .attackSpell
+                    $0.actorId == BattleCombatantID(rawValue: 1 - 1) && $0.actionKind == .attackSpell
                 }
                 return attackSpells.count >= 2
             }
         )
 
         let attackSpells = result.battleRecord.turns.flatMap(\.actions).filter {
-            $0.actorId == BattleCombatantID(rawValue: "character:1") && $0.actionKind == .attackSpell
+            $0.actorId == BattleCombatantID(rawValue: 1 - 1) && $0.actionKind == .attackSpell
         }
         #expect(attackSpells.count >= 2)
     }
@@ -2310,7 +2310,7 @@ struct UmbraBattleTests {
 
         let allyActions = result.battleRecord.turns
             .flatMap(\.actions)
-            .filter { $0.actorId == BattleCombatantID(rawValue: "character:1") }
+            .filter { $0.actorId == BattleCombatantID(rawValue: 1 - 1) }
 
         #expect(allyActions.filter { $0.actionKind == .attackSpell }.count == 1)
         #expect(allyActions.dropFirst().allSatisfy { $0.actionKind == .defend })
@@ -2568,12 +2568,12 @@ struct UmbraBattleTests {
             candidateCount: 3,
             actionNumber: 3
         )
-        let expectedTargetID = BattleCombatantID(rawValue: "character:\(expectedTargetIndex + 1)")
+        let expectedTargetID = BattleCombatantID(rawValue: expectedTargetIndex)
 
-        #expect(firstAction.actorId == BattleCombatantID(rawValue: "enemy:1:1"))
-        #expect(firstAction.targetIds == [BattleCombatantID(rawValue: "character:1")])
-        #expect(firstTurn.actions.contains(where: { $0.actorId == BattleCombatantID(rawValue: "character:1") }) == false)
-        #expect(secondAction.actorId == BattleCombatantID(rawValue: "enemy:1:2"))
+        #expect(firstAction.actorId == BattleCombatantID(rawValue: 3))
+        #expect(firstAction.targetIds == [BattleCombatantID(rawValue: 1 - 1)])
+        #expect(firstTurn.actions.contains(where: { $0.actorId == BattleCombatantID(rawValue: 1 - 1) }) == false)
+        #expect(secondAction.actorId == BattleCombatantID(rawValue: 4))
         #expect(secondAction.targetIds == [expectedTargetID])
     }
 
@@ -2801,9 +2801,9 @@ struct UmbraBattleTests {
         let firstAction = try #require(result.battleRecord.turns.first?.actions.first)
         #expect(firstAction.actionKind == .recoverySpell)
         #expect(firstAction.actionRef == fullHealSpell.id)
-        #expect(firstAction.targetIds == [BattleCombatantID(rawValue: "character:2")])
+        #expect(firstAction.targetIds == [BattleCombatantID(rawValue: 2 - 1)])
         #expect(firstAction.results.first?.value == 60)
-        #expect(result.combatants.first(where: { $0.id == BattleCombatantID(rawValue: "character:2") })?.remainingHP == 100)
+        #expect(result.combatants.first(where: { $0.id == BattleCombatantID(rawValue: 2 - 1) })?.remainingHP == 100)
     }
 
     @Test
@@ -2906,17 +2906,17 @@ struct UmbraBattleTests {
                     && result.battleRecord.turns[0].actions.contains(where: { action in
                         action.actionKind == .attackSpell
                             && action.results.contains(where: {
-                                $0.targetId == BattleCombatantID(rawValue: "character:2")
+                                $0.targetId == BattleCombatantID(rawValue: 2 - 1)
                                     && $0.resultKind == .modifierApplied
                                     && $0.statusId == BattleAilment.sleep.rawValue
                             })
                     })
                     && result.battleRecord.turns[1].actions.contains(where: { action in
-                        action.actorId == BattleCombatantID(rawValue: "character:1")
+                        action.actorId == BattleCombatantID(rawValue: 1 - 1)
                             && action.actionKind == .recoverySpell
                             && action.actionRef == cleanseSpell.id
                             && action.results.contains(where: {
-                                $0.targetId == BattleCombatantID(rawValue: "character:2")
+                                $0.targetId == BattleCombatantID(rawValue: 2 - 1)
                                     && $0.resultKind == .ailmentRemoved
                                     && $0.statusId == BattleAilment.sleep.rawValue
                             })
@@ -2926,12 +2926,12 @@ struct UmbraBattleTests {
 
         let secondTurn = try #require(result.battleRecord.turns.dropFirst().first)
         let cleanseAction = try #require(
-            secondTurn.actions.first(where: { $0.actorId == BattleCombatantID(rawValue: "character:1") })
+            secondTurn.actions.first(where: { $0.actorId == BattleCombatantID(rawValue: 1 - 1) })
         )
         #expect(cleanseAction.actionKind == .recoverySpell)
         #expect(cleanseAction.actionRef == cleanseSpell.id)
         #expect(cleanseAction.results.contains(where: {
-            $0.targetId == BattleCombatantID(rawValue: "character:2")
+            $0.targetId == BattleCombatantID(rawValue: 2 - 1)
                 && $0.resultKind == .ailmentRemoved
                 && $0.statusId == BattleAilment.sleep.rawValue
         }))
@@ -3148,8 +3148,8 @@ struct UmbraBattleTests {
         )
 
         let firstTurn = try #require(result.battleRecord.turns.first)
-        let fastIndex = try #require(firstTurn.actions.firstIndex(where: { $0.actorId == BattleCombatantID(rawValue: "character:1") }))
-        let slowIndex = try #require(firstTurn.actions.firstIndex(where: { $0.actorId == BattleCombatantID(rawValue: "character:2") }))
+        let fastIndex = try #require(firstTurn.actions.firstIndex(where: { $0.actorId == BattleCombatantID(rawValue: 1 - 1) }))
+        let slowIndex = try #require(firstTurn.actions.firstIndex(where: { $0.actorId == BattleCombatantID(rawValue: 2 - 1) }))
         #expect(fastIndex < slowIndex)
     }
 
@@ -3264,11 +3264,11 @@ struct UmbraBattleTests {
                 ],
                 masterData: masterData
             ) { result in
-                result.battleRecord.turns.first?.actions.first?.actorId == BattleCombatantID(rawValue: "character:1")
+                result.battleRecord.turns.first?.actions.first?.actorId == BattleCombatantID(rawValue: 1 - 1)
             }
         )
 
-        #expect(result.battleRecord.turns.first?.actions.first?.actorId == BattleCombatantID(rawValue: "character:1"))
+        #expect(result.battleRecord.turns.first?.actions.first?.actorId == BattleCombatantID(rawValue: 1 - 1))
     }
 
     // Multi-hit attack flow, carry-over damage, and variance effects.
@@ -3324,9 +3324,9 @@ struct UmbraBattleTests {
         )
 
         let firstAction = try #require(result.battleRecord.turns.first?.actions.first)
-        #expect(firstAction.actorId == BattleCombatantID(rawValue: "enemy:1:1"))
+        #expect(firstAction.actorId == BattleCombatantID(rawValue: 4))
         #expect(firstAction.actionKind == .attack)
-        #expect(firstAction.targetIds == [BattleCombatantID(rawValue: "character:3")])
+        #expect(firstAction.targetIds == [BattleCombatantID(rawValue: 3 - 1)])
     }
 
     @Test
@@ -3374,11 +3374,11 @@ struct UmbraBattleTests {
             masterData: masterData
         )
 
-        let attack = try #require(result.battleRecord.turns.first?.actions.first(where: { $0.actorId == BattleCombatantID(rawValue: "character:1") }))
+        let attack = try #require(result.battleRecord.turns.first?.actions.first(where: { $0.actorId == BattleCombatantID(rawValue: 1 - 1) }))
         #expect(attack.actionKind == .attack)
         #expect(attack.targetIds.count == 2)
         #expect(Set(attack.targetIds).count == 2)
-        #expect(attack.targetIds.contains(BattleCombatantID(rawValue: "enemy:1:1")))
+        #expect(attack.targetIds.contains(BattleCombatantID(rawValue: 1)))
     }
 
     @Test
@@ -3425,12 +3425,12 @@ struct UmbraBattleTests {
             masterData: masterData
         )
 
-        let attack = try #require(result.battleRecord.turns.first?.actions.first(where: { $0.actorId == BattleCombatantID(rawValue: "character:1") }))
+        let attack = try #require(result.battleRecord.turns.first?.actions.first(where: { $0.actorId == BattleCombatantID(rawValue: 1 - 1) }))
         let damageResults = attack.results.filter { $0.resultKind == .damage }
         #expect(attack.actionKind == .attack)
         #expect(Set(attack.targetIds) == [
-            BattleCombatantID(rawValue: "enemy:1:1"),
-            BattleCombatantID(rawValue: "enemy:1:2")
+            BattleCombatantID(rawValue: 1),
+            BattleCombatantID(rawValue: 2)
         ])
         #expect(damageResults.count == 2)
         #expect(damageResults.contains { $0.flags.contains(.defeated) })
@@ -3492,7 +3492,7 @@ struct UmbraBattleTests {
         )
 
         let firstTurnActions = try #require(result.battleRecord.turns.first?.actions)
-        let actorActions = firstTurnActions.filter { $0.actorId == BattleCombatantID(rawValue: "character:1") }
+        let actorActions = firstTurnActions.filter { $0.actorId == BattleCombatantID(rawValue: 1 - 1) }
         #expect(actorActions.map(\.actionKind) == [.breath, .attack])
     }
 
@@ -3608,7 +3608,7 @@ struct UmbraBattleTests {
         )
 
         let attackerSnapshot = try #require(
-            result.combatants.first(where: { $0.id == BattleCombatantID(rawValue: "character:1") })
+            result.combatants.first(where: { $0.id == BattleCombatantID(rawValue: 1 - 1) })
         )
         #expect(attackerSnapshot.remainingHP == 50)
     }
@@ -3909,7 +3909,7 @@ struct UmbraBattleTests {
                     return false
                 }
                 let firstTurnAttacks = firstTurn.actions.filter {
-                    $0.actorId == BattleCombatantID(rawValue: "character:1")
+                    $0.actorId == BattleCombatantID(rawValue: 1 - 1)
                         && ($0.actionKind == .attack || $0.actionKind == .unarmedRepeat)
                 }
                 return firstTurnAttacks.count == 2
@@ -3918,7 +3918,7 @@ struct UmbraBattleTests {
 
         let firstTurn = try #require(result.battleRecord.turns.first)
         let firstTurnAttacks = firstTurn.actions.filter {
-            $0.actorId == BattleCombatantID(rawValue: "character:1")
+            $0.actorId == BattleCombatantID(rawValue: 1 - 1)
                 && ($0.actionKind == .attack || $0.actionKind == .unarmedRepeat)
         }
         #expect(firstTurnAttacks.count == 2)
@@ -4004,11 +4004,11 @@ struct UmbraBattleTests {
             )
             let firstSpellCount = firstBattle.battleRecord.turns
                 .flatMap(\.actions)
-                .filter { $0.actorId == BattleCombatantID(rawValue: "character:1") && $0.actionKind == .attackSpell }
+                .filter { $0.actorId == BattleCombatantID(rawValue: 1 - 1) && $0.actionKind == .attackSpell }
                 .count
             let secondSpellCount = secondBattle.battleRecord.turns
                 .flatMap(\.actions)
-                .filter { $0.actorId == BattleCombatantID(rawValue: "character:1") && $0.actionKind == .attackSpell }
+                .filter { $0.actorId == BattleCombatantID(rawValue: 1 - 1) && $0.actionKind == .attackSpell }
                 .count
             if firstSpellCount == 1 && secondSpellCount == 1 {
                 resolvedPair = (firstBattle, secondBattle)
@@ -4018,12 +4018,12 @@ struct UmbraBattleTests {
 
         let (firstBattle, secondBattle) = try #require(resolvedPair)
         #expect(firstBattle.battleRecord.turns.flatMap(\.actions).contains {
-            $0.actorId == BattleCombatantID(rawValue: "character:1")
+            $0.actorId == BattleCombatantID(rawValue: 1 - 1)
                 && $0.actionKind == .attackSpell
                 && $0.actionRef == attackSpell.id
         })
         #expect(secondBattle.battleRecord.turns.flatMap(\.actions).contains {
-            $0.actorId == BattleCombatantID(rawValue: "character:1")
+            $0.actorId == BattleCombatantID(rawValue: 1 - 1)
                 && $0.actionKind == .attackSpell
                 && $0.actionRef == attackSpell.id
         })
@@ -4202,8 +4202,8 @@ struct UmbraBattleTests {
         let firstTurn = try #require(result.battleRecord.turns.first)
         let firstThreeActions = Array(firstTurn.actions.prefix(3))
         #expect(firstThreeActions.map(\.actionKind) == [.attack, .pursuit, .pursuit])
-        #expect(firstThreeActions[1].actorId == BattleCombatantID(rawValue: "character:2"))
-        #expect(firstThreeActions[2].actorId == BattleCombatantID(rawValue: "character:3"))
+        #expect(firstThreeActions[1].actorId == BattleCombatantID(rawValue: 2 - 1))
+        #expect(firstThreeActions[2].actorId == BattleCombatantID(rawValue: 3 - 1))
     }
 
     @Test
@@ -4287,9 +4287,9 @@ struct UmbraBattleTests {
                 let attack = firstTurn.actions[0]
                 let rescue = firstTurn.actions[1]
                 return attack.actionKind == .attack
-                    && attack.targetIds == [BattleCombatantID(rawValue: "character:2")]
+                    && attack.targetIds == [BattleCombatantID(rawValue: 2 - 1)]
                     && rescue.actionKind == .rescue
-                    && rescue.targetIds == [BattleCombatantID(rawValue: "character:2")]
+                    && rescue.targetIds == [BattleCombatantID(rawValue: 2 - 1)]
                     && rescue.results.first?.flags.contains(.revived) == true
             }
         )
@@ -4393,10 +4393,10 @@ struct UmbraBattleTests {
                 let rescue = firstTurn.actions[2]
                 return attack.actionKind == .attack
                     && counter.actionKind == .counter
-                    && counter.targetIds == [BattleCombatantID(rawValue: "character:2")]
+                    && counter.targetIds == [BattleCombatantID(rawValue: 2 - 1)]
                     && counter.results.first?.flags.contains(.defeated) == true
                     && rescue.actionKind == .rescue
-                    && rescue.targetIds == [BattleCombatantID(rawValue: "character:2")]
+                    && rescue.targetIds == [BattleCombatantID(rawValue: 2 - 1)]
                     && rescue.results.first?.flags.contains(.revived) == true
             }
         )
@@ -4502,8 +4502,8 @@ struct UmbraBattleTests {
 
         #expect(Array(firstTurn.actions.prefix(2).map(\.actionKind)) == [.breath, .rescue])
         #expect(Set(rescue.targetIds) == Set([
-            BattleCombatantID(rawValue: "character:2"),
-            BattleCombatantID(rawValue: "character:3")
+            BattleCombatantID(rawValue: 2 - 1),
+            BattleCombatantID(rawValue: 3 - 1)
         ]))
         #expect(rescue.results.allSatisfy { $0.flags.contains(.revived) && $0.value == 30 })
     }
@@ -4614,8 +4614,8 @@ struct UmbraBattleTests {
 
         #expect(Array(firstTurn.actions.prefix(2).map(\.actionKind)) == [.attackSpell, .rescue])
         #expect(Set(rescue.targetIds) == Set([
-            BattleCombatantID(rawValue: "character:2"),
-            BattleCombatantID(rawValue: "character:3")
+            BattleCombatantID(rawValue: 2 - 1),
+            BattleCombatantID(rawValue: 3 - 1)
         ]))
         #expect(rescue.results.allSatisfy { $0.flags.contains(.revived) && $0.value == 30 })
     }
@@ -4777,11 +4777,11 @@ struct UmbraBattleTests {
                     return false
                 }
                 let rescues = firstTurn.actions.filter { $0.actionKind == .rescue }
-                return attack.actorId == BattleCombatantID(rawValue: "enemy:1:1")
+                return attack.actorId == BattleCombatantID(rawValue: 3)
                     && attack.actionKind == .attack
-                    && attack.targetIds == [BattleCombatantID(rawValue: "character:1")]
+                    && attack.targetIds == [BattleCombatantID(rawValue: 1 - 1)]
                     && rescues.count == 1
-                    && rescues[0].targetIds == [BattleCombatantID(rawValue: "character:1")]
+                    && rescues[0].targetIds == [BattleCombatantID(rawValue: 1 - 1)]
                     && rescues[0].results.first?.flags.contains(.revived) == true
             }
         )
@@ -4927,17 +4927,17 @@ struct UmbraBattleTests {
             }
 
             let sleepAppliedToFrontliner = firstBattleFirstAction.results.contains(where: {
-                $0.targetId == BattleCombatantID(rawValue: "character:1")
+                $0.targetId == BattleCombatantID(rawValue: 1 - 1)
                     && $0.resultKind == .modifierApplied
                     && $0.statusId == BattleAilment.sleep.rawValue
             })
             let frontlinerActsInSecondBattleOpeningTurn = secondBattleFirstTurn.actions.contains(where: {
-                $0.actorId == BattleCombatantID(rawValue: "character:1")
+                $0.actorId == BattleCombatantID(rawValue: 1 - 1)
                     && $0.actionKind == .attack
             })
-            if firstBattleFirstAction.actorId == BattleCombatantID(rawValue: "enemy:1:1")
+            if firstBattleFirstAction.actorId == BattleCombatantID(rawValue: 2)
                 && firstBattleFirstAction.actionKind == .attackSpell
-                && firstBattleFirstAction.targetIds == [BattleCombatantID(rawValue: "character:1")]
+                && firstBattleFirstAction.targetIds == [BattleCombatantID(rawValue: 1 - 1)]
                 && sleepAppliedToFrontliner
                 && frontlinerActsInSecondBattleOpeningTurn {
                 matchingPair = (firstBattle, secondBattle)
@@ -4950,14 +4950,14 @@ struct UmbraBattleTests {
         let secondBattleFirstTurn = try #require(secondBattle.battleRecord.turns.first)
 
         #expect(firstBattleFirstAction.actionKind == .attackSpell)
-        #expect(firstBattleFirstAction.targetIds == [BattleCombatantID(rawValue: "character:1")])
+        #expect(firstBattleFirstAction.targetIds == [BattleCombatantID(rawValue: 1 - 1)])
         #expect(firstBattleFirstAction.results.contains(where: {
-            $0.targetId == BattleCombatantID(rawValue: "character:1")
+            $0.targetId == BattleCombatantID(rawValue: 1 - 1)
                 && $0.resultKind == .modifierApplied
                 && $0.statusId == BattleAilment.sleep.rawValue
         }))
         #expect(secondBattleFirstTurn.actions.contains(where: {
-            $0.actorId == BattleCombatantID(rawValue: "character:1")
+            $0.actorId == BattleCombatantID(rawValue: 1 - 1)
                 && $0.actionKind == .attack
         }))
     }
@@ -5075,10 +5075,10 @@ struct UmbraBattleTests {
             masterData: masterData
         )
         let buffAction = try #require(
-            buffBattle.battleRecord.turns.first?.actions.first(where: { $0.actorId == BattleCombatantID(rawValue: "character:1") })
+            buffBattle.battleRecord.turns.first?.actions.first(where: { $0.actorId == BattleCombatantID(rawValue: 1 - 1) })
         )
         let barrierAction = try #require(
-            barrierBattle.battleRecord.turns.first?.actions.first(where: { $0.actorId == BattleCombatantID(rawValue: "character:1") })
+            barrierBattle.battleRecord.turns.first?.actions.first(where: { $0.actorId == BattleCombatantID(rawValue: 1 - 1) })
         )
         var buffCache: [Int: ExplorationMemberStatusCacheEntry] = [:]
         var barrierCache: [Int: ExplorationMemberStatusCacheEntry] = [:]
@@ -5172,7 +5172,7 @@ struct UmbraBattleTests {
 
         let allyActions = result.battleRecord.turns
             .flatMap(\.actions)
-            .filter { $0.actorId == BattleCombatantID(rawValue: "character:1") }
+            .filter { $0.actorId == BattleCombatantID(rawValue: 1 - 1) }
         let firstAttack = try #require(allyActions.first(where: { $0.actionKind == .attack }))
 
         #expect(allyActions.first?.actionKind == .attackSpell)
@@ -5268,7 +5268,7 @@ struct UmbraBattleTests {
             ) { result in
                 let allyActions = result.battleRecord.turns
                     .flatMap(\.actions)
-                    .filter { $0.actorId == BattleCombatantID(rawValue: "character:1") }
+                    .filter { $0.actorId == BattleCombatantID(rawValue: 1 - 1) }
                 return allyActions.first?.actionKind == .attackSpell
                     && allyActions.first?.actionRef == magicBuffSpell.id
                     && allyActions.contains(where: {
@@ -5281,7 +5281,7 @@ struct UmbraBattleTests {
 
         let allyActions = result.battleRecord.turns
             .flatMap(\.actions)
-            .filter { $0.actorId == BattleCombatantID(rawValue: "character:1") }
+            .filter { $0.actorId == BattleCombatantID(rawValue: 1 - 1) }
         let damageAction = try #require(allyActions.first(where: { $0.actionRef == damageSpell.id }))
         let enemyStatus = try #require(
             CharacterDerivedStatsCalculator.status(
@@ -5391,9 +5391,9 @@ struct UmbraBattleTests {
             1
         )
 
-        #expect(firstAction.actorId == BattleCombatantID(rawValue: "enemy:1:1"))
+        #expect(firstAction.actorId == BattleCombatantID(rawValue: 1))
         #expect(firstAction.actionKind == .recoverySpell)
-        #expect(secondAction.actorId == BattleCombatantID(rawValue: "character:1"))
+        #expect(secondAction.actorId == BattleCombatantID(rawValue: 1 - 1))
         #expect(secondAction.actionKind == .attack)
         #expect(secondAction.results.first?.value == expectedDamage)
     }
@@ -5484,7 +5484,7 @@ struct UmbraBattleTests {
             1
         )
 
-        #expect(secondAction.actorId == BattleCombatantID(rawValue: "character:1"))
+        #expect(secondAction.actorId == BattleCombatantID(rawValue: 1 - 1))
         #expect(secondAction.actionKind == .attack)
         #expect(secondAction.results.first?.value == expectedDamage)
     }
@@ -5596,9 +5596,9 @@ struct UmbraBattleTests {
             1
         )
 
-        #expect(firstAction.actorId == BattleCombatantID(rawValue: "enemy:1:1"))
+        #expect(firstAction.actorId == BattleCombatantID(rawValue: 1))
         #expect(firstAction.actionKind == .recoverySpell)
-        #expect(secondAction.actorId == BattleCombatantID(rawValue: "character:1"))
+        #expect(secondAction.actorId == BattleCombatantID(rawValue: 1 - 1))
         #expect(secondAction.actionKind == .attackSpell)
         #expect(secondAction.results.first?.value == expectedDamage)
     }
@@ -5674,9 +5674,9 @@ struct UmbraBattleTests {
 
         #expect(firstAction.actionKind == .attackSpell)
         #expect(Set(firstAction.targetIds) == Set([
-            BattleCombatantID(rawValue: "character:1"),
-            BattleCombatantID(rawValue: "enemy:1:1"),
-            BattleCombatantID(rawValue: "enemy:1:2")
+            BattleCombatantID(rawValue: 1 - 1),
+            BattleCombatantID(rawValue: 1),
+            BattleCombatantID(rawValue: 2)
         ]))
     }
 

@@ -17,6 +17,32 @@ nonisolated enum RunCompletionReason: String, Codable, Equatable, Sendable {
     case draw
 }
 
+extension RunCompletionReason: PersistenceOrderRepresentable {
+    nonisolated var persistenceOrder: Int {
+        switch self {
+        case .cleared:
+            0
+        case .defeated:
+            1
+        case .draw:
+            2
+        }
+    }
+
+    nonisolated init?(persistenceOrder: Int) {
+        switch persistenceOrder {
+        case 0:
+            self = .cleared
+        case 1:
+            self = .defeated
+        case 2:
+            self = .draw
+        default:
+            return nil
+        }
+    }
+}
+
 nonisolated struct ExplorationBattleLog: Codable, Equatable, Sendable, Identifiable {
     let battleRecord: BattleRecord
     let combatants: [BattleCombatantSnapshot]

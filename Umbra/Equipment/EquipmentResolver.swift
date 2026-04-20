@@ -111,8 +111,9 @@ nonisolated struct EquipmentResolver {
             )
 
             if stack.itemID.jewelItemId > 0 {
-                // Jewel affixes reuse the same aggregation pipeline, but they never inherit
-                // super-rare granted skills from the jewel branch.
+                // Jewel affixes reuse the same aggregation pipeline. Their base stats are added in
+                // full, while battle stats are halved, and they never inherit super-rare granted
+                // skills from the jewel branch.
                 let jewelContribution = try resolveContribution(
                     itemId: stack.itemID.jewelItemId,
                     titleId: stack.itemID.jewelTitleId,
@@ -122,7 +123,7 @@ nonisolated struct EquipmentResolver {
                 apply(
                     contribution: jewelContribution,
                     count: stack.count,
-                    statDivisor: 2,
+                    battleStatDivisor: 2,
                     baseStats: &baseStats,
                     battleStats: &battleStats,
                     armorBattleStats: &armorBattleStats,
@@ -165,8 +166,8 @@ nonisolated struct EquipmentResolver {
             throw EquipmentResolverError.invalidJewelItem(itemId)
         }
 
-        // Titles scale only battle stats, while super-rares contribute only extra skills and
-        // never alter the numeric stat payload directly.
+        // Titles scale only battle stats. Base-side super-rares add skills and double the final
+        // battle-stat fixed values without affecting native base stats.
         let title: MasterData.Title?
         if titleId > 0 {
             guard let resolvedTitle = titlesByID[titleId] else {
@@ -196,7 +197,11 @@ nonisolated struct EquipmentResolver {
                 agility: item.nativeBaseStats.agility,
                 luck: item.nativeBaseStats.luck
             ),
-            battleStats: scaledBattleStats(item.nativeBattleStats, title: title),
+            battleStats: scaledBattleStats(
+                item.nativeBattleStats,
+                title: title,
+                hasSuperRareMultiplier: superRare != nil
+            ),
             skillIDs: item.skillIds + (superRare?.skillIds ?? []),
             itemCategory: item.category,
             rangeClass: item.rangeClass
@@ -207,6 +212,7 @@ nonisolated struct EquipmentResolver {
         contribution: ResolvedItemContribution,
         count: Int,
         statDivisor: Int = 1,
+        battleStatDivisor: Int? = nil,
         baseStats: inout CharacterBaseStats,
         battleStats: inout CharacterBattleStats,
         armorBattleStats: inout CharacterBattleStats,
@@ -219,6 +225,7 @@ nonisolated struct EquipmentResolver {
     ) {
         // Stack count multiplies the full contribution because repeated equipped entries represent
         // multiple copies of the same composite item.
+        let resolvedBattleStatDivisor = battleStatDivisor ?? statDivisor
         baseStats.vitality += (contribution.baseStats.vitality / statDivisor) * count
         baseStats.strength += (contribution.baseStats.strength / statDivisor) * count
         baseStats.mind += (contribution.baseStats.mind / statDivisor) * count
@@ -229,7 +236,7 @@ nonisolated struct EquipmentResolver {
         applyBattleStats(
             contribution.battleStats,
             count: count,
-            statDivisor: statDivisor,
+            statDivisor: resolvedBattleStatDivisor,
             to: &battleStats
         )
 
@@ -237,7 +244,7 @@ nonisolated struct EquipmentResolver {
             applyBattleStats(
                 contribution.battleStats,
                 count: count,
-                statDivisor: statDivisor,
+                statDivisor: resolvedBattleStatDivisor,
                 to: &armorBattleStats
             )
         }
@@ -259,12 +266,12 @@ nonisolated struct EquipmentResolver {
         applyBattleStats(
             contribution.battleStats,
             count: count,
-            statDivisor: statDivisor,
+            statDivisor: resolvedBattleStatDivisor,
             to: &aggregatedCategoryBattleStats
         )
         categoryBattleStats[contribution.itemCategory] = aggregatedCategoryBattleStats
 
-        totalWeaponAttack += (contribution.battleStats.physicalAttack / statDivisor) * count
+        totalWeaponAttack += (contribution.battleStats.physicalAttack / resolvedBattleStatDivisor) * count
 
         // Skill IDs preserve first-seen order while still removing duplicates across item, title,
         // and super-rare sources.
@@ -303,37 +310,79 @@ nonisolated struct EquipmentResolver {
 
     private func scaledBattleStats(
         _ stats: MasterData.BattleStats,
-        title: MasterData.Title?
+        title: MasterData.Title?,
+        hasSuperRareMultiplier: Bool = false
     ) -> CharacterBattleStats {
         CharacterBattleStats(
-            maxHP: scaled(stats.maxHP, title: title),
-            physicalAttack: scaled(stats.physicalAttack, title: title),
-            physicalDefense: scaled(stats.physicalDefense, title: title),
-            magic: scaled(stats.magic, title: title),
-            magicDefense: scaled(stats.magicDefense, title: title),
-            healing: scaled(stats.healing, title: title),
-            accuracy: scaled(stats.accuracy, title: title),
-            evasion: scaled(stats.evasion, title: title),
-            attackCount: scaled(stats.attackCount, title: title),
-            criticalRate: scaled(stats.criticalRate, title: title),
-            breathPower: scaled(stats.breathPower, title: title)
+            maxHP: scaled(stats.maxHP, title: title, hasSuperRareMultiplier: hasSuperRareMultiplier),
+            physicalAttack: scaled(
+                stats.physicalAttack,
+                title: title,
+                hasSuperRareMultiplier: hasSuperRareMultiplier
+            ),
+            physicalDefense: scaled(
+                stats.physicalDefense,
+                title: title,
+                hasSuperRareMultiplier: hasSuperRareMultiplier
+            ),
+            magic: scaled(stats.magic, title: title, hasSuperRareMultiplier: hasSuperRareMultiplier),
+            magicDefense: scaled(
+                stats.magicDefense,
+                title: title,
+                hasSuperRareMultiplier: hasSuperRareMultiplier
+            ),
+            healing: scaled(
+                stats.healing,
+                title: title,
+                hasSuperRareMultiplier: hasSuperRareMultiplier
+            ),
+            accuracy: scaled(
+                stats.accuracy,
+                title: title,
+                hasSuperRareMultiplier: hasSuperRareMultiplier
+            ),
+            evasion: scaled(
+                stats.evasion,
+                title: title,
+                hasSuperRareMultiplier: hasSuperRareMultiplier
+            ),
+            attackCount: scaled(
+                stats.attackCount,
+                title: title,
+                hasSuperRareMultiplier: hasSuperRareMultiplier
+            ),
+            criticalRate: scaled(
+                stats.criticalRate,
+                title: title,
+                hasSuperRareMultiplier: hasSuperRareMultiplier
+            ),
+            breathPower: scaled(
+                stats.breathPower,
+                title: title,
+                hasSuperRareMultiplier: hasSuperRareMultiplier
+            )
         )
     }
 
     private func scaled(
         _ value: Int,
-        title: MasterData.Title?
+        title: MasterData.Title?,
+        hasSuperRareMultiplier: Bool = false
     ) -> Int {
+        let titledValue: Int
         guard let title else {
-            return value
+            titledValue = value
+            return hasSuperRareMultiplier ? titledValue * 2 : titledValue
         }
         // Positive stats use the title's positive multiplier, while penalties use the negative
         // multiplier so cursed-style downsides can scale independently.
         if value > 0 {
-            return Int((Double(value) * title.positiveMultiplier).rounded())
+            titledValue = Int((Double(value) * title.positiveMultiplier).rounded())
+            return hasSuperRareMultiplier ? titledValue * 2 : titledValue
         }
         if value < 0 {
-            return Int((Double(value) * title.negativeMultiplier).rounded())
+            titledValue = Int((Double(value) * title.negativeMultiplier).rounded())
+            return hasSuperRareMultiplier ? titledValue * 2 : titledValue
         }
         return 0
     }

@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="1" systemVersion="11A491" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithCloudKit="false" userDefinedModelVersionIdentifier="">
     <entity name="CharacterEntity" representedClassName="CharacterEntity" syncable="YES">
-        <attribute name="actionPriorityRawValue" optional="NO" attributeType="String" defaultValueString="breath,recoverySpell,attackSpell,attack"/>
+        <attribute name="actionPriorityPrimaryValue" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="actionPrioritySecondaryValue" optional="NO" attributeType="Integer 64" defaultValueString="2" usesScalarValueType="YES"/>
+        <attribute name="actionPriorityTertiaryValue" optional="NO" attributeType="Integer 64" defaultValueString="3" usesScalarValueType="YES"/>
+        <attribute name="actionPriorityQuaternaryValue" optional="NO" attributeType="Integer 64" defaultValueString="1" usesScalarValueType="YES"/>
         <attribute name="attackRate" optional="NO" attributeType="Integer 64" defaultValueString="50" usesScalarValueType="YES"/>
         <attribute name="attackSpellRate" optional="NO" attributeType="Integer 64" defaultValueString="50" usesScalarValueType="YES"/>
         <attribute name="aptitudeId" optional="NO" attributeType="Integer 64" usesScalarValueType="YES"/>
@@ -49,12 +52,12 @@
     <entity name="RunSessionEntity" representedClassName="RunSessionEntity" syncable="YES">
         <attribute name="completedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="completedBattleCount" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
-        <attribute name="completionReasonRawValue" optional="YES" attributeType="String"/>
+        <attribute name="completionReasonValue" optional="NO" attributeType="Integer 64" defaultValueString="-1" usesScalarValueType="YES"/>
         <attribute name="goldBuffer" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="labyrinthId" optional="NO" attributeType="Integer 64" usesScalarValueType="YES"/>
         <attribute name="latestBattleFloorNumber" optional="NO" attributeType="Integer 64" defaultValueString="-1" usesScalarValueType="YES"/>
         <attribute name="latestBattleNumber" optional="NO" attributeType="Integer 64" defaultValueString="-1" usesScalarValueType="YES"/>
-        <attribute name="latestBattleOutcomeRawValue" optional="YES" attributeType="String"/>
+        <attribute name="latestBattleOutcomeValue" optional="NO" attributeType="Integer 64" defaultValueString="-1" usesScalarValueType="YES"/>
         <attribute name="partyAverageLuck" optional="NO" attributeType="Double" defaultValueString="0"/>
         <attribute name="partyId" optional="NO" attributeType="Integer 64" usesScalarValueType="YES"/>
         <attribute name="partyRunId" optional="NO" attributeType="Integer 64" usesScalarValueType="YES"/>
@@ -72,7 +75,10 @@
         <relationship name="members" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="RunSessionMemberEntity" inverseName="runSession" inverseEntity="RunSessionMemberEntity"/>
     </entity>
     <entity name="RunSessionMemberEntity" representedClassName="RunSessionMemberEntity" syncable="YES">
-        <attribute name="actionPriorityRawValue" optional="NO" attributeType="String" defaultValueString="breath,recoverySpell,attackSpell,attack"/>
+        <attribute name="actionPriorityPrimaryValue" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="actionPrioritySecondaryValue" optional="NO" attributeType="Integer 64" defaultValueString="2" usesScalarValueType="YES"/>
+        <attribute name="actionPriorityTertiaryValue" optional="NO" attributeType="Integer 64" defaultValueString="3" usesScalarValueType="YES"/>
+        <attribute name="actionPriorityQuaternaryValue" optional="NO" attributeType="Integer 64" defaultValueString="1" usesScalarValueType="YES"/>
         <attribute name="attackRate" optional="NO" attributeType="Integer 64" defaultValueString="50" usesScalarValueType="YES"/>
         <attribute name="attackSpellRate" optional="NO" attributeType="Integer 64" defaultValueString="50" usesScalarValueType="YES"/>
         <attribute name="aptitudeId" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
@@ -108,13 +114,12 @@
         <attribute name="battleNumber" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="floorNumber" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="logIndex" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
-        <attribute name="resultRawValue" optional="NO" attributeType="String" defaultValueString="victory"/>
+        <attribute name="resultValue" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <relationship name="combatants" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="RunSessionBattleCombatantEntity" inverseName="battleLog" inverseEntity="RunSessionBattleCombatantEntity"/>
         <relationship name="runSession" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="RunSessionEntity" inverseName="battleLogs" inverseEntity="RunSessionEntity"/>
         <relationship name="turns" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="RunSessionBattleTurnEntity" inverseName="battleLog" inverseEntity="RunSessionBattleTurnEntity"/>
     </entity>
     <entity name="RunSessionBattleCombatantEntity" representedClassName="RunSessionBattleCombatantEntity" syncable="YES">
-        <attribute name="combatantIDRawValue" optional="NO" attributeType="String"/>
         <attribute name="combatantIndex" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="formationIndex" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="imageAssetID" optional="YES" attributeType="String"/>
@@ -123,7 +128,7 @@
         <attribute name="maxHP" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="name" optional="NO" attributeType="String"/>
         <attribute name="remainingHP" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
-        <attribute name="sideRawValue" optional="NO" attributeType="String" defaultValueString="ally"/>
+        <attribute name="sideValue" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <relationship name="battleLog" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="RunSessionBattleLogEntity" inverseName="combatants" inverseEntity="RunSessionBattleLogEntity"/>
     </entity>
     <entity name="RunSessionBattleTurnEntity" representedClassName="RunSessionBattleTurnEntity" syncable="YES">
@@ -134,14 +139,19 @@
     </entity>
     <entity name="RunSessionBattleActionEntity" representedClassName="RunSessionBattleActionEntity" syncable="YES">
         <attribute name="actionIndex" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
-        <attribute name="actionKindRawValue" optional="NO" attributeType="String" defaultValueString="attack"/>
+        <attribute name="actionKindValue" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="actionRefValue" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
-        <attribute name="actorCombatantIDRawValue" optional="NO" attributeType="String"/>
+        <attribute name="actorCombatantIndex" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="hasActionRef" optional="NO" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="isCritical" optional="NO" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
-        <attribute name="targetCombatantIDsRawValue" optional="NO" attributeType="String" defaultValueString=""/>
         <relationship name="results" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="RunSessionBattleResultEntity" inverseName="action" inverseEntity="RunSessionBattleResultEntity"/>
+        <relationship name="targets" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="RunSessionBattleActionTargetEntity" inverseName="action" inverseEntity="RunSessionBattleActionTargetEntity"/>
         <relationship name="turn" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="RunSessionBattleTurnEntity" inverseName="actions" inverseEntity="RunSessionBattleTurnEntity"/>
+    </entity>
+    <entity name="RunSessionBattleActionTargetEntity" representedClassName="RunSessionBattleActionTargetEntity" syncable="YES">
+        <attribute name="actionTargetIndex" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="targetCombatantIndex" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <relationship name="action" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="RunSessionBattleActionEntity" inverseName="targets" inverseEntity="RunSessionBattleActionEntity"/>
     </entity>
     <entity name="RunSessionBattleResultEntity" representedClassName="RunSessionBattleResultEntity" syncable="YES">
         <attribute name="actionResultIndex" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
@@ -150,9 +160,9 @@
         <attribute name="isDefeated" optional="NO" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="isGuarded" optional="NO" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="isRevived" optional="NO" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
-        <attribute name="resultKindRawValue" optional="NO" attributeType="String" defaultValueString="damage"/>
+        <attribute name="resultKindValue" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="statusIdValue" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
-        <attribute name="targetCombatantIDRawValue" optional="NO" attributeType="String"/>
+        <attribute name="targetCombatantIndex" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="valueValue" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <relationship name="action" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="RunSessionBattleActionEntity" inverseName="results" inverseEntity="RunSessionBattleActionEntity"/>
     </entity>
@@ -175,6 +185,7 @@
         <element name="RunSessionBattleCombatantEntity" positionX="820" positionY="185" width="128" height="164"/>
         <element name="RunSessionBattleTurnEntity" positionX="820" positionY="369" width="128" height="104"/>
         <element name="RunSessionBattleActionEntity" positionX="1034" positionY="369" width="128" height="134"/>
+        <element name="RunSessionBattleActionTargetEntity" positionX="1248" positionY="281" width="128" height="89"/>
         <element name="RunSessionBattleResultEntity" positionX="1248" positionY="369" width="128" height="179"/>
     </elements>
 </model>

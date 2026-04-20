@@ -633,8 +633,8 @@ struct UmbraExplorationTests {
         let explorationCoreDataRepository = ExplorationCoreDataRepository(
             container: PersistenceController(inMemory: true).container
         )
-        let firstTargetId = BattleCombatantID(rawValue: "enemy:1:1")
-        let secondTargetId = BattleCombatantID(rawValue: "enemy:1:2")
+        let firstTargetId = BattleCombatantID(rawValue: 1)
+        let secondTargetId = BattleCombatantID(rawValue: 2)
 
         try await explorationCoreDataRepository.insertRun(
             RunSessionRecord(
@@ -669,7 +669,7 @@ struct UmbraExplorationTests {
                                     turnNumber: 1,
                                     actions: [
                                         BattleActionRecord(
-                                            actorId: BattleCombatantID(rawValue: "character:1"),
+                                            actorId: BattleCombatantID(rawValue: 1 - 1),
                                             actionKind: .attack,
                                             actionRef: nil,
                                             actionFlags: [],
@@ -690,7 +690,7 @@ struct UmbraExplorationTests {
                         ),
                         combatants: [
                             BattleCombatantSnapshot(
-                                id: BattleCombatantID(rawValue: "character:1"),
+                                id: BattleCombatantID(rawValue: 1 - 1),
                                 name: "前衛",
                                 side: .ally,
                                 imageAssetID: nil,

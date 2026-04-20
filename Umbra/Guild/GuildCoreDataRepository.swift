@@ -235,9 +235,13 @@ final class GuildCoreDataRepository {
             entity.attackRate = Int64(character.autoBattleSettings.rates.attack)
             entity.recoverySpellRate = Int64(character.autoBattleSettings.rates.recoverySpell)
             entity.attackSpellRate = Int64(character.autoBattleSettings.rates.attackSpell)
-            entity.actionPriorityRawValue = character.autoBattleSettings.priority
-                .map { String($0.rawValue) }
-                .joined(separator: ",")
+            let persistedPriority = CharacterAutoBattleSettings.persistedPriorityValues(
+                for: character.autoBattleSettings.priority
+            )
+            entity.actionPriorityPrimaryValue = persistedPriority[0]
+            entity.actionPrioritySecondaryValue = persistedPriority[1]
+            entity.actionPriorityTertiaryValue = persistedPriority[2]
+            entity.actionPriorityQuaternaryValue = persistedPriority[3]
             setEquippedItemStacks(character.equippedItemStacks, on: entity)
         }
     }
@@ -546,14 +550,14 @@ final class GuildCoreDataRepository {
     }
 
     private func makeCharacterRecord(from entity: CharacterEntity) -> CharacterRecord {
-        let parsedPriority = (entity.actionPriorityRawValue ?? "")
-            .split(separator: ",")
-            .compactMap { Int($0).flatMap(BattleActionKind.init(rawValue:)) }
-        // If persisted priority data drifts from the current enum set, fall back to the default
-        // shape instead of constructing a partially invalid auto-battle configuration.
-        let priority = parsedPriority.count == CharacterAutoBattleSettings.default.priority.count
-            ? parsedPriority
-            : CharacterAutoBattleSettings.default.priority
+        let priority = CharacterAutoBattleSettings.decodedPriority(
+            from: [
+                entity.actionPriorityPrimaryValue,
+                entity.actionPrioritySecondaryValue,
+                entity.actionPriorityTertiaryValue,
+                entity.actionPriorityQuaternaryValue
+            ]
+        )
 
         return CharacterRecord(
             characterId: Int(entity.characterId),
@@ -599,9 +603,13 @@ final class GuildCoreDataRepository {
         entity.attackRate = Int64(character.autoBattleSettings.rates.attack)
         entity.recoverySpellRate = Int64(character.autoBattleSettings.rates.recoverySpell)
         entity.attackSpellRate = Int64(character.autoBattleSettings.rates.attackSpell)
-        entity.actionPriorityRawValue = character.autoBattleSettings.priority
-            .map { String($0.rawValue) }
-            .joined(separator: ",")
+        let persistedPriority = CharacterAutoBattleSettings.persistedPriorityValues(
+            for: character.autoBattleSettings.priority
+        )
+        entity.actionPriorityPrimaryValue = persistedPriority[0]
+        entity.actionPrioritySecondaryValue = persistedPriority[1]
+        entity.actionPriorityTertiaryValue = persistedPriority[2]
+        entity.actionPriorityQuaternaryValue = persistedPriority[3]
         setEquippedItemStacks(character.equippedItemStacks, on: entity)
     }
 

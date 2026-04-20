@@ -866,7 +866,10 @@ nonisolated private enum ExplorationCoreDataBridge {
             partyAverageLuck: entity.partyAverageLuck,
             latestBattleFloorNumber: entity.latestBattleFloorNumber > 0 ? Int(entity.latestBattleFloorNumber) : nil,
             latestBattleNumber: entity.latestBattleNumber > 0 ? Int(entity.latestBattleNumber) : nil,
-            latestBattleOutcome: entity.latestBattleOutcomeRawValue.flatMap(BattleOutcome.init(rawValue:)),
+            latestBattleOutcome: decodedOptionalPersistenceOrder(
+                BattleOutcome.self,
+                from: entity.latestBattleOutcomeValue
+            ),
             battleLogs: [],
             goldBuffer: Int(entity.goldBuffer),
             experienceRewards: [],
@@ -924,8 +927,7 @@ nonisolated private enum ExplorationCoreDataBridge {
         dropRewards: [ExplorationDropReward]
     ) -> RunCompletionRecord? {
         guard let completedAt = entity.completedAt,
-              let rawValue = entity.completionReasonRawValue,
-              let reason = RunCompletionReason(rawValue: rawValue) else {
+              let reason = decodedOptionalPersistenceOrder(RunCompletionReason.self, from: entity.completionReasonValue) else {
             return nil
         }
 
@@ -951,10 +953,12 @@ nonisolated private enum ExplorationCoreDataBridge {
                 Int(lhs.combatantIndex) < Int(rhs.combatantIndex)
             }
             .map { combatant in
-                BattleCombatantSnapshot(
-                    id: BattleCombatantID(rawValue: combatant.combatantIDRawValue ?? ""),
+                let side = decodedPersistenceOrder(BattleSide.self, from: combatant.sideValue) ?? .enemy
+                let combatantID = BattleCombatantID(rawValue: Int(combatant.combatantIndex))
+                return BattleCombatantSnapshot(
+                    id: combatantID,
                     name: combatant.name ?? "",
-                    side: BattleSide(rawValue: combatant.sideRawValue ?? "") ?? .enemy,
+                    side: side,
                     imageAssetID: combatant.imageAssetID,
                     level: Int(combatant.level),
                     initialHP: Int(combatant.initialHP),
@@ -974,14 +978,16 @@ nonisolated private enum ExplorationCoreDataBridge {
                 runId: entity.runSession.map(runIdentifier) ?? RunSessionID(partyId: 0, partyRunId: 0),
                 floorNumber: Int(entity.floorNumber),
                 battleNumber: Int(entity.battleNumber),
-                result: BattleOutcome(rawValue: entity.resultRawValue ?? "") ?? .draw,
+                result: decodedPersistenceOrder(BattleOutcome.self, from: entity.resultValue) ?? .draw,
                 turns: turns
             ),
             combatants: combatants
         )
     }
 
-    static func makeBattleTurn(from entity: RunSessionBattleTurnEntity) -> BattleTurnRecord {
+    static func makeBattleTurn(
+        from entity: RunSessionBattleTurnEntity
+    ) -> BattleTurnRecord {
         let actions = (entity.actions as? Set<RunSessionBattleActionEntity> ?? [])
             .sorted { lhs, rhs in
                 Int(lhs.actionIndex) < Int(rhs.actionIndex)
@@ -994,7 +1000,14 @@ nonisolated private enum ExplorationCoreDataBridge {
         )
     }
 
-    static func makeBattleAction(from entity: RunSessionBattleActionEntity) -> BattleActionRecord {
+    static func makeBattleAction(
+        from entity: RunSessionBattleActionEntity
+    ) -> BattleActionRecord {
+        let targetIDs = (entity.targets as? Set<RunSessionBattleActionTargetEntity> ?? [])
+            .sorted { lhs, rhs in
+                Int(lhs.actionTargetIndex) < Int(rhs.actionTargetIndex)
+            }
+            .map { BattleCombatantID(rawValue: Int($0.targetCombatantIndex)) }
         let results = (entity.results as? Set<RunSessionBattleResultEntity> ?? [])
             .sorted { lhs, rhs in
                 Int(lhs.actionResultIndex) < Int(rhs.actionResultIndex)
@@ -1002,16 +1015,18 @@ nonisolated private enum ExplorationCoreDataBridge {
             .map(makeBattleResult)
 
         return BattleActionRecord(
-            actorId: BattleCombatantID(rawValue: entity.actorCombatantIDRawValue ?? ""),
-            actionKind: BattleLogActionKind(rawValue: entity.actionKindRawValue ?? "") ?? .attack,
+            actorId: BattleCombatantID(rawValue: Int(entity.actorCombatantIndex)),
+            actionKind: decodedPersistenceOrder(BattleLogActionKind.self, from: entity.actionKindValue) ?? .attack,
             actionRef: entity.hasActionRef ? Int(entity.actionRefValue) : nil,
             actionFlags: entity.isCritical ? [.critical] : [],
-            targetIds: battleTargetIDs(from: entity.targetCombatantIDsRawValue),
+            targetIds: targetIDs,
             results: results
         )
     }
 
-    static func makeBattleResult(from entity: RunSessionBattleResultEntity) -> BattleTargetResult {
+    static func makeBattleResult(
+        from entity: RunSessionBattleResultEntity
+    ) -> BattleTargetResult {
         var flags: [BattleTargetResultFlag] = []
         if entity.isDefeated {
             flags.append(.defeated)
@@ -1024,22 +1039,34 @@ nonisolated private enum ExplorationCoreDataBridge {
         }
 
         return BattleTargetResult(
-            targetId: BattleCombatantID(rawValue: entity.targetCombatantIDRawValue ?? ""),
-            resultKind: BattleTargetResultKind(rawValue: entity.resultKindRawValue ?? "") ?? .miss,
+            targetId: BattleCombatantID(rawValue: Int(entity.targetCombatantIndex)),
+            resultKind: decodedPersistenceOrder(BattleTargetResultKind.self, from: entity.resultKindValue) ?? .miss,
             value: entity.hasValue ? Int(entity.valueValue) : nil,
             statusId: entity.hasStatusId ? Int(entity.statusIdValue) : nil,
             flags: flags
         )
     }
 
-    static func battleTargetIDs(from rawValue: String?) -> [BattleCombatantID] {
-        (rawValue ?? "")
-            .split(separator: ",")
-            .map { BattleCombatantID(rawValue: String($0)) }
+    static func decodedPersistenceOrder<T: PersistenceOrderRepresentable>(
+        _ type: T.Type,
+        from persistedValue: Int64
+    ) -> T? {
+        T(persistenceOrder: Int(persistedValue))
     }
 
-    static func battleTargetIDsRawValue(from targetIds: [BattleCombatantID]) -> String {
-        targetIds.map(\.rawValue).joined(separator: ",")
+    static func decodedOptionalPersistenceOrder<T: PersistenceOrderRepresentable>(
+        _ type: T.Type,
+        from persistedValue: Int64
+    ) -> T? {
+        guard persistedValue >= 0 else {
+            return nil
+        }
+
+        return decodedPersistenceOrder(type, from: persistedValue)
+    }
+
+    static func encodedPersistenceOrder<T: PersistenceOrderRepresentable>(_ value: T) -> Int64 {
+        Int64(value.persistenceOrder)
     }
 
     static func makeExperienceRewards(from entity: RunSessionEntity) -> [ExplorationExperienceReward] {
@@ -1097,14 +1124,14 @@ nonisolated private enum ExplorationCoreDataBridge {
         entity.partyAverageLuck = session.partyAverageLuck
         entity.latestBattleFloorNumber = Int64(session.latestBattleFloorNumber ?? -1)
         entity.latestBattleNumber = Int64(session.latestBattleNumber ?? -1)
-        entity.latestBattleOutcomeRawValue = session.latestBattleOutcome?.rawValue
+        entity.latestBattleOutcomeValue = session.latestBattleOutcome.map(encodedPersistenceOrder) ?? -1
 
         if let completion = session.completion {
             entity.completedAt = completion.completedAt
-            entity.completionReasonRawValue = completion.reason.rawValue
+            entity.completionReasonValue = encodedPersistenceOrder(completion.reason)
         } else {
             entity.completedAt = nil
-            entity.completionReasonRawValue = nil
+            entity.completionReasonValue = -1
         }
     }
 
@@ -1148,7 +1175,10 @@ nonisolated private enum ExplorationCoreDataBridge {
             logEntity.logIndex = Int64(logIndex)
             logEntity.floorNumber = Int64(battleLog.battleRecord.floorNumber)
             logEntity.battleNumber = Int64(battleLog.battleRecord.battleNumber)
-            logEntity.resultRawValue = battleLog.battleRecord.result.rawValue
+            logEntity.resultValue = encodedPersistenceOrder(battleLog.battleRecord.result)
+            let combatantIndicesByID = Dictionary(
+                uniqueKeysWithValues: battleLog.combatants.enumerated().map { ($0.element.id, $0.offset) }
+            )
 
             for (combatantIndex, combatant) in battleLog.combatants.enumerated() {
                 guard let combatantEntity = NSEntityDescription.insertNewObject(
@@ -1160,9 +1190,8 @@ nonisolated private enum ExplorationCoreDataBridge {
 
                 combatantEntity.battleLog = logEntity
                 combatantEntity.combatantIndex = Int64(combatantIndex)
-                combatantEntity.combatantIDRawValue = combatant.id.rawValue
                 combatantEntity.name = combatant.name
-                combatantEntity.sideRawValue = combatant.side.rawValue
+                combatantEntity.sideValue = encodedPersistenceOrder(combatant.side)
                 combatantEntity.imageAssetID = combatant.imageAssetID
                 combatantEntity.level = Int64(combatant.level)
                 combatantEntity.initialHP = Int64(combatant.initialHP)
@@ -1193,12 +1222,30 @@ nonisolated private enum ExplorationCoreDataBridge {
 
                     actionEntity.turn = turnEntity
                     actionEntity.actionIndex = Int64(actionIndex)
-                    actionEntity.actorCombatantIDRawValue = action.actorId.rawValue
-                    actionEntity.actionKindRawValue = action.actionKind.rawValue
+                    guard let actorCombatantIndex = combatantIndicesByID[action.actorId] else {
+                        fatalError("行動者の戦闘参加者が見つかりません。 id=\(action.actorId.rawValue)")
+                    }
+                    actionEntity.actorCombatantIndex = Int64(actorCombatantIndex)
+                    actionEntity.actionKindValue = encodedPersistenceOrder(action.actionKind)
                     actionEntity.hasActionRef = action.actionRef != nil
                     actionEntity.actionRefValue = Int64(action.actionRef ?? 0)
                     actionEntity.isCritical = action.actionFlags.contains(.critical)
-                    actionEntity.targetCombatantIDsRawValue = battleTargetIDsRawValue(from: action.targetIds)
+
+                    for (targetIndex, targetID) in action.targetIds.enumerated() {
+                        guard let targetCombatantIndex = combatantIndicesByID[targetID] else {
+                            fatalError("行動対象の戦闘参加者が見つかりません。 id=\(targetID.rawValue)")
+                        }
+                        guard let targetEntity = NSEntityDescription.insertNewObject(
+                            forEntityName: "RunSessionBattleActionTargetEntity",
+                            into: context
+                        ) as? RunSessionBattleActionTargetEntity else {
+                            fatalError("RunSessionBattleActionTargetEntity の生成に失敗しました。")
+                        }
+
+                        targetEntity.action = actionEntity
+                        targetEntity.actionTargetIndex = Int64(targetIndex)
+                        targetEntity.targetCombatantIndex = Int64(targetCombatantIndex)
+                    }
 
                     for (resultIndex, result) in action.results.enumerated() {
                         guard let resultEntity = NSEntityDescription.insertNewObject(
@@ -1210,8 +1257,11 @@ nonisolated private enum ExplorationCoreDataBridge {
 
                         resultEntity.action = actionEntity
                         resultEntity.actionResultIndex = Int64(resultIndex)
-                        resultEntity.targetCombatantIDRawValue = result.targetId.rawValue
-                        resultEntity.resultKindRawValue = result.resultKind.rawValue
+                        guard let targetCombatantIndex = combatantIndicesByID[result.targetId] else {
+                            fatalError("対象の戦闘参加者が見つかりません。 id=\(result.targetId.rawValue)")
+                        }
+                        resultEntity.targetCombatantIndex = Int64(targetCombatantIndex)
+                        resultEntity.resultKindValue = encodedPersistenceOrder(result.resultKind)
                         resultEntity.hasValue = result.value != nil
                         resultEntity.valueValue = Int64(result.value ?? 0)
                         resultEntity.hasStatusId = result.statusId != nil
@@ -1303,18 +1353,24 @@ nonisolated private enum ExplorationCoreDataBridge {
         entity.attackRate = Int64(character.autoBattleSettings.rates.attack)
         entity.recoverySpellRate = Int64(character.autoBattleSettings.rates.recoverySpell)
         entity.attackSpellRate = Int64(character.autoBattleSettings.rates.attackSpell)
-        entity.actionPriorityRawValue = character.autoBattleSettings.priority
-            .map { String($0.rawValue) }
-            .joined(separator: ",")
+        let persistedPriority = CharacterAutoBattleSettings.persistedPriorityValues(
+            for: character.autoBattleSettings.priority
+        )
+        entity.actionPriorityPrimaryValue = persistedPriority[0]
+        entity.actionPrioritySecondaryValue = persistedPriority[1]
+        entity.actionPriorityTertiaryValue = persistedPriority[2]
+        entity.actionPriorityQuaternaryValue = persistedPriority[3]
     }
 
     static func makeCharacterRecord(from entity: RunSessionMemberEntity) -> CharacterRecord {
-        let parsedPriority = (entity.actionPriorityRawValue ?? "")
-            .split(separator: ",")
-            .compactMap { Int($0).flatMap(BattleActionKind.init(rawValue:)) }
-        let priority = parsedPriority.count == CharacterAutoBattleSettings.default.priority.count
-            ? parsedPriority
-            : CharacterAutoBattleSettings.default.priority
+        let priority = CharacterAutoBattleSettings.decodedPriority(
+            from: [
+                entity.actionPriorityPrimaryValue,
+                entity.actionPrioritySecondaryValue,
+                entity.actionPriorityTertiaryValue,
+                entity.actionPriorityQuaternaryValue
+            ]
+        )
 
         return CharacterRecord(
             characterId: Int(entity.characterId),
@@ -1342,12 +1398,14 @@ nonisolated private enum ExplorationCoreDataBridge {
     }
 
     static func makeCharacterRecord(from entity: CharacterEntity) -> CharacterRecord {
-        let parsedPriority = (entity.actionPriorityRawValue ?? "")
-            .split(separator: ",")
-            .compactMap { Int($0).flatMap(BattleActionKind.init(rawValue:)) }
-        let priority = parsedPriority.count == CharacterAutoBattleSettings.default.priority.count
-            ? parsedPriority
-            : CharacterAutoBattleSettings.default.priority
+        let priority = CharacterAutoBattleSettings.decodedPriority(
+            from: [
+                entity.actionPriorityPrimaryValue,
+                entity.actionPrioritySecondaryValue,
+                entity.actionPriorityTertiaryValue,
+                entity.actionPriorityQuaternaryValue
+            ]
+        )
 
         return CharacterRecord(
             characterId: Int(entity.characterId),

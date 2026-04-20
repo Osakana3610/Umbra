@@ -317,6 +317,66 @@ final class EquipmentInventoryStore {
         }
     }
 
+    func extractJewel(
+        itemID: CompositeItemID,
+        characterId: Int?,
+        masterData: MasterData,
+        rosterStore: GuildRosterStore
+    ) {
+        guard !isMutating else {
+            return
+        }
+
+        isMutating = true
+        lastOperationError = nil
+
+        Task {
+            defer { isMutating = false }
+
+            do {
+                try loadIfNeeded(masterData: masterData)
+                try await service.extractJewel(
+                    itemID: itemID,
+                    characterId: characterId,
+                    masterData: masterData
+                )
+
+                let baseItemID = CompositeItemID(
+                    baseSuperRareId: itemID.baseSuperRareId,
+                    baseTitleId: itemID.baseTitleId,
+                    baseItemId: itemID.baseItemId,
+                    jewelSuperRareId: 0,
+                    jewelTitleId: 0,
+                    jewelItemId: 0
+                )
+                let jewelItemID = CompositeItemID(
+                    baseSuperRareId: itemID.jewelSuperRareId,
+                    baseTitleId: itemID.jewelTitleId,
+                    baseItemId: itemID.jewelItemId,
+                    jewelSuperRareId: 0,
+                    jewelTitleId: 0,
+                    jewelItemId: 0
+                )
+
+                rosterStore.refreshFromPersistence()
+                applyInventoryChanges(
+                    [
+                        itemID: characterId == nil ? -1 : 0,
+                        baseItemID: characterId == nil ? 1 : 0,
+                        jewelItemID: 1
+                    ],
+                    masterData: masterData
+                )
+                if let characterId,
+                   let updatedCharacter = rosterStore.charactersById[characterId] {
+                    synchronizeCharacter(updatedCharacter, masterData: masterData)
+                }
+            } catch {
+                lastOperationError = UserFacingErrorMessage.resolve(error)
+            }
+        }
+    }
+
     private func configure(masterData: MasterData) {
         if itemsByID.isEmpty {
             itemsByID = Dictionary(uniqueKeysWithValues: masterData.items.map { ($0.id, $0) })

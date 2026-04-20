@@ -50,6 +50,7 @@ enum GuildServiceError: LocalizedError {
     case characterNotDefeated(characterId: Int)
     case invalidCharacterState(characterId: Int)
     case invalidJewelEnhancement
+    case invalidJewelExtraction
 
     var errorDescription: String? {
         switch self {
@@ -101,6 +102,8 @@ enum GuildServiceError: LocalizedError {
             "キャラクター状態が不正です。 characterId=\(characterId)"
         case .invalidJewelEnhancement:
             "宝石強化の組み合わせが不正です。"
+        case .invalidJewelExtraction:
+            "宝石を外せないアイテムです。"
         }
     }
 }
