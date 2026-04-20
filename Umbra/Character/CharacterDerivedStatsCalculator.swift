@@ -72,7 +72,7 @@ nonisolated enum CharacterDerivedStatsCalculator {
         level: Int,
         masterData: MasterData
     ) -> CharacterStatus? {
-        guard let currentJob = masterData.jobs.first(where: { $0.id == enemy.jobId }) else {
+        guard let currentJob = masterData.jobsByID[enemy.jobId] else {
             return nil
         }
 
@@ -112,15 +112,15 @@ nonisolated enum CharacterDerivedStatsCalculator {
         masterData: MasterData,
         equipmentResolution: EquipmentResolution = defaultEquipmentResolution
     ) -> CharacterStatus? {
-        guard let race = masterData.races.first(where: { $0.id == raceId }),
-              let currentJob = masterData.jobs.first(where: { $0.id == currentJobId }) else {
+        guard let race = masterData.racesByID[raceId],
+              let currentJob = masterData.jobsByID[currentJobId] else {
             return nil
         }
 
         let previousJob = previousJobId == 0
             ? nil
-            : masterData.jobs.first(where: { $0.id == previousJobId })
-        let aptitude = masterData.aptitudes.first(where: { $0.id == aptitudeId })
+            : masterData.jobsByID[previousJobId]
+        let aptitude = masterData.aptitudesByID[aptitudeId]
 
         // Equipment contributes directly to base stats and active skills before job coefficients
         // are applied, so derived battle values always reflect the fully equipped build.
@@ -171,15 +171,14 @@ nonisolated enum CharacterDerivedStatsCalculator {
         hasRangedWeapon: Bool = defaultEquipmentResolution.hasRangedWeapon,
         weaponRangeClass: ItemRangeClass = defaultEquipmentResolution.weaponRangeClass
     ) -> CharacterStatus? {
-        guard let currentJob = masterData.jobs.first(where: { $0.id == jobId }) else {
+        guard let currentJob = masterData.jobsByID[jobId] else {
             return nil
         }
 
         let activeSkillIds = deduplicatedSkillIds(skillIds)
-        let skillLookup = Dictionary(uniqueKeysWithValues: masterData.skills.map { ($0.id, $0) })
         let skillAdjustments = skillAdjustments(
             activeSkillIds: activeSkillIds,
-            skillLookup: skillLookup,
+            skillLookup: masterData.skillsByID,
             isUnarmed: isUnarmed
         )
         let adjustedEquipmentBattleStats = adjustedEquipmentBattleStats(

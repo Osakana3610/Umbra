@@ -516,7 +516,7 @@ struct UmbraGuildAndShopTests {
             selectedDifficultyTitleId: 1
         )
         try guildServices.parties.recordBackgroundedAt(Date(timeIntervalSinceReferenceDate: 100))
-        try guildServices.parties.queueAutomaticRunsForResume(
+        _ = try guildServices.parties.queueAutomaticRunsForResume(
             reopenedAt: Date(timeIntervalSinceReferenceDate: 140),
             partyStatusesById: [:],
             masterData: masterData
@@ -684,7 +684,7 @@ struct UmbraGuildAndShopTests {
         )
 
         try guildServices.parties.recordBackgroundedAt(Date(timeIntervalSinceReferenceDate: 100))
-        try guildServices.parties.queueAutomaticRunsForResume(
+        _ = try guildServices.parties.queueAutomaticRunsForResume(
             reopenedAt: Date(timeIntervalSinceReferenceDate: 109),
             partyStatusesById: [:],
             masterData: masterData
@@ -1364,7 +1364,7 @@ struct UmbraGuildAndShopTests {
             ]
         )
 
-        try guildServices.shop.organizeShopInventoryItem(
+        _ = try guildServices.shop.organizeShopInventoryItem(
             itemID: itemID,
             masterData: masterData
         )

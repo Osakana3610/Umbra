@@ -64,7 +64,7 @@ nonisolated struct BattleContext: Codable, Equatable, Sendable {
     let battleNumber: Int
 }
 
-nonisolated struct BattleEnemySeed: Codable, Equatable, Sendable {
+nonisolated struct BattleEnemySeed: Codable, Hashable, Equatable, Sendable {
     let enemyId: Int
     let level: Int
 }

@@ -8,9 +8,9 @@ struct EquipmentDisplayNameResolver {
     private let superRaresByID: [Int: MasterData.SuperRare]
 
     init(masterData: MasterData) {
-        itemsByID = Dictionary(uniqueKeysWithValues: masterData.items.map { ($0.id, $0) })
-        titlesByID = Dictionary(uniqueKeysWithValues: masterData.titles.map { ($0.id, $0) })
-        superRaresByID = Dictionary(uniqueKeysWithValues: masterData.superRares.map { ($0.id, $0) })
+        itemsByID = masterData.itemsByID
+        titlesByID = masterData.titlesByID
+        superRaresByID = masterData.superRaresByID
     }
 
     func displayName(for itemID: CompositeItemID) -> String {
@@ -50,11 +50,11 @@ struct EquipmentDisplayNameResolver {
 
 extension MasterData {
     nonisolated func race(for raceID: Int) -> Race? {
-        races.first(where: { $0.id == raceID })
+        racesByID[raceID]
     }
 
     nonisolated func job(for jobID: Int) -> Job? {
-        jobs.first(where: { $0.id == jobID })
+        jobsByID[jobID]
     }
 
     nonisolated func raceName(for raceID: Int) -> String {
@@ -80,7 +80,7 @@ extension MasterData {
         case let .partyMember(jobId, portraitGender):
             return job(for: jobId)?.portraitAssetName(for: portraitGender)
         case let .enemy(enemyId):
-            return enemies.first(where: { $0.id == enemyId })?.imageAssetName
+            return enemiesByID[enemyId]?.imageAssetName
         }
     }
 
@@ -96,7 +96,7 @@ extension MasterData {
     }
 
     nonisolated func aptitudeName(for aptitudeID: Int) -> String {
-        aptitudes.first(where: { $0.id == aptitudeID })?.name ?? "不明"
+        aptitudesByID[aptitudeID]?.name ?? "不明"
     }
 
     nonisolated func characterSummaryText(for character: CharacterRecord) -> String {

@@ -15,6 +15,102 @@ nonisolated struct MasterData: Sendable {
     let recruitNames: RecruitNames
     let enemies: [Enemy]
     let labyrinths: [Labyrinth]
+    private let lookupTables: LookupTables
+
+    init(
+        metadata: Metadata,
+        races: [Race],
+        jobs: [Job],
+        aptitudes: [Aptitude],
+        items: [Item],
+        titles: [Title],
+        superRares: [SuperRare],
+        skills: [Skill],
+        spells: [Spell],
+        recruitNames: RecruitNames,
+        enemies: [Enemy],
+        labyrinths: [Labyrinth]
+    ) {
+        self.metadata = metadata
+        self.races = races
+        self.jobs = jobs
+        self.aptitudes = aptitudes
+        self.items = items
+        self.titles = titles
+        self.superRares = superRares
+        self.skills = skills
+        self.spells = spells
+        self.recruitNames = recruitNames
+        self.enemies = enemies
+        self.labyrinths = labyrinths
+        self.lookupTables = LookupTables(
+            races: races,
+            jobs: jobs,
+            aptitudes: aptitudes,
+            items: items,
+            titles: titles,
+            superRares: superRares,
+            skills: skills,
+            spells: spells,
+            enemies: enemies,
+            labyrinths: labyrinths
+        )
+    }
+}
+
+private extension MasterData {
+    nonisolated struct LookupTables: Sendable {
+        let racesByID: [Int: MasterData.Race]
+        let jobsByID: [Int: MasterData.Job]
+        let aptitudesByID: [Int: MasterData.Aptitude]
+        let itemsByID: [Int: MasterData.Item]
+        let titlesByID: [Int: MasterData.Title]
+        let superRaresByID: [Int: MasterData.SuperRare]
+        let skillsByID: [Int: MasterData.Skill]
+        let spellsByID: [Int: MasterData.Spell]
+        let enemiesByID: [Int: MasterData.Enemy]
+        let labyrinthsByID: [Int: MasterData.Labyrinth]
+        let titlesByAscendingQuality: [MasterData.Title]
+        let explorationDifficultyTitles: [MasterData.Title]
+
+        init(
+            races: [MasterData.Race],
+            jobs: [MasterData.Job],
+            aptitudes: [MasterData.Aptitude],
+            items: [MasterData.Item],
+            titles: [MasterData.Title],
+            superRares: [MasterData.SuperRare],
+            skills: [MasterData.Skill],
+            spells: [MasterData.Spell],
+            enemies: [MasterData.Enemy],
+            labyrinths: [MasterData.Labyrinth]
+        ) {
+            racesByID = Dictionary(uniqueKeysWithValues: races.map { ($0.id, $0) })
+            jobsByID = Dictionary(uniqueKeysWithValues: jobs.map { ($0.id, $0) })
+            aptitudesByID = Dictionary(uniqueKeysWithValues: aptitudes.map { ($0.id, $0) })
+            itemsByID = Dictionary(uniqueKeysWithValues: items.map { ($0.id, $0) })
+            titlesByID = Dictionary(uniqueKeysWithValues: titles.map { ($0.id, $0) })
+            superRaresByID = Dictionary(uniqueKeysWithValues: superRares.map { ($0.id, $0) })
+            skillsByID = Dictionary(uniqueKeysWithValues: skills.map { ($0.id, $0) })
+            spellsByID = Dictionary(uniqueKeysWithValues: spells.map { ($0.id, $0) })
+            enemiesByID = Dictionary(uniqueKeysWithValues: enemies.map { ($0.id, $0) })
+            labyrinthsByID = Dictionary(uniqueKeysWithValues: labyrinths.map { ($0.id, $0) })
+            titlesByAscendingQuality = titles.sorted { lhs, rhs in
+                if lhs.positiveMultiplier != rhs.positiveMultiplier {
+                    return lhs.positiveMultiplier < rhs.positiveMultiplier
+                }
+                return lhs.id < rhs.id
+            }
+
+            if let untitledTitle = titles.first(where: { $0.key == "untitled" }) {
+                let higherTitles = titlesByAscendingQuality
+                    .filter { $0.positiveMultiplier > untitledTitle.positiveMultiplier }
+                explorationDifficultyTitles = [untitledTitle] + Array(higherTitles.prefix(3))
+            } else {
+                explorationDifficultyTitles = Array(titlesByAscendingQuality.prefix(4))
+            }
+        }
+    }
 }
 
 extension MasterData {
@@ -629,26 +725,56 @@ nonisolated enum SpellEffectTarget: Int, Sendable {
 }
 
 extension MasterData {
+    nonisolated var racesByID: [Int: Race] {
+        lookupTables.racesByID
+    }
+
+    nonisolated var jobsByID: [Int: Job] {
+        lookupTables.jobsByID
+    }
+
+    nonisolated var aptitudesByID: [Int: Aptitude] {
+        lookupTables.aptitudesByID
+    }
+
+    nonisolated var itemsByID: [Int: Item] {
+        lookupTables.itemsByID
+    }
+
+    nonisolated var titlesByID: [Int: Title] {
+        lookupTables.titlesByID
+    }
+
+    nonisolated var superRaresByID: [Int: SuperRare] {
+        lookupTables.superRaresByID
+    }
+
+    nonisolated var skillsByID: [Int: Skill] {
+        lookupTables.skillsByID
+    }
+
+    nonisolated var spellsByID: [Int: Spell] {
+        lookupTables.spellsByID
+    }
+
+    nonisolated var enemiesByID: [Int: Enemy] {
+        lookupTables.enemiesByID
+    }
+
+    nonisolated var labyrinthsByID: [Int: Labyrinth] {
+        lookupTables.labyrinthsByID
+    }
+
+    nonisolated var titlesByAscendingQuality: [Title] {
+        lookupTables.titlesByAscendingQuality
+    }
+
     nonisolated static var current: MasterData {
         GeneratedMasterData.current
     }
 
     nonisolated var explorationDifficultyTitles: [Title] {
-        // Exploration difficulty is intentionally a small ordered subset of all titles: the
-        // untitled baseline plus the next three stronger positive-multiplier titles.
-        let sortedTitles = titles.sorted { lhs, rhs in
-            if lhs.positiveMultiplier != rhs.positiveMultiplier {
-                return lhs.positiveMultiplier < rhs.positiveMultiplier
-            }
-            return lhs.id < rhs.id
-        }
-        guard let untitledTitle = titles.first(where: { $0.key == "untitled" }) else {
-            return Array(sortedTitles.prefix(4))
-        }
-
-        let higherTitles = sortedTitles
-            .filter { $0.positiveMultiplier > untitledTitle.positiveMultiplier }
-        return [untitledTitle] + Array(higherTitles.prefix(3))
+        lookupTables.explorationDifficultyTitles
     }
 
     nonisolated var defaultExplorationDifficultyTitle: Title? {

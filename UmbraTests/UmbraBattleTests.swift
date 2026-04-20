@@ -1487,6 +1487,9 @@ struct UmbraBattleTests {
             ]
         )
 
+        let rewardResolverContext = ExplorationResolver.makeRewardResolverContext(
+            masterData: masterData
+        )
         let rewards = ExplorationResolver.resolveRewards(
             rewardContext: rewardContext,
             enemySeeds: [BattleEnemySeed(enemyId: 1, level: 1)],
@@ -1494,6 +1497,7 @@ struct UmbraBattleTests {
             floorNumber: 1,
             battleNumber: 1,
             rootSeed: 0,
+            rewardResolverContext: rewardResolverContext,
             masterData: masterData
         )
 
@@ -1697,9 +1701,11 @@ struct UmbraBattleTests {
             battleNumber: 1,
             enemyIndex: 0,
             rootSeed: 0,
-            itemTable: [
-                defaultItem.id: defaultItem,
-                rareJewel.id: rareJewel
+            weightedJewelCandidates: [
+                (
+                    value: rareJewel,
+                    weight: ExplorationResolver.normalDropJewelRarityWeight(for: rareJewel.rarity)
+                )
             ]
         )
 

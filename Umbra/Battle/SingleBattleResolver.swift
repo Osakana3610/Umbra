@@ -14,10 +14,28 @@ nonisolated enum SingleBattleResolver {
         enemies: [BattleEnemySeed],
         masterData: MasterData
     ) throws -> SingleBattleResult {
+        var enemyStatusCache: [BattleEnemySeed: CharacterStatus] = [:]
+        return try resolve(
+            context: context,
+            partyMembers: partyMembers,
+            enemies: enemies,
+            enemyStatusCache: &enemyStatusCache,
+            masterData: masterData
+        )
+    }
+
+    static func resolve(
+        context: BattleContext,
+        partyMembers: [PartyBattleMember],
+        enemies: [BattleEnemySeed],
+        enemyStatusCache: inout [BattleEnemySeed: CharacterStatus],
+        masterData: MasterData
+    ) throws -> SingleBattleResult {
         var resolver = try BattleResolutionEngine(
             context: context,
             partyMembers: partyMembers,
             enemies: enemies,
+            enemyStatusCache: &enemyStatusCache,
             masterData: masterData
         )
         return try resolver.resolve()
@@ -90,6 +108,7 @@ nonisolated private struct BattleResolutionEngine {
         context: BattleContext,
         partyMembers: [PartyBattleMember],
         enemies: [BattleEnemySeed],
+        enemyStatusCache: inout [BattleEnemySeed: CharacterStatus],
         masterData: MasterData
     ) throws {
         guard !partyMembers.isEmpty else {
@@ -98,8 +117,8 @@ nonisolated private struct BattleResolutionEngine {
 
         self.context = context
         self.masterData = masterData
-        self.spellLookup = Dictionary(uniqueKeysWithValues: masterData.spells.map { ($0.id, $0) })
-        self.skillLookup = Dictionary(uniqueKeysWithValues: masterData.skills.map { ($0.id, $0) })
+        self.spellLookup = masterData.spellsByID
+        self.skillLookup = masterData.skillsByID
         self.combatants = []
         self.initiativeScores = []
         self.livingCombatantIndices = []
@@ -138,16 +157,23 @@ nonisolated private struct BattleResolutionEngine {
         }
 
         for ((formationIndex, enemySeed), enemyDisplayName) in zip(enemies.enumerated(), enemyDisplayNames) {
-            guard let enemy = masterData.enemies.first(where: { $0.id == enemySeed.enemyId }) else {
+            guard let enemy = masterData.enemiesByID[enemySeed.enemyId] else {
                 throw SingleBattleError.invalidEnemy(enemySeed.enemyId)
             }
 
-            guard let status = CharacterDerivedStatsCalculator.status(
-                for: enemy,
-                level: enemySeed.level,
-                masterData: masterData
-            ) else {
-                throw SingleBattleError.invalidEnemy(enemy.id)
+            let status: CharacterStatus
+            if let cachedStatus = enemyStatusCache[enemySeed] {
+                status = cachedStatus
+            } else {
+                guard let resolvedStatus = CharacterDerivedStatsCalculator.status(
+                    for: enemy,
+                    level: enemySeed.level,
+                    masterData: masterData
+                ) else {
+                    throw SingleBattleError.invalidEnemy(enemy.id)
+                }
+                enemyStatusCache[enemySeed] = resolvedStatus
+                status = resolvedStatus
             }
 
             let combatantID = BattleCombatantID(rawValue: combatants.count)
@@ -285,7 +311,7 @@ nonisolated private struct BattleResolutionEngine {
         masterData: MasterData
     ) -> [String] {
         let names = enemies.map { enemySeed in
-            masterData.enemies.first(where: { $0.id == enemySeed.enemyId })?.name ?? ""
+            masterData.enemiesByID[enemySeed.enemyId]?.name ?? ""
         }
         let totalCounts = names.reduce(into: [:]) { counts, name in
             counts[name, default: 0] += 1

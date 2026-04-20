@@ -233,7 +233,7 @@ final class ExplorationSessionService {
         appliesCatTicket: Bool,
         masterData: MasterData
     ) async throws -> RunSessionRecord {
-        guard let labyrinth = masterData.labyrinths.first(where: { $0.id == runStart.labyrinthId }) else {
+        guard let labyrinth = masterData.labyrinthsByID[runStart.labyrinthId] else {
             throw ExplorationError.invalidLabyrinth(labyrinthId: runStart.labyrinthId)
         }
 
@@ -392,7 +392,7 @@ final class ExplorationSessionService {
         startContext: (nextPartyRunId: Int, partyMembers: [CharacterRecord], selectedDifficultyTitleId: Int),
         masterData: MasterData
     ) async throws -> RunSessionRecord {
-        let skillTable = Dictionary(uniqueKeysWithValues: masterData.skills.map { ($0.id, $0) })
+        let skillTable = masterData.skillsByID
         let memberStatuses = try startContext.partyMembers.map { member in
             guard let status = CharacterDerivedStatsCalculator.status(
                 for: member,

@@ -39,9 +39,9 @@ nonisolated struct EquipmentResolver {
     private let superRaresByID: [Int: MasterData.SuperRare]
 
     init(masterData: MasterData) {
-        itemsByID = Dictionary(uniqueKeysWithValues: masterData.items.map { ($0.id, $0) })
-        titlesByID = Dictionary(uniqueKeysWithValues: masterData.titles.map { ($0.id, $0) })
-        superRaresByID = Dictionary(uniqueKeysWithValues: masterData.superRares.map { ($0.id, $0) })
+        itemsByID = masterData.itemsByID
+        titlesByID = masterData.titlesByID
+        superRaresByID = masterData.superRaresByID
     }
 
     func resolve(equippedItemStacks: [CompositeItemStack]) throws -> EquipmentResolution {
