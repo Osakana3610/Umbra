@@ -12,6 +12,11 @@ nonisolated private struct ResolvedRunProgress: Sendable {
     let updates: [ResolvedRunUpdate]
 }
 
+nonisolated private struct InitialRunPlanInput: Sendable {
+    let session: RunSessionRecord
+    let cachedStatuses: [Int: ExplorationMemberStatusCacheEntry]
+}
+
 nonisolated struct AutomaticRunResumeOutcome: Equatable, Sendable {
     let didApplyRewards: Bool
     let appliedInventoryCounts: [CompositeItemID: Int]
@@ -79,19 +84,16 @@ final class ExplorationSessionService {
                 }
                 appliesCatTicket = true
             }
-            let cachedStatuses: [Int: ExplorationMemberStatusCacheEntry] = [:]
-            // Status caches are scoped per planned run so repeated character calculations inside
-            // planning do not recompute the same derived stats for one party setup.
-            let initialSession = try await makeInitialSession(
+            let initialRunPlanInput = try await makeInitialSession(
                 runStart: runStart,
                 startedAt: startedAt,
                 appliesCatTicket: appliesCatTicket,
                 masterData: masterData
             )
             let plannedSession = try await Self.planSession(
-                initialSession,
+                initialRunPlanInput.session,
                 masterData: masterData,
-                cachedStatuses: cachedStatuses
+                cachedStatuses: initialRunPlanInput.cachedStatuses
             )
             try await coreDataRepository.insertRun(
                 RunSessionRecord(
@@ -185,7 +187,7 @@ final class ExplorationSessionService {
             appliesCatTicket = true
         }
 
-        let initialSession = try await makeInitialSession(
+        let initialRunPlanInput = try await makeInitialSession(
             runStart: ConfiguredRunStart(
                 partyId: partyId,
                 labyrinthId: labyrinthId,
@@ -197,9 +199,9 @@ final class ExplorationSessionService {
             masterData: masterData
         )
         let plannedSession = try await Self.planSession(
-            initialSession,
+            initialRunPlanInput.session,
             masterData: masterData,
-            cachedStatuses: [:]
+            cachedStatuses: initialRunPlanInput.cachedStatuses
         )
         guard let completion = plannedSession.session.completion,
               completion.completedAt <= reopenedAt else {
@@ -232,7 +234,7 @@ final class ExplorationSessionService {
         startedAt: Date,
         appliesCatTicket: Bool,
         masterData: MasterData
-    ) async throws -> RunSessionRecord {
+    ) async throws -> InitialRunPlanInput {
         guard let labyrinth = masterData.labyrinthsByID[runStart.labyrinthId] else {
             throw ExplorationError.invalidLabyrinth(labyrinthId: runStart.labyrinthId)
         }
@@ -389,36 +391,15 @@ final class ExplorationSessionService {
         startedAt: Date,
         appliesCatTicket: Bool,
         labyrinth: MasterData.Labyrinth,
-        startContext: (nextPartyRunId: Int, partyMembers: [CharacterRecord], selectedDifficultyTitleId: Int),
+        startContext: ExplorationStartContext,
         masterData: MasterData
-    ) async throws -> RunSessionRecord {
+    ) async throws -> InitialRunPlanInput {
         let skillTable = masterData.skillsByID
-        let memberStatuses = try startContext.partyMembers.map { member in
-            guard let status = CharacterDerivedStatsCalculator.status(
-                for: member,
-                masterData: masterData
-            ) else {
-                throw ExplorationError.invalidRunMember(characterId: member.characterId)
-            }
-            return status
-        }
-        func explorationRuleProduct(for skillIds: [Int], target: ExplorationRuleTarget) -> Double {
-            Set(skillIds).reduce(into: 1.0) { partialResult, skillId in
-                guard let skill = skillTable[skillId] else {
-                    return
-                }
-
-                for effect in skill.effects {
-                    guard case let .explorationRule(effectTarget, value, _) = effect,
-                          effectTarget == target else {
-                        continue
-                    }
-                    partialResult *= value
-                }
-            }
-        }
-
-        let partyRewardSkillIds = memberStatuses.flatMap(\.skillIds)
+        let memberStatuses = startContext.memberStatuses
+        let partySkillSummary = ExplorationResolver.summarizePartySkills(
+            skillIds: memberStatuses.flatMap(\.skillIds),
+            skillTable: skillTable
+        )
         let memberExperienceMultipliers = memberStatuses.map { status in
             let baseMultiplier = status.rewardMultiplier(for: .experienceGainMultiplier)
             return appliesCatTicket
@@ -436,7 +417,7 @@ final class ExplorationSessionService {
 
         // The root seed is derived from time, party, and party-run identity so one party can start
         // multiple deterministic runs without colliding with earlier sessions.
-        return RunSessionRecord(
+        let session = RunSessionRecord(
             partyRunId: startContext.nextPartyRunId,
             partyId: runStart.partyId,
             labyrinthId: labyrinth.id,
@@ -454,18 +435,10 @@ final class ExplorationSessionService {
                 appliesCatTicket
                     ? Self.catTicketProgressIntervalMultiplier
                     : 1.0
-            ) * explorationRuleProduct(for: partyRewardSkillIds, target: .explorationTimeMultiplier),
-            goldMultiplier: ExplorationResolver.rewardMultiplier(
-                target: .goldGainMultiplier,
-                skillIds: partyRewardSkillIds,
-                skillTable: skillTable
-            )
+            ) * partySkillSummary.explorationRuleProduct(for: .explorationTimeMultiplier),
+            goldMultiplier: partySkillSummary.rewardMultiplier(for: .goldGainMultiplier)
                 * (appliesCatTicket ? Self.catTicketRewardMultiplier : 1.0),
-            rareDropMultiplier: ExplorationResolver.rewardMultiplier(
-                target: .rareDropMultiplier,
-                skillIds: partyRewardSkillIds,
-                skillTable: skillTable
-            )
+            rareDropMultiplier: partySkillSummary.rewardMultiplier(for: .rareDropMultiplier)
                 * (appliesCatTicket ? Self.catTicketRewardMultiplier : 1.0),
             partyAverageLuck: partyAverageLuck,
             latestBattleFloorNumber: nil,
@@ -476,6 +449,15 @@ final class ExplorationSessionService {
             dropRewards: [],
             completion: nil
         )
+        let cachedStatuses = Dictionary(
+            uniqueKeysWithValues: startContext.partyMembers.enumerated().map { index, member in
+                (
+                    member.characterId,
+                    ExplorationMemberStatusCacheEntry(level: member.level, status: memberStatuses[index])
+                )
+            }
+        )
+        return InitialRunPlanInput(session: session, cachedStatuses: cachedStatuses)
     }
 
     private static func dropNotificationBatch(

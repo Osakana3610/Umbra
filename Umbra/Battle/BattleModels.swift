@@ -124,6 +124,11 @@ nonisolated struct BattleCombatantSnapshot: Codable, Equatable, Sendable, Identi
     let formationIndex: Int
 }
 
+nonisolated struct BattleRewardMetrics: Equatable, Sendable {
+    let totalDamageTakenByAllies: Int
+    let normalAttackKillCount: Int
+}
+
 extension BattleCombatantImageReference {
     nonisolated init?(
         persistenceKind: Int64,
@@ -184,6 +189,22 @@ nonisolated struct SingleBattleResult: Equatable, Sendable {
     let context: BattleContext
     let battleRecord: BattleRecord
     let combatants: [BattleCombatantSnapshot]
+    let rewardMetrics: BattleRewardMetrics
+
+    init(
+        context: BattleContext,
+        battleRecord: BattleRecord,
+        combatants: [BattleCombatantSnapshot],
+        rewardMetrics: BattleRewardMetrics? = nil
+    ) {
+        self.context = context
+        self.battleRecord = battleRecord
+        self.combatants = combatants
+        self.rewardMetrics = rewardMetrics ?? Self.makeRewardMetrics(
+            battleRecord: battleRecord,
+            combatants: combatants
+        )
+    }
 
     var result: BattleOutcome {
         battleRecord.result
@@ -196,6 +217,38 @@ nonisolated struct SingleBattleResult: Equatable, Sendable {
             .filter { $0.side == .ally }
             .sorted { $0.formationIndex < $1.formationIndex }
             .map(\.remainingHP)
+    }
+
+    private static func makeRewardMetrics(
+        battleRecord: BattleRecord,
+        combatants: [BattleCombatantSnapshot]
+    ) -> BattleRewardMetrics {
+        let allyIDs = Set(
+            combatants
+                .lazy
+                .filter { $0.side == .ally }
+                .map(\.id)
+        )
+
+        var totalDamageTakenByAllies = 0
+        var normalAttackKillCount = 0
+
+        for action in battleRecord.turns.lazy.flatMap(\.actions) {
+            if action.actionKind == .attack {
+                normalAttackKillCount += action.results.lazy.filter { $0.flags.contains(.defeated) }.count
+            }
+
+            for targetResult in action.results
+            where targetResult.resultKind == .damage
+                && allyIDs.contains(targetResult.targetId) {
+                totalDamageTakenByAllies += targetResult.value ?? 0
+            }
+        }
+
+        return BattleRewardMetrics(
+            totalDamageTakenByAllies: totalDamageTakenByAllies,
+            normalAttackKillCount: normalAttackKillCount
+        )
     }
 }
 

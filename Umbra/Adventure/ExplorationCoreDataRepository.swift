@@ -3,6 +3,13 @@
 import CoreData
 import Foundation
 
+nonisolated struct ExplorationStartContext: Sendable {
+    let nextPartyRunId: Int
+    let partyMembers: [CharacterRecord]
+    let memberStatuses: [CharacterStatus]
+    let selectedDifficultyTitleId: Int
+}
+
 actor ExplorationCoreDataRepository {
     private let container: NSPersistentContainer
 
@@ -86,7 +93,7 @@ actor ExplorationCoreDataRepository {
         labyrinthId: Int,
         requestedDifficultyTitleId: Int?,
         masterData: MasterData
-    ) async throws -> (nextPartyRunId: Int, partyMembers: [CharacterRecord], selectedDifficultyTitleId: Int) {
+    ) async throws -> ExplorationStartContext {
         try await perform { context in
             guard try ExplorationCoreDataBridge.isLabyrinthUnlocked(
                 labyrinthId: labyrinthId,
@@ -123,23 +130,30 @@ actor ExplorationCoreDataRepository {
                 }
                 return ExplorationCoreDataBridge.makeCharacterRecord(from: entity)
             }
+            let memberStatuses = try partyMembers.map { member in
+                guard let status = CharacterDerivedStatsCalculator.status(
+                    for: member,
+                    masterData: masterData
+                ) else {
+                    throw ExplorationError.invalidRunMember(characterId: member.characterId)
+                }
+                return status
+            }
 
             if partyMembers.contains(where: { $0.currentHP <= 0 }) {
                 throw ExplorationError.partyHasDefeatedMember(partyId: partyId)
             }
 
-            for memberEntity in memberEntities {
-                try ExplorationCoreDataBridge.restoreCurrentHPToMax(
-                    of: memberEntity,
-                    masterData: masterData
-                )
-            }
-
-            let healedPartyMembers = try memberCharacterIds.map { characterId in
-                guard let entity = membersById[characterId] else {
+            let healedPartyMembers = try memberCharacterIds.enumerated().map { index, characterId in
+                guard let entity = membersById[characterId],
+                      memberStatuses.indices.contains(index) else {
                     throw ExplorationError.invalidRunMember(characterId: characterId)
                 }
-                return ExplorationCoreDataBridge.makeCharacterRecord(from: entity)
+
+                entity.currentHP = Int64(memberStatuses[index].maxHP)
+                var healedMember = partyMembers[index]
+                healedMember.currentHP = memberStatuses[index].maxHP
+                return healedMember
             }
             let defaultDifficultyTitleId = masterData.defaultExplorationDifficultyTitle?.id ?? 1
             let highestUnlockedDifficultyTitleId = try ExplorationCoreDataBridge.highestUnlockedDifficultyTitleId(
@@ -148,12 +162,13 @@ actor ExplorationCoreDataRepository {
                 in: context
             )
 
-            return (
+            return ExplorationStartContext(
                 nextPartyRunId: try ExplorationCoreDataBridge.nextPartyRunId(
                     partyId: partyId,
                     in: context
                 ),
                 partyMembers: healedPartyMembers,
+                memberStatuses: memberStatuses,
                 selectedDifficultyTitleId: masterData.resolvedExplorationDifficultyTitleId(
                     requestedTitleId: requestedDifficultyTitleId,
                     highestUnlockedTitleId: highestUnlockedDifficultyTitleId

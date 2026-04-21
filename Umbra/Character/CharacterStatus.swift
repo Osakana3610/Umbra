@@ -35,6 +35,94 @@ nonisolated struct CharacterStatus: Equatable, Sendable {
     let equipmentRuleValuesByTarget: [EquipmentRuleTarget: [Double]]
     let explorationRuleValuesByTarget: [ExplorationRuleTarget: [Double]]
     let hitRuleValuesByTarget: [HitRuleTarget: [Double]]
+    private let defenseRuleMaxValuesByTarget: [DefenseRuleTarget: Double]
+    private let defenseRuleProductsByTarget: [DefenseRuleTarget: Double]
+    private let recoveryRuleMaxValuesByTarget: [RecoveryRuleTarget: Double]
+    private let recoveryRuleProductsByTarget: [RecoveryRuleTarget: Double]
+    private let actionRuleMaxValuesByTarget: [ActionRuleTarget: Double]
+    private let reviveRuleMaxValuesByTarget: [ReviveRuleTarget: Double]
+    private let combatRuleMaxValuesByTarget: [CombatRuleTarget: Double]
+    private let combatRuleProductsByTarget: [CombatRuleTarget: Double]
+    private let equipmentRuleProductsByTarget: [EquipmentRuleTarget: Double]
+    private let explorationRuleProductsByTarget: [ExplorationRuleTarget: Double]
+    private let hitRuleMaxValuesByTarget: [HitRuleTarget: Double]
+
+    init(
+        baseStats: CharacterBaseStats,
+        battleStats: CharacterBattleStats,
+        battleDerivedStats: CharacterBattleDerivedStats,
+        skillIds: [Int],
+        spellIds: [Int],
+        interruptKinds: [InterruptKind],
+        canUseBreath: Bool,
+        isUnarmed: Bool,
+        hasMeleeWeapon: Bool,
+        hasRangedWeapon: Bool,
+        weaponRangeClass: ItemRangeClass,
+        spellDamageMultipliersBySpellID: [Int: Double],
+        spellResistanceMultipliersBySpellID: [Int: Double],
+        rewardMultipliersByTarget: [RewardMultiplierTarget: Double],
+        partyModifiersByTarget: [PartyModifierTarget: Double],
+        onHitAilmentChanceByStatusID: [Int: Double],
+        contactAilmentChanceByStatusID: [Int: Double],
+        titleRollCountModifier: Int,
+        equipmentCapacityModifier: Int,
+        normalDropJewelizeChance: Double,
+        multiHitFalloffModifier: Double,
+        hitRateFloor: Double,
+        defenseRuleValuesByTarget: [DefenseRuleTarget: [Double]],
+        recoveryRuleValuesByTarget: [RecoveryRuleTarget: [Double]],
+        actionRuleValuesByTarget: [ActionRuleTarget: [Double]],
+        reviveRuleValuesByTarget: [ReviveRuleTarget: [Double]],
+        combatRuleValuesByTarget: [CombatRuleTarget: [Double]],
+        rewardRuleValuesByTarget: [RewardRuleTarget: [Double]],
+        equipmentRuleValuesByTarget: [EquipmentRuleTarget: [Double]],
+        explorationRuleValuesByTarget: [ExplorationRuleTarget: [Double]],
+        hitRuleValuesByTarget: [HitRuleTarget: [Double]]
+    ) {
+        self.baseStats = baseStats
+        self.battleStats = battleStats
+        self.battleDerivedStats = battleDerivedStats
+        self.skillIds = skillIds
+        self.spellIds = spellIds
+        self.interruptKinds = interruptKinds
+        self.canUseBreath = canUseBreath
+        self.isUnarmed = isUnarmed
+        self.hasMeleeWeapon = hasMeleeWeapon
+        self.hasRangedWeapon = hasRangedWeapon
+        self.weaponRangeClass = weaponRangeClass
+        self.spellDamageMultipliersBySpellID = spellDamageMultipliersBySpellID
+        self.spellResistanceMultipliersBySpellID = spellResistanceMultipliersBySpellID
+        self.rewardMultipliersByTarget = rewardMultipliersByTarget
+        self.partyModifiersByTarget = partyModifiersByTarget
+        self.onHitAilmentChanceByStatusID = onHitAilmentChanceByStatusID
+        self.contactAilmentChanceByStatusID = contactAilmentChanceByStatusID
+        self.titleRollCountModifier = titleRollCountModifier
+        self.equipmentCapacityModifier = equipmentCapacityModifier
+        self.normalDropJewelizeChance = normalDropJewelizeChance
+        self.multiHitFalloffModifier = multiHitFalloffModifier
+        self.hitRateFloor = hitRateFloor
+        self.defenseRuleValuesByTarget = defenseRuleValuesByTarget
+        self.recoveryRuleValuesByTarget = recoveryRuleValuesByTarget
+        self.actionRuleValuesByTarget = actionRuleValuesByTarget
+        self.reviveRuleValuesByTarget = reviveRuleValuesByTarget
+        self.combatRuleValuesByTarget = combatRuleValuesByTarget
+        self.rewardRuleValuesByTarget = rewardRuleValuesByTarget
+        self.equipmentRuleValuesByTarget = equipmentRuleValuesByTarget
+        self.explorationRuleValuesByTarget = explorationRuleValuesByTarget
+        self.hitRuleValuesByTarget = hitRuleValuesByTarget
+        self.defenseRuleMaxValuesByTarget = ruleMaximums(for: defenseRuleValuesByTarget)
+        self.defenseRuleProductsByTarget = ruleProducts(for: defenseRuleValuesByTarget)
+        self.recoveryRuleMaxValuesByTarget = ruleMaximums(for: recoveryRuleValuesByTarget)
+        self.recoveryRuleProductsByTarget = ruleProducts(for: recoveryRuleValuesByTarget)
+        self.actionRuleMaxValuesByTarget = ruleMaximums(for: actionRuleValuesByTarget)
+        self.reviveRuleMaxValuesByTarget = ruleMaximums(for: reviveRuleValuesByTarget)
+        self.combatRuleMaxValuesByTarget = ruleMaximums(for: combatRuleValuesByTarget)
+        self.combatRuleProductsByTarget = ruleProducts(for: combatRuleValuesByTarget)
+        self.equipmentRuleProductsByTarget = ruleProducts(for: equipmentRuleValuesByTarget)
+        self.explorationRuleProductsByTarget = ruleProducts(for: explorationRuleValuesByTarget)
+        self.hitRuleMaxValuesByTarget = ruleMaximums(for: hitRuleValuesByTarget)
+    }
 
     var maxHP: Int {
         battleStats.maxHP
@@ -63,11 +151,11 @@ nonisolated struct CharacterStatus: Equatable, Sendable {
     }
 
     func defenseRuleMaxValue(for target: DefenseRuleTarget) -> Double? {
-        defenseRuleValues(for: target).max()
+        defenseRuleMaxValuesByTarget[target]
     }
 
     func defenseRuleProduct(for target: DefenseRuleTarget) -> Double {
-        defenseRuleValues(for: target).reduce(1.0, *)
+        defenseRuleProductsByTarget[target] ?? 1.0
     }
 
     func recoveryRuleValues(for target: RecoveryRuleTarget) -> [Double] {
@@ -75,11 +163,11 @@ nonisolated struct CharacterStatus: Equatable, Sendable {
     }
 
     func recoveryRuleMaxValue(for target: RecoveryRuleTarget) -> Double? {
-        recoveryRuleValues(for: target).max()
+        recoveryRuleMaxValuesByTarget[target]
     }
 
     func recoveryRuleProduct(for target: RecoveryRuleTarget) -> Double {
-        recoveryRuleValues(for: target).reduce(1.0, *)
+        recoveryRuleProductsByTarget[target] ?? 1.0
     }
 
     func actionRuleValues(for target: ActionRuleTarget) -> [Double] {
@@ -87,7 +175,7 @@ nonisolated struct CharacterStatus: Equatable, Sendable {
     }
 
     func actionRuleMaxValue(for target: ActionRuleTarget) -> Double? {
-        actionRuleValues(for: target).max()
+        actionRuleMaxValuesByTarget[target]
     }
 
     func reviveRuleValues(for target: ReviveRuleTarget) -> [Double] {
@@ -95,7 +183,7 @@ nonisolated struct CharacterStatus: Equatable, Sendable {
     }
 
     func reviveRuleMaxValue(for target: ReviveRuleTarget) -> Double? {
-        reviveRuleValues(for: target).max()
+        reviveRuleMaxValuesByTarget[target]
     }
 
     func combatRuleValues(for target: CombatRuleTarget) -> [Double] {
@@ -103,11 +191,11 @@ nonisolated struct CharacterStatus: Equatable, Sendable {
     }
 
     func combatRuleMaxValue(for target: CombatRuleTarget) -> Double? {
-        combatRuleValues(for: target).max()
+        combatRuleMaxValuesByTarget[target]
     }
 
     func combatRuleProduct(for target: CombatRuleTarget) -> Double {
-        combatRuleValues(for: target).reduce(1.0, *)
+        combatRuleProductsByTarget[target] ?? 1.0
     }
 
     func rewardRuleValues(for target: RewardRuleTarget) -> [Double] {
@@ -119,7 +207,7 @@ nonisolated struct CharacterStatus: Equatable, Sendable {
     }
 
     func equipmentRuleProduct(for target: EquipmentRuleTarget) -> Double {
-        equipmentRuleValues(for: target).reduce(1.0, *)
+        equipmentRuleProductsByTarget[target] ?? 1.0
     }
 
     func explorationRuleValues(for target: ExplorationRuleTarget) -> [Double] {
@@ -127,7 +215,7 @@ nonisolated struct CharacterStatus: Equatable, Sendable {
     }
 
     func explorationRuleProduct(for target: ExplorationRuleTarget) -> Double {
-        explorationRuleValues(for: target).reduce(1.0, *)
+        explorationRuleProductsByTarget[target] ?? 1.0
     }
 
     func hitRuleValues(for target: HitRuleTarget) -> [Double] {
@@ -135,9 +223,25 @@ nonisolated struct CharacterStatus: Equatable, Sendable {
     }
 
     func hitRuleMaxValue(for target: HitRuleTarget) -> Double? {
-        hitRuleValues(for: target).max()
+        hitRuleMaxValuesByTarget[target]
     }
 
+}
+
+nonisolated private func ruleMaximums<Key: Hashable>(
+    for valuesByTarget: [Key: [Double]]
+) -> [Key: Double] {
+    valuesByTarget.reduce(into: [:]) { partialResult, entry in
+        partialResult[entry.key] = entry.value.max()
+    }
+}
+
+nonisolated private func ruleProducts<Key: Hashable>(
+    for valuesByTarget: [Key: [Double]]
+) -> [Key: Double] {
+    valuesByTarget.reduce(into: [:]) { partialResult, entry in
+        partialResult[entry.key] = entry.value.reduce(1.0, *)
+    }
 }
 
 nonisolated struct CharacterBaseStats: Equatable, Sendable {

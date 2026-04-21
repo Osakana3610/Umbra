@@ -11,8 +11,36 @@ nonisolated struct ExplorationRewardResolverContext: Sendable {
     let skillTable: [Int: MasterData.Skill]
     let enemyTable: [Int: MasterData.Enemy]
     let itemTable: [Int: MasterData.Item]
+    let normalDropCandidatesByTier: [Int: [MasterData.Item]]
     let titlesByAscendingQuality: [MasterData.Title]
     let weightedJewelCandidates: [(value: MasterData.Item, weight: Double)]
+}
+
+nonisolated struct ExplorationRewardSkillSummary: Sendable {
+    var titleRollCountModifier = 0
+    var normalDropJewelizeChance = 0.0
+    var goldPenaltyPerDamageTaken = 0.0
+    var goldGainPctAddOnNormalKill = 0.0
+}
+
+nonisolated struct AppliedExperienceRewardsResult: Sendable {
+    let partyMembers: [CharacterRecord]
+    let didChangeLevel: Bool
+}
+
+nonisolated struct ExplorationPartySkillSummary: Sendable {
+    let skillSignature: [Int]
+    let rewardMultipliersByTarget: [RewardMultiplierTarget: Double]
+    let explorationRuleProductsByTarget: [ExplorationRuleTarget: Double]
+    let rewardSkillSummary: ExplorationRewardSkillSummary
+
+    func rewardMultiplier(for target: RewardMultiplierTarget) -> Double {
+        rewardMultipliersByTarget[target] ?? 1.0
+    }
+
+    func explorationRuleProduct(for target: ExplorationRuleTarget) -> Double {
+        explorationRuleProductsByTarget[target] ?? 1.0
+    }
 }
 
 nonisolated enum ExplorationResolver {
@@ -50,6 +78,7 @@ nonisolated enum ExplorationResolver {
         var experienceRewards: [ExplorationExperienceReward] = []
         var dropRewards: [ExplorationDropReward] = []
         var completion: RunCompletionRecord?
+        var cachedPartySkillSummary: ExplorationPartySkillSummary?
 
         while completedBattleCount < battlePlans.count, completion == nil {
             let battlePlan = battlePlans[completedBattleCount]
@@ -71,6 +100,12 @@ nonisolated enum ExplorationResolver {
                 enemyStatusCache: &enemyStatusCache,
                 masterData: masterData
             )
+            let partySkillSummary = cachedPartySkillSummary
+                ?? summarizePartySkills(
+                    skillIds: resolvedMembers.flatMap(\.status.skillIds),
+                    skillTable: rewardResolverContext.skillTable
+                )
+            cachedPartySkillSummary = partySkillSummary
             completedBattleCount += 1
             currentPartyHPs = result.partyRemainingHPs
             currentPartyMembers = updatedPartyMembers(
@@ -89,8 +124,7 @@ nonisolated enum ExplorationResolver {
                 let rewards = resolveRewards(
                     rewardContext: makeRewardContext(
                         from: session,
-                        partyMembers: resolvedMembers,
-                        rewardResolverContext: rewardResolverContext,
+                        partySkillSummary: partySkillSummary,
                         masterData: masterData
                     ),
                     enemySeeds: battlePlan.enemies,
@@ -107,11 +141,15 @@ nonisolated enum ExplorationResolver {
                     additions: rewards.experienceRewards
                 )
                 dropRewards.append(contentsOf: rewards.dropRewards)
-                currentPartyMembers = applyExperienceRewards(
+                let experienceApplication = applyExperienceRewards(
                     rewards.experienceRewards,
                     to: currentPartyMembers,
                     masterData: masterData
                 )
+                currentPartyMembers = experienceApplication.partyMembers
+                if experienceApplication.didChangeLevel {
+                    cachedPartySkillSummary = nil
+                }
 
                 if completedBattleCount == battlePlans.count {
                     completion = RunCompletionRecord(
@@ -273,22 +311,34 @@ nonisolated extension ExplorationResolver {
         _ rewards: [ExplorationExperienceReward],
         to partyMembers: [CharacterRecord],
         masterData: MasterData
-    ) -> [CharacterRecord] {
+    ) -> AppliedExperienceRewardsResult {
         let experienceByCharacterId = rewards.reduce(into: [Int: Int]()) { partial, reward in
             partial[reward.characterId, default: 0] += reward.experience
         }
         guard !experienceByCharacterId.isEmpty else {
-            return partyMembers
+            return AppliedExperienceRewardsResult(
+                partyMembers: partyMembers,
+                didChangeLevel: false
+            )
         }
 
         let racesById = masterData.racesByID
-        return partyMembers.map { member in
-            applyAccumulatedExperience(
+        var didChangeLevel = false
+        let updatedMembers = partyMembers.map { member in
+            let updatedMember = applyAccumulatedExperience(
                 to: member,
                 additionalExperience: experienceByCharacterId[member.characterId] ?? 0,
                 racesById: racesById
             )
+            if updatedMember.level != member.level {
+                didChangeLevel = true
+            }
+            return updatedMember
         }
+        return AppliedExperienceRewardsResult(
+            partyMembers: updatedMembers,
+            didChangeLevel: didChangeLevel
+        )
     }
 
     static func applyAccumulatedExperience(
@@ -445,6 +495,14 @@ nonisolated extension ExplorationResolver {
     static func makeRewardResolverContext(
         masterData: MasterData
     ) -> ExplorationRewardResolverContext {
+        let normalDropCandidatesByTier = masterData.items
+            .filter { $0.category != .jewel }
+            .reduce(into: [Int: [MasterData.Item]]()) { partialResult, item in
+                partialResult[item.normalDropTier, default: []].append(item)
+            }
+            .mapValues { candidates in
+                candidates.sorted { $0.id < $1.id }
+            }
         let weightedJewelCandidates = masterData.items
             .filter { $0.category == .jewel }
             .sorted { $0.id < $1.id }
@@ -456,6 +514,7 @@ nonisolated extension ExplorationResolver {
             skillTable: masterData.skillsByID,
             enemyTable: masterData.enemiesByID,
             itemTable: masterData.itemsByID,
+            normalDropCandidatesByTier: normalDropCandidatesByTier,
             titlesByAscendingQuality: masterData.titlesByAscendingQuality,
             weightedJewelCandidates: weightedJewelCandidates
         )
@@ -463,37 +522,22 @@ nonisolated extension ExplorationResolver {
 
     static func makeRewardContext(
         from session: RunSessionRecord,
-        partyMembers: [PartyBattleMember],
-        rewardResolverContext: ExplorationRewardResolverContext,
+        partySkillSummary: ExplorationPartySkillSummary,
         masterData: MasterData
     ) -> RewardContext {
         let defaultTitle = masterData.defaultExplorationDifficultyTitle ?? masterData.titles[0]
         let enemyTitle = masterData.explorationDifficultyTitle(id: session.selectedDifficultyTitleId) ?? defaultTitle
-        let uniqueSkillIDs = Set(partyMembers.flatMap(\.status.skillIds))
+        let rewardSkillSummary = partySkillSummary.rewardSkillSummary
 
         return RewardContext(
             memberCharacterIds: session.memberCharacterIds,
             memberExperienceMultipliers: session.memberExperienceMultipliers,
             goldMultiplier: session.goldMultiplier,
             rareDropMultiplier: session.rareDropMultiplier,
-            titleRollCountModifier: titleRollCountModifier(
-                skillIds: uniqueSkillIDs,
-                skillTable: rewardResolverContext.skillTable
-            ),
-            normalDropJewelizeChance: normalDropJewelizeChance(
-                skillIds: uniqueSkillIDs,
-                skillTable: rewardResolverContext.skillTable
-            ),
-            goldPenaltyPerDamageTaken: rewardRuleTotal(
-                target: .goldPenaltyPerDamageTaken,
-                skillIds: uniqueSkillIDs,
-                skillTable: rewardResolverContext.skillTable
-            ),
-            goldGainPctAddOnNormalKill: rewardRuleTotal(
-                target: .goldGainPctAddOnNormalKill,
-                skillIds: uniqueSkillIDs,
-                skillTable: rewardResolverContext.skillTable
-            ),
+            titleRollCountModifier: rewardSkillSummary.titleRollCountModifier,
+            normalDropJewelizeChance: rewardSkillSummary.normalDropJewelizeChance,
+            goldPenaltyPerDamageTaken: rewardSkillSummary.goldPenaltyPerDamageTaken,
+            goldGainPctAddOnNormalKill: rewardSkillSummary.goldGainPctAddOnNormalKill,
             partyAverageLuck: session.partyAverageLuck,
             defaultTitle: defaultTitle,
             enemyTitle: enemyTitle
@@ -541,12 +585,12 @@ nonisolated extension ExplorationResolver {
         }
 
         let goldPenalty = Int((
-            totalDamageTakenByAllies(in: result) * rewardContext.goldPenaltyPerDamageTaken
+            Double(result.rewardMetrics.totalDamageTakenByAllies) * rewardContext.goldPenaltyPerDamageTaken
         ).rounded())
         let goldBonus = Int((
             Double(totalBaseGold)
                 * rewardContext.goldGainPctAddOnNormalKill
-                * Double(normalAttackKillCount(in: result))
+                * Double(result.rewardMetrics.normalAttackKillCount)
         ).rounded())
         let gold = Int((Double(totalBaseGold) * rewardContext.goldMultiplier).rounded()) + goldBonus - goldPenalty
         let sharedExperience = rewardContext.memberCharacterIds.isEmpty
@@ -581,7 +625,7 @@ nonisolated extension ExplorationResolver {
                 rootSeed: rootSeed,
                 titles: rewardResolverContext.titlesByAscendingQuality,
                 rewardContext: rewardContext,
-                itemTable: rewardResolverContext.itemTable,
+                normalDropCandidatesByTier: rewardResolverContext.normalDropCandidatesByTier,
                 weightedJewelCandidates: rewardResolverContext.weightedJewelCandidates,
                 masterData: masterData
             ) {
@@ -658,7 +702,7 @@ nonisolated extension ExplorationResolver {
         rootSeed: UInt64,
         titles: [MasterData.Title],
         rewardContext: RewardContext,
-        itemTable: [Int: MasterData.Item],
+        normalDropCandidatesByTier: [Int: [MasterData.Item]],
         weightedJewelCandidates: [(value: MasterData.Item, weight: Double)],
         masterData: MasterData
     ) -> ExplorationDropReward? {
@@ -672,9 +716,7 @@ nonisolated extension ExplorationResolver {
             return nil
         }
 
-        let candidates = itemTable.values
-            .filter { $0.normalDropTier == tier && $0.category != .jewel }
-            .sorted { $0.id < $1.id }
+        let candidates = normalDropCandidatesByTier[tier] ?? []
         guard !candidates.isEmpty else {
             return nil
         }
@@ -850,92 +892,63 @@ nonisolated extension ExplorationResolver {
         )
     }
 
-    static func titleRollCountModifier(
-        skillIds: Set<Int>,
+    static func summarizePartySkills(
+        skillIds: [Int],
         skillTable: [Int: MasterData.Skill]
-    ) -> Int {
-        skillIds.reduce(into: 0) { partialResult, skillId in
+    ) -> ExplorationPartySkillSummary {
+        let skillSignature = Array(Set(skillIds)).sorted()
+        var rewardPctAdds: [RewardMultiplierTarget: Double] = [:]
+        var rewardMultipliers: [RewardMultiplierTarget: Double] = [:]
+        var explorationRuleProductsByTarget: [ExplorationRuleTarget: Double] = [:]
+        var rewardSkillSummary = ExplorationRewardSkillSummary()
+
+        for skillId in skillSignature {
             guard let skill = skillTable[skillId] else {
-                return
+                continue
             }
 
             for effect in skill.effects {
-                guard case let .titleRollCountModifier(value) = effect else {
-                    continue
-                }
-                partialResult += Int(value.rounded())
-            }
-        }
-    }
-
-    static func normalDropJewelizeChance(
-        skillIds: Set<Int>,
-        skillTable: [Int: MasterData.Skill]
-    ) -> Double {
-        skillIds.reduce(into: 0.0) { partialResult, skillId in
-            guard let skill = skillTable[skillId] else {
-                return
-            }
-
-            for effect in skill.effects {
-                guard case let .normalDropJewelize(value) = effect else {
-                    continue
-                }
-                partialResult = max(partialResult, value)
-            }
-        }
-    }
-
-    static func rewardRuleTotal(
-        target: RewardRuleTarget,
-        skillIds: Set<Int>,
-        skillTable: [Int: MasterData.Skill]
-    ) -> Double {
-        skillIds.reduce(into: 0.0) { partialResult, skillId in
-            guard let skill = skillTable[skillId] else {
-                return
-            }
-
-            for effect in skill.effects {
-                guard case let .rewardRule(effectTarget, value, _) = effect,
-                      effectTarget == target else {
-                    continue
-                }
-                partialResult += value
-            }
-        }
-    }
-
-    static func totalDamageTakenByAllies(
-        in result: SingleBattleResult
-    ) -> Double {
-        let allyIDs = Set(result.combatants.filter { $0.side == .ally }.map(\.id))
-        return Double(
-            result.battleRecord.turns
-                .flatMap(\.actions)
-                .flatMap(\.results)
-                .reduce(into: 0) { partialResult, targetResult in
-                    guard targetResult.resultKind == .damage,
-                          let value = targetResult.value,
-                          allyIDs.contains(targetResult.targetId) else {
-                        return
+                switch effect {
+                case let .rewardMultiplier(target, operation, value, _):
+                    switch operation {
+                    case .pctAdd:
+                        rewardPctAdds[target, default: 0.0] += value
+                    case .mul:
+                        rewardMultipliers[target, default: 1.0] *= value
+                    default:
+                        break
                     }
-                    partialResult += value
+                case let .explorationRule(target, value, _):
+                    explorationRuleProductsByTarget[target, default: 1.0] *= value
+                case let .titleRollCountModifier(value):
+                    rewardSkillSummary.titleRollCountModifier += Int(value.rounded())
+                case let .normalDropJewelize(value):
+                    rewardSkillSummary.normalDropJewelizeChance = max(
+                        rewardSkillSummary.normalDropJewelizeChance,
+                        value
+                    )
+                case let .rewardRule(target, value, _):
+                    switch target {
+                    case .goldPenaltyPerDamageTaken:
+                        rewardSkillSummary.goldPenaltyPerDamageTaken += value
+                    case .goldGainPctAddOnNormalKill:
+                        rewardSkillSummary.goldGainPctAddOnNormalKill += value
+                    }
+                default:
+                    break
                 }
-        )
-    }
-
-    static func normalAttackKillCount(
-        in result: SingleBattleResult
-    ) -> Int {
-        result.battleRecord.turns
-            .flatMap(\.actions)
-            .reduce(into: 0) { partialResult, action in
-                guard action.actionKind == .attack else {
-                    return
-                }
-                partialResult += action.results.filter { $0.flags.contains(.defeated) }.count
             }
+        }
+
+        return ExplorationPartySkillSummary(
+            skillSignature: skillSignature,
+            rewardMultipliersByTarget: multiplierValues(
+                pctAdds: rewardPctAdds,
+                multipliers: rewardMultipliers
+            ),
+            explorationRuleProductsByTarget: explorationRuleProductsByTarget,
+            rewardSkillSummary: rewardSkillSummary
+        )
     }
 
     static func normalDropBaseItem(
@@ -1067,34 +1080,21 @@ nonisolated extension ExplorationResolver {
         skillIds: [Int],
         skillTable: [Int: MasterData.Skill]
     ) -> Double {
-        var pctAdd = 0.0
-        var multiplier = 1.0
+        summarizePartySkills(
+            skillIds: skillIds,
+            skillTable: skillTable
+        ).rewardMultiplier(for: target)
+    }
 
-        // Reward multipliers follow the same stacking rule as derived status snapshots so
-        // exploration planning and UI aggregation do not drift from battle-ready character data.
-        for skillId in Set(skillIds) {
-            guard let skill = skillTable[skillId] else {
-                continue
-            }
-
-            for effect in skill.effects {
-                guard case let .rewardMultiplier(effectTarget, operation, value, _) = effect,
-                      effectTarget == target else {
-                    continue
-                }
-
-                switch operation {
-                case .pctAdd:
-                    pctAdd += value
-                case .mul:
-                    multiplier *= value
-                default:
-                    continue
-                }
-            }
+    private static func multiplierValues<Key: Hashable>(
+        pctAdds: [Key: Double],
+        multipliers: [Key: Double]
+    ) -> [Key: Double] {
+        let targets = Set(pctAdds.keys).union(multipliers.keys)
+        return targets.reduce(into: [:]) { partialResult, target in
+            let rawValue = (1.0 + pctAdds[target, default: 0.0]) * multipliers[target, default: 1.0]
+            partialResult[target] = max(rawValue, 0.0)
         }
-
-        return max((1.0 + pctAdd) * multiplier, 0.0)
     }
 
     static func weightedRandomChoice<T>(

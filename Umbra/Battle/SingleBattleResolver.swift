@@ -82,6 +82,100 @@ nonisolated enum RescueResolutionValidation {
     }
 }
 
+// Stores battle work queues in a circular buffer so front insertion and removal stay constant-time
+// even when interrupts and chained hits repeatedly prepend new work in the hot path.
+nonisolated private struct BattleRingBuffer<Element> {
+    private var storage: [Element?]
+    private var head = 0
+    private(set) var count = 0
+
+    init(minimumCapacity: Int = 16) {
+        storage = Array(repeating: nil, count: max(minimumCapacity, 1))
+    }
+
+    init<S: Sequence>(_ elements: S) where S.Element == Element {
+        let materializedElements = Array(elements)
+        storage = Array(repeating: nil, count: max(materializedElements.count, 16))
+        for (index, element) in materializedElements.enumerated() {
+            storage[index] = element
+        }
+        count = materializedElements.count
+    }
+
+    var isEmpty: Bool {
+        count == 0
+    }
+
+    mutating func append(_ element: Element) {
+        ensureCapacity(forAdditionalCount: 1)
+        storage[index(at: count)] = element
+        count += 1
+    }
+
+    mutating func prepend(_ element: Element) {
+        ensureCapacity(forAdditionalCount: 1)
+        head = wrappedIndex(head - 1)
+        storage[head] = element
+        count += 1
+    }
+
+    mutating func prepend(contentsOf elements: [Element]) {
+        ensureCapacity(forAdditionalCount: elements.count)
+        for element in elements.reversed() {
+            prepend(element)
+        }
+    }
+
+    mutating func popFirst() -> Element? {
+        guard count > 0 else {
+            return nil
+        }
+
+        let firstElement = storage[head]
+        storage[head] = nil
+        head = wrappedIndex(head + 1)
+        count -= 1
+        if count == 0 {
+            head = 0
+        }
+        return firstElement
+    }
+
+    mutating func removeAll(keepingCapacity: Bool = true) {
+        if keepingCapacity {
+            storage = Array(repeating: nil, count: storage.count)
+        } else {
+            storage = Array(repeating: nil, count: 16)
+        }
+        head = 0
+        count = 0
+    }
+
+    private mutating func ensureCapacity(forAdditionalCount additionalCount: Int) {
+        guard count + additionalCount > storage.count else {
+            return
+        }
+
+        let newCapacity = max(storage.count * 2, count + additionalCount, 16)
+        var resizedStorage = Array<Element?>(repeating: nil, count: newCapacity)
+        for index in 0..<count {
+            resizedStorage[index] = storage[self.index(at: index)]
+        }
+        storage = resizedStorage
+        head = 0
+    }
+
+    private func index(at logicalIndex: Int) -> Int {
+        wrappedIndex(head + logicalIndex)
+    }
+
+    private func wrappedIndex(_ rawIndex: Int) -> Int {
+        let capacity = storage.count
+        let remainder = rawIndex % capacity
+        return remainder >= 0 ? remainder : remainder + capacity
+    }
+}
+
 nonisolated private struct BattleResolutionEngine {
     private let context: BattleContext
     private let masterData: MasterData
@@ -358,11 +452,13 @@ nonisolated private struct BattleResolutionEngine {
             }
 
             let turnActions = buildTurnActions()
-            var actionQueue = turnActions
+            var actionQueue = BattleRingBuffer(turnActions)
             var resolvedActions: [BattleActionRecord] = []
 
             while !actionQueue.isEmpty {
-                let queuedAction = actionQueue.removeFirst()
+                guard let queuedAction = actionQueue.popFirst() else {
+                    break
+                }
                 currentActionNumber += 1
                 guard combatants[queuedAction.actorIndex].canAct else {
                     continue
@@ -378,13 +474,13 @@ nonisolated private struct BattleResolutionEngine {
                         for: .extraTurnAfterNormalActionOnTurnOne
                        ) != nil {
                         combatants[queuedAction.actorIndex].hasUsedTurnOneExtraAction = true
-                        actionQueue.insert(selectNormalAction(for: queuedAction.actorIndex), at: 0)
+                        actionQueue.prepend(selectNormalAction(for: queuedAction.actorIndex))
                     }
                     if !actionRecord.generatedInterrupts.isEmpty {
                         // Interrupts are inserted at the head of the queue so they resolve
                         // immediately after the triggering action, matching the battle log order.
                         let sortedInterrupts = sortInterrupts(actionRecord.generatedInterrupts)
-                        actionQueue.insert(contentsOf: sortedInterrupts, at: 0)
+                        actionQueue.prepend(contentsOf: sortedInterrupts)
                     }
                 }
 
@@ -475,8 +571,38 @@ nonisolated private struct BattleResolutionEngine {
         // Priorities are evaluated in order, but each candidate still rolls against the actor's
         // configured auto-battle rate before it becomes the committed action for the turn.
         for (priorityIndex, actionKind) in actor.actionPriority.enumerated() {
-            guard isCandidateExecutable(actionKind, for: actorIndex) else {
-                continue
+            let spellId: Int?
+            switch actionKind {
+            case .breath:
+                guard actor.status.canUseBreath,
+                      combatants[actorIndex].breathUsesRemaining > 0,
+                      !livingIndices(on: opposingSide(of: actor.side)).isEmpty else {
+                    continue
+                }
+                spellId = nil
+            case .attack:
+                guard !livingIndices(on: opposingSide(of: actor.side)).isEmpty else {
+                    continue
+                }
+                spellId = nil
+            case .recoverySpell:
+                guard let selectedSpellId = selectSpell(
+                    for: actorIndex,
+                    category: .recovery,
+                    purposePrefix: "normalRecoverySpell"
+                ) else {
+                    continue
+                }
+                spellId = selectedSpellId
+            case .attackSpell:
+                guard let selectedSpellId = selectSpell(
+                    for: actorIndex,
+                    category: .attack,
+                    purposePrefix: "normalAttackSpell"
+                ) else {
+                    continue
+                }
+                spellId = selectedSpellId
             }
 
             let probability = probability(for: actionKind, rates: actor.actionRates)
@@ -497,31 +623,19 @@ nonisolated private struct BattleResolutionEngine {
             case .attack:
                 return QueuedAction(actorIndex: actorIndex, recordKind: .attack, countsAsNormalTurnAction: true)
             case .recoverySpell:
-                if let spellId = selectSpell(
-                    for: actorIndex,
-                    category: .recovery,
-                    purposePrefix: "normalRecoverySpell"
-                ) {
-                    return QueuedAction(
-                        actorIndex: actorIndex,
-                        recordKind: .recoverySpell,
-                        spellId: spellId,
-                        countsAsNormalTurnAction: true
-                    )
-                }
+                return QueuedAction(
+                    actorIndex: actorIndex,
+                    recordKind: .recoverySpell,
+                    spellId: spellId,
+                    countsAsNormalTurnAction: true
+                )
             case .attackSpell:
-                if let spellId = selectSpell(
-                    for: actorIndex,
-                    category: .attack,
-                    purposePrefix: "normalAttackSpell"
-                ) {
-                    return QueuedAction(
-                        actorIndex: actorIndex,
-                        recordKind: .attackSpell,
-                        spellId: spellId,
-                        countsAsNormalTurnAction: true
-                    )
-                }
+                return QueuedAction(
+                    actorIndex: actorIndex,
+                    recordKind: .attackSpell,
+                    spellId: spellId,
+                    countsAsNormalTurnAction: true
+                )
             }
         }
 
@@ -725,9 +839,9 @@ nonisolated private struct BattleResolutionEngine {
         let sharesAttackCountAcrossTargets = usesCarryOver
 
         if selectedTargetIndices.count > 1 || usesCarryOver {
-            var pendingTargetIndices = selectedTargetIndices
+            var pendingTargetIndices = BattleRingBuffer(selectedTargetIndices)
             var processedTargetIndices = Set(selectedTargetIndices)
-            var remainingHitIndices = Array(0..<attackCount)
+            var remainingHitIndices = BattleRingBuffer(0..<attackCount)
             var results: [BattleTargetResult] = []
             var targetIds: [BattleCombatantID] = []
             var fallenTargetIndices: [Int] = []
@@ -736,7 +850,9 @@ nonisolated private struct BattleResolutionEngine {
 
             while !pendingTargetIndices.isEmpty
                 && (sharesAttackCountAcrossTargets ? !remainingHitIndices.isEmpty : true) {
-                let originalTargetIndex = pendingTargetIndices.removeFirst()
+                guard let originalTargetIndex = pendingTargetIndices.popFirst() else {
+                    break
+                }
                 guard combatants.indices.contains(originalTargetIndex),
                       combatants[originalTargetIndex].isAlive else {
                     continue
@@ -755,10 +871,12 @@ nonisolated private struct BattleResolutionEngine {
                 var landedHitOnTarget = false
                 var hitIndices = sharesAttackCountAcrossTargets
                     ? remainingHitIndices
-                    : Array(0..<attackCount)
+                    : BattleRingBuffer(0..<attackCount)
 
                 while !hitIndices.isEmpty && combatants[targetIndex].isAlive {
-                    let hitIndex = hitIndices.removeFirst()
+                    guard let hitIndex = hitIndices.popFirst() else {
+                        break
+                    }
                     guard didHit(
                         attackerIndex: actorIndex,
                         defenderIndex: targetIndex,
@@ -1000,36 +1118,17 @@ nonisolated private struct BattleResolutionEngine {
                 }
             }
 
-            if queuedAction.allowsActionRuleFollowUps,
-               isNormalAttack,
-               !landedAnyHit {
-                if combatants[actorIndex].status.actionRuleMaxValue(for: .repeatNormalAttackOnEvade) != nil,
-                   let followUp = makeFollowUpAttack(actorIndex: actorIndex, targetIndex: primaryTargetIndex) {
-                    generatedInterrupts.append(followUp)
-                } else if let chance = combatants[actorIndex].status.actionRuleMaxValue(for: .normalAttackOnEvadeChance) {
-                    let roll = uniform(
-                        turn: currentTurn,
-                        action: currentActionNumber,
-                        subaction: 97,
-                        roll: actorIndex + 1,
-                        purpose: "followup.evade.\(combatants[actorIndex].seedKey)"
-                    )
-                    if roll < chance,
-                       let followUp = makeFollowUpAttack(actorIndex: actorIndex, targetIndex: primaryTargetIndex) {
-                        generatedInterrupts.append(followUp)
-                    }
-                }
-            }
-            if queuedAction.allowsActionRuleFollowUps,
-               isNormalAttack,
-               criticalTriggered {
-                let followUpTargetIndex = combatants.indices.contains(primaryTargetIndex) && combatants[primaryTargetIndex].isAlive
-                    ? primaryTargetIndex
-                    : nil
-                if combatants[actorIndex].status.actionRuleMaxValue(for: .repeatNormalAttackOnCritical) != nil,
-                   let followUp = makeFollowUpAttack(actorIndex: actorIndex, targetIndex: followUpTargetIndex) {
-                    generatedInterrupts.append(followUp)
-                }
+            if queuedAction.allowsActionRuleFollowUps, isNormalAttack {
+                generatedInterrupts += evadeFollowUpInterrupts(
+                    actorIndex: actorIndex,
+                    targetIndex: primaryTargetIndex,
+                    landedAnyHit: landedAnyHit
+                )
+                generatedInterrupts += criticalFollowUpInterrupts(
+                    actorIndex: actorIndex,
+                    primaryTargetIndex: primaryTargetIndex,
+                    criticalTriggered: criticalTriggered
+                )
             }
 
             generatedInterrupts = rescueInterruptActions(
@@ -1081,13 +1180,20 @@ nonisolated private struct BattleResolutionEngine {
         let actionFlags = criticalTriggered ? [BattleActionFlag.critical] : []
 
         if hitMultiplier == 0 {
-            let generatedInterrupts = (queuedAction.canTriggerInterrupts
+            var generatedInterrupts = (queuedAction.canTriggerInterrupts
                 ? interruptActions(
                     after: queuedAction,
                     targetIndex: targetIndex,
                     targetWasDefeated: false
                 )
                 : [])
+            if queuedAction.allowsActionRuleFollowUps, isNormalAttack {
+                generatedInterrupts += evadeFollowUpInterrupts(
+                    actorIndex: actorIndex,
+                    targetIndex: targetIndex,
+                    landedAnyHit: false
+                )
+            }
             return ResolvedAction(
                 record: BattleActionRecord(
                     actorId: actor.id,
@@ -1247,27 +1353,6 @@ nonisolated private struct BattleResolutionEngine {
                 targetWasDefeated: targetResult.flags.contains(.defeated)
             )
         }
-        if queuedAction.allowsActionRuleFollowUps,
-           isNormalAttack,
-           hitMultiplier == 0 {
-            if combatants[actorIndex].status.actionRuleMaxValue(for: .repeatNormalAttackOnEvade) != nil,
-               let followUp = makeFollowUpAttack(actorIndex: actorIndex, targetIndex: targetIndex) {
-                generatedInterrupts.append(followUp)
-            } else if let chance = combatants[actorIndex].status.actionRuleMaxValue(for: .normalAttackOnEvadeChance) {
-                let roll = uniform(
-                    turn: currentTurn,
-                    action: currentActionNumber,
-                    subaction: 97,
-                    roll: actorIndex + 1,
-                    purpose: "followup.evade.\(combatants[actorIndex].seedKey)"
-                )
-                if roll < chance,
-                   let followUp = makeFollowUpAttack(actorIndex: actorIndex, targetIndex: targetIndex) {
-                    generatedInterrupts.append(followUp)
-                }
-            }
-        }
-
         var results = [targetResult]
         if targetResult.resultKind == .damage {
             if let lifestealMultiplier = combatants[actorIndex].status.recoveryRuleMaxValue(for: .lifestealMultiplier),
@@ -1316,10 +1401,12 @@ nonisolated private struct BattleResolutionEngine {
             }
             if queuedAction.allowsActionRuleFollowUps,
                isNormalAttack,
-               criticalTriggered,
-               combatants[actorIndex].status.actionRuleMaxValue(for: .repeatNormalAttackOnCritical) != nil,
-               let followUp = makeFollowUpAttack(actorIndex: actorIndex, targetIndex: targetIndex) {
-                generatedInterrupts.append(followUp)
+               criticalTriggered {
+                generatedInterrupts += criticalFollowUpInterrupts(
+                    actorIndex: actorIndex,
+                    primaryTargetIndex: targetIndex,
+                    criticalTriggered: true
+                )
             }
         }
 
@@ -2800,28 +2887,12 @@ nonisolated private struct BattleResolutionEngine {
         return max(Int(rawCount.rounded()), 1)
     }
 
-    private func isCandidateExecutable(_ actionKind: BattleActionKind, for actorIndex: Int) -> Bool {
-        switch actionKind {
-        case .breath:
-            combatants[actorIndex].status.canUseBreath
-                && combatants[actorIndex].breathUsesRemaining > 0
-                && !livingIndices(on: opposingSide(of: combatants[actorIndex].side)).isEmpty
-        case .attack:
-            !livingIndices(on: opposingSide(of: combatants[actorIndex].side)).isEmpty
-        case .recoverySpell:
-            selectSpell(for: actorIndex, category: .recovery, purposePrefix: "availabilityRecovery") != nil
-        case .attackSpell:
-            selectSpell(for: actorIndex, category: .attack, purposePrefix: "availabilityAttack") != nil
-        }
-    }
-
     private func selectSpell(
         for actorIndex: Int,
         category: SpellCategory,
         purposePrefix: String
     ) -> Int? {
-        let usableSpells = combatants[actorIndex].status.spellIds
-            .sorted(by: >)
+        let usableSpells = combatants[actorIndex].status.spellIds.reversed()
             .compactMap { spellLookup[$0] }
             .filter { $0.category == category && isSpellUsable($0, for: actorIndex) }
 
@@ -2901,8 +2972,7 @@ nonisolated private struct BattleResolutionEngine {
     }
 
     private func selectRescueSpell(for combatantIndex: Int) -> Int? {
-        let usableRescueSpells = combatants[combatantIndex].status.spellIds
-            .sorted(by: >)
+        let usableRescueSpells = combatants[combatantIndex].status.spellIds.reversed()
             .filter { spellId in
                 guard let spell = spellLookup[spellId],
                       combatants[combatantIndex].spellCharges[spellId, default: 0] > 0 else {
@@ -3155,6 +3225,58 @@ nonisolated private struct BattleResolutionEngine {
             subaction: 96,
             purpose: "attackTarget.lowHP.\(actingSide.rawValue)"
         )
+    }
+
+    private func evadeFollowUpInterrupts(
+        actorIndex: Int,
+        targetIndex: Int,
+        landedAnyHit: Bool
+    ) -> [QueuedAction] {
+        guard !landedAnyHit else {
+            return []
+        }
+        if combatants[actorIndex].status.actionRuleMaxValue(for: .repeatNormalAttackOnEvade) != nil,
+           let followUp = makeFollowUpAttack(actorIndex: actorIndex, targetIndex: targetIndex) {
+            return [followUp]
+        }
+        guard let chance = combatants[actorIndex].status.actionRuleMaxValue(for: .normalAttackOnEvadeChance) else {
+            return []
+        }
+
+        let roll = uniform(
+            turn: currentTurn,
+            action: currentActionNumber,
+            subaction: 97,
+            roll: actorIndex + 1,
+            purpose: "followup.evade.\(combatants[actorIndex].seedKey)"
+        )
+        guard roll < chance,
+              let followUp = makeFollowUpAttack(actorIndex: actorIndex, targetIndex: targetIndex) else {
+            return []
+        }
+        return [followUp]
+    }
+
+    private func criticalFollowUpInterrupts(
+        actorIndex: Int,
+        primaryTargetIndex: Int,
+        criticalTriggered: Bool
+    ) -> [QueuedAction] {
+        guard criticalTriggered,
+              combatants[actorIndex].status.actionRuleMaxValue(for: .repeatNormalAttackOnCritical) != nil else {
+            return []
+        }
+
+        let followUpTargetIndex = combatants.indices.contains(primaryTargetIndex) && combatants[primaryTargetIndex].isAlive
+            ? primaryTargetIndex
+            : nil
+        guard let followUp = makeFollowUpAttack(
+            actorIndex: actorIndex,
+            targetIndex: followUpTargetIndex
+        ) else {
+            return []
+        }
+        return [followUp]
     }
 
     private func makeFollowUpAttack(
